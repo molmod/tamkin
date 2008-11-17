@@ -1,5 +1,5 @@
 # TAMkin is a post-processing toolkit for thermochemistry and kinetics analysis.
-# Copyright (C) 2008 Toon Verstraelen <Toon.Verstraelen@UGent.be>, 
+# Copyright (C) 2008 Toon Verstraelen <Toon.Verstraelen@UGent.be>,
 # Matthias Vandichel <Matthias.Vandichel@UGent.be> and
 # An Ghysels <An.Ghysels@UGent.be>
 #
@@ -22,15 +22,23 @@
 
 
 import unittest
-from kinetics.io import load_fixed_g03com
-
+from tamkin.io import load_fixed_g03com, load_kin_g03fchk
 
 __all__ = ["IOTestCase"]
 
 
 class IOTestCase(unittest.TestCase):
     def test_load_fixed_g03com(self):
-        fixed_atoms = load_fixed_g03com("input/Zp_p_react.28aug.com")
+        fixed_atoms = load_fixed_g03com("input/Zp_p_prod.18aug.com")
         self.assertEqual(len(fixed_atoms), 48)
         self.assertEqual(fixed_atoms, range(114,114+48))
+
+    def test_load_kin_g03fchk(self):
+        atoms = 181
+        data = load_kin_g03fchk("input/Zp_p_react.28aug.fchk","input/Zp_p_react.14mei.fchk")
+
+        self.assertEqual(data["hessian"].shape,(atoms*3,atoms*3))
+        self.assertAlmostEqual(data["energy"], -18613.135744186180, 7)
+
+
 

@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # TAMkin is a post-processing toolkit for thermochemistry and kinetics analysis.
 # Copyright (C) 2008 Toon Verstraelen <Toon.Verstraelen@UGent.be>,
 # Matthias Vandichel <Matthias.Vandichel@UGent.be> and
@@ -21,14 +20,19 @@
 #
 # --
 
-import sys, os, unittest, glob
 
-retcode = os.system("(cd ..; python setup.py build)")
-if retcode != 0: sys.exit(retcode)
-lib_dir = glob.glob(os.path.join("../build/lib*"))[0]
-sys.path.insert(0, lib_dir)
+from tamkin.tools import fit_kin
 
-from io import *
-from partf import *
-from tools import *
-unittest.main()
+import unittest
+import numpy
+
+__all__ = ["FitKinCase"]
+
+class FitKinCase(unittest.TestCase):
+    def test_fit_kin(self):
+        k = numpy.array([7.9473102E+05, 9.8300444E+05, 1.2085262E+06, 1.4771808E+06, 1.7955340E+06, 2.1708793E+06, 2.6112829E+06, 3.1256298E+06, 3.7236678E+06, 4.4160510E+06, 5.2143822E+06])
+        temps = numpy.array([670,680,690,700,710,720,730,740,750,760,770])
+        fit_kin(temps,k)
+
+
+

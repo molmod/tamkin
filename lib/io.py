@@ -1,5 +1,5 @@
 # TAMkin is a post-processing toolkit for thermochemistry and kinetics analysis.
-# Copyright (C) 2008 Toon Verstraelen <Toon.Verstraelen@UGent.be>, 
+# Copyright (C) 2008 Toon Verstraelen <Toon.Verstraelen@UGent.be>,
 # Matthias Vandichel <Matthias.Vandichel@UGent.be> and
 # An Ghysels <An.Ghysels@UGent.be>
 #
@@ -19,6 +19,12 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
+
+
+from molmod.io.gaussian03.fchk import FCHKFile
+from molmod.units import amu
+
+import numpy
 
 
 def load_fixed_g03com(filename):
@@ -49,4 +55,19 @@ def load_fixed_g03com(filename):
             fixed_atoms.append(counter)
         counter += 1
     return fixed_atoms
+
+
+def load_kin_g03fchk(filename_freq,filename_ener=None): # if one file contains every information, give the name twice
+    fchk_freq = FCHKFile(filename_freq, ignore_errors=True)
+    if filename_ener is None:
+        fchk_ener = fchk_freq
+    else:
+        fchk_ener = FCHKFile(filename_ener, ignore_errors=True)
+    return {
+        "hessian": fchk_freq.get_hessian(),
+        "masses": fchk_freq.fields["Real atomic weights"]*amu,
+        "coordinates": fchk_freq.molecule.coordinates,
+        "numbers": fchk_freq.molecule.numbers,
+        "energy": fchk_ener.fields["Total Energy"],
+    }
 

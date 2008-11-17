@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # TAMkin is a post-processing toolkit for thermochemistry and kinetics analysis.
 # Copyright (C) 2008 Toon Verstraelen <Toon.Verstraelen@UGent.be>,
 # Matthias Vandichel <Matthias.Vandichel@UGent.be> and
@@ -21,14 +20,24 @@
 #
 # --
 
-import sys, os, unittest, glob
 
-retcode = os.system("(cd ..; python setup.py build)")
-if retcode != 0: sys.exit(retcode)
-lib_dir = glob.glob(os.path.join("../build/lib*"))[0]
-sys.path.insert(0, lib_dir)
+from distutils.core import setup
 
-from io import *
-from partf import *
-from tools import *
-unittest.main()
+setup(name='TAMkin',
+    version='0.001',
+    description='TAMkin is a post-processing toolkit for thermochemistry and kinetics analysis.',
+    author='Toon Verstraelen, Matthias Vandichel, An Ghysels',
+    author_email='Toon.Verstraelen@UGent.be, Matthias.Vandichel@UGent.be, An.Ghysels@UGent.be',
+    url='http://molmod.ugent.be/code/',
+    package_dir = {'tamkin': 'lib'},
+    packages = ['tamkin'],
+    classifiers=[
+        'Development Status :: 3 - Alpha',
+        'Environment :: Console',
+        'Intended Audience :: Science/Research',
+        'License :: OSI Approved :: GNU General Public License (GPL)',
+        'Operating System :: POSIX :: Linux',
+        'Programming Language :: Python',
+    ],
+)
+

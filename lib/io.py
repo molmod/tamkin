@@ -58,11 +58,15 @@ def load_fixed_g03com(filename):
 
 
 def load_kin_g03fchk(filename_freq,filename_ener=None): # if one file contains every information, give the name twice
-    fchk_freq = FCHKFile(filename_freq, ignore_errors=True)
+    fchk_freq = FCHKFile(filename_freq, ignore_errors=True, field_labels=[
+        "Cartesian Force Constants", "Real atomic weights", "Total Energy"
+    ])
     if filename_ener is None:
         fchk_ener = fchk_freq
     else:
-        fchk_ener = FCHKFile(filename_ener, ignore_errors=True)
+        fchk_ener = FCHKFile(filename_ener, ignore_errors=True, field_labels=[
+            "Total Energy"
+        ])
     return {
         "hessian": fchk_freq.get_hessian(),
         "masses": fchk_freq.fields["Real atomic weights"]*amu,

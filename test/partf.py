@@ -22,21 +22,47 @@
 
 
 from tamkin.partf import *
-from tamkin.io import *
+from tamkin.io import load_molecule_g03fchk, load_fixed_g03com
 
-from molmod.constants import lightspeed
-from molmod.units import cm, s
+from molmod.constants import lightspeed, boltzmann
+from molmod.units import cm, s, atm, amu, meter, mol
 
-import unittest
-
-
-__all__ = ["PartFTestCase"]
+import unittest, numpy
 
 
-class PartFTestCase(unittest.TestCase):
-    def test_reag(self):
+__all__ = ["PartFunTestCase"]
+
+
+class PartFunTestCase(unittest.TestCase):
+    def check_freqs(self, expected_freqs, pf):
+        """Check the frequencies in the partition function against expected values
+
+        The expected values are given in 1/cm while the partition function works
+        with atomic units.
+        """
+        self.assertEqual(len(expected_freqs), len(pf.vibrational.freqs))
+        for i in xrange(len(pf.vibrational.freqs)):
+            freq_in_cm = (pf.vibrational.freqs[i]/lightspeed)/(1/cm)
+            self.assertAlmostEqual(
+                expected_freqs[i], freq_in_cm, 3,
+                "Frequency %i does not match: difference = %e" % (i, expected_freqs[i]-freq_in_cm)
+            )
+
+    def check_mode(self, expected_eig_mode, pf, index):
+        eig_mode = pf.vibrational.eigen_modes[index]
+        self.assertEqual(len(expected_eig_mode), len(eig_mode))
+        if numpy.dot(eig_mode, expected_eig_mode) < 0:
+            expected_eig_mode *= -1
+        for i in xrange(len(eig_mode)):
+            self.assertAlmostEqual(
+                expected_eig_mode[i], eig_mode[i], 1,
+                "Component %i does not match: difference = %e" % (i, expected_eig_mode[i]-eig_mode[i])
+            )
+
+
+    def test_react_phva(self):
         fixed_atoms = load_fixed_g03com("input/Zp_p_react.14mei.com")
-        pf = PartFun(load_kin_g03fchk("input/Zp_p_react.28aug.fchk", "input/Zp_p_react.14mei.fchk"), [PHVA(fixed_atoms)])
+        pf = PartFun(load_molecule_g03fchk("input/Zp_p_react.28aug.fchk", "input/Zp_p_react.14mei.fchk"), [PHVA(fixed_atoms)])
 
         # from Zp_p_react.28aug.log
         expected_freqs = numpy.array([ # values in 1/cm !!!
@@ -107,14 +133,7 @@ class PartFTestCase(unittest.TestCase):
             3046.7532, 3071.6163, 3085.2573, 3126.1789, 3129.6282, 3140.8569,
             3146.8763, 3150.5051, 3153.8649, 3187.9663, 3215.3556, 3231.9653
         ])
-
-        self.assertEqual(len(expected_freqs), len(pf.freqs))
-        for i in xrange(len(pf.freqs)):
-            freq_in_cm = (pf.freqs[i]/lightspeed)/(1/cm)
-            self.assertAlmostEqual(
-                expected_freqs[i], freq_in_cm, 3,
-                "Frequency %i does not match: difference = %e" % (i, expected_freqs[i]-freq_in_cm)
-            )
+        self.check_freqs(expected_freqs, pf)
 
         # eigenmode 360 (counting from zero) from Zp_p_react.28aug.log
         expected_eig_mode = numpy.array([
@@ -158,14 +177,7 @@ class PartFTestCase(unittest.TestCase):
             0.01, -0.06, 0.01, 0.01, -0.04, 0.05, 0, 0.02, -0.07, 0, 0, 0, 0,
             -0.01, -0.01, -0.01, 0.01, 0.01, 0.02, 0, 0, 0, 0, 0, 0, 0, 0, 0
         ])
-
-        eig_mode = pf.eigen_modes[360]
-        self.assertEqual(len(expected_eig_mode), len(eig_mode))
-        for i in xrange(len(eig_mode)):
-            self.assertAlmostEqual(
-                expected_eig_mode[i], eig_mode[i], 1,
-                "Component %i does not match: difference = %e" % (i, expected_eig_mode[i]-eig_mode[i])
-            )
+        self.check_mode(expected_eig_mode, pf, 360)
 
         # values obtained with frektsjek.exe
         self.assertAlmostEqual(pf.log_eval(650), numpy.log(1.69428264E-45),3)
@@ -175,9 +187,9 @@ class PartFTestCase(unittest.TestCase):
         #for temp in [670,680,690,700,710,720,730,740,750,760,770]:
         #    print numpy.exp(pf.log_eval(temp))
 
-    def test_trans(self):
+    def test_trans_phva(self):
         fixed_atoms = load_fixed_g03com("input/Zp_p_TS.28aug.com")
-        pf = PartFun(load_kin_g03fchk("input/Zp_p_TS.28aug.fchk", "input/5Tp_p_TS.oniom21apr_HF.fchk"), [PHVA(fixed_atoms)])
+        pf = PartFun(load_molecule_g03fchk("input/Zp_p_TS.28aug.fchk", "input/5Tp_p_TS.oniom21apr_HF.fchk"), [PHVA(fixed_atoms)])
 
         # from Zp_p_TS.28aug.log
         expected_freqs = numpy.array([
@@ -248,29 +260,187 @@ class PartFTestCase(unittest.TestCase):
             3054.8378, 3066.5299, 3077.7394, 3110.8884, 3133.0316, 3144.0042,
             3152.0511, 3162.7781, 3176.4155, 3213.4404, 3251.0431, 3327.1758
         ])
-
-        self.assertEqual(len(expected_freqs), len(pf.freqs))
-        for i in xrange(len(pf.freqs)):
-            freq_in_cm = (pf.freqs[i]/lightspeed)/(1/cm)
-            self.assertAlmostEqual(
-                expected_freqs[i], freq_in_cm, 3,
-                "Frequency %i does not match: difference = %e" % (i, expected_freqs[i]-freq_in_cm)
-            )
+        self.check_freqs(expected_freqs, pf)
 
         #for temp in [670,680,690,700,710,720,730,740,750,760,770]:
         #    print numpy.exp(pf.log_eval(temp))
 
-    def test_kin_coeff(self):
+    def test_rate_coeff_phva(self):
         fixed_atoms = load_fixed_g03com("input/Zp_p_react.14mei.com")
-        pf_react = PartFun(load_kin_g03fchk("input/Zp_p_react.28aug.fchk", "input/Zp_p_react.14mei.fchk"), [PHVA(fixed_atoms)])
-        pf_trans = PartFun(load_kin_g03fchk("input/Zp_p_TS.28aug.fchk", "input/5Tp_p_TS.oniom21apr_HF.fchk"), [PHVA(fixed_atoms)])
+        pf_react = PartFun(load_molecule_g03fchk("input/Zp_p_react.28aug.fchk", "input/Zp_p_react.14mei.fchk"), [PHVA(fixed_atoms)])
+        pf_trans = PartFun(load_molecule_g03fchk("input/Zp_p_TS.28aug.fchk", "input/5Tp_p_TS.oniom21apr_HF.fchk"), [PHVA(fixed_atoms)])
 
         # values taken from the fancy excel file...
-        expected_ks = numpy.array([7.9473102E+05, 9.8300444E+05, 1.2085262E+06, 1.4771808E+06, 1.7955340E+06, 2.1708793E+06,
-        2.6112829E+06, 3.1256298E+06, 3.7236678E+06, 4.4160510E+06, 5.2143822E+06])
         temps = numpy.array([670,680,690,700,710,720,730,740,750,760,770])
+        expected_ks = numpy.array([
+            7.9473102E+05, 9.8300444E+05, 1.2085262E+06, 1.4771808E+06,
+            1.7955340E+06, 2.1708793E+06, 2.6112829E+06, 3.1256298E+06,
+            3.7236678E+06, 4.4160510E+06, 5.2143822E+06
+        ])
         for i in xrange(len(temps)):
-            k = calc_kin_coeff([pf_react], pf_trans, temps[i])
+            k = compute_rate_coeff([pf_react], pf_trans, temps[i])
             self.assertAlmostEqual(numpy.log(k/(1/s)), numpy.log(expected_ks[i]),3)
+
+    def test_react_gas(self):
+        ## aa.fchk
+        pf = PartFun(load_molecule_g03fchk("input/aa.fchk"), [ExternalTranslation(), ExternalRotation(1), Electronic()])
+
+        # expected frequencies from aa.log
+        expected_freqs = numpy.array([
+            104.4761, 151.3376, 275.5587, 467.4732, 467.9741, 613.6715,
+            614.1609, 814.9387, 819.7633, 997.5119, 1014.5531, 1043.8629,
+            1118.1225, 1297.5031, 1363.9344, 1455.7262, 1644.8856, 1697.0197,
+            1764.3581, 3159.7250, 3175.2247, 3261.5878, 3589.5604, 3717.1382,
+        ])
+        self.check_freqs(expected_freqs, pf)
+
+        # expected eigenmode (4) from aa.log, counting from zero
+        expected_eig_mode = numpy.array([
+            0.03, -0.01, -0.05, 0.04, 0.00, 0.02, 0.05, -0.01, 0.38, 0.03,
+            0.02, 0.51, 0.07, 0.00, -0.36, 0.00, 0.02, -0.13, -0.03, 0.02,
+            0.05, -0.04, -0.02, 0.02, -0.12, -0.02, -0.24, 0.01, -0.11, 0.59,
+        ])
+        self.check_mode(expected_eig_mode, pf, 4)
+
+        # check partition function
+        self.assertAlmostEqual(16.973928, pf.translational.log_eval(298.150), 4)
+        self.assertEqual(pf.rotational.count, 3)
+        self.assertAlmostEqual(11.225093, pf.rotational.log_eval(298.150), 1)
+        vib_contribs = pf.vibrational.log_eval_terms(298.150)
+        expected_vib_contribs = numpy.array([
+            0.674278, 0.292167, -0.357617, -1.017249, -1.018740, -1.427556,
+            -1.428865
+        ])
+        for i in xrange(len(expected_vib_contribs)):
+            self.assertAlmostEqual(vib_contribs[i], expected_vib_contribs[i], 3)
+        self.assertAlmostEqual(-53.068692, pf.log_eval(298.150), 1)
+
+        ## aarad.fchk
+        pf = PartFun(load_molecule_g03fchk("input/aarad.fchk"), [ExternalTranslation(), ExternalRotation(1), Electronic()])
+
+        # expected frequencies from aa.log
+        expected_freqs = numpy.array([
+            78.9330, 134.6847, 259.0440, 278.9383, 456.3221, 475.4515, 570.8836,
+            614.0007, 719.9878, 822.1945, 1000.9025, 1039.4987, 1091.4071,
+            1158.5616, 1283.5503, 1416.2231, 1451.5736, 1496.9929, 1510.7350,
+            1637.4175, 1690.9547, 3008.8989, 3041.7365, 3144.6983, 3169.1683,
+            3578.1294, 3701.0701,
+        ])
+        self.check_freqs(expected_freqs, pf)
+
+        # expected eigenmode (10) from aarad.log, counting from zero
+        expected_eig_mode = numpy.array([
+            0.00, 0.00, -0.11, 0.00, 0.00, 0.14, 0.00, 0.00, 0.11, 0.59, 0.22,
+            -0.19, 0.00, -0.01, -0.31, 0.00, 0.00, 0.03, 0.00, 0.00, -0.01,
+            0.00, 0.00, 0.00, 0.02, 0.01, -0.01, 0.00, 0.00, 0.00, -0.58,
+            -0.23, -0.18,
+        ])
+        self.check_mode(expected_eig_mode, pf, 10)
+
+        # check partition function
+        self.assertAlmostEqual(16.995059, pf.translational.log_eval(298.150), 4)
+        self.assertEqual(pf.rotational.count, 3)
+        self.assertAlmostEqual(11.319073, pf.rotational.log_eval(298.150), 1)
+        vib_contribs = pf.vibrational.log_eval_terms(298.150)
+        expected_vib_contribs = numpy.array([
+            0.959168, 0.413328, -0.287477, -0.371573, -0.983851, -1.040910,
+            -1.311721, -1.428436,
+        ])
+        for i in xrange(len(expected_vib_contribs)):
+            self.assertAlmostEqual(vib_contribs[i], expected_vib_contribs[i], 3)
+        self.assertAlmostEqual(-61.738525, pf.log_eval(298.150), 2)
+
+    def test_trans_gas(self):
+        ## paats.fchk
+        pf = PartFun(load_molecule_g03fchk("input/paats.fchk"), [ExternalTranslation(), ExternalRotation(1), Electronic()])
+
+        # expected frequencies from aa.log
+        expected_freqs = numpy.array([
+            -413.6054, 35.9959, 54.3725, 93.2932, 101.4448, 141.0851, 188.3344,
+            210.9659, 257.6158, 264.1854, 291.6926, 297.8879, 456.0680,
+            467.4108, 498.3737, 527.9183, 573.3009, 585.7877, 613.8148,
+            678.1017, 719.9223, 790.7100, 802.0216, 833.6055, 837.8822,
+            946.2926, 966.0422, 1039.5715, 1063.6764, 1068.3896, 1115.9426,
+            1125.0291, 1155.6926, 1285.8051, 1295.6331, 1325.5446, 1421.1412,
+            1441.6615, 1458.0357, 1495.3439, 1510.1462, 1568.3896, 1640.5548,
+            1658.4111, 1709.9513, 1723.4623, 3011.8044, 3082.1420, 3135.2699,
+            3170.8738, 3177.6305, 3180.7047, 3269.1535, 3528.7377, 3579.7690,
+            3666.7518, 3704.6548,
+        ])
+        self.check_freqs(expected_freqs, pf)
+
+        # expected eigenmode (20 and 0) from aa.log, counting from zero
+        expected_eig_mode = numpy.array([
+            0.01, 0.00, 0.01, 0.00, 0.00, 0.02, 0.00, 0.01, 0.00, 0.00, -0.01,
+            0.00, -0.01, 0.00, 0.00, -0.03, -0.02, -0.05, -0.01, 0.00, -0.01,
+            0.28, 0.17, 0.24, -0.08, -0.04, -0.04, -0.08, -0.05, -0.10, 0.00,
+            0.02, -0.01, -0.02, -0.03, 0.01, -0.04, -0.08, 0.00, -0.01, 0.00,
+            0.01, -0.09, -0.11, -0.01, -0.42, -0.39, -0.23, -0.28, -0.18, -0.38,
+            0.25, 0.17, 0.18, 0.04, 0.00, 0.02, -0.05, 0.08, 0.00, 0.03, 0.00,
+            0.00,
+        ])
+        self.check_mode(expected_eig_mode, pf, 20)
+
+        # expected eigenmode (20 and 0) from aa.log, counting from zero
+        expected_eig_mode = numpy.array([
+            0.47, 0.33, 0.21, 0.07, 0.06, 0.06, 0.03, 0.00, -0.01, 0.01, 0.00,
+            0.01, 0.01, -0.01, -0.01, -0.44, -0.29, -0.26, -0.09, -0.01, -0.02,
+            -0.09, -0.04, -0.06, 0.01, -0.01, 0.00, 0.01, -0.02, 0.04, 0.00,
+            -0.06, 0.01, 0.00, -0.03, 0.00, 0.04, -0.05, 0.04, 0.03, -0.15,
+            -0.01, 0.07, 0.01, 0.06, -0.03, 0.01, -0.07, -0.02, 0.01, -0.01,
+            0.10, 0.07, 0.11, 0.09, -0.02, 0.01, -0.28, 0.25, 0.10, 0.04, -0.05,
+            0.01,
+        ])
+        self.check_mode(expected_eig_mode, pf, 0)
+
+        # check the inertia tensor (eigenvalues and eigenvectors)
+        iner_tens = pf.molecule.inertia_tensor
+        evals, evecs = numpy.linalg.eigh(iner_tens)
+        expected_evals = numpy.array([875.32578,2288.50418,2609.96955]) # from paats.log
+        for i in 0,1,2:
+            # TODO: figure out why gaussian gives slightly incorrect results
+            self.assertAlmostEqual(
+                evals[i]/amu, expected_evals[i], -1,
+                "Item %i of inertia tensor eigenvalues is wrong: %s!=%s" % (
+                    i, evals[i]/amu, expected_evals[i]
+                )
+            )
+        expected_evecs = numpy.array([ # from paats.log
+            [ 0.99902, -0.03999, 0.01883],
+            [ 0.03964,  0.99904, 0.01875],
+            [-0.01956, -0.01799, 0.99965],
+        ])
+        self.assert_(abs(evecs-expected_evecs).max() < 1e-3)
+
+        # check the natural logarithm partition function (split contributions):
+        self.assertAlmostEqual(18.024251, pf.translational.log_eval(298.150), 4)
+        self.assertEqual(pf.rotational.count, 3)
+        self.assertAlmostEqual(13.615243, pf.rotational.log_eval(298.150), 3)
+        vib_contribs = pf.vibrational.log_eval_terms(298.150)
+        expected_vib_contribs = numpy.array([
+            1.749142, 1.335079, 0.789626, 0.704324, 0.365201, 0.061403,
+            -0.060710, -0.281250, -0.309673, -0.423131, -0.447578, -0.983086,
+            -1.017063, -1.107892, -1.192276, -1.318341, -1.352385, -1.427939,
+        ])
+        for i in xrange(len(expected_vib_contribs)):
+            self.assertAlmostEqual(vib_contribs[i], expected_vib_contribs[i], 3)
+        self.assertAlmostEqual(-139.302816, pf.log_eval(298.150), 3)
+
+    def test_rate_coeff_gas(self):
+        pf_react1 = PartFun(load_molecule_g03fchk("input/aa.fchk"), [ExternalTranslation(), ExternalRotation(1), Electronic()])
+        pf_react2 = PartFun(load_molecule_g03fchk("input/aarad.fchk"), [ExternalTranslation(), ExternalRotation(1), Electronic()])
+        pf_trans = PartFun(load_molecule_g03fchk("input/paats.fchk"), [ExternalTranslation(), ExternalRotation(1), Electronic()])
+
+        # values taken from the fancy excel file...
+        temps = numpy.array([298.15,300,400,500,600,700,800,900,1000,1100])
+        expected_ks = numpy.array([
+            6.44881E-03,
+            6.87398E-03, 9.74722E-02, 5.36970E-01, 1.82272E+00, 4.65134E+00,
+            9.86811E+00, 1.84247E+01, 3.13480E+01, 4.97189E+01,
+        ])
+        unit = meter**3/mol/s
+        for i in xrange(len(temps)):
+            k = compute_rate_coeff([pf_react1, pf_react2], pf_trans, temps[i])
+            self.assertAlmostEqual(numpy.log(k/unit), numpy.log(expected_ks[i]),1)
 
 

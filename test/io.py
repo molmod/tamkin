@@ -22,7 +22,7 @@
 
 
 import unittest
-from tamkin.io import load_fixed_g03com, load_kin_g03fchk
+from tamkin.io import load_fixed_g03com, load_molecule_g03fchk
 
 __all__ = ["IOTestCase"]
 
@@ -33,12 +33,12 @@ class IOTestCase(unittest.TestCase):
         self.assertEqual(len(fixed_atoms), 48)
         self.assertEqual(fixed_atoms, range(114,114+48))
 
-    def test_load_kin_g03fchk(self):
+    def test_load_molecule_g03fchk(self):
         atoms = 181
-        data = load_kin_g03fchk("input/Zp_p_react.28aug.fchk","input/Zp_p_react.14mei.fchk")
+        molecule = load_molecule_g03fchk("input/Zp_p_react.28aug.fchk","input/Zp_p_react.14mei.fchk")
 
-        self.assertEqual(data["hessian"].shape,(atoms*3,atoms*3))
-        self.assertAlmostEqual(data["energy"], -18613.135744186180, 7)
+        self.assertEqual(molecule.hessian.shape,(atoms*3,atoms*3))
+        self.assertAlmostEqual(molecule.energy, -18613.135744186180, 7)
 
 
 

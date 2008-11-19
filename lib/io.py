@@ -21,10 +21,15 @@
 # --
 
 
+from tamkin.data import Molecule
+
 from molmod.io.gaussian03.fchk import FCHKFile
 from molmod.units import amu
 
 import numpy
+
+
+__all__ = ["load_fixed_g03com", "load_molecule_g03fchk"]
 
 
 def load_fixed_g03com(filename):
@@ -57,9 +62,9 @@ def load_fixed_g03com(filename):
     return fixed_atoms
 
 
-def load_kin_g03fchk(filename_freq,filename_ener=None): # if one file contains every information, give the name twice
+def load_molecule_g03fchk(filename_freq,filename_ener=None): # if one file contains every information, give the name twice
     fchk_freq = FCHKFile(filename_freq, ignore_errors=True, field_labels=[
-        "Cartesian Force Constants", "Real atomic weights", "Total Energy"
+        "Cartesian Force Constants", "Real atomic weights", "Total Energy", "Multiplicity"
     ])
     if filename_ener is None:
         fchk_ener = fchk_freq
@@ -67,11 +72,12 @@ def load_kin_g03fchk(filename_freq,filename_ener=None): # if one file contains e
         fchk_ener = FCHKFile(filename_ener, ignore_errors=True, field_labels=[
             "Total Energy"
         ])
-    return {
-        "hessian": fchk_freq.get_hessian(),
-        "masses": fchk_freq.fields["Real atomic weights"]*amu,
-        "coordinates": fchk_freq.molecule.coordinates,
-        "numbers": fchk_freq.molecule.numbers,
-        "energy": fchk_ener.fields["Total Energy"],
-    }
+    return Molecule(
+        fchk_freq.molecule.numbers,
+        fchk_freq.molecule.coordinates,
+        fchk_freq.fields["Real atomic weights"]*amu,
+        fchk_ener.fields["Total Energy"],
+        fchk_freq.get_hessian(),
+        fchk_freq.fields["Multiplicity"],
+    )
 

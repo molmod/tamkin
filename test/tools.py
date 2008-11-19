@@ -21,18 +21,30 @@
 # --
 
 
-from tamkin.tools import fit_kin
+from tamkin.tools import ReactionAnalysis
+from tamkin.partf import PartFun, ExternalTranslation, ExternalRotation, Electronic
+from tamkin.io import load_molecule_g03fchk
+
+from molmod.units import kjmol, atm
+from molmod.constants import boltzmann
 
 import unittest
 import numpy
 
-__all__ = ["FitKinCase"]
+__all__ = ["ToolsTestCase"]
 
-class FitKinCase(unittest.TestCase):
-    def test_fit_kin(self):
-        k = numpy.array([7.9473102E+05, 9.8300444E+05, 1.2085262E+06, 1.4771808E+06, 1.7955340E+06, 2.1708793E+06, 2.6112829E+06, 3.1256298E+06, 3.7236678E+06, 4.4160510E+06, 5.2143822E+06])
-        temps = numpy.array([670,680,690,700,710,720,730,740,750,760,770])
-        fit_kin(temps,k)
+class ToolsTestCase(unittest.TestCase):
+    def test_reaction_analysis(self):
+        pf_react1 = PartFun(load_molecule_g03fchk("input/aa.fchk"), [ExternalTranslation(), ExternalRotation(1), Electronic()])
+        pf_react2 = PartFun(load_molecule_g03fchk("input/aarad.fchk"), [ExternalTranslation(), ExternalRotation(1), Electronic()])
+        pf_trans = PartFun(load_molecule_g03fchk("input/paats.fchk"), [ExternalTranslation(), ExternalRotation(1), Electronic()])
+
+        ra = ReactionAnalysis([pf_react1, pf_react2], pf_trans, 280, 360)
+        self.assertAlmostEqual(ra.Ea/kjmol, 25.96, 1)
+        self.assertAlmostEqual(ra.A/ra.unit, 2.29E+02, -1)
+
+        ra.plot("output/arrhenius_aa.png")
+        ra.write_to_file("output/reaction_aa.txt")
 
 
 

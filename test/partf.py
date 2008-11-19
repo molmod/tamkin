@@ -25,7 +25,7 @@ from tamkin.partf import *
 from tamkin.io import load_molecule_g03fchk, load_fixed_g03com
 
 from molmod.constants import lightspeed, boltzmann
-from molmod.units import cm, s, atm, amu, meter, mol
+from molmod.units import cm, s, atm, amu, meter, mol, kcalmol, cal, K
 
 import unittest, numpy
 
@@ -443,4 +443,56 @@ class PartFunTestCase(unittest.TestCase):
             k = compute_rate_coeff([pf_react1, pf_react2], pf_trans, temps[i])
             self.assertAlmostEqual(numpy.log(k/unit), numpy.log(expected_ks[i]),1)
 
+    def test_derivatives(self):
+        pf = PartFun(load_molecule_g03fchk("input/aa.fchk"), [ExternalTranslation(), ExternalRotation(1), Electronic()])
+
+        # check the first derivative with finite differences
+        eps = 0.0001
+        temps = numpy.array([300.0,400.0,500.0,600.0,700.0])
+        for stat_fys in [pf.electronic, pf.translational, pf.rotational, pf.vibrational, pf]:
+            for temp in temps:
+                a = stat_fys.log_deriv(temp)
+                b = (stat_fys.log_eval(temp+eps) - stat_fys.log_eval(temp-eps))/(2*eps)
+                self.assertAlmostEqual(
+                    a, b, 5,
+                    "error in partial derivative (%s): %s!=%s" % (stat_fys.name, a, b)
+                )
+                a = stat_fys.log_deriv2(temp)
+                b = (stat_fys.log_deriv(temp+eps) - stat_fys.log_deriv(temp-eps))/(2*eps)
+                self.assertAlmostEqual(
+                    a, b, 5,
+                    "error in second partial derivative (%s): %s!=%s" % (stat_fys.name, a, b)
+                )
+
+    def test_derived_quantities(self):
+        # internal energy, heat capacity and entropy
+        pf = PartFun(load_molecule_g03fchk("input/aa.fchk"), [ExternalTranslation(), ExternalRotation(1), Electronic()])
+
+        # values taken from aa.log
+        calmolK = cal/mol/K
+        # gaussian uses a different definition of entropy for the different
+        # contributions of the partition function. This is the correction:
+        cor = 1.98720649773
+        # electronic
+        self.assertAlmostEqual(pf.electronic.internal_energy(298.15)/(kcalmol), 0.000)
+        self.assertAlmostEqual(pf.electronic.heat_capacity(298.15)/(calmolK), 0.000)
+        self.assertAlmostEqual(pf.electronic.entropy(298.15)/(calmolK), 0.000)
+        # translational
+        self.assertAlmostEqual(pf.translational.internal_energy(298.15)/(kcalmol), 0.889, 2)
+        self.assertAlmostEqual(pf.translational.heat_capacity(298.15)/(calmolK), 2.981, 2)
+        self.assertAlmostEqual(pf.translational.entropy(298.15)/(calmolK), 38.699-cor, 2) # corrected
+        # rotational
+        self.assertAlmostEqual(pf.rotational.internal_energy(298.15)/(kcalmol), 0.889, 2)
+        self.assertAlmostEqual(pf.rotational.heat_capacity(298.15)/(calmolK), 2.981, 2)
+        self.assertAlmostEqual(pf.rotational.entropy(298.15)/(calmolK), 25.287, 2)
+        # vibrational
+        self.assertAlmostEqual(pf.vibrational.internal_energy(298.15)/(kcalmol), 51.343, 2)
+        self.assertAlmostEqual(pf.vibrational.heat_capacity(298.15)/(calmolK), 13.264, 2)
+        self.assertAlmostEqual(pf.vibrational.entropy(298.15)/(calmolK), 10.710, 2)
+        # total
+        self.assertAlmostEqual(pf.internal_energy(298.15)/(kcalmol), 53.121, 2)
+        self.assertAlmostEqual(pf.heat_capacity(298.15)/(calmolK), 19.225, 2)
+        self.assertAlmostEqual(pf.entropy(298.15)/(calmolK), 74.696-cor, 2) # corrected
+        # free energy of the molecule:
+        self.assertAlmostEqual(pf.free_energy(298.15), -247.257535, 5)
 

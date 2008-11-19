@@ -82,10 +82,17 @@ class ReactionAnalysis(object):
         print >> f, "number of T steps = %i" % self.num_temp
         print >> f, "R2 (Pearson) = %.2f%%" % (self.R2*100)
         print >> f
+        delta_E = self.pf_trans.molecule.energy - sum(pf_react.molecule.energy for pf_react in self.pfs_react)
+        print >> f, "Delta E [kJ/mol] = %.1f" % (delta_E/kjmol)
+        print >> f
         print >> f, "Reaction rate coefficients"
-        print >> f, "    T [K]       k(T) [%s]" % self.unit_name
+        print >> f, "    T [K]     Delta G [kJ/mol]       k(T) [%s]" % self.unit_name
         for i in xrange(self.num_temp):
-            print >> f, "% 10.2f     % 10.5e" % (self.temps[i], self.rate_coeffs[i]/self.unit)
+            temp = self.temps[i]
+            delta_G = self.pf_trans.free_energy(temp) - sum(pf_react.free_energy(temp) for pf_react in self.pfs_react)
+            print >> f, "% 10.2f      %8.1f             % 10.5e" % (
+                temp, delta_G/kjmol, self.rate_coeffs[i]/self.unit
+            )
         print >> f
         for counter, pf_react in enumerate(self.pfs_react):
             print >> f, "Reactant %i partition function" % counter

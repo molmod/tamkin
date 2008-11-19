@@ -37,6 +37,8 @@ __all__ = [
 class IdealGasVolume(object):
     """Computes the volume of a molecule in an ideal gas as a function of the
     temperature, at a fixed refrence pressure.
+
+    This law can be used to set up a constant pressure gas phase partition function
     """
 
     def __init__(self, pressure=1*atm):
@@ -45,19 +47,129 @@ class IdealGasVolume(object):
     def __call__(self, temp):
         return boltzmann*temp/self.pressure
 
+    def deriv(self, temp):
+        return -self(temp)/temp
+
+    def deriv2(self, temp):
+        return -2*self.deriv(temp)/temp
+
     def get_description(self):
         return "Molecular volume: ideal gas law, reference pressure [bar] = %.5f" % (self.pressure/bar)
 
     description = property(get_description)
 
 
-class Contribution():
-    # TODO: implement and test partial derivatives of the partition function
-    # with respect to the temperature. Also implement functions like entropy
-    # and heat capacity in a generic fashion based on the partial derivatives.
+class FixedVolume(object):
+    """Computes the volume of a molecule in an ideal gas at a fixed reference
+    temperature and at a fixed reference pressure.
+
+    This law can be used to set up a constant volume gas phase partition function
+    """
+
+    def __init__(self, temp=298.15, pressure=1*atm):
+        self.temp = temp
+        self.pressure = pressure
+
+    def __call__(self, temp):
+        return boltzmann*self.temp/self.pressure
+
+    def deriv(self, temp):
+        return 0.0
+
+    def deriv2(self, temp):
+        return 0.0
+
+    def get_description(self):
+        return "Molecular volume: fixed, reference pressure [bar] = %.5f, reference temperature [K] = %.2f" % (self.pressure/bar, self.temp)
+
+    description = property(get_description)
+
+
+class StatFys(object):
     def __init__(self, name):
         self.name = name
 
+    def log_eval(self, temp):
+        """The logarithm of the partition function"""
+        raise NotImplementedError
+
+    def log_deriv(self, temp):
+        """The derivative of the logarithm of the partition function"""
+        raise NotImplementedError
+
+    def log_deriv2(self, temp):
+        """The second derivative of the logarithm of the partition function"""
+        raise NotImplementedError
+
+    def internal_energy(self, temp, log_deriv=None):
+        """Computes the internal energy per molecule"""
+        if log_deriv is None:
+            log_deriv = self.log_deriv
+        return boltzmann*temp**2*log_deriv(temp)
+
+    def heat_capacity(self, temp, log_deriv=None, log_deriv2=None):
+        """Computes the heat capacity per molecule"""
+        if log_deriv is None:
+            log_deriv = self.log_deriv
+        if log_deriv2 is None:
+            log_deriv2 = self.log_deriv2
+        return boltzmann*temp*(2*log_deriv(temp) + temp*log_deriv2(temp))
+
+    def entropy(self, temp, log_eval=None, log_deriv=None):
+        """Computes the entropy per molecule"""
+        if log_eval is None:
+            log_eval = self.log_eval
+        if log_deriv is None:
+            log_deriv = self.log_deriv
+        return boltzmann*(log_eval(temp) + temp*log_deriv(temp))
+
+    def free_energy(self, temp, log_eval=None):
+        """Computes the free energy per molecule"""
+        if log_eval is None:
+            log_eval = self.log_eval
+        return -boltzmann*temp*log_eval(temp)
+
+
+class StatFysTerms(StatFys):
+    def log_eval(self, temp):
+        return self.log_eval_terms(temp).sum()
+
+    def log_deriv(self, temp):
+        return self.log_deriv_terms(temp).sum()
+
+    def log_deriv2(self, temp):
+        return self.log_deriv2_terms(temp).sum()
+
+    def log_eval_terms(self, temp):
+        """The logarithm of the partition function (separate terms)"""
+        raise NotImplementedError
+
+    def log_deriv_terms(self, temp):
+        """The derivative of the logarithm of the partition function (separate terms)"""
+        raise NotImplementedError
+
+    def log_deriv2_terms(self, temp):
+        """The second derivative of the logarithm of the partition function (separate terms)"""
+        raise NotImplementedError
+
+    def internal_energy_terms(self, temp):
+        """Computes the internal energy per molecule (separate terms)"""
+        return self.internal_energy(temp, self.log_deriv_terms)
+
+    def heat_capacity_terms(self, temp):
+        """Computes the heat capacity per molecule (separate terms)"""
+        return self.heat_capacity(temp, self.log_deriv_terms, self.log_deriv2_terms)
+
+    def entropy_terms(self, temp):
+        """Computes the entropy per molecule (separate terms)"""
+        return self.entropy(temp, self.log_eval_terms, self.log_deriv_terms)
+
+    def free_energy(self, temp, log_eval=None):
+        """Computes the free energy per molecule (separate terms)"""
+        return self.free_energy(temp, self.log_eval_terms)
+
+
+class Contribution(object):
     def init_part_fun(self, molecule):
         pass
 
@@ -67,15 +179,12 @@ class Contribution():
     def get_fixed_basis(self, coordinates):
         raise NotImplementedError
 
-    def log_eval(self, temp):
-        return 0.0
 
-
-class Electronic(Contribution):
+class Electronic(Contribution, StatFys):
     # TODO: include this one automatically?
     def __init__(self, multiplicity=None):
         self.multiplicity = multiplicity
-        Contribution.__init__(self, "electronic")
+        StatFys.__init__(self, "electronic")
 
     def init_part_fun(self, molecule):
         if self.multiplicity is None:
@@ -91,11 +200,17 @@ class Electronic(Contribution):
     def log_eval(self, temp):
         return numpy.log(self.multiplicity)
 
+    def log_deriv(self, temp):
+        return 0.0
 
-class PHVA(Contribution):
+    def log_deriv2(self, temp):
+        return 0.0
+
+
+class PHVA(Contribution, StatFys):
     def __init__(self, fixed_indices):
         self.fixed_indices = fixed_indices
-        Contribution.__init__(self, "phva")
+        StatFys.__init__(self, "phva")
 
     def dump(self, f):
         Contribution.dump(self, f)
@@ -109,14 +224,23 @@ class PHVA(Contribution):
             result[3*i+2,fixed_index*3+2] = 1
         return result
 
+    def log_eval(self, temp):
+        return 0.0
 
-class ExternalTranslation(Contribution):
+    def log_deriv(self, temp):
+        return 0.0
+
+    def log_deriv2(self, temp):
+        return 0.0
+
+
+class ExternalTranslation(Contribution, StatFys):
     def __init__(self, mol_volume=None):
         if mol_volume is None:
-            self.mol_volume = IdealGasVolume()
+            self.mol_volume = FixedVolume()
         else:
             self.mol_volume = mol_volume
-        Contribution.__init__(self, "translational")
+        StatFys.__init__(self, "translational")
 
     def init_part_fun(self, molecule):
         self.mass = molecule.mass
@@ -138,12 +262,22 @@ class ExternalTranslation(Contribution):
             numpy.log(self.mol_volume(temp))
         )
 
+    def log_deriv(self, temp):
+        return 1.5/temp + self.mol_volume.deriv(temp)/self.mol_volume(temp)
 
-class ExternalRotation(Contribution):
+    def log_deriv2(self, temp):
+        V = self.mol_volume(temp)
+        V_deriv = self.mol_volume.deriv(temp)
+        V_deriv2 = self.mol_volume.deriv2(temp)
+        return -1.5/temp**2 + (V_deriv2 - V_deriv**2/V)/V
+
+
+
+class ExternalRotation(Contribution, StatFys):
     def __init__(self, symmetry_number, im_threshold=1.0):
         self.symmetry_number = symmetry_number
         self.im_threshold = im_threshold
-        Contribution.__init__(self, "rotational")
+        StatFys.__init__(self, "rotational")
 
     def init_part_fun(self, molecule):
         self.com = molecule.com
@@ -172,11 +306,17 @@ class ExternalRotation(Contribution):
     def log_eval(self, temp):
         return numpy.log(temp)*0.5*self.count + numpy.log(self.factor)
 
+    def log_deriv(self, temp):
+        return 0.5*self.count/temp
 
-class Vibrations(Contribution):
+    def log_deriv2(self, temp):
+        return -0.5*self.count/temp**2
+
+
+class Vibrations(Contribution, StatFysTerms):
     def __init__(self, other_contributions):
         self.other_contributions = other_contributions
-        Contribution.__init__(self, "vibrational")
+        StatFysTerms.__init__(self, "vibrational")
 
     def init_part_fun(self, molecule):
         self.hessian = molecule.hessian
@@ -274,19 +414,30 @@ class Vibrations(Contribution):
         print_freqs("Real", self.positive_freqs)
         print_freqs("Imaginary", self.negative_freqs)
 
-    def log_eval(self, temp):
-        return self.log_eval_terms(temp).sum()
-
     def log_eval_terms(self, temp):
-        # always with zero point energy correction...
+        # The zero point correction is included in the partition function and
+        # should not be taken into account when computing the reaction barrier.
         exp_arg = -2*numpy.pi*self.positive_freqs/boltzmann/temp
         return (exp_arg/2 - numpy.log(1-numpy.exp(exp_arg)))
         # This would be the version when the zero point energy corrections are
         # included in the energy difference when computing the reaction rate:
         #return -numpy.log(1-numpy.exp(exp_arg))
 
+    def log_deriv_terms(self, temp):
+        exp_arg = -2*numpy.pi*self.positive_freqs/boltzmann/temp
+        exp_arg_deriv = -exp_arg/temp
+        return exp_arg_deriv*(0.5-1/(1-numpy.exp(-exp_arg)))
 
-class PartFun(object):
+    def log_deriv2_terms(self, temp):
+        exp_arg = -2*numpy.pi*self.positive_freqs/boltzmann/temp
+        exp_arg_deriv = -exp_arg/temp
+        exp_arg_deriv2 = -2*exp_arg_deriv/temp
+        e = numpy.exp(-exp_arg)
+        x = 1/(1-e)
+        return exp_arg_deriv2*(0.5-x) + (exp_arg_deriv*x)**2*e
+
+
+class PartFun(StatFys):
     __reserved_names__ = set(["other_contributions", "vibrational"])
 
     def __init__(self, molecule, other_contributions):
@@ -304,12 +455,29 @@ class PartFun(object):
         # use convenient attribute names:
         for other in self.other_contributions:
             self.__dict__[other.name] = other
+        StatFys.__init__(self, "total")
 
     def log_eval(self, temp):
-        log_result = self.vibrational.log_eval(temp)
+        result = self.vibrational.log_eval(temp)
         for other in self.other_contributions:
-            log_result += other.log_eval(temp)
-        return log_result
+            result += other.log_eval(temp)
+        return result
+
+    def log_deriv(self, temp):
+        result = self.vibrational.log_deriv(temp)
+        for other in self.other_contributions:
+            result += other.log_deriv(temp)
+        return result
+
+    def log_deriv2(self, temp):
+        result = self.vibrational.log_deriv2(temp)
+        for other in self.other_contributions:
+            result += other.log_deriv2(temp)
+        return result
+
+    def free_energy(self, temp):
+        """Computes the free energy"""
+        return StatFys.free_energy(self, temp) + self.molecule.energy
 
     def dump(self, f):
         print >> f, "Chemical formula: %s" % self.molecule.chemical_formula
@@ -330,15 +498,11 @@ class PartFun(object):
 
 
 def compute_rate_coeff(pfs_react, pf_trans, temp, mol_volume=None):
-    log_result = 0
-    log_result += pf_trans.log_eval(temp)
-    for pf_react in pfs_react:
-        log_result -= pf_react.log_eval(temp)
-    delta_E = pf_trans.molecule.energy - sum(pf_react.molecule.energy for pf_react in pfs_react)
-    log_result += -delta_E/(boltzmann*temp)
+    delta_G = pf_trans.free_energy(temp) - sum(pf_react.free_energy(temp) for pf_react in pfs_react)
+    log_result = -delta_G/(boltzmann*temp)
     if len(pfs_react) > 1:
         if mol_volume is None:
-            mol_volume = IdealGasVolume()
+            mol_volume = FixedVolume()
         log_result += numpy.log(mol_volume(temp))*(len(pfs_react)-1)
     return boltzmann*temp/(2*numpy.pi)*numpy.exp(log_result)
 

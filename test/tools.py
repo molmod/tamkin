@@ -35,9 +35,9 @@ __all__ = ["ToolsTestCase"]
 
 class ToolsTestCase(unittest.TestCase):
     def test_reaction_analysis(self):
-        pf_react1 = PartFun(load_molecule_g03fchk("input/aa.fchk"), [ExternalTranslation(), ExternalRotation(1), Electronic()])
-        pf_react2 = PartFun(load_molecule_g03fchk("input/aarad.fchk"), [ExternalTranslation(), ExternalRotation(1), Electronic()])
-        pf_trans = PartFun(load_molecule_g03fchk("input/paats.fchk"), [ExternalTranslation(), ExternalRotation(1), Electronic()])
+        pf_react1 = PartFun(load_molecule_g03fchk("input/sterck/aa.fchk"), [ExternalTranslation(), ExternalRotation(1), Electronic()])
+        pf_react2 = PartFun(load_molecule_g03fchk("input/sterck/aarad.fchk"), [ExternalTranslation(), ExternalRotation(1), Electronic()])
+        pf_trans = PartFun(load_molecule_g03fchk("input/sterck/paats.fchk"), [ExternalTranslation(), ExternalRotation(1), Electronic()])
 
         ra = ReactionAnalysis([pf_react1, pf_react2], pf_trans, 280, 360)
         self.assertAlmostEqual(ra.Ea/kjmol, 25.96, 1)

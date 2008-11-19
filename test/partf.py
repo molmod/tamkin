@@ -61,8 +61,8 @@ class PartFunTestCase(unittest.TestCase):
 
 
     def test_react_phva(self):
-        fixed_atoms = load_fixed_g03com("input/Zp_p_react.14mei.com")
-        pf = PartFun(load_molecule_g03fchk("input/Zp_p_react.28aug.fchk", "input/Zp_p_react.14mei.fchk"), [PHVA(fixed_atoms)])
+        fixed_atoms = load_fixed_g03com("input/mat/Zp_p_react.14mei.com")
+        pf = PartFun(load_molecule_g03fchk("input/mat/Zp_p_react.28aug.fchk", "input/mat/Zp_p_react.14mei.fchk"), [PHVA(fixed_atoms)])
 
         # from Zp_p_react.28aug.log
         expected_freqs = numpy.array([ # values in 1/cm !!!
@@ -188,8 +188,8 @@ class PartFunTestCase(unittest.TestCase):
         #    print numpy.exp(pf.log_eval(temp))
 
     def test_trans_phva(self):
-        fixed_atoms = load_fixed_g03com("input/Zp_p_TS.28aug.com")
-        pf = PartFun(load_molecule_g03fchk("input/Zp_p_TS.28aug.fchk", "input/5Tp_p_TS.oniom21apr_HF.fchk"), [PHVA(fixed_atoms)])
+        fixed_atoms = load_fixed_g03com("input/mat/Zp_p_TS.28aug.com")
+        pf = PartFun(load_molecule_g03fchk("input/mat/Zp_p_TS.28aug.fchk", "input/mat/5Tp_p_TS.oniom21apr_HF.fchk"), [PHVA(fixed_atoms)])
 
         # from Zp_p_TS.28aug.log
         expected_freqs = numpy.array([
@@ -266,9 +266,9 @@ class PartFunTestCase(unittest.TestCase):
         #    print numpy.exp(pf.log_eval(temp))
 
     def test_rate_coeff_phva(self):
-        fixed_atoms = load_fixed_g03com("input/Zp_p_react.14mei.com")
-        pf_react = PartFun(load_molecule_g03fchk("input/Zp_p_react.28aug.fchk", "input/Zp_p_react.14mei.fchk"), [PHVA(fixed_atoms)])
-        pf_trans = PartFun(load_molecule_g03fchk("input/Zp_p_TS.28aug.fchk", "input/5Tp_p_TS.oniom21apr_HF.fchk"), [PHVA(fixed_atoms)])
+        fixed_atoms = load_fixed_g03com("input/mat/Zp_p_react.14mei.com")
+        pf_react = PartFun(load_molecule_g03fchk("input/mat/Zp_p_react.28aug.fchk", "input/mat/Zp_p_react.14mei.fchk"), [PHVA(fixed_atoms)])
+        pf_trans = PartFun(load_molecule_g03fchk("input/mat/Zp_p_TS.28aug.fchk", "input/mat/5Tp_p_TS.oniom21apr_HF.fchk"), [PHVA(fixed_atoms)])
 
         # values taken from the fancy excel file...
         temps = numpy.array([670,680,690,700,710,720,730,740,750,760,770])
@@ -283,7 +283,7 @@ class PartFunTestCase(unittest.TestCase):
 
     def test_react_gas(self):
         ## aa.fchk
-        pf = PartFun(load_molecule_g03fchk("input/aa.fchk"), [ExternalTranslation(), ExternalRotation(1), Electronic()])
+        pf = PartFun(load_molecule_g03fchk("input/sterck/aa.fchk"), [ExternalTranslation(), ExternalRotation(1), Electronic()])
 
         # expected frequencies from aa.log
         expected_freqs = numpy.array([
@@ -316,7 +316,7 @@ class PartFunTestCase(unittest.TestCase):
         self.assertAlmostEqual(-53.068692, pf.log_eval(298.150), 1)
 
         ## aarad.fchk
-        pf = PartFun(load_molecule_g03fchk("input/aarad.fchk"), [ExternalTranslation(), ExternalRotation(1), Electronic()])
+        pf = PartFun(load_molecule_g03fchk("input/sterck/aarad.fchk"), [ExternalTranslation(), ExternalRotation(1), Electronic()])
 
         # expected frequencies from aa.log
         expected_freqs = numpy.array([
@@ -352,7 +352,7 @@ class PartFunTestCase(unittest.TestCase):
 
     def test_trans_gas(self):
         ## paats.fchk
-        pf = PartFun(load_molecule_g03fchk("input/paats.fchk"), [ExternalTranslation(), ExternalRotation(1), Electronic()])
+        pf = PartFun(load_molecule_g03fchk("input/sterck/paats.fchk"), [ExternalTranslation(), ExternalRotation(1), Electronic()])
 
         # expected frequencies from aa.log
         expected_freqs = numpy.array([
@@ -427,9 +427,9 @@ class PartFunTestCase(unittest.TestCase):
         self.assertAlmostEqual(-139.302816, pf.log_eval(298.150), 3)
 
     def test_rate_coeff_gas(self):
-        pf_react1 = PartFun(load_molecule_g03fchk("input/aa.fchk"), [ExternalTranslation(), ExternalRotation(1), Electronic()])
-        pf_react2 = PartFun(load_molecule_g03fchk("input/aarad.fchk"), [ExternalTranslation(), ExternalRotation(1), Electronic()])
-        pf_trans = PartFun(load_molecule_g03fchk("input/paats.fchk"), [ExternalTranslation(), ExternalRotation(1), Electronic()])
+        pf_react1 = PartFun(load_molecule_g03fchk("input/sterck/aa.fchk"), [ExternalTranslation(), ExternalRotation(1), Electronic()])
+        pf_react2 = PartFun(load_molecule_g03fchk("input/sterck/aarad.fchk"), [ExternalTranslation(), ExternalRotation(1), Electronic()])
+        pf_trans = PartFun(load_molecule_g03fchk("input/sterck/paats.fchk"), [ExternalTranslation(), ExternalRotation(1), Electronic()])
 
         # values taken from the fancy excel file...
         temps = numpy.array([298.15,300,400,500,600,700,800,900,1000,1100])
@@ -444,7 +444,7 @@ class PartFunTestCase(unittest.TestCase):
             self.assertAlmostEqual(numpy.log(k/unit), numpy.log(expected_ks[i]),1)
 
     def test_derivatives(self):
-        pf = PartFun(load_molecule_g03fchk("input/aa.fchk"), [ExternalTranslation(), ExternalRotation(1), Electronic()])
+        pf = PartFun(load_molecule_g03fchk("input/sterck/aa.fchk"), [ExternalTranslation(), ExternalRotation(1), Electronic()])
 
         # check the first derivative with finite differences
         eps = 0.0001
@@ -466,7 +466,7 @@ class PartFunTestCase(unittest.TestCase):
 
     def test_derived_quantities(self):
         # internal energy, heat capacity and entropy
-        pf = PartFun(load_molecule_g03fchk("input/aa.fchk"), [ExternalTranslation(), ExternalRotation(1), Electronic()])
+        pf = PartFun(load_molecule_g03fchk("input/sterck/aa.fchk"), [ExternalTranslation(), ExternalRotation(1), Electronic()])
 
         # values taken from aa.log
         calmolK = cal/mol/K

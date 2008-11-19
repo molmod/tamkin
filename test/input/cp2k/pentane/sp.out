@@ -1,0 +1,1384 @@
+ toon@molmod22 has created process number                            0      8244
+
+  **** **** ******  **  PROGRAM STARTED AT                   20081119 120011.574
+ ***** ** ***  *** **   PROGRAM STARTED ON                              molmod22
+ **    ****   ******    PROGRAM STARTED BY                                  toon
+ ***** **    ** ** **   PROGRAM PROCESS ID                                  8244
+  **** **  *******  **  PROGRAM STARTED IN /home/toon/unief/doctoraat/code/work/
+                                           tamkin/apps/001_cyclopentane/sp
+
+ CP2K| version string:                  CP2K version 2.0.0 (Development Version)
+ CP2K| is freely available from                          http://cp2k.berlios.de/
+ CP2K| Program compiled at                         Sat Aug  9 10:41:31 CEST 2008
+ CP2K| Program compiled on                                              molmod22
+ CP2K| Program compiled for                                     Linux-x86-64-g95
+ CP2K| Last CVS entry                                                           
+ CP2K| Input file name                                                    sp.inp
+
+ GLOBAL| Force Environment number                                              1
+ GLOBAL| Basis set file name                                           BASIS_SET
+ GLOBAL| Potential file name                                           POTENTIAL
+ GLOBAL| MM Potential file name                                     MM_POTENTIAL
+ GLOBAL| Coordinate file name                                         ../opt.xyz
+ GLOBAL| Method name                                                        CP2K
+ GLOBAL| Project name                                                         sp
+ GLOBAL| Preferred FFT library                                             FFTW3
+ GLOBAL| Run type                                                   ENERGY_FORCE
+ GLOBAL| All-to-all communication in single precision                          F
+ GLOBAL| FFTs using library dependent lengths                                  F
+ GLOBAL| Global print level                                                    3
+ GLOBAL| Total number of message passing processes                             1
+ GLOBAL| Number of threads for this process                                    1
+ GLOBAL| This output is from process                                           0
+
+ WARNING : FFT library FFTW3 is not available  Trying FFTSG as a default
+
+ *** Fundamental physical constants (SI units) ***
+
+ *** Literature: B. J. Mohr and B. N. Taylor,
+ ***             CODATA recommended values of the fundamental physical
+ ***             constants: 2006, Web Version 5.1, http://physics.nist.gov/constants.
+
+ Speed of light in vacuum [m/s]                             2.99792458000000E+08
+ Magnetic constant or permeability of vacuum [N/A**2]       1.25663706143592E-06
+ Electric constant or permittivity of vacuum [F/m]          8.85418781762039E-12
+ Planck constant (h) [J*s]                                  6.62606896000000E-34
+ Planck constant (h-bar) [J*s]                              1.05457162825177E-34
+ Elementary charge [C]                                      1.60217648700000E-19
+ Electron mass [kg]                                         9.10938215000000E-31
+ Electron g factor [ ]                                     -2.00231930436220E+00
+ Fine-structure constant                                    7.29735253760000E-03
+ Rydberg constant [1/m]                                     1.09737315685270E+07
+ Avogrado constant [1/mol]                                  6.02214179000000E+23
+ Boltzmann constant [J/K]                                   1.38065040000000E-23
+ Atomic mass unit [kg]                                      1.66053878200000E-27
+ Bohr radius [m]                                            5.29177208590000E-11
+
+ *** Conversion factors ***
+
+ [u] -> [a.u.]                                              1.82288848426455E+03
+ [Angstrom] -> [Bohr] = [a.u.]                              1.88972613288564E+00
+ [a.u.] = [Bohr] -> [Angstrom]                              5.29177208590000E-01
+ [a.u.] -> [s]                                              2.41888432650478E-17
+ [a.u.] -> [fs]                                             2.41888432650478E-02
+ [a.u.] -> [J]                                              4.35974393937059E-18
+ [a.u.] -> [K]                                              3.15774647902944E+05
+ [a.u.] -> [kJ/mol]                                         2.62549961709828E+03
+ [a.u.] -> [kcal/mol]                                       6.27509468713739E+02
+ [a.u.] -> [eV]                                             2.72113838565563E+01
+ [a.u.] -> [Hz]                                             6.57968392072181E+15
+ [a.u.] -> [MHz]                                            6.57968392072181E+09
+ [a.u.] -> [1/cm] (wave numbers)                            2.19474631370540E+05
+ [a.u./Bohr**2] -> [1/cm]                                   5.14048714338585E+03
+ 
+
+
+                      ************* ******** ***********   
+                     ************* **********************  
+                     ****     **** ****      ***********   
+                     ******** ****  *******     ****       
+                     *******  ****   *******   ****        
+                     ****     ****       ****  ****        
+                     ****     **** **********  ****        
+                      ****     **** ********    ****       
+                     FRONTIERS IN SIMULATION TECHNOLOGY    
+                                                           
+                     C.J. Mundy, S. Balasubramanian,       
+                     Ken Bagchi, J. Hutter, Ari Seitsonen  
+                     IFW Kuo, T. Laino, J. VandeVondele    
+                                 Version 0.31415           
+
+                                                           
+
+
+ CELL| Volume [ANGSTROM**3]:                                           27000.000
+ CELL| Vector a [ANGSTROM]:      30.000     0.000     0.000    |a| =      30.000
+ CELL| Vector b [ANGSTROM]:       0.000    30.000     0.000    |b| =      30.000
+ CELL| Vector c [ANGSTROM]:       0.000     0.000    30.000    |c| =      30.000
+ CELL| Angle (b,c) [degree]:                                              90.000
+ CELL| Angle (a,c) [degree]:                                              90.000
+ CELL| Angle (a,b) [degree]:                                              90.000
+ CELL| Grid size for subcell generation                                    2.000
+
+ CELL_REF| Volume [ANGSTROM**3]:                                       27000.000
+ CELL_REF| Vector a [ANGSTROM    30.000     0.000     0.000    |a| =      30.000
+ CELL_REF| Vector b [ANGSTROM     0.000    30.000     0.000    |b| =      30.000
+ CELL_REF| Vector c [ANGSTROM     0.000     0.000    30.000    |c| =      30.000
+ CELL_REF| Angle (b,c) [degree]:                                          90.000
+ CELL_REF| Angle (a,c) [degree]:                                          90.000
+ CELL_REF| Angle (a,b) [degree]:                                          90.000
+ CELL_REF| Grid size for subcell generation                                2.000
+ EWALD|                                                                 not used
+
+UTIL_INFO| Multiple Torsion declarations: C1,C2,C2 and C2
+UTIL_INFO| Number of defined torsions:      2 .
+
+
+UTIL_INFO| Multiple Torsion declarations: C1,C2,C2 and H
+UTIL_INFO| Number of defined torsions:      2 .
+
+
+UTIL_INFO| Multiple Torsion declarations: C2,C2,C2 and H
+UTIL_INFO| Number of defined torsions:      2 .
+
+
+UTIL_INFO| Multiple Torsion declarations: C2,C2,C1 and H
+UTIL_INFO| Number of defined torsions:      2 .
+
+
+UTIL_INFO| Multiple Torsion declarations: H,C2,C2 and H
+UTIL_INFO| Number of defined torsions:      2 .
+
+
+UTIL_INFO| Multiple Torsion declarations: H,C1,C2 and H
+UTIL_INFO| Number of defined torsions:      2 .
+
+ CHARGE_INFO| Total Charge of the Classical System:                    -0.000400
+ Total number of particles with a shell ::  0
+     TESTING C1C1 with HH
+     TESTING C1C1 with C1H
+     TESTING C1C1 with C2H
+     TESTING C1C1 with C1C1
+     FOUND C1 C1
+     TESTING C1C1 with C1C2
+     TESTING C1C1 with C2C2
+     TESTING C1C2 with HH
+     TESTING C1C2 with C1H
+     TESTING C1C2 with C2H
+     TESTING C1C2 with C1C1
+     TESTING C1C2 with C1C2
+     FOUND C1 C2
+     TESTING C1C2 with C2C2
+     TESTING C1C2 with HH
+     TESTING C1C2 with C1H
+     TESTING C1C2 with C2H
+     TESTING C1C2 with C1C1
+     TESTING C1C2 with C1C2
+     FOUND C1 C2
+     TESTING C1C2 with C2C2
+     TESTING C1H with HH
+     TESTING C1H with C1H
+     FOUND C1 H
+     TESTING C1H with C2H
+     TESTING C1H with C1C1
+     TESTING C1H with C1C2
+     TESTING C1H with C2C2
+     TESTING C1H with HH
+     TESTING C1H with C1H
+     FOUND C1 H
+     TESTING C1H with C2H
+     TESTING C1H with C1C1
+     TESTING C1H with C1C2
+     TESTING C1H with C2C2
+     TESTING C1H with HH
+     TESTING C1H with C1H
+     FOUND C1 H
+     TESTING C1H with C2H
+     TESTING C1H with C1C1
+     TESTING C1H with C1C2
+     TESTING C1H with C2C2
+     TESTING C2C2 with HH
+     TESTING C2C2 with C1H
+     TESTING C2C2 with C2H
+     TESTING C2C2 with C1C1
+     TESTING C2C2 with C1C2
+     TESTING C2C2 with C2C2
+     FOUND C2 C2
+     TESTING C2C2 with HH
+     TESTING C2C2 with C1H
+     TESTING C2C2 with C2H
+     TESTING C2C2 with C1C1
+     TESTING C2C2 with C1C2
+     TESTING C2C2 with C2C2
+     FOUND C2 C2
+     TESTING C2H with HH
+     TESTING C2H with C1H
+     TESTING C2H with C2H
+     FOUND C2 H
+     TESTING C2H with C1C1
+     TESTING C2H with C1C2
+     TESTING C2H with C2C2
+     TESTING C2H with HH
+     TESTING C2H with C1H
+     TESTING C2H with C2H
+     FOUND C2 H
+     TESTING C2H with C1C1
+     TESTING C2H with C1C2
+     TESTING C2H with C2C2
+     TESTING C2H with HH
+     TESTING C2H with C1H
+     TESTING C2H with C2H
+     FOUND C2 H
+     TESTING C2H with C1C1
+     TESTING C2H with C1C2
+     TESTING C2H with C2C2
+     TESTING C2C2 with HH
+     TESTING C2C2 with C1H
+     TESTING C2C2 with C2H
+     TESTING C2C2 with C1C1
+     TESTING C2C2 with C1C2
+     TESTING C2C2 with C2C2
+     FOUND C2 C2
+     TESTING C2H with HH
+     TESTING C2H with C1H
+     TESTING C2H with C2H
+     FOUND C2 H
+     TESTING C2H with C1C1
+     TESTING C2H with C1C2
+     TESTING C2H with C2C2
+     TESTING C2H with HH
+     TESTING C2H with C1H
+     TESTING C2H with C2H
+     FOUND C2 H
+     TESTING C2H with C1C1
+     TESTING C2H with C1C2
+     TESTING C2H with C2C2
+     TESTING C2H with HH
+     TESTING C2H with C1H
+     TESTING C2H with C2H
+     FOUND C2 H
+     TESTING C2H with C1C1
+     TESTING C2H with C1C2
+     TESTING C2H with C2C2
+     TESTING HH with HH
+     FOUND H H
+     TESTING HH with C1H
+     TESTING HH with C2H
+     TESTING HH with C1C1
+     TESTING HH with C1C2
+     TESTING HH with C2C2
+     TESTING HH with HH
+     FOUND H H
+     TESTING HH with C1H
+     TESTING HH with C2H
+     TESTING HH with C1C1
+     TESTING HH with C1C2
+     TESTING HH with C2C2
+     TESTING HH with HH
+     FOUND H H
+     TESTING HH with C1H
+     TESTING HH with C2H
+     TESTING HH with C1C1
+     TESTING HH with C1C2
+     TESTING HH with C2C2
+     TESTING HH with HH
+     FOUND H H
+     TESTING HH with C1H
+     TESTING HH with C2H
+     TESTING HH with C1C1
+     TESTING HH with C1C2
+     TESTING HH with C2C2
+     TESTING HH with HH
+     FOUND H H
+     TESTING HH with C1H
+     TESTING HH with C2H
+     TESTING HH with C1C1
+     TESTING HH with C1C2
+     TESTING HH with C2C2
+     TESTING HH with HH
+     FOUND H H
+     TESTING HH with C1H
+     TESTING HH with C2H
+     TESTING HH with C1C1
+     TESTING HH with C1C2
+     TESTING HH with C2C2
+ SPLINE_INFO| Generating: 21 splines due to 6 different atomic kinds
+
+SPLINE_INFO|     Spline number:      1
+SPLINE_INFO|     Spline number      1  Unique number      1   Kinds involved:      1      1
+SPLINE_INFO|     Number of points used in the Splines:     62
+SPLINE_INFO|     Accuracy requested:    0.000000100000
+SPLINE_INFO|     Accuracy achieved:     0.000000080193
+SPLINE_INFO|     RMIN and RMAX  used for spline (bohr):                   3.279238   18.897261
+SPLINE_INFO|     RMIN and RMAX used to achieve spline accuracy (bohr):    4.434269   18.897261
+SPLINE_INFO|     Spline value at RMIN (Hartree):    0.230621653
+SPLINE_INFO|     Spline value at RMAX (Hartree):    0.000000000
+SPLINE_INFO|     Electrostatic and Non-Bonded Cutoffs:    0.000000000   -0.000000985
+
+SPLINE_INFO|     Spline number:      2
+SPLINE_INFO|     Spline number      2  Unique number      5   Kinds involved:      2      1
+SPLINE_INFO|     Number of points used in the Splines:     62
+SPLINE_INFO|     Accuracy requested:    0.000000100000
+SPLINE_INFO|     Accuracy achieved:     0.000000080193
+SPLINE_INFO|     RMIN and RMAX  used for spline (bohr):                   3.279238   18.897261
+SPLINE_INFO|     RMIN and RMAX used to achieve spline accuracy (bohr):    4.434269   18.897261
+SPLINE_INFO|     Spline value at RMIN (Hartree):    0.230621653
+SPLINE_INFO|     Spline value at RMAX (Hartree):    0.000000000
+SPLINE_INFO|     Electrostatic and Non-Bonded Cutoffs:    0.000000000   -0.000000985
+
+SPLINE_INFO|     Spline number:      3
+SPLINE_INFO|     Spline number      3  Unique number      6   Kinds involved:      2      2
+SPLINE_INFO|     Number of points used in the Splines:     62
+SPLINE_INFO|     Accuracy requested:    0.000000100000
+SPLINE_INFO|     Accuracy achieved:     0.000000080193
+SPLINE_INFO|     RMIN and RMAX  used for spline (bohr):                   3.279238   18.897261
+SPLINE_INFO|     RMIN and RMAX used to achieve spline accuracy (bohr):    4.434269   18.897261
+SPLINE_INFO|     Spline value at RMIN (Hartree):    0.230621653
+SPLINE_INFO|     Spline value at RMAX (Hartree):    0.000000000
+SPLINE_INFO|     Electrostatic and Non-Bonded Cutoffs:    0.000000000   -0.000000985
+
+SPLINE_INFO|     Spline number:      4
+SPLINE_INFO|     Spline number      4  Unique number      2   Kinds involved:      3      1
+SPLINE_INFO|     Number of points used in the Splines:     62
+SPLINE_INFO|     Accuracy requested:    0.000000100000
+SPLINE_INFO|     Accuracy achieved:     0.000000080193
+SPLINE_INFO|     RMIN and RMAX  used for spline (bohr):                   3.279238   18.897261
+SPLINE_INFO|     RMIN and RMAX used to achieve spline accuracy (bohr):    4.434269   18.897261
+SPLINE_INFO|     Spline value at RMIN (Hartree):    0.230621653
+SPLINE_INFO|     Spline value at RMAX (Hartree):    0.000000000
+SPLINE_INFO|     Electrostatic and Non-Bonded Cutoffs:    0.000000000   -0.000000985
+
+SPLINE_INFO|     Spline number:      5
+SPLINE_INFO|     Spline number      5  Unique number      4   Kinds involved:      3      2
+SPLINE_INFO|     Number of points used in the Splines:     62
+SPLINE_INFO|     Accuracy requested:    0.000000100000
+SPLINE_INFO|     Accuracy achieved:     0.000000080193
+SPLINE_INFO|     RMIN and RMAX  used for spline (bohr):                   3.279238   18.897261
+SPLINE_INFO|     RMIN and RMAX used to achieve spline accuracy (bohr):    4.434269   18.897261
+SPLINE_INFO|     Spline value at RMIN (Hartree):    0.230621653
+SPLINE_INFO|     Spline value at RMAX (Hartree):    0.000000000
+SPLINE_INFO|     Electrostatic and Non-Bonded Cutoffs:    0.000000000   -0.000000985
+
+SPLINE_INFO|     Spline number:      6
+SPLINE_INFO|     Spline number      6  Unique number      3   Kinds involved:      3      3
+SPLINE_INFO|     Number of points used in the Splines:     62
+SPLINE_INFO|     Accuracy requested:    0.000000100000
+SPLINE_INFO|     Accuracy achieved:     0.000000080193
+SPLINE_INFO|     RMIN and RMAX  used for spline (bohr):                   3.279238   18.897261
+SPLINE_INFO|     RMIN and RMAX used to achieve spline accuracy (bohr):    4.434269   18.897261
+SPLINE_INFO|     Spline value at RMIN (Hartree):    0.230621653
+SPLINE_INFO|     Spline value at RMAX (Hartree):    0.000000000
+SPLINE_INFO|     Electrostatic and Non-Bonded Cutoffs:    0.000000000   -0.000000985
+
+SPLINE_INFO|     Spline number:      7
+SPLINE_INFO|     Spline number      7  Unique number      7   Kinds involved:      4      1
+SPLINE_INFO|     Number of points used in the Splines:     35
+SPLINE_INFO|     Accuracy requested:    0.000000100000
+SPLINE_INFO|     Accuracy achieved:     0.000000086619
+SPLINE_INFO|     RMIN and RMAX  used for spline (bohr):                   2.717723   18.897261
+SPLINE_INFO|     RMIN and RMAX used to achieve spline accuracy (bohr):    3.820874   18.897261
+SPLINE_INFO|     Spline value at RMIN (Hartree):    0.107539336
+SPLINE_INFO|     Spline value at RMAX (Hartree):    0.000000000
+SPLINE_INFO|     Electrostatic and Non-Bonded Cutoffs:    0.000000000   -0.000000154
+
+SPLINE_INFO|     Spline number:      8
+SPLINE_INFO|     Spline number      8  Unique number      9   Kinds involved:      4      2
+SPLINE_INFO|     Number of points used in the Splines:     35
+SPLINE_INFO|     Accuracy requested:    0.000000100000
+SPLINE_INFO|     Accuracy achieved:     0.000000086619
+SPLINE_INFO|     RMIN and RMAX  used for spline (bohr):                   2.717723   18.897261
+SPLINE_INFO|     RMIN and RMAX used to achieve spline accuracy (bohr):    3.820874   18.897261
+SPLINE_INFO|     Spline value at RMIN (Hartree):    0.107539336
+SPLINE_INFO|     Spline value at RMAX (Hartree):    0.000000000
+SPLINE_INFO|     Electrostatic and Non-Bonded Cutoffs:    0.000000000   -0.000000154
+
+SPLINE_INFO|     Spline number:      9
+SPLINE_INFO|     Spline number      9  Unique number      8   Kinds involved:      4      3
+SPLINE_INFO|     Number of points used in the Splines:     35
+SPLINE_INFO|     Accuracy requested:    0.000000100000
+SPLINE_INFO|     Accuracy achieved:     0.000000086619
+SPLINE_INFO|     RMIN and RMAX  used for spline (bohr):                   2.717723   18.897261
+SPLINE_INFO|     RMIN and RMAX used to achieve spline accuracy (bohr):    3.820874   18.897261
+SPLINE_INFO|     Spline value at RMIN (Hartree):    0.107539336
+SPLINE_INFO|     Spline value at RMAX (Hartree):    0.000000000
+SPLINE_INFO|     Electrostatic and Non-Bonded Cutoffs:    0.000000000   -0.000000154
+
+SPLINE_INFO|     Spline number:     10
+SPLINE_INFO|     Spline number     10  Unique number     10   Kinds involved:      4      4
+SPLINE_INFO|     Number of points used in the Splines:     29
+SPLINE_INFO|     Accuracy requested:    0.000000100000
+SPLINE_INFO|     Accuracy achieved:     0.000000098101
+SPLINE_INFO|     RMIN and RMAX  used for spline (bohr):                   1.826859   18.897261
+SPLINE_INFO|     RMIN and RMAX used to achieve spline accuracy (bohr):    2.645303   18.897261
+SPLINE_INFO|     Spline value at RMIN (Hartree):    0.040248176
+SPLINE_INFO|     Spline value at RMAX (Hartree):    0.000000000
+SPLINE_INFO|     Electrostatic and Non-Bonded Cutoffs:    0.000000000   -0.000000014
+
+SPLINE_INFO|     Spline number:     11
+SPLINE_INFO|     Spline number     11  Unique number     17   Kinds involved:      5      1
+SPLINE_INFO|     Number of points used in the Splines:     35
+SPLINE_INFO|     Accuracy requested:    0.000000100000
+SPLINE_INFO|     Accuracy achieved:     0.000000086619
+SPLINE_INFO|     RMIN and RMAX  used for spline (bohr):                   2.717723   18.897261
+SPLINE_INFO|     RMIN and RMAX used to achieve spline accuracy (bohr):    3.820874   18.897261
+SPLINE_INFO|     Spline value at RMIN (Hartree):    0.107539336
+SPLINE_INFO|     Spline value at RMAX (Hartree):    0.000000000
+SPLINE_INFO|     Electrostatic and Non-Bonded Cutoffs:    0.000000000   -0.000000154
+
+SPLINE_INFO|     Spline number:     12
+SPLINE_INFO|     Spline number     12  Unique number     19   Kinds involved:      5      2
+SPLINE_INFO|     Number of points used in the Splines:     35
+SPLINE_INFO|     Accuracy requested:    0.000000100000
+SPLINE_INFO|     Accuracy achieved:     0.000000086619
+SPLINE_INFO|     RMIN and RMAX  used for spline (bohr):                   2.717723   18.897261
+SPLINE_INFO|     RMIN and RMAX used to achieve spline accuracy (bohr):    3.820874   18.897261
+SPLINE_INFO|     Spline value at RMIN (Hartree):    0.107539336
+SPLINE_INFO|     Spline value at RMAX (Hartree):    0.000000000
+SPLINE_INFO|     Electrostatic and Non-Bonded Cutoffs:    0.000000000   -0.000000154
+
+SPLINE_INFO|     Spline number:     13
+SPLINE_INFO|     Spline number     13  Unique number     18   Kinds involved:      5      3
+SPLINE_INFO|     Number of points used in the Splines:     35
+SPLINE_INFO|     Accuracy requested:    0.000000100000
+SPLINE_INFO|     Accuracy achieved:     0.000000086619
+SPLINE_INFO|     RMIN and RMAX  used for spline (bohr):                   2.717723   18.897261
+SPLINE_INFO|     RMIN and RMAX used to achieve spline accuracy (bohr):    3.820874   18.897261
+SPLINE_INFO|     Spline value at RMIN (Hartree):    0.107539336
+SPLINE_INFO|     Spline value at RMAX (Hartree):    0.000000000
+SPLINE_INFO|     Electrostatic and Non-Bonded Cutoffs:    0.000000000   -0.000000154
+
+SPLINE_INFO|     Spline number:     14
+SPLINE_INFO|     Spline number     14  Unique number     20   Kinds involved:      5      4
+SPLINE_INFO|     Number of points used in the Splines:     29
+SPLINE_INFO|     Accuracy requested:    0.000000100000
+SPLINE_INFO|     Accuracy achieved:     0.000000098101
+SPLINE_INFO|     RMIN and RMAX  used for spline (bohr):                   1.826859   18.897261
+SPLINE_INFO|     RMIN and RMAX used to achieve spline accuracy (bohr):    2.645303   18.897261
+SPLINE_INFO|     Spline value at RMIN (Hartree):    0.040248176
+SPLINE_INFO|     Spline value at RMAX (Hartree):    0.000000000
+SPLINE_INFO|     Electrostatic and Non-Bonded Cutoffs:    0.000000000   -0.000000014
+
+SPLINE_INFO|     Spline number:     15
+SPLINE_INFO|     Spline number     15  Unique number     21   Kinds involved:      5      5
+SPLINE_INFO|     Number of points used in the Splines:     29
+SPLINE_INFO|     Accuracy requested:    0.000000100000
+SPLINE_INFO|     Accuracy achieved:     0.000000098101
+SPLINE_INFO|     RMIN and RMAX  used for spline (bohr):                   1.826859   18.897261
+SPLINE_INFO|     RMIN and RMAX used to achieve spline accuracy (bohr):    2.645303   18.897261
+SPLINE_INFO|     Spline value at RMIN (Hartree):    0.040248176
+SPLINE_INFO|     Spline value at RMAX (Hartree):    0.000000000
+SPLINE_INFO|     Electrostatic and Non-Bonded Cutoffs:    0.000000000   -0.000000014
+
+SPLINE_INFO|     Spline number:     16
+SPLINE_INFO|     Spline number     16  Unique number     11   Kinds involved:      6      1
+SPLINE_INFO|     Number of points used in the Splines:     35
+SPLINE_INFO|     Accuracy requested:    0.000000100000
+SPLINE_INFO|     Accuracy achieved:     0.000000086619
+SPLINE_INFO|     RMIN and RMAX  used for spline (bohr):                   2.717723   18.897261
+SPLINE_INFO|     RMIN and RMAX used to achieve spline accuracy (bohr):    3.820874   18.897261
+SPLINE_INFO|     Spline value at RMIN (Hartree):    0.107539336
+SPLINE_INFO|     Spline value at RMAX (Hartree):    0.000000000
+SPLINE_INFO|     Electrostatic and Non-Bonded Cutoffs:    0.000000000   -0.000000154
+
+SPLINE_INFO|     Spline number:     17
+SPLINE_INFO|     Spline number     17  Unique number     13   Kinds involved:      6      2
+SPLINE_INFO|     Number of points used in the Splines:     35
+SPLINE_INFO|     Accuracy requested:    0.000000100000
+SPLINE_INFO|     Accuracy achieved:     0.000000086619
+SPLINE_INFO|     RMIN and RMAX  used for spline (bohr):                   2.717723   18.897261
+SPLINE_INFO|     RMIN and RMAX used to achieve spline accuracy (bohr):    3.820874   18.897261
+SPLINE_INFO|     Spline value at RMIN (Hartree):    0.107539336
+SPLINE_INFO|     Spline value at RMAX (Hartree):    0.000000000
+SPLINE_INFO|     Electrostatic and Non-Bonded Cutoffs:    0.000000000   -0.000000154
+
+SPLINE_INFO|     Spline number:     18
+SPLINE_INFO|     Spline number     18  Unique number     12   Kinds involved:      6      3
+SPLINE_INFO|     Number of points used in the Splines:     35
+SPLINE_INFO|     Accuracy requested:    0.000000100000
+SPLINE_INFO|     Accuracy achieved:     0.000000086619
+SPLINE_INFO|     RMIN and RMAX  used for spline (bohr):                   2.717723   18.897261
+SPLINE_INFO|     RMIN and RMAX used to achieve spline accuracy (bohr):    3.820874   18.897261
+SPLINE_INFO|     Spline value at RMIN (Hartree):    0.107539336
+SPLINE_INFO|     Spline value at RMAX (Hartree):    0.000000000
+SPLINE_INFO|     Electrostatic and Non-Bonded Cutoffs:    0.000000000   -0.000000154
+
+SPLINE_INFO|     Spline number:     19
+SPLINE_INFO|     Spline number     19  Unique number     14   Kinds involved:      6      4
+SPLINE_INFO|     Number of points used in the Splines:     29
+SPLINE_INFO|     Accuracy requested:    0.000000100000
+SPLINE_INFO|     Accuracy achieved:     0.000000098101
+SPLINE_INFO|     RMIN and RMAX  used for spline (bohr):                   1.826859   18.897261
+SPLINE_INFO|     RMIN and RMAX used to achieve spline accuracy (bohr):    2.645303   18.897261
+SPLINE_INFO|     Spline value at RMIN (Hartree):    0.040248176
+SPLINE_INFO|     Spline value at RMAX (Hartree):    0.000000000
+SPLINE_INFO|     Electrostatic and Non-Bonded Cutoffs:    0.000000000   -0.000000014
+
+SPLINE_INFO|     Spline number:     20
+SPLINE_INFO|     Spline number     20  Unique number     16   Kinds involved:      6      5
+SPLINE_INFO|     Number of points used in the Splines:     29
+SPLINE_INFO|     Accuracy requested:    0.000000100000
+SPLINE_INFO|     Accuracy achieved:     0.000000098101
+SPLINE_INFO|     RMIN and RMAX  used for spline (bohr):                   1.826859   18.897261
+SPLINE_INFO|     RMIN and RMAX used to achieve spline accuracy (bohr):    2.645303   18.897261
+SPLINE_INFO|     Spline value at RMIN (Hartree):    0.040248176
+SPLINE_INFO|     Spline value at RMAX (Hartree):    0.000000000
+SPLINE_INFO|     Electrostatic and Non-Bonded Cutoffs:    0.000000000   -0.000000014
+
+SPLINE_INFO|     Spline number:     21
+SPLINE_INFO|     Spline number     21  Unique number     15   Kinds involved:      6      6
+SPLINE_INFO|     Number of points used in the Splines:     29
+SPLINE_INFO|     Accuracy requested:    0.000000100000
+SPLINE_INFO|     Accuracy achieved:     0.000000098101
+SPLINE_INFO|     RMIN and RMAX  used for spline (bohr):                   1.826859   18.897261
+SPLINE_INFO|     RMIN and RMAX used to achieve spline accuracy (bohr):    2.645303   18.897261
+SPLINE_INFO|     Spline value at RMIN (Hartree):    0.040248176
+SPLINE_INFO|     Spline value at RMAX (Hartree):    0.000000000
+SPLINE_INFO|     Electrostatic and Non-Bonded Cutoffs:    0.000000000   -0.000000014
+
+SPLINE_INFO|     Number of pair potential Splines allocated:     21
+ SPLINE_INFO| Number of unique splines computed:     21
+ SPLINE_INFO| Done
+     ONE-FOUR  1  : C1 C2
+     ONE-FOUR  2  : C1 H
+     ONE-FOUR  3  : C1 H
+     ONE-FOUR  4  : C2 C1
+     ONE-FOUR  5  : C2 H
+     ONE-FOUR  6  : C2 H
+     ONE-FOUR  7  : C2 H
+     ONE-FOUR  8  : C2 H
+     ONE-FOUR  9  : C2 H
+     ONE-FOUR  10  : C2 H
+     ONE-FOUR  11  : C2 H
+     ONE-FOUR  12  : C2 H
+     ONE-FOUR  13  : C2 H
+     ONE-FOUR  14  : C2 H
+     ONE-FOUR  15  : H H
+     ONE-FOUR  16  : H H
+     ONE-FOUR  17  : H H
+     ONE-FOUR  18  : H H
+     ONE-FOUR  19  : H H
+     ONE-FOUR  20  : H H
+     ONE-FOUR  21  : H H
+     ONE-FOUR  22  : H H
+     ONE-FOUR  23  : H H
+     ONE-FOUR  24  : H H
+     ONE-FOUR  25  : H C1
+     ONE-FOUR  26  : H H
+     ONE-FOUR  27  : H H
+     ONE-FOUR  28  : H C1
+     ONE-FOUR  29  : H H
+     ONE-FOUR  30  : H H
+     ONE-FOUR  31  : H H
+     ONE-FOUR  32  : H H
+     ONE-FOUR  33  : H H
+     ONE-FOUR  34  : H H
+     ONE-FOUR  35  : H H
+     ONE-FOUR  36  : H H
+     TESTING C1C1 with HH
+     TESTING C1C1 with C1H
+     TESTING C1C1 with C2H
+     TESTING C1C1 with C1C1
+     FOUND C1 C1
+     TESTING C1C1 with C1C2
+     TESTING C1C1 with C2C2
+     TESTING C1C2 with HH
+     TESTING C1C2 with C1H
+     TESTING C1C2 with C2H
+     TESTING C1C2 with C1C1
+     TESTING C1C2 with C1C2
+     FOUND C1 C2
+     TESTING C1C2 with C2C2
+     TESTING C1C2 with HH
+     TESTING C1C2 with C1H
+     TESTING C1C2 with C2H
+     TESTING C1C2 with C1C1
+     TESTING C1C2 with C1C2
+     FOUND C1 C2
+     TESTING C1C2 with C2C2
+     TESTING C1H with HH
+     TESTING C1H with C1H
+     FOUND C1 H
+     TESTING C1H with C2H
+     TESTING C1H with C1C1
+     TESTING C1H with C1C2
+     TESTING C1H with C2C2
+     TESTING C1H with HH
+     TESTING C1H with C1H
+     FOUND C1 H
+     TESTING C1H with C2H
+     TESTING C1H with C1C1
+     TESTING C1H with C1C2
+     TESTING C1H with C2C2
+     TESTING C1H with HH
+     TESTING C1H with C1H
+     FOUND C1 H
+     TESTING C1H with C2H
+     TESTING C1H with C1C1
+     TESTING C1H with C1C2
+     TESTING C1H with C2C2
+     TESTING C2C2 with HH
+     TESTING C2C2 with C1H
+     TESTING C2C2 with C2H
+     TESTING C2C2 with C1C1
+     TESTING C2C2 with C1C2
+     TESTING C2C2 with C2C2
+     FOUND C2 C2
+     TESTING C2C2 with HH
+     TESTING C2C2 with C1H
+     TESTING C2C2 with C2H
+     TESTING C2C2 with C1C1
+     TESTING C2C2 with C1C2
+     TESTING C2C2 with C2C2
+     FOUND C2 C2
+     TESTING C2H with HH
+     TESTING C2H with C1H
+     TESTING C2H with C2H
+     FOUND C2 H
+     TESTING C2H with C1C1
+     TESTING C2H with C1C2
+     TESTING C2H with C2C2
+     TESTING C2H with HH
+     TESTING C2H with C1H
+     TESTING C2H with C2H
+     FOUND C2 H
+     TESTING C2H with C1C1
+     TESTING C2H with C1C2
+     TESTING C2H with C2C2
+     TESTING C2H with HH
+     TESTING C2H with C1H
+     TESTING C2H with C2H
+     FOUND C2 H
+     TESTING C2H with C1C1
+     TESTING C2H with C1C2
+     TESTING C2H with C2C2
+     TESTING C2C2 with HH
+     TESTING C2C2 with C1H
+     TESTING C2C2 with C2H
+     TESTING C2C2 with C1C1
+     TESTING C2C2 with C1C2
+     TESTING C2C2 with C2C2
+     FOUND C2 C2
+     TESTING C2H with HH
+     TESTING C2H with C1H
+     TESTING C2H with C2H
+     FOUND C2 H
+     TESTING C2H with C1C1
+     TESTING C2H with C1C2
+     TESTING C2H with C2C2
+     TESTING C2H with HH
+     TESTING C2H with C1H
+     TESTING C2H with C2H
+     FOUND C2 H
+     TESTING C2H with C1C1
+     TESTING C2H with C1C2
+     TESTING C2H with C2C2
+     TESTING C2H with HH
+     TESTING C2H with C1H
+     TESTING C2H with C2H
+     FOUND C2 H
+     TESTING C2H with C1C1
+     TESTING C2H with C1C2
+     TESTING C2H with C2C2
+     TESTING HH with HH
+     FOUND H H
+     TESTING HH with C1H
+     TESTING HH with C2H
+     TESTING HH with C1C1
+     TESTING HH with C1C2
+     TESTING HH with C2C2
+     TESTING HH with HH
+     FOUND H H
+     TESTING HH with C1H
+     TESTING HH with C2H
+     TESTING HH with C1C1
+     TESTING HH with C1C2
+     TESTING HH with C2C2
+     TESTING HH with HH
+     FOUND H H
+     TESTING HH with C1H
+     TESTING HH with C2H
+     TESTING HH with C1C1
+     TESTING HH with C1C2
+     TESTING HH with C2C2
+     TESTING HH with HH
+     FOUND H H
+     TESTING HH with C1H
+     TESTING HH with C2H
+     TESTING HH with C1C1
+     TESTING HH with C1C2
+     TESTING HH with C2C2
+     TESTING HH with HH
+     FOUND H H
+     TESTING HH with C1H
+     TESTING HH with C2H
+     TESTING HH with C1C1
+     TESTING HH with C1C2
+     TESTING HH with C2C2
+     TESTING HH with HH
+     FOUND H H
+     TESTING HH with C1H
+     TESTING HH with C2H
+     TESTING HH with C1C1
+     TESTING HH with C1C2
+     TESTING HH with C2C2
+ SPLINE_INFO| Generating: 21 splines due to 6 different atomic kinds
+
+SPLINE_INFO|     Spline number:      1
+SPLINE_INFO|     Spline number      1  Unique number      1   Kinds involved:      1      1
+SPLINE_INFO|     Number of points used in the Splines:    567
+SPLINE_INFO|     Accuracy requested:    0.000000100000
+SPLINE_INFO|     Accuracy achieved:     0.000000083333
+SPLINE_INFO|     RMIN and RMAX  used for spline (bohr):                   3.284637   18.897261
+SPLINE_INFO|     RMIN and RMAX used to achieve spline accuracy (bohr):    4.545318   18.897261
+SPLINE_INFO|     Spline value at RMIN (Hartree):    0.460052077
+SPLINE_INFO|     Spline value at RMAX (Hartree):    0.000000000
+SPLINE_INFO|     Electrostatic and Non-Bonded Cutoffs:    0.002097701   -0.000000985
+
+SPLINE_INFO|     Spline number:      2
+SPLINE_INFO|     Spline number      2  Unique number      5   Kinds involved:      2      1
+SPLINE_INFO|     Number of points used in the Splines:    472
+SPLINE_INFO|     Accuracy requested:    0.000000100000
+SPLINE_INFO|     Accuracy achieved:     0.000000084388
+SPLINE_INFO|     RMIN and RMAX  used for spline (bohr):                   3.282837   18.897261
+SPLINE_INFO|     RMIN and RMAX used to achieve spline accuracy (bohr):    4.493104   18.897261
+SPLINE_INFO|     Spline value at RMIN (Hartree):    0.451739135
+SPLINE_INFO|     Spline value at RMAX (Hartree):    0.000000000
+SPLINE_INFO|     Electrostatic and Non-Bonded Cutoffs:    0.001462385   -0.000000985
+
+SPLINE_INFO|     Spline number:      3
+SPLINE_INFO|     Spline number      3  Unique number      6   Kinds involved:      2      2
+SPLINE_INFO|     Number of points used in the Splines:    393
+SPLINE_INFO|     Accuracy requested:    0.000000100000
+SPLINE_INFO|     Accuracy achieved:     0.000000085578
+SPLINE_INFO|     RMIN and RMAX  used for spline (bohr):                   3.281038   18.897261
+SPLINE_INFO|     RMIN and RMAX used to achieve spline accuracy (bohr):    4.464566   18.897261
+SPLINE_INFO|     Spline value at RMIN (Hartree):    0.442867299
+SPLINE_INFO|     Spline value at RMAX (Hartree):    0.000000000
+SPLINE_INFO|     Electrostatic and Non-Bonded Cutoffs:    0.001019483   -0.000000985
+
+SPLINE_INFO|     Spline number:      4
+SPLINE_INFO|     Spline number      4  Unique number      2   Kinds involved:      3      1
+SPLINE_INFO|     Number of points used in the Splines:    472
+SPLINE_INFO|     Accuracy requested:    0.000000100000
+SPLINE_INFO|     Accuracy achieved:     0.000000089771
+SPLINE_INFO|     RMIN and RMAX  used for spline (bohr):                   3.282837   18.897261
+SPLINE_INFO|     RMIN and RMAX used to achieve spline accuracy (bohr):    4.499718   18.897261
+SPLINE_INFO|     Spline value at RMIN (Hartree):    0.452184717
+SPLINE_INFO|     Spline value at RMAX (Hartree):    0.000000000
+SPLINE_INFO|     Electrostatic and Non-Bonded Cutoffs:    0.001557209   -0.000000985
+
+SPLINE_INFO|     Spline number:      5
+SPLINE_INFO|     Spline number      5  Unique number      4   Kinds involved:      3      2
+SPLINE_INFO|     Number of points used in the Splines:    393
+SPLINE_INFO|     Accuracy requested:    0.000000100000
+SPLINE_INFO|     Accuracy achieved:     0.000000090998
+SPLINE_INFO|     RMIN and RMAX  used for spline (bohr):                   3.281038   18.897261
+SPLINE_INFO|     RMIN and RMAX used to achieve spline accuracy (bohr):    4.464566   18.897261
+SPLINE_INFO|     Spline value at RMIN (Hartree):    0.443177383
+SPLINE_INFO|     Spline value at RMAX (Hartree):    0.000000000
+SPLINE_INFO|     Electrostatic and Non-Bonded Cutoffs:    0.001085588   -0.000000985
+
+SPLINE_INFO|     Spline number:      6
+SPLINE_INFO|     Spline number      6  Unique number      3   Kinds involved:      3      3
+SPLINE_INFO|     Number of points used in the Splines:    393
+SPLINE_INFO|     Accuracy requested:    0.000000100000
+SPLINE_INFO|     Accuracy achieved:     0.000000096770
+SPLINE_INFO|     RMIN and RMAX  used for spline (bohr):                   3.281038   18.897261
+SPLINE_INFO|     RMIN and RMAX used to achieve spline accuracy (bohr):    4.472509   18.897261
+SPLINE_INFO|     Spline value at RMIN (Hartree):    0.443507573
+SPLINE_INFO|     Spline value at RMAX (Hartree):    0.000000000
+SPLINE_INFO|     Electrostatic and Non-Bonded Cutoffs:    0.001155979   -0.000000985
+
+SPLINE_INFO|     Spline number:      7
+SPLINE_INFO|     Spline number      7  Unique number      7   Kinds involved:      4      1
+SPLINE_INFO|     Number of points used in the Splines:    472
+SPLINE_INFO|     Accuracy requested:    0.000000100000
+SPLINE_INFO|     Accuracy achieved:     0.000000084648
+SPLINE_INFO|     RMIN and RMAX  used for spline (bohr):                   2.715924   18.897261
+SPLINE_INFO|     RMIN and RMAX used to achieve spline accuracy (bohr):    3.689134   18.897261
+SPLINE_INFO|     Spline value at RMIN (Hartree):    0.440894905
+SPLINE_INFO|     Spline value at RMAX (Hartree):    0.000000000
+SPLINE_INFO|     Electrostatic and Non-Bonded Cutoffs:   -0.000690103   -0.000000154
+
+SPLINE_INFO|     Spline number:      8
+SPLINE_INFO|     Spline number      8  Unique number      9   Kinds involved:      4      2
+SPLINE_INFO|     Number of points used in the Splines:    393
+SPLINE_INFO|     Accuracy requested:    0.000000100000
+SPLINE_INFO|     Accuracy achieved:     0.000000084773
+SPLINE_INFO|     RMIN and RMAX  used for spline (bohr):                   2.715924   18.897261
+SPLINE_INFO|     RMIN and RMAX used to achieve spline accuracy (bohr):    3.703594   18.897261
+SPLINE_INFO|     Spline value at RMIN (Hartree):    0.431155132
+SPLINE_INFO|     Spline value at RMAX (Hartree):    0.000000000
+SPLINE_INFO|     Electrostatic and Non-Bonded Cutoffs:   -0.000481096   -0.000000154
+
+SPLINE_INFO|     Spline number:      9
+SPLINE_INFO|     Spline number      9  Unique number      8   Kinds involved:      4      3
+SPLINE_INFO|     Number of points used in the Splines:    393
+SPLINE_INFO|     Accuracy requested:    0.000000100000
+SPLINE_INFO|     Accuracy achieved:     0.000000090310
+SPLINE_INFO|     RMIN and RMAX  used for spline (bohr):                   2.715924   18.897261
+SPLINE_INFO|     RMIN and RMAX used to achieve spline accuracy (bohr):    3.703594   18.897261
+SPLINE_INFO|     Spline value at RMIN (Hartree):    0.430972508
+SPLINE_INFO|     Spline value at RMAX (Hartree):    0.000000000
+SPLINE_INFO|     Electrostatic and Non-Bonded Cutoffs:   -0.000512291   -0.000000154
+
+SPLINE_INFO|     Spline number:     10
+SPLINE_INFO|     Spline number     10  Unique number     10   Kinds involved:      4      4
+SPLINE_INFO|     Number of points used in the Splines:    567
+SPLINE_INFO|     Accuracy requested:    0.000000100000
+SPLINE_INFO|     Accuracy achieved:     0.000000096113
+SPLINE_INFO|     RMIN and RMAX  used for spline (bohr):                   1.826859   18.897261
+SPLINE_INFO|     RMIN and RMAX used to achieve spline accuracy (bohr):    2.609353   18.897261
+SPLINE_INFO|     Spline value at RMIN (Hartree):    0.432421546
+SPLINE_INFO|     Spline value at RMAX (Hartree):    0.000000000
+SPLINE_INFO|     Electrostatic and Non-Bonded Cutoffs:    0.000227030   -0.000000014
+
+SPLINE_INFO|     Spline number:     11
+SPLINE_INFO|     Spline number     11  Unique number     17   Kinds involved:      5      1
+SPLINE_INFO|     Number of points used in the Splines:    472
+SPLINE_INFO|     Accuracy requested:    0.000000100000
+SPLINE_INFO|     Accuracy achieved:     0.000000092560
+SPLINE_INFO|     RMIN and RMAX  used for spline (bohr):                   2.714124   18.897261
+SPLINE_INFO|     RMIN and RMAX used to achieve spline accuracy (bohr):    3.687443   18.897261
+SPLINE_INFO|     Spline value at RMIN (Hartree):    0.443450079
+SPLINE_INFO|     Spline value at RMAX (Hartree):    0.000000000
+SPLINE_INFO|     Electrostatic and Non-Bonded Cutoffs:   -0.000752265   -0.000000154
+
+SPLINE_INFO|     Spline number:     12
+SPLINE_INFO|     Spline number     12  Unique number     19   Kinds involved:      5      2
+SPLINE_INFO|     Number of points used in the Splines:    393
+SPLINE_INFO|     Accuracy requested:    0.000000100000
+SPLINE_INFO|     Accuracy achieved:     0.000000092464
+SPLINE_INFO|     RMIN and RMAX  used for spline (bohr):                   2.715924   18.897261
+SPLINE_INFO|     RMIN and RMAX used to achieve spline accuracy (bohr):    3.703594   18.897261
+SPLINE_INFO|     Spline value at RMIN (Hartree):    0.430901434
+SPLINE_INFO|     Spline value at RMAX (Hartree):    0.000000000
+SPLINE_INFO|     Electrostatic and Non-Bonded Cutoffs:   -0.000524432   -0.000000154
+
+SPLINE_INFO|     Spline number:     13
+SPLINE_INFO|     Spline number     13  Unique number     18   Kinds involved:      5      3
+SPLINE_INFO|     Number of points used in the Splines:    393
+SPLINE_INFO|     Accuracy requested:    0.000000100000
+SPLINE_INFO|     Accuracy achieved:     0.000000098500
+SPLINE_INFO|     RMIN and RMAX  used for spline (bohr):                   2.715924   18.897261
+SPLINE_INFO|     RMIN and RMAX used to achieve spline accuracy (bohr):    3.703594   18.897261
+SPLINE_INFO|     Spline value at RMIN (Hartree):    0.430702359
+SPLINE_INFO|     Spline value at RMAX (Hartree):    0.000000000
+SPLINE_INFO|     Electrostatic and Non-Bonded Cutoffs:   -0.000558436   -0.000000154
+
+SPLINE_INFO|     Spline number:     14
+SPLINE_INFO|     Spline number     14  Unique number     20   Kinds involved:      5      4
+SPLINE_INFO|     Number of points used in the Splines:    681
+SPLINE_INFO|     Accuracy requested:    0.000000100000
+SPLINE_INFO|     Accuracy achieved:     0.000000072923
+SPLINE_INFO|     RMIN and RMAX  used for spline (bohr):                   1.826859   18.897261
+SPLINE_INFO|     RMIN and RMAX used to achieve spline accuracy (bohr):    2.608709   18.897261
+SPLINE_INFO|     Spline value at RMIN (Hartree):    0.443663836
+SPLINE_INFO|     Spline value at RMAX (Hartree):    0.000000000
+SPLINE_INFO|     Electrostatic and Non-Bonded Cutoffs:    0.000247480   -0.000000014
+
+SPLINE_INFO|     Spline number:     15
+SPLINE_INFO|     Spline number     15  Unique number     21   Kinds involved:      5      5
+SPLINE_INFO|     Number of points used in the Splines:    681
+SPLINE_INFO|     Accuracy requested:    0.000000100000
+SPLINE_INFO|     Accuracy achieved:     0.000000079483
+SPLINE_INFO|     RMIN and RMAX  used for spline (bohr):                   1.826859   18.897261
+SPLINE_INFO|     RMIN and RMAX used to achieve spline accuracy (bohr):    2.608709   18.897261
+SPLINE_INFO|     Spline value at RMIN (Hartree):    0.443869020
+SPLINE_INFO|     Spline value at RMAX (Hartree):    0.000000000
+SPLINE_INFO|     Electrostatic and Non-Bonded Cutoffs:    0.000269772   -0.000000014
+
+SPLINE_INFO|     Spline number:     16
+SPLINE_INFO|     Spline number     16  Unique number     11   Kinds involved:      6      1
+SPLINE_INFO|     Number of points used in the Splines:    472
+SPLINE_INFO|     Accuracy requested:    0.000000100000
+SPLINE_INFO|     Accuracy achieved:     0.000000085817
+SPLINE_INFO|     RMIN and RMAX  used for spline (bohr):                   2.715924   18.897261
+SPLINE_INFO|     RMIN and RMAX used to achieve spline accuracy (bohr):    3.689134   18.897261
+SPLINE_INFO|     Spline value at RMIN (Hartree):    0.440839231
+SPLINE_INFO|     Spline value at RMAX (Hartree):    0.000000000
+SPLINE_INFO|     Electrostatic and Non-Bonded Cutoffs:   -0.000699585   -0.000000154
+
+SPLINE_INFO|     Spline number:     17
+SPLINE_INFO|     Spline number     17  Unique number     13   Kinds involved:      6      2
+SPLINE_INFO|     Number of points used in the Splines:    393
+SPLINE_INFO|     Accuracy requested:    0.000000100000
+SPLINE_INFO|     Accuracy achieved:     0.000000085946
+SPLINE_INFO|     RMIN and RMAX  used for spline (bohr):                   2.715924   18.897261
+SPLINE_INFO|     RMIN and RMAX used to achieve spline accuracy (bohr):    3.703594   18.897261
+SPLINE_INFO|     Spline value at RMIN (Hartree):    0.431116433
+SPLINE_INFO|     Spline value at RMAX (Hartree):    0.000000000
+SPLINE_INFO|     Electrostatic and Non-Bonded Cutoffs:   -0.000487707   -0.000000154
+
+SPLINE_INFO|     Spline number:     18
+SPLINE_INFO|     Spline number     18  Unique number     12   Kinds involved:      6      3
+SPLINE_INFO|     Number of points used in the Splines:    393
+SPLINE_INFO|     Accuracy requested:    0.000000100000
+SPLINE_INFO|     Accuracy achieved:     0.000000091559
+SPLINE_INFO|     RMIN and RMAX  used for spline (bohr):                   2.715924   18.897261
+SPLINE_INFO|     RMIN and RMAX used to achieve spline accuracy (bohr):    3.703594   18.897261
+SPLINE_INFO|     Spline value at RMIN (Hartree):    0.430931298
+SPLINE_INFO|     Spline value at RMAX (Hartree):    0.000000000
+SPLINE_INFO|     Electrostatic and Non-Bonded Cutoffs:   -0.000519330   -0.000000154
+
+SPLINE_INFO|     Spline number:     19
+SPLINE_INFO|     Spline number     19  Unique number     14   Kinds involved:      6      4
+SPLINE_INFO|     Number of points used in the Splines:    567
+SPLINE_INFO|     Accuracy requested:    0.000000100000
+SPLINE_INFO|     Accuracy achieved:     0.000000097432
+SPLINE_INFO|     RMIN and RMAX  used for spline (bohr):                   1.826859   18.897261
+SPLINE_INFO|     RMIN and RMAX used to achieve spline accuracy (bohr):    2.609353   18.897261
+SPLINE_INFO|     Spline value at RMIN (Hartree):    0.432450173
+SPLINE_INFO|     Spline value at RMAX (Hartree):    0.000000000
+SPLINE_INFO|     Electrostatic and Non-Bonded Cutoffs:    0.000230150   -0.000000014
+
+SPLINE_INFO|     Spline number:     20
+SPLINE_INFO|     Spline number     20  Unique number     16   Kinds involved:      6      5
+SPLINE_INFO|     Number of points used in the Splines:    681
+SPLINE_INFO|     Accuracy requested:    0.000000100000
+SPLINE_INFO|     Accuracy achieved:     0.000000073924
+SPLINE_INFO|     RMIN and RMAX  used for spline (bohr):                   1.826859   18.897261
+SPLINE_INFO|     RMIN and RMAX used to achieve spline accuracy (bohr):    2.608709   18.897261
+SPLINE_INFO|     Spline value at RMIN (Hartree):    0.443695136
+SPLINE_INFO|     Spline value at RMAX (Hartree):    0.000000000
+SPLINE_INFO|     Electrostatic and Non-Bonded Cutoffs:    0.000250881   -0.000000014
+
+SPLINE_INFO|     Spline number:     21
+SPLINE_INFO|     Spline number     21  Unique number     15   Kinds involved:      6      6
+SPLINE_INFO|     Number of points used in the Splines:    567
+SPLINE_INFO|     Accuracy requested:    0.000000100000
+SPLINE_INFO|     Accuracy achieved:     0.000000098769
+SPLINE_INFO|     RMIN and RMAX  used for spline (bohr):                   1.826859   18.897261
+SPLINE_INFO|     RMIN and RMAX used to achieve spline accuracy (bohr):    2.609353   18.897261
+SPLINE_INFO|     Spline value at RMIN (Hartree):    0.432479193
+SPLINE_INFO|     Spline value at RMAX (Hartree):    0.000000000
+SPLINE_INFO|     Electrostatic and Non-Bonded Cutoffs:    0.000233312   -0.000000014
+
+SPLINE_INFO|     Number of pair potential Splines allocated:     21
+ SPLINE_INFO| Number of unique splines computed:     21
+ SPLINE_INFO| Done
+       atom  1  C1 charge =  -0.1991
+       atom  2  C2 charge =  -0.1388
+       atom  3  C2 charge =  -0.1478
+       atom  4  C2 charge =  -0.1388
+       atom  5  H charge =  0.0655
+       atom  6  H charge =  0.0655
+       atom  7  H charge =  0.0714
+       atom  8  H charge =  0.0714
+       atom  9  H charge =  0.0714
+       atom  10  H charge =  0.0664
+       atom  11  H charge =  0.0664
+       atom  12  C1 charge =  -0.1991
+       atom  13  H charge =  0.0655
+       atom  14  H charge =  0.0655
+       atom  15  H charge =  0.0714
+       atom  16  H charge =  0.0714
+       atom  17  H charge =  0.0714
+     Mol Kind NM00 charge =  -0.00039999999999981717
+       atom  1  C1 charge =  -0.1991
+       atom  2  C2 charge =  -0.1388
+       atom  3  C2 charge =  -0.1478
+       atom  4  C2 charge =  -0.1388
+       atom  5  H charge =  0.0655
+       atom  6  H charge =  0.0655
+       atom  7  H charge =  0.0714
+       atom  8  H charge =  0.0714
+       atom  9  H charge =  0.0714
+       atom  10  H charge =  0.0664
+       atom  11  H charge =  0.0664
+       atom  12  C1 charge =  -0.1991
+       atom  13  H charge =  0.0655
+       atom  14  H charge =  0.0655
+       atom  15  H charge =  0.0714
+       atom  16  H charge =  0.0714
+       atom  17  H charge =  0.0714
+     Total system charge =  -0.00039999999999981717
+     Total system mass   =  131519.18021573604
+     Mol( 1 ) Old BOND Count:  16 4
+     1     2
+     1     7
+     1     8
+     1     9
+     2     3
+     2     5
+     2     6
+     3     4
+     3    10
+     3    11
+     4    12
+     4    13
+     4    14
+    12    15
+    12    16
+    12    17
+     Mol( 1 ) Old BEND Count:  30 7
+     3     2     1
+     4     3     2
+     5     2     1
+     5     2     3
+     6     2     1
+     6     2     3
+     6     2     5
+     7     1     2
+     8     1     2
+     8     1     7
+     9     1     2
+     9     1     7
+     9     1     8
+    10     3     2
+    10     3     4
+    11     3     2
+    11     3     4
+    11     3    10
+    12     4     3
+    13     4     3
+    13     4    12
+    14     4     3
+    14     4    12
+    14     4    13
+    15    12     4
+    16    12     4
+    16    12    15
+    17    12     4
+    17    12    15
+    17    12    16
+     Mol( 1 ) Old UB Count:  30 7
+     3     2     1
+     4     3     2
+     5     2     1
+     5     2     3
+     6     2     1
+     6     2     3
+     6     2     5
+     7     1     2
+     8     1     2
+     8     1     7
+     9     1     2
+     9     1     7
+     9     1     8
+    10     3     2
+    10     3     4
+    11     3     2
+    11     3     4
+    11     3    10
+    12     4     3
+    13     4     3
+    13     4    12
+    14     4     3
+    14     4    12
+    14     4    13
+    15    12     4
+    16    12     4
+    16    12    15
+    17    12     4
+    17    12    15
+    17    12    16
+     Mol( 1 ) Old TORSION Count:  36 6
+     1     2     3     4
+     1     2     3    10
+     1     2     3    11
+     2     3     4    12
+     2     3     4    13
+     2     3     4    14
+     3     4    12    15
+     3     4    12    16
+     3     4    12    17
+     5     2     3     4
+     5     2     3    10
+     5     2     3    11
+     6     2     3     4
+     6     2     3    10
+     6     2     3    11
+     7     1     2     3
+     7     1     2     5
+     7     1     2     6
+     8     1     2     3
+     8     1     2     5
+     8     1     2     6
+     9     1     2     3
+     9     1     2     5
+     9     1     2     6
+    10     3     4    12
+    10     3     4    13
+    10     3     4    14
+    11     3     4    12
+    11     3     4    13
+    11     3     4    14
+    13     4    12    15
+    13     4    12    16
+    13     4    12    17
+    14     4    12    15
+    14     4    12    16
+    14     4    12    17
+
+
+ MOLECULE KIND INFORMATION
+
+     1. Molecule kind: NM00                      Number of atoms:             17
+                     Atom         Atomic kind name             Atom name (label)
+                        1                       C1                            C1
+                        2                       C2                            C2
+                        3                       C2                            C2
+                        4                       C2                            C2
+                        5                        H                             H
+                        6                        H                             H
+                        7                        H                             H
+                        8                        H                             H
+                        9                        H                             H
+                       10                        H                             H
+                       11                        H                             H
+                       12                       C1                            C1
+                       13                        H                             H
+                       14                        H                             H
+                       15                        H                             H
+                       16                        H                             H
+                       17                        H                             H
+
+        The name was automatically generated: T
+        Number of molecules:     1
+        Molecule list:           1
+        Number of bonds:           16
+        Number of bends:           30
+        Number of Urey-Bradley:    30
+        Number of torsions:        36
+        Number of one-four:        36
+
+
+ MOLECULE KIND SET INFORMATION               Total Number of bonds:           16
+                                             Total Number of bends:           30
+                                             Total Number of Urey-Bradley:    30
+                                             Total Number of torsions:        36
+                                             Total Number of improper:         0
+                                             Total Number of one-four:        36
+
+
+ MODULE FIST:  ATOMIC COORDINATES IN ANGSTROM
+
+  Atom  Kind  ATM_TYP       X           Y           Z          q(eff)       Mass
+
+     1    1   C1        17.603318   15.407807   15.000080     -0.20      12.0107
+     2    2   C2        16.305435   14.589571   15.000140     -0.14      12.0107
+     3    3   C2        14.999995   15.410559   15.000056     -0.15      12.0107
+     4    2   C2        13.694567   14.589552   15.000116     -0.14      12.0107
+     5    4   H         16.305876   13.928675   15.884717      0.07       1.0079
+     6    4   H         16.305892   13.928520   14.115680      0.07       1.0079
+     7    5   H         18.478652   14.738186   15.000147      0.07       1.0079
+     8    5   H         17.657954   16.049336   14.105796      0.07       1.0079
+     9    5   H         17.657938   16.049493   15.894252      0.07       1.0079
+    10    6   H         14.999982   16.071498   15.884306      0.07       1.0079
+    11    6   H         14.999999   16.071343   14.115691      0.07       1.0079
+    12    1   C1        12.396673   15.407770   15.000033     -0.20      12.0107
+    13    4   H         13.694135   13.928502   14.115656      0.07       1.0079
+    14    4   H         13.694119   13.928657   15.884693      0.07       1.0079
+    15    5   H         11.521348   14.738137   15.000083      0.07       1.0079
+    16    5   H         12.342027   16.049455   15.894204      0.07       1.0079
+    17    5   H         12.342044   16.049299   14.105748      0.07       1.0079
+
+
+
+ REQUESTED STRUCTURE DATA
+
+ Crystal Symmetry Information
+       Point group of the primitive lattice:                        CUBIC system
+                                                                symmorphic group
+                                                           no inversion symmetry
+       The point group of the crystal is [Hermann-Mauguin] [INDEX= 5]        2/m
+                                         [Schoenflies]                       C2h
+       Total number of elements in the point group:                            4
+       to sum up: (                                            5  1  1  0  4  5)
+
+       List of the rotations:
+                                   1   3  26  28
+
+
+ DISTRIBUTION OF THE MOLECULES
+
+  Process   Number of molecules
+
+        0                     1
+
+      Sum                     1
+
+  Process   Kind   Local molecules (global indices)
+
+        0      1        1
+
+
+ DISTRIBUTION OF THE PARTICLES
+
+  Process   Number of particles
+
+        0                    17
+
+      Sum                    17
+
+  Process   Kind   Local particles (global indices)
+
+        0      1        1    12
+               2        2     4
+               3        3
+               4        5     6    13    14
+               5        7     8     9    15    16    17
+               6       10    11
+
+
+ SUBCELL GRID  INFO FOR THE NONBONDED NEIGHBOR LISTS
+
+    NUMBER OF SUBCELLS             ::                   3         3         3
+    NUMBER OF PERIODIC      IMAGES ::                   0         0         0
+    NUMBER OF INTERACTING SUBCELLS ::                   2         2         2
+ FIST:: FORCES IN INPUT...
+    0.000000000    0.000000000    0.000000000
+    0.000000000    0.000000000    0.000000000
+    0.000000000    0.000000000    0.000000000
+    0.000000000    0.000000000    0.000000000
+    0.000000000    0.000000000    0.000000000
+    0.000000000    0.000000000    0.000000000
+    0.000000000    0.000000000    0.000000000
+    0.000000000    0.000000000    0.000000000
+    0.000000000    0.000000000    0.000000000
+    0.000000000    0.000000000    0.000000000
+    0.000000000    0.000000000    0.000000000
+    0.000000000    0.000000000    0.000000000
+    0.000000000    0.000000000    0.000000000
+    0.000000000    0.000000000    0.000000000
+    0.000000000    0.000000000    0.000000000
+    0.000000000    0.000000000    0.000000000
+    0.000000000    0.000000000    0.000000000
+ FIST:: NONBOND + R-SPACE ELECTROSTATIC FORCES ...
+   -0.000370917   -0.000119157    0.000000007
+   -0.000404935    0.000107018   -0.000000013
+    0.000000000    0.000000000    0.000000000
+    0.000404933    0.000107024   -0.000000006
+    0.000334996    0.000006854    0.000060247
+    0.000334998    0.000006843   -0.000060242
+    0.000134499   -0.000052207    0.000000006
+    0.000322893   -0.000009244   -0.000062115
+    0.000322892   -0.000009233    0.000062123
+   -0.000000002    0.000069147    0.000191911
+    0.000000001    0.000069113   -0.000191923
+    0.000370919   -0.000119151    0.000000014
+   -0.000334997    0.000006839   -0.000060248
+   -0.000334998    0.000006849    0.000060240
+   -0.000134499   -0.000052209    0.000000003
+   -0.000322893   -0.000009238    0.000062117
+   -0.000322892   -0.000009248   -0.000062121
+ BOND    =        0.1029  ANGLE   =        1.0781  DIHED      =        1.8077
+ 1-4 VDW + 1-4 EEL (SHORT RANGE)  =        1.6018  UBRAD      =        0.2789
+ FIST:: CORRECTED BONDED ELECTROSTATIC FORCES + INTERNAL FORCES...
+    0.000370920    0.000119168   -0.000000011
+    0.000404938   -0.000107026    0.000000024
+   -0.000000000    0.000000014   -0.000000006
+   -0.000404937   -0.000107035    0.000000007
+   -0.000334995   -0.000006854   -0.000060248
+   -0.000334997   -0.000006852    0.000060232
+   -0.000134485    0.000052194   -0.000000005
+   -0.000322896    0.000009248    0.000062107
+   -0.000322897    0.000009237   -0.000062110
+    0.000000004   -0.000069142   -0.000191910
+   -0.000000000   -0.000069112    0.000191925
+   -0.000370936    0.000119146   -0.000000022
+    0.000334996   -0.000006842    0.000060241
+    0.000334997   -0.000006852   -0.000060234
+    0.000134499    0.000052205   -0.000000002
+    0.000322896    0.000009249   -0.000062096
+    0.000322894    0.000009255    0.000062108
+ FIST:: (1) INTERNAL + ELECTROSTATIC BONDED + NONBONDED
+    0.000000003    0.000000011   -0.000000004
+    0.000000003   -0.000000007    0.000000011
+   -0.000000000    0.000000014   -0.000000006
+   -0.000000004   -0.000000011    0.000000001
+    0.000000001    0.000000000   -0.000000001
+    0.000000001   -0.000000009   -0.000000010
+    0.000000014   -0.000000013    0.000000001
+   -0.000000003    0.000000004   -0.000000008
+   -0.000000005    0.000000004    0.000000013
+    0.000000002    0.000000004    0.000000002
+    0.000000001    0.000000001    0.000000001
+   -0.000000018   -0.000000005   -0.000000008
+   -0.000000000   -0.000000004   -0.000000007
+   -0.000000000   -0.000000003    0.000000006
+    0.000000000   -0.000000004    0.000000001
+    0.000000003    0.000000011    0.000000021
+    0.000000002    0.000000006   -0.000000013
+ FIST:: (2) TOTAL FORCES (1) + ELECTROSTATIC FORCES
+    0.000000003    0.000000011   -0.000000004
+    0.000000003   -0.000000007    0.000000011
+   -0.000000000    0.000000014   -0.000000006
+   -0.000000004   -0.000000011    0.000000001
+    0.000000001    0.000000000   -0.000000001
+    0.000000001   -0.000000009   -0.000000010
+    0.000000014   -0.000000013    0.000000001
+   -0.000000003    0.000000004   -0.000000008
+   -0.000000005    0.000000004    0.000000013
+    0.000000002    0.000000004    0.000000002
+    0.000000001    0.000000001    0.000000001
+   -0.000000018   -0.000000005   -0.000000008
+   -0.000000000   -0.000000004   -0.000000007
+   -0.000000000   -0.000000003    0.000000006
+    0.000000000   -0.000000004    0.000000001
+    0.000000003    0.000000011    0.000000021
+    0.000000002    0.000000006   -0.000000013
+ FIST:: (3) TOTAL FORCES - THE END...
+    0.000000003    0.000000011   -0.000000004
+    0.000000003   -0.000000007    0.000000011
+   -0.000000000    0.000000014   -0.000000006
+   -0.000000004   -0.000000011    0.000000001
+    0.000000001    0.000000000   -0.000000001
+    0.000000001   -0.000000009   -0.000000010
+    0.000000014   -0.000000013    0.000000001
+   -0.000000003    0.000000004   -0.000000008
+   -0.000000005    0.000000004    0.000000013
+    0.000000002    0.000000004    0.000000002
+    0.000000001    0.000000001    0.000000001
+   -0.000000018   -0.000000005   -0.000000008
+   -0.000000000   -0.000000004   -0.000000007
+   -0.000000000   -0.000000003    0.000000006
+    0.000000000   -0.000000004    0.000000001
+    0.000000003    0.000000011    0.000000021
+    0.000000002    0.000000006   -0.000000013
+Energy after FIST calculation.. exiting now ::    0.012255060
+ MM DIPOLE [BERRY PHASE] ( A.U.)|                 0.425189  -7.250439   9.048011
+ MM DIPOLE [BERRY PHASE] (Debye)|                 1.080721 -18.428777  22.997749
+ MM DIPOLE [BERRY PHASE] DERIVATIVE (A.U.)|       0.000000   0.000000   0.000000
+
+ ENERGY| Total FORCE_EVAL ( FIST ) energy (a.u.):              0.012255059530862
+
+      17
+ FORCES| (a.u.)
+  C         0.0000000032        0.0000000115       -0.0000000038
+  C         0.0000000034       -0.0000000073        0.0000000111
+  C        -0.0000000004        0.0000000137       -0.0000000064
+  C        -0.0000000041       -0.0000000111        0.0000000011
+  H         0.0000000011        0.0000000000       -0.0000000014
+  H         0.0000000008       -0.0000000085       -0.0000000095
+  H         0.0000000144       -0.0000000133        0.0000000007
+  H        -0.0000000028        0.0000000040       -0.0000000083
+  H        -0.0000000051        0.0000000040        0.0000000128
+  H         0.0000000021        0.0000000043        0.0000000018
+  H         0.0000000011        0.0000000015        0.0000000013
+  C        -0.0000000177       -0.0000000053       -0.0000000077
+  H        -0.0000000005       -0.0000000037       -0.0000000066
+  H        -0.0000000003       -0.0000000031        0.0000000063
+  H         0.0000000000       -0.0000000042        0.0000000010
+  H         0.0000000028        0.0000000114        0.0000000207
+  H         0.0000000017        0.0000000062       -0.0000000132
+
+ -------------------------------------------------------------------------------
+ -                                                                             -
+ -                           R E F E R E N C E S                               -
+ -                                                                             -
+ -------------------------------------------------------------------------------
+ 
+ CP2K version 2.0.0 (Development Version), the CP2K developers group (2008).
+ CP2K is freely available from http://cp2k.berlios.de/ .
+
+ Frigo, M; Johnson, SG. 
+ PROCEEDINGS OF THE IEEE, 93 (2), 216-231 (2005). 
+ The design and implementation of FFTW3.
+ http://dx.doi.org/10.1109/JPROC.2004.840301
+
+
+ -------------------------------------------------------------------------------
+ -                                                                             -
+ -                                T I M I N G                                  -
+ -                                                                             -
+ -------------------------------------------------------------------------------
+ SUBROUTINE                    CALLS  ASD   CPU TIME T  PERFORMANCE ELAPSED TIME
+ CP2K                              1  1.0       0.58 I       ---            0.59
+ fist_create_force_env             1  2.0       0.58 I       ---            0.58
+ fist_init                         1  3.0       0.58 I       ---            0.58
+ force_field_control               1  4.0       0.57 I       ---            0.58
+ force_field_pack                  1  5.0       0.57 I       ---            0.58
+ force_field_pack_ppse             1  6.0       0.38 I       ---            0.38
+ get_nonbond_storage               2  7.0       0.32 I       ---            0.33
+ spline_nonbond_control            2  7.0       0.25 I       ---            0.25
+ force_field_pack_sbe              1  6.0       0.18 I       ---            0.19
+ -------------------------------------------------------------------------------
+
+  **** **** ******  **  PROGRAM ENDED AT                     20081119 120012.160
+ ***** ** ***  *** **   PROGRAM RAN ON                                  molmod22
+ **    ****   ******    PROGRAM RAN BY                                      toon
+ ***** **    ** ** **   PROGRAM PROCESS ID                                  8244
+  **** **  *******  **  PROGRAM STARTED IN /home/toon/unief/doctoraat/code/work/
+                                           tamkin/apps/001_cyclopentane/sp

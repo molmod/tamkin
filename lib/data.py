@@ -32,17 +32,20 @@ __all__ = ["Molecule"]
 
 
 class Molecule(BaseMolecule):
-    def __init__(self, numbers, coordinates, masses, energy, hessian, multiplicity):
+    def __init__(self, numbers, coordinates, masses, energy, gradient, hessian, multiplicity):
         BaseMolecule.__init__(self, numbers, coordinates)
         self._masses = numpy.array(masses, float)
         self._masses.setflags(write=False)
         self._energy = energy
+        self._gradient = numpy.array(gradient, float)
+        self._gradient.setflags(write=False)
         self._hessian = numpy.array(hessian, float)
         self._hessian.setflags(write=False)
         self._multiplicity = multiplicity
 
     masses = property(lambda self: self._masses)
     energy = property(lambda self: self._energy)
+    gradient = property(lambda self: self._gradient)
     hessian = property(lambda self: self._hessian)
     multiplicity = property(lambda self: self._multiplicity)
 

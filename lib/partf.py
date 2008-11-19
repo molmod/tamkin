@@ -327,17 +327,21 @@ class Vibrations(Contribution, StatFysTerms):
             for row in other.get_fixed_basis(molecule.coordinates):
                 fixed_basis.append(self.to_weighted(row))
 
-        fixed_basis = numpy.array(fixed_basis)
-        U, V, Wt = numpy.linalg.svd(fixed_basis, full_matrices=True)
+        if len(fixed_basis) > 0:
+            fixed_basis = numpy.array(fixed_basis)
+            U, V, Wt = numpy.linalg.svd(fixed_basis, full_matrices=True)
 
-        # from now on, the basis vectors are orthogonal...
-        num_fixed = sum(V > V.max()*1e-10)
-        self.fixed_basis = Wt[:num_fixed]
-        self.free_basis = Wt[num_fixed:]
-
+            # from now on, the basis vectors are orthogonal...
+            num_fixed = sum(V > V.max()*1e-10)
+            self.fixed_basis = Wt[:num_fixed]
+            self.free_basis = Wt[num_fixed:]
+        else:
+            self.fixed_basis = []
+            self.free_basis = None
         # solve the vibrational problem in the free basis
         free_hessian = self.to_free(self.to_weighted(molecule.hessian))
         evals, evecs = numpy.linalg.eigh(free_hessian)
+
         self.freqs = numpy.sqrt(abs(evals))/(2*numpy.pi)
         self.freqs *= (evals > 0)*2-1
         self.positive_freqs = self.freqs[self.freqs > 0]
@@ -350,12 +354,14 @@ class Vibrations(Contribution, StatFysTerms):
             eigen_mode /= numpy.linalg.norm(eigen_mode)
             self.eigen_modes.append(eigen_mode)
 
-    num_fixed = property(lambda self: self.fixed_basis.shape[0])
-    num_free = property(lambda self: self.free_basis.shape[0])
+    num_fixed = property(lambda self: len(self.fixed_basis))
+    num_free = property(lambda self: len(self.hessian)-len(self.fixed_basis))
     num_dim = property(lambda self: len(self.hessian))
 
     def to_free(self, mat):
-        if len(mat.shape) == 2 and mat.shape[0] == self.num_dim and mat.shape[1] == self.num_dim:
+        if self.num_fixed == 0:
+            return mat
+        elif len(mat.shape) == 2 and mat.shape[0] == self.num_dim and mat.shape[1] == self.num_dim:
             return numpy.dot(self.free_basis, numpy.dot(mat, self.free_basis.transpose()))
         elif len(mat.shape) == 2 and mat.shape[0] == self.num_dim and mat.shape[1] == 1:
             return numpy.dot(self.free_basis, mat.transpose()).transpose()
@@ -365,7 +371,9 @@ class Vibrations(Contribution, StatFysTerms):
             raise NotImplementedError
 
     def from_free(self, mat):
-        if len(mat.shape) == 2 and mat.shape[0] == self.num_free and mat.shape[1] == self.num_free:
+        if self.num_fixed == 0:
+            return mat
+        elif len(mat.shape) == 2 and mat.shape[0] == self.num_free and mat.shape[1] == self.num_free:
             return numpy.dot(self.free_basis.transpose(), numpy.dot(mat, self.free_basis))
         elif len(mat.shape) == 2 and mat.shape[0] == self.num_free and mat.shape[1] == 1:
             return numpy.dot(self.free_basis.transpose(), mat.transpose()).transpose()

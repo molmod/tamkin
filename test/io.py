@@ -25,7 +25,8 @@ from tamkin.partf import PartFun, ExternalTranslation, ExternalRotation, Electro
 from tamkin.io import load_fixed_g03com, load_molecule_g03fchk, load_molecule_cp2k
 
 from molmod.data.periodic import periodic
-from molmod.units import angstrom
+from molmod.units import angstrom, cm
+from molmod.constants import lightspeed
 
 import unittest, numpy
 
@@ -70,6 +71,7 @@ class IOTestCase(unittest.TestCase):
             4540.443901, 4578.619346, 4578.624300, 4581.926079, 4582.125771,
             4646.530637, 4657.432936, 4671.093295, 4751.240132, 4751.291450
         ])
+        conv = cm/lightspeed
         for i in xrange(len(expected_freqs)):
-            self.assertAlmostEqual(expected_freqs[i], pf.vibrational.freqs[i+6], 1)
+            self.assertAlmostEqual(expected_freqs[i], pf.vibrational.freqs[i+6]*conv, 1)
 

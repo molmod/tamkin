@@ -25,8 +25,7 @@ from tamkin.data import Molecule
 
 from molmod.io.gaussian03.fchk import FCHKFile
 from molmod.io.xyz import XYZFile
-from molmod.units import amu, cm
-from molmod.constants import lightspeed
+from molmod.units import amu
 from molmod.data.periodic import periodic
 
 import numpy
@@ -146,8 +145,7 @@ def load_molecule_cp2k(fn_xyz, fn_sp, fn_freq, multiplicity=1):
     hessian = 0.5*(hessian+hessian.transpose())
     # cp2k prints a transformed hessian, here we convert it back to the normal
     # hessian in atomic units.
-    conv = numpy.array([masses, masses, masses]).transpose().ravel()**0.5
-    conv *= (1e-3*cm/lightspeed)
+    conv = 1e-3*numpy.array([masses, masses, masses]).transpose().ravel()**0.5
     hessian *= conv
     hessian *= conv.reshape((-1,1))
 

@@ -275,8 +275,8 @@ class ExternalRotation(Info, Constraint, StatFys):
         self.com = molecule.com
         evals = numpy.linalg.eigvalsh(molecule.inertia_tensor)
         self.factor = numpy.sqrt(numpy.product([
-            2*v*boltzmann for v in evals if v > self.im_threshold
-        ])*numpy.pi)/self.symmetry_number
+            2*numpy.pi*v*boltzmann for v in evals if v > self.im_threshold
+        ]))/self.symmetry_number/numpy.pi
         self.count = (evals > self.im_threshold).sum()
 
     def dump(self, f):

@@ -541,3 +541,29 @@ class PartFunTestCase(unittest.TestCase):
         ])
         self.check_freqs(expected_freqs, pf, 1)
 
+    def test_linear(self):
+        pf = PartFun(load_molecule_g03fchk("input/linear/gaussian.fchk"), [ExternalTranslation(),ExternalRotation(2)])
+
+        # check the inertia moments (eigenvalues only)
+        iner_tens = pf.molecule.inertia_tensor
+        evals, evecs = numpy.linalg.eigh(iner_tens)
+        expected_evals = numpy.array([0.00000, 158.27937, 158.27937]) # from paats.log
+        for i in 0,1,2:
+            self.assertAlmostEqual(
+                evals[i]/amu, expected_evals[i], 5,
+                "Item %i of inertia tensor eigenvalues is wrong: %s!=%s" % (
+                    i, evals[i]/amu, expected_evals[i]
+                )
+            )
+
+        # check the natural logarithm rotational partition function
+        self.assertAlmostEqual(5.607352, pf.rotational.log_eval(298.150), 5)
+        # check the count of the external rotation contribution
+        self.assertEqual(pf.rotational.count, 2)
+        # derived quantities
+        calmolK = cal/mol/K
+        self.assertAlmostEqual(pf.rotational.internal_energy(298.15)/(kcalmol), 0.592, 2)
+        self.assertAlmostEqual(pf.rotational.heat_capacity(298.15)/(calmolK), 1.987, 2)
+        self.assertAlmostEqual(pf.rotational.entropy(298.15)/(calmolK), 13.130, 2)
+
+

@@ -117,7 +117,7 @@ class StatFys(object):
         return boltzmann*temp*(2*log_deriv(temp) + temp*log_deriv2(temp))
 
     def entropy(self, temp, log_eval=None, log_deriv=None):
-        """Computes the entropy per molecule"""
+        """Computes the entropy contribution per molecule"""
         if log_eval is None:
             log_eval = self.log_eval
         if log_deriv is None:
@@ -162,7 +162,7 @@ class StatFysTerms(StatFys):
         return self.heat_capacity(temp, self.log_deriv_terms, self.log_deriv2_terms)
 
     def entropy_terms(self, temp):
-        """Computes the entropy per molecule (separate terms)"""
+        """Computes the entropy contribution per molecule (separate terms)"""
         return self.entropy(temp, self.log_eval_terms, self.log_deriv_terms)
 
     def free_energy(self, temp, log_eval=None):
@@ -493,6 +493,10 @@ class PartFun(StatFys):
         for other in self.other_contributions:
             result += other.log_deriv2(temp)
         return result
+
+    def entropy(self, temp):
+        """Compute the total entropy"""
+        return boltzmann + StatFys.entropy(self, temp)
 
     def free_energy(self, temp):
         """Computes the free energy"""

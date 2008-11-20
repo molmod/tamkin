@@ -20,7 +20,6 @@
 #
 # --
 
-
 from tamkin.partf import *
 from tamkin.io import load_molecule_g03fchk, load_fixed_g03com
 
@@ -470,9 +469,9 @@ class PartFunTestCase(unittest.TestCase):
 
         # values taken from aa.log
         calmolK = cal/mol/K
-        # gaussian uses a different definition of entropy for the different
-        # contributions of the partition function. This is the correction:
-        cor = 1.98720649773
+        # gaussian seems to add the constant R to the translational part of the
+        # entropy for some reason. I hope there is a mistake somewhere.
+        R = 1.98720649773 # R in cal/(mol*K)
         # electronic
         self.assertAlmostEqual(pf.electronic.internal_energy(298.15)/(kcalmol), 0.000)
         self.assertAlmostEqual(pf.electronic.heat_capacity(298.15)/(calmolK), 0.000)
@@ -480,7 +479,7 @@ class PartFunTestCase(unittest.TestCase):
         # translational
         self.assertAlmostEqual(pf.translational.internal_energy(298.15)/(kcalmol), 0.889, 2)
         self.assertAlmostEqual(pf.translational.heat_capacity(298.15)/(calmolK), 2.981, 2)
-        self.assertAlmostEqual(pf.translational.entropy(298.15)/(calmolK), 38.699-cor, 2) # corrected
+        self.assertAlmostEqual(pf.translational.entropy(298.15)/(calmolK), 38.699-R, 2) # corrected
         # rotational
         self.assertAlmostEqual(pf.rotational.internal_energy(298.15)/(kcalmol), 0.889, 2)
         self.assertAlmostEqual(pf.rotational.heat_capacity(298.15)/(calmolK), 2.981, 2)
@@ -492,7 +491,7 @@ class PartFunTestCase(unittest.TestCase):
         # total
         self.assertAlmostEqual(pf.internal_energy(298.15)/(kcalmol), 53.121, 2)
         self.assertAlmostEqual(pf.heat_capacity(298.15)/(calmolK), 19.225, 2)
-        self.assertAlmostEqual(pf.entropy(298.15)/(calmolK), 74.696-cor, 2) # corrected
+        self.assertAlmostEqual(pf.entropy(298.15)/(calmolK), 74.696, 2)
         # free energy of the molecule:
         self.assertAlmostEqual(pf.free_energy(298.15), -247.257535, 5)
 

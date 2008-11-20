@@ -19,3 +19,8 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
+
+from data import *
+from io import *
+from partf import *
+from tools import *

@@ -278,7 +278,7 @@ class PartFunTestCase(unittest.TestCase):
         ])
         for i in xrange(len(temps)):
             k = compute_rate_coeff([pf_react], pf_trans, temps[i])
-            self.assertAlmostEqual(numpy.log(k/(1/s)), numpy.log(expected_ks[i]),3)
+            self.assertAlmostEqual(numpy.log(k/(1/s)), numpy.log(expected_ks[i]),5)
 
     def test_react_gas(self):
         ## aa.fchk
@@ -301,18 +301,18 @@ class PartFunTestCase(unittest.TestCase):
         ])
         self.check_mode(expected_eig_mode, pf, 4)
 
-        # check partition function
-        self.assertAlmostEqual(16.973928, pf.translational.log_eval(298.150), 4)
+        # check partition function, values from aa.log
+        self.assertAlmostEqual(16.973928, pf.translational.log_eval(298.150), 6)
         self.assertEqual(pf.rotational.count, 3)
-        self.assertAlmostEqual(11.225093, pf.rotational.log_eval(298.150), 1)
+        self.assertAlmostEqual(11.225093, pf.rotational.log_eval(298.150), 6)
         vib_contribs = pf.vibrational.log_eval_terms(298.150)
         expected_vib_contribs = numpy.array([
             0.674278, 0.292167, -0.357617, -1.017249, -1.018740, -1.427556,
             -1.428865
         ])
         for i in xrange(len(expected_vib_contribs)):
-            self.assertAlmostEqual(vib_contribs[i], expected_vib_contribs[i], 3)
-        self.assertAlmostEqual(-53.068692, pf.log_eval(298.150), 1)
+            self.assertAlmostEqual(vib_contribs[i], expected_vib_contribs[i], 5)
+        self.assertAlmostEqual(-53.068692, pf.log_eval(298.150), 4)
 
         ## aarad.fchk
         pf = PartFun(load_molecule_g03fchk("input/sterck/aarad.fchk"), [ExternalTranslation(), ExternalRotation(1), Electronic()])
@@ -337,17 +337,17 @@ class PartFunTestCase(unittest.TestCase):
         self.check_mode(expected_eig_mode, pf, 10)
 
         # check partition function
-        self.assertAlmostEqual(16.995059, pf.translational.log_eval(298.150), 4)
+        self.assertAlmostEqual(16.995059, pf.translational.log_eval(298.150), 6)
         self.assertEqual(pf.rotational.count, 3)
-        self.assertAlmostEqual(11.319073, pf.rotational.log_eval(298.150), 1)
+        self.assertAlmostEqual(11.319073, pf.rotational.log_eval(298.150), 6)
         vib_contribs = pf.vibrational.log_eval_terms(298.150)
         expected_vib_contribs = numpy.array([
             0.959168, 0.413328, -0.287477, -0.371573, -0.983851, -1.040910,
             -1.311721, -1.428436,
         ])
         for i in xrange(len(expected_vib_contribs)):
-            self.assertAlmostEqual(vib_contribs[i], expected_vib_contribs[i], 3)
-        self.assertAlmostEqual(-61.738525, pf.log_eval(298.150), 2)
+            self.assertAlmostEqual(vib_contribs[i], expected_vib_contribs[i], 5)
+        self.assertAlmostEqual(-61.738525, pf.log_eval(298.150), 4)
 
     def test_trans_gas(self):
         ## paats.fchk
@@ -397,9 +397,8 @@ class PartFunTestCase(unittest.TestCase):
         evals, evecs = numpy.linalg.eigh(iner_tens)
         expected_evals = numpy.array([875.32578,2288.50418,2609.96955]) # from paats.log
         for i in 0,1,2:
-            # TODO: figure out why gaussian gives slightly incorrect results
             self.assertAlmostEqual(
-                evals[i]/amu, expected_evals[i], -1,
+                evals[i]/amu, expected_evals[i], 5,
                 "Item %i of inertia tensor eigenvalues is wrong: %s!=%s" % (
                     i, evals[i]/amu, expected_evals[i]
                 )
@@ -412,9 +411,9 @@ class PartFunTestCase(unittest.TestCase):
         self.assert_(abs(evecs-expected_evecs).max() < 1e-3)
 
         # check the natural logarithm partition function (split contributions):
-        self.assertAlmostEqual(18.024251, pf.translational.log_eval(298.150), 4)
+        self.assertAlmostEqual(18.024251, pf.translational.log_eval(298.150), 5)
         self.assertEqual(pf.rotational.count, 3)
-        self.assertAlmostEqual(13.615243, pf.rotational.log_eval(298.150), 3)
+        self.assertAlmostEqual(13.615243, pf.rotational.log_eval(298.150), 6)
         vib_contribs = pf.vibrational.log_eval_terms(298.150)
         expected_vib_contribs = numpy.array([
             1.749142, 1.335079, 0.789626, 0.704324, 0.365201, 0.061403,
@@ -422,8 +421,8 @@ class PartFunTestCase(unittest.TestCase):
             -1.017063, -1.107892, -1.192276, -1.318341, -1.352385, -1.427939,
         ])
         for i in xrange(len(expected_vib_contribs)):
-            self.assertAlmostEqual(vib_contribs[i], expected_vib_contribs[i], 3)
-        self.assertAlmostEqual(-139.302816, pf.log_eval(298.150), 3)
+            self.assertAlmostEqual(vib_contribs[i], expected_vib_contribs[i], 5)
+        self.assertAlmostEqual(-139.302816, pf.log_eval(298.150), 4)
 
     def test_rate_coeff_gas(self):
         pf_react1 = PartFun(load_molecule_g03fchk("input/sterck/aa.fchk"), [ExternalTranslation(), ExternalRotation(1), Electronic()])
@@ -440,7 +439,9 @@ class PartFunTestCase(unittest.TestCase):
         unit = meter**3/mol/s
         for i in xrange(len(temps)):
             k = compute_rate_coeff([pf_react1, pf_react2], pf_trans, temps[i])
-            self.assertAlmostEqual(numpy.log(k/unit), numpy.log(expected_ks[i]),1)
+            # Sometimes, the fancy excel files use slightly different constants.
+            # Therefore, only equal up to 2 decimals.
+            self.assertAlmostEqual(numpy.log(k/unit), numpy.log(expected_ks[i]),2)
 
     def test_derivatives(self):
         pf = PartFun(load_molecule_g03fchk("input/sterck/aa.fchk"), [ExternalTranslation(), ExternalRotation(1), Electronic()])
@@ -453,13 +454,13 @@ class PartFunTestCase(unittest.TestCase):
                 a = stat_fys.log_deriv(temp)
                 b = (stat_fys.log_eval(temp+eps) - stat_fys.log_eval(temp-eps))/(2*eps)
                 self.assertAlmostEqual(
-                    a, b, 5,
+                    a, b, 8,
                     "error in partial derivative (%s): %s!=%s" % (stat_fys.name, a, b)
                 )
                 a = stat_fys.log_deriv2(temp)
                 b = (stat_fys.log_deriv(temp+eps) - stat_fys.log_deriv(temp-eps))/(2*eps)
                 self.assertAlmostEqual(
-                    a, b, 5,
+                    a, b, 8,
                     "error in second partial derivative (%s): %s!=%s" % (stat_fys.name, a, b)
                 )
 

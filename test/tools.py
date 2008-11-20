@@ -40,6 +40,8 @@ class ToolsTestCase(unittest.TestCase):
         pf_trans = PartFun(load_molecule_g03fchk("input/sterck/paats.fchk"), [ExternalTranslation(), ExternalRotation(1), Electronic()])
 
         ra = ReactionAnalysis([pf_react1, pf_react2], pf_trans, 280, 360)
+        # not a very accurate check because the fit is carried out differently
+        # in the fancy excel file where these numbers come from.
         self.assertAlmostEqual(ra.Ea/kjmol, 25.96, 1)
         self.assertAlmostEqual(ra.A/ra.unit, 2.29E+02, -1)
 

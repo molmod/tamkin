@@ -28,6 +28,7 @@ import numpy
 
 
 __all__ = [
+    "IdealGasVolume", "FixedVolume", "StatFys", "StatFysTerms",
     "Contribution", "Electronic", "PHVA", "ExternalTranslation", "ExternalRotation",
     "PartFun", "compute_rate_coeff"
 ]
@@ -314,8 +315,9 @@ class ExternalRotation(Contribution, StatFys):
 
 
 class Vibrations(Contribution, StatFysTerms):
-    def __init__(self, other_contributions):
+    def __init__(self, other_contributions, classical=False):
         self.other_contributions = other_contributions
+        self.classical = classical
         StatFysTerms.__init__(self, "vibrational")
 
     def init_part_fun(self, molecule):
@@ -423,32 +425,41 @@ class Vibrations(Contribution, StatFysTerms):
         print_freqs("Imaginary", self.negative_freqs)
 
     def log_eval_terms(self, temp):
-        # The zero point correction is included in the partition function and
-        # should not be taken into account when computing the reaction barrier.
-        exp_arg = -2*numpy.pi*self.positive_freqs/boltzmann/temp
-        return (exp_arg/2 - numpy.log(1-numpy.exp(exp_arg)))
-        # This would be the version when the zero point energy corrections are
-        # included in the energy difference when computing the reaction rate:
-        #return -numpy.log(1-numpy.exp(exp_arg))
+        if self.classical:
+            return numpy.log(0.5*boltzmann*temp/numpy.pi/self.positive_freqs)
+        else:
+            # The zero point correction is included in the partition function and
+            # should not be taken into account when computing the reaction barrier.
+            exp_arg = -2*numpy.pi*self.positive_freqs/boltzmann/temp
+            return (exp_arg/2 - numpy.log(1-numpy.exp(exp_arg)))
+            # This would be the version when the zero point energy corrections are
+            # included in the energy difference when computing the reaction rate:
+            #return -numpy.log(1-numpy.exp(exp_arg))
 
     def log_deriv_terms(self, temp):
-        exp_arg = -2*numpy.pi*self.positive_freqs/boltzmann/temp
-        exp_arg_deriv = -exp_arg/temp
-        return exp_arg_deriv*(0.5-1/(1-numpy.exp(-exp_arg)))
+        if self.classical:
+            return numpy.ones(len(self.positive_freqs))/temp
+        else:
+            exp_arg = -2*numpy.pi*self.positive_freqs/boltzmann/temp
+            exp_arg_deriv = -exp_arg/temp
+            return exp_arg_deriv*(0.5-1/(1-numpy.exp(-exp_arg)))
 
     def log_deriv2_terms(self, temp):
-        exp_arg = -2*numpy.pi*self.positive_freqs/boltzmann/temp
-        exp_arg_deriv = -exp_arg/temp
-        exp_arg_deriv2 = -2*exp_arg_deriv/temp
-        e = numpy.exp(-exp_arg)
-        x = 1/(1-e)
-        return exp_arg_deriv2*(0.5-x) + (exp_arg_deriv*x)**2*e
+        if self.classical:
+            return -numpy.ones(len(self.positive_freqs))/temp**2
+        else:
+            exp_arg = -2*numpy.pi*self.positive_freqs/boltzmann/temp
+            exp_arg_deriv = -exp_arg/temp
+            exp_arg_deriv2 = -2*exp_arg_deriv/temp
+            e = numpy.exp(-exp_arg)
+            x = 1/(1-e)
+            return exp_arg_deriv2*(0.5-x) + (exp_arg_deriv*x)**2*e
 
 
 class PartFun(StatFys):
     __reserved_names__ = set(["other_contributions", "vibrational"])
 
-    def __init__(self, molecule, other_contributions):
+    def __init__(self, molecule, other_contributions, classical_vib=False):
         self.molecule = molecule
         # perform a sanity check on the names of the contributions:
         for other in other_contributions:
@@ -458,7 +469,7 @@ class PartFun(StatFys):
         self.other_contributions = tuple(other_contributions)
         for other in self.other_contributions:
             other.init_part_fun(self.molecule)
-        self.vibrational = Vibrations(self.other_contributions)
+        self.vibrational = Vibrations(self.other_contributions, classical_vib)
         self.vibrational.init_part_fun(self.molecule)
         # use convenient attribute names:
         for other in self.other_contributions:

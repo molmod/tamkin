@@ -33,7 +33,7 @@ __all__ = ["PartFunTestCase"]
 
 
 class PartFunTestCase(unittest.TestCase):
-    def check_freqs(self, expected_freqs, pf):
+    def check_freqs(self, expected_freqs, pf, precision=3):
         """Check the frequencies in the partition function against expected values
 
         The expected values are given in 1/cm while the partition function works
@@ -43,7 +43,7 @@ class PartFunTestCase(unittest.TestCase):
         for i in xrange(len(pf.vibrational.freqs)):
             freq_in_cm = (pf.vibrational.freqs[i]/lightspeed)/(1/cm)
             self.assertAlmostEqual(
-                expected_freqs[i], freq_in_cm, 3,
+                expected_freqs[i], freq_in_cm, precision,
                 "Frequency %i does not match: difference = %e" % (i, expected_freqs[i]-freq_in_cm)
             )
 
@@ -507,4 +507,37 @@ class PartFunTestCase(unittest.TestCase):
             tmp = pf.vibrational.heat_capacity_terms(numpy.random.uniform(100,500))
             for value in tmp:
                 self.assertAlmostEqual(value, boltzmann, 10)
+
+    def test_external_separate(self):
+        calmolK = cal/mol/K
+        R = 1.98720649773 # R in cal/(mol*K)
+
+        # values taken from aa.log
+        pf = PartFun(load_molecule_g03fchk("input/sterck/aa.fchk"), [ExternalTranslation()])
+        # translational
+        self.assertAlmostEqual(pf.translational.internal_energy(298.15)/(kcalmol), 0.889, 2)
+        self.assertAlmostEqual(pf.translational.heat_capacity(298.15)/(calmolK), 2.981, 2)
+        self.assertAlmostEqual(pf.translational.entropy(298.15)/(calmolK), 38.699-R, 2) # corrected
+        expected_freqs = numpy.array([
+            0.0,0.0,0.0,
+            104.4761, 151.3376, 275.5587, 467.4732, 467.9741, 613.6715,
+            614.1609, 814.9387, 819.7633, 997.5119, 1014.5531, 1043.8629,
+            1118.1225, 1297.5031, 1363.9344, 1455.7262, 1644.8856, 1697.0197,
+            1764.3581, 3159.7250, 3175.2247, 3261.5878, 3589.5604, 3717.1382,
+        ])
+        self.check_freqs(expected_freqs, pf, -2) # very rough precision here
+
+        pf = PartFun(load_molecule_g03fchk("input/sterck/aa.fchk"), [ExternalRotation(1)])
+        # rotational
+        self.assertAlmostEqual(pf.rotational.internal_energy(298.15)/(kcalmol), 0.889, 2)
+        self.assertAlmostEqual(pf.rotational.heat_capacity(298.15)/(calmolK), 2.981, 2)
+        self.assertAlmostEqual(pf.rotational.entropy(298.15)/(calmolK), 25.287, 2)
+        expected_freqs = numpy.array([
+            0.0,0.0,0.0,
+            104.4761, 151.3376, 275.5587, 467.4732, 467.9741, 613.6715,
+            614.1609, 814.9387, 819.7633, 997.5119, 1014.5531, 1043.8629,
+            1118.1225, 1297.5031, 1363.9344, 1455.7262, 1644.8856, 1697.0197,
+            1764.3581, 3159.7250, 3175.2247, 3261.5878, 3589.5604, 3717.1382,
+        ])
+        self.check_freqs(expected_freqs, pf, 1)
 

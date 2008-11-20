@@ -22,7 +22,7 @@
 
 
 from tamkin.tools import ReactionAnalysis
-from tamkin.partf import PartFun, ExternalTranslation, ExternalRotation, Electronic
+from tamkin.partf import PartFun, ExternalTranslation, ExternalRotation
 from tamkin.io import load_molecule_g03fchk
 
 from molmod.units import kjmol, atm
@@ -35,9 +35,9 @@ __all__ = ["ToolsTestCase"]
 
 class ToolsTestCase(unittest.TestCase):
     def test_reaction_analysis(self):
-        pf_react1 = PartFun(load_molecule_g03fchk("input/sterck/aa.fchk"), [ExternalTranslation(), ExternalRotation(1), Electronic()])
-        pf_react2 = PartFun(load_molecule_g03fchk("input/sterck/aarad.fchk"), [ExternalTranslation(), ExternalRotation(1), Electronic()])
-        pf_trans = PartFun(load_molecule_g03fchk("input/sterck/paats.fchk"), [ExternalTranslation(), ExternalRotation(1), Electronic()])
+        pf_react1 = PartFun(load_molecule_g03fchk("input/sterck/aa.fchk"), [ExternalTranslation(), ExternalRotation(1)])
+        pf_react2 = PartFun(load_molecule_g03fchk("input/sterck/aarad.fchk"), [ExternalTranslation(), ExternalRotation(1)])
+        pf_trans = PartFun(load_molecule_g03fchk("input/sterck/paats.fchk"), [ExternalTranslation(), ExternalRotation(1)])
 
         ra = ReactionAnalysis([pf_react1, pf_react2], pf_trans, 280, 360)
         # not a very accurate check because the fit is carried out differently

@@ -28,9 +28,9 @@ import numpy
 
 
 __all__ = [
-    "IdealGasVolume", "FixedVolume", "StatFys", "StatFysTerms",
-    "Contribution", "Electronic", "PHVA", "ExternalTranslation", "ExternalRotation",
-    "PartFun", "compute_rate_coeff"
+    "IdealGasVolume", "FixedVolume", "Info", "StatFys", "StatFysTerms",
+    "Constraint", "Electronic", "PHVA", "ExternalTranslation",
+    "ExternalRotation", "Vibrations", "PartFun", "compute_rate_coeff"
 ]
 
 
@@ -86,9 +86,18 @@ class FixedVolume(object):
     description = property(get_description)
 
 
-class StatFys(object):
+class Info(object):
+    """An object that has a name and that can dump info to a file."""
     def __init__(self, name):
         self.name = name
+
+    def dump(self, f):
+        print >> f, " Name: %s" % self.name
+
+
+class StatFys(object):
+    def init_part_fun(self, molecule):
+        pass
 
     def log_eval(self, temp):
         """The logarithm of the partition function"""
@@ -170,33 +179,24 @@ class StatFysTerms(StatFys):
         return self.free_energy(temp, self.log_eval_terms)
 
 
-class Contribution(object):
-    def init_part_fun(self, molecule):
-        pass
-
-    def dump(self, f):
-        print >> f, " Name: %s" % self.name
-
+class Constraint(object):
     def get_fixed_basis(self, coordinates):
         raise NotImplementedError
 
 
-class Electronic(Contribution, StatFys):
+class Electronic(Info, StatFys):
     # TODO: include this one automatically?
     def __init__(self, multiplicity=None):
         self.multiplicity = multiplicity
-        StatFys.__init__(self, "electronic")
+        Info.__init__(self, "electronic")
 
     def init_part_fun(self, molecule):
         if self.multiplicity is None:
             self.multiplicity = molecule.multiplicity
 
     def dump(self, f):
-        Contribution.dump(self, f)
+        Info.dump(self, f)
         print >> f, "  Multiplicity: %i" % self.multiplicity
-
-    def get_fixed_basis(self, coordinates):
-        return []
 
     def log_eval(self, temp):
         return numpy.log(self.multiplicity)
@@ -208,13 +208,13 @@ class Electronic(Contribution, StatFys):
         return 0.0
 
 
-class PHVA(Contribution, StatFys):
+class PHVA(Info, Constraint):
     def __init__(self, fixed_indices):
         self.fixed_indices = fixed_indices
-        StatFys.__init__(self, "phva")
+        Info.__init__(self, "phva")
 
     def dump(self, f):
-        Contribution.dump(self, f)
+        Info.dump(self, f)
         print >> f, "  Fixed atoms: %s" % (" ".join(str(i) for i in self.fixed_indices))
 
     def get_fixed_basis(self, coordinates):
@@ -225,29 +225,20 @@ class PHVA(Contribution, StatFys):
             result[3*i+2,fixed_index*3+2] = 1
         return result
 
-    def log_eval(self, temp):
-        return 0.0
 
-    def log_deriv(self, temp):
-        return 0.0
-
-    def log_deriv2(self, temp):
-        return 0.0
-
-
-class ExternalTranslation(Contribution, StatFys):
+class ExternalTranslation(Info, Constraint, StatFys):
     def __init__(self, mol_volume=None):
         if mol_volume is None:
             self.mol_volume = FixedVolume()
         else:
             self.mol_volume = mol_volume
-        StatFys.__init__(self, "translational")
+        Info.__init__(self, "translational")
 
     def init_part_fun(self, molecule):
         self.mass = molecule.mass
 
     def dump(self, f):
-        Contribution.dump(self, f)
+        Info.dump(self, f)
         print >> f, "  %s" % self.mol_volume.description
 
     def get_fixed_basis(self, coordinates):
@@ -274,11 +265,11 @@ class ExternalTranslation(Contribution, StatFys):
 
 
 
-class ExternalRotation(Contribution, StatFys):
+class ExternalRotation(Info, Constraint, StatFys):
     def __init__(self, symmetry_number, im_threshold=1.0):
         self.symmetry_number = symmetry_number
         self.im_threshold = im_threshold
-        StatFys.__init__(self, "rotational")
+        Info.__init__(self, "rotational")
 
     def init_part_fun(self, molecule):
         self.com = molecule.com
@@ -289,7 +280,7 @@ class ExternalRotation(Contribution, StatFys):
         self.count = (evals > self.im_threshold).sum()
 
     def dump(self, f):
-        Contribution.dump(self, f)
+        Info.dump(self, f)
         print >> f, "  Rotational symmetry number: %i" % self.symmetry_number
         print >> f, "  Inertia moment threshold [amu*bohr**2]: %e" % (self.im_threshold/amu)
         print >> f, "  Non-zero moments of inertia: %i" % self.count
@@ -314,19 +305,19 @@ class ExternalRotation(Contribution, StatFys):
         return -0.5*self.count/temp**2
 
 
-class Vibrations(Contribution, StatFysTerms):
-    def __init__(self, other_contributions, classical=False):
-        self.other_contributions = other_contributions
+class Vibrations(Info, StatFysTerms):
+    def __init__(self, classical=False):
         self.classical = classical
-        StatFysTerms.__init__(self, "vibrational")
+        Info.__init__(self, "vibrational")
 
-    def init_part_fun(self, molecule):
+    def init_part_fun(self, constraints, molecule):
+        self.constraints = constraints
         self.hessian = molecule.hessian
         self.m3sqrt = numpy.sqrt(numpy.array([molecule.masses, molecule.masses, molecule.masses]).transpose().ravel())
 
         fixed_basis = []
-        for other in self.other_contributions:
-            for row in other.get_fixed_basis(molecule.coordinates):
+        for constr in self.constraints:
+            for row in constr.get_fixed_basis(molecule.coordinates):
                 fixed_basis.append(self.to_weighted(row))
 
         if len(fixed_basis) > 0:
@@ -405,7 +396,7 @@ class Vibrations(Contribution, StatFysTerms):
             raise NotImplementedError
 
     def dump(self, f):
-        Contribution.dump(self, f)
+        Info.dump(self, f)
         def print_freqs(label, freqs):
             parts = ["  "]
             for counter, freq in enumerate(freqs):
@@ -456,43 +447,48 @@ class Vibrations(Contribution, StatFysTerms):
             return exp_arg_deriv2*(0.5-x) + (exp_arg_deriv*x)**2*e
 
 
-class PartFun(StatFys):
-    __reserved_names__ = set(["other_contributions", "vibrational"])
+class PartFun(Info, StatFys):
+    __reserved_names__ = set([
+        "modifications", "vibrational", "electronic", "constraints",
+        "contributions",
+    ])
 
-    def __init__(self, molecule, other_contributions, classical_vib=False):
+    def __init__(self, molecule, modifications, vibrational=None, electronic=None):
         self.molecule = molecule
         # perform a sanity check on the names of the contributions:
-        for other in other_contributions:
-            if other.name in self.__reserved_names__:
-                raise ValueError("A partition function contribution can not have the name '%s'" % other.name)
+        for mod in modifications:
+            if mod.name in self.__reserved_names__:
+                raise ValueError("A partition function modification can not have the name '%s'" % mod.name)
         # done testing, start initialization
-        self.other_contributions = tuple(other_contributions)
-        for other in self.other_contributions:
-            other.init_part_fun(self.molecule)
-        self.vibrational = Vibrations(self.other_contributions, classical_vib)
-        self.vibrational.init_part_fun(self.molecule)
+        self.modifications = tuple(modifications)
+        self.constraints = tuple(mod for mod in self.modifications if isinstance(mod, Constraint))
+        self.contributions = tuple(mod for mod in self.modifications if isinstance(mod, StatFys))
+        for contribution in self.contributions:
+            contribution.init_part_fun(self.molecule)
+        if vibrational is None:
+            self.vibrational = Vibrations()
+        else:
+            self.vibrational = vibrational
+        self.vibrational.init_part_fun(self.constraints, self.molecule)
+        if electronic is None:
+            self.electronic = Electronic()
+        else:
+            self.electronic = electronic
+        self.electronic.init_part_fun(self.molecule)
+        self.contributions = (self.vibrational, self.electronic) + self.contributions
         # use convenient attribute names:
-        for other in self.other_contributions:
-            self.__dict__[other.name] = other
-        StatFys.__init__(self, "total")
+        for mod in self.modifications:
+            self.__dict__[mod.name] = mod
+        Info.__init__(self, "total")
 
     def log_eval(self, temp):
-        result = self.vibrational.log_eval(temp)
-        for other in self.other_contributions:
-            result += other.log_eval(temp)
-        return result
+        return sum(contribution.log_eval(temp) for contribution in self.contributions)
 
     def log_deriv(self, temp):
-        result = self.vibrational.log_deriv(temp)
-        for other in self.other_contributions:
-            result += other.log_deriv(temp)
-        return result
+        return sum(contribution.log_deriv(temp) for contribution in self.contributions)
 
     def log_deriv2(self, temp):
-        result = self.vibrational.log_deriv2(temp)
-        for other in self.other_contributions:
-            result += other.log_deriv2(temp)
-        return result
+        return sum(contribution.log_deriv2(temp) for contribution in self.contributions)
 
     def entropy(self, temp):
         """Compute the total entropy"""
@@ -509,10 +505,11 @@ class PartFun(StatFys):
         print >> f, "Moments of inertia [amu*bohr**2]: %f  %f %f" % tuple(
             numpy.linalg.eigvalsh(self.molecule.inertia_tensor)/amu
         )
-        print >> f, "Contributions:"
+        print >> f, "Modifications:"
         self.vibrational.dump(f)
-        for other in self.other_contributions:
-            other.dump(f)
+        self.electronic.dump(f)
+        for mod in self.modifications:
+            mod.dump(f)
 
     def write_to_file(self, filename):
         f = file(filename, 'w')

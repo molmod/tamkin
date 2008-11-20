@@ -282,7 +282,7 @@ class PartFunTestCase(unittest.TestCase):
 
     def test_react_gas(self):
         ## aa.fchk
-        pf = PartFun(load_molecule_g03fchk("input/sterck/aa.fchk"), [ExternalTranslation(), ExternalRotation(1), Electronic()])
+        pf = PartFun(load_molecule_g03fchk("input/sterck/aa.fchk"), [ExternalTranslation(), ExternalRotation(1)])
 
         # expected frequencies from aa.log
         expected_freqs = numpy.array([
@@ -315,7 +315,7 @@ class PartFunTestCase(unittest.TestCase):
         self.assertAlmostEqual(-53.068692, pf.log_eval(298.150), 4)
 
         ## aarad.fchk
-        pf = PartFun(load_molecule_g03fchk("input/sterck/aarad.fchk"), [ExternalTranslation(), ExternalRotation(1), Electronic()])
+        pf = PartFun(load_molecule_g03fchk("input/sterck/aarad.fchk"), [ExternalTranslation(), ExternalRotation(1)])
 
         # expected frequencies from aa.log
         expected_freqs = numpy.array([
@@ -351,7 +351,7 @@ class PartFunTestCase(unittest.TestCase):
 
     def test_trans_gas(self):
         ## paats.fchk
-        pf = PartFun(load_molecule_g03fchk("input/sterck/paats.fchk"), [ExternalTranslation(), ExternalRotation(1), Electronic()])
+        pf = PartFun(load_molecule_g03fchk("input/sterck/paats.fchk"), [ExternalTranslation(), ExternalRotation(1)])
 
         # expected frequencies from aa.log
         expected_freqs = numpy.array([
@@ -425,9 +425,9 @@ class PartFunTestCase(unittest.TestCase):
         self.assertAlmostEqual(-139.302816, pf.log_eval(298.150), 4)
 
     def test_rate_coeff_gas(self):
-        pf_react1 = PartFun(load_molecule_g03fchk("input/sterck/aa.fchk"), [ExternalTranslation(), ExternalRotation(1), Electronic()])
-        pf_react2 = PartFun(load_molecule_g03fchk("input/sterck/aarad.fchk"), [ExternalTranslation(), ExternalRotation(1), Electronic()])
-        pf_trans = PartFun(load_molecule_g03fchk("input/sterck/paats.fchk"), [ExternalTranslation(), ExternalRotation(1), Electronic()])
+        pf_react1 = PartFun(load_molecule_g03fchk("input/sterck/aa.fchk"), [ExternalTranslation(), ExternalRotation(1)])
+        pf_react2 = PartFun(load_molecule_g03fchk("input/sterck/aarad.fchk"), [ExternalTranslation(), ExternalRotation(1)])
+        pf_trans = PartFun(load_molecule_g03fchk("input/sterck/paats.fchk"), [ExternalTranslation(), ExternalRotation(1)])
 
         # values taken from the fancy excel file...
         temps = numpy.array([298.15,300,400,500,600,700,800,900,1000,1100])
@@ -444,7 +444,7 @@ class PartFunTestCase(unittest.TestCase):
             self.assertAlmostEqual(numpy.log(k/unit), numpy.log(expected_ks[i]),2)
 
     def test_derivatives(self):
-        pf = PartFun(load_molecule_g03fchk("input/sterck/aa.fchk"), [ExternalTranslation(), ExternalRotation(1), Electronic()])
+        pf = PartFun(load_molecule_g03fchk("input/sterck/aa.fchk"), [ExternalTranslation(), ExternalRotation(1)])
 
         # check the first derivative with finite differences
         eps = 0.0001
@@ -466,7 +466,7 @@ class PartFunTestCase(unittest.TestCase):
 
     def test_derived_quantities(self):
         # internal energy, heat capacity and entropy
-        pf = PartFun(load_molecule_g03fchk("input/sterck/aa.fchk"), [ExternalTranslation(), ExternalRotation(1), Electronic()])
+        pf = PartFun(load_molecule_g03fchk("input/sterck/aa.fchk"), [ExternalTranslation(), ExternalRotation(1)])
 
         # values taken from aa.log
         calmolK = cal/mol/K
@@ -495,4 +495,16 @@ class PartFunTestCase(unittest.TestCase):
         self.assertAlmostEqual(pf.entropy(298.15)/(calmolK), 74.696, 2)
         # free energy of the molecule:
         self.assertAlmostEqual(pf.free_energy(298.15), -247.257535, 5)
+
+    def test_classical(self):
+        pf = PartFun(
+            load_molecule_g03fchk("input/sterck/aa.fchk"),
+            [ExternalTranslation(), ExternalRotation(1)],
+            Vibrations(classical=True)
+        )
+
+        for i in xrange(10):
+            tmp = pf.vibrational.heat_capacity_terms(numpy.random.uniform(100,500))
+            for value in tmp:
+                self.assertAlmostEqual(value, boltzmann, 10)
 

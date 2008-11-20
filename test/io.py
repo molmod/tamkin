@@ -21,7 +21,7 @@
 # --
 
 
-from tamkin.partf import PartFun, ExternalTranslation, ExternalRotation, Electronic
+from tamkin.partf import PartFun, ExternalTranslation, ExternalRotation
 from tamkin.io import load_fixed_g03com, load_molecule_g03fchk, load_molecule_cp2k
 
 from molmod.data.periodic import periodic

@@ -176,7 +176,7 @@ class ReactionAnalysis(object):
         ln_rate_coeffs_line = self.parameters[0] - self.parameters[1]*temps_inv_line
 
         pylab.clf()
-        pylab.title("Arrhenius plot: A [%s] = %.5e    Ea [kJ/mol] = %.2f" % (
+        pylab.title("Arrhenius plot: A [%s] = %.3e    Ea [kJ/mol] = %.2f" % (
             self.unit_name, self.A/self.unit, self.Ea/kjmol
         ))
         pylab.xlabel("1/T [1/K]")

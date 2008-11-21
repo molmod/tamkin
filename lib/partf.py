@@ -92,7 +92,20 @@ class Info(object):
         self.name = name
 
     def dump(self, f):
-        print >> f, " Name: %s" % self.name
+        print >> f, "  %s" % self.name.upper()
+
+    def dump_values(self, f, label, values, format, num_col=8):
+        parts = ["    "]
+        for counter, value in enumerate(values):
+            parts.append(format % value)
+            if counter % num_col == num_col-1:
+                parts.append("\n    ")
+        if len(parts) > 1:
+            if parts[-1] == "\n    ":
+                parts.pop()
+            parts.insert(0, "    %s:\n" % label)
+            print >> f, "".join(parts)
+
 
 
 class StatFys(object):
@@ -199,7 +212,7 @@ class Electronic(Info, StatFys):
 
     def dump(self, f):
         Info.dump(self, f)
-        print >> f, "  Multiplicity: %i" % self.multiplicity
+        print >> f, "    Multiplicity: %i" % self.multiplicity
 
     def log_eval(self, temp):
         return numpy.log(self.multiplicity)
@@ -218,7 +231,7 @@ class PHVA(Info, Constraint):
 
     def dump(self, f):
         Info.dump(self, f)
-        print >> f, "  Fixed atoms: %s" % (" ".join(str(i) for i in self.fixed_indices))
+        self.dump_values(f, "  Fixed atoms (counting starts at zero)", self.fixed_indices, " %8i", 8)
 
     def get_fixed_basis(self, coordinates):
         result = numpy.zeros((len(self.fixed_indices)*3, coordinates.size), float)
@@ -242,7 +255,7 @@ class ExternalTranslation(Info, Constraint, StatFys):
 
     def dump(self, f):
         Info.dump(self, f)
-        print >> f, "  %s" % self.mol_volume.description
+        print >> f, "    %s" % self.mol_volume.description
 
     def get_fixed_basis(self, coordinates):
         result = numpy.zeros((3, coordinates.size), float)
@@ -284,9 +297,9 @@ class ExternalRotation(Info, Constraint, StatFys):
 
     def dump(self, f):
         Info.dump(self, f)
-        print >> f, "  Rotational symmetry number: %i" % self.symmetry_number
-        print >> f, "  Inertia moment threshold [amu*bohr**2]: %e" % (self.im_threshold/amu)
-        print >> f, "  Non-zero moments of inertia: %i" % self.count
+        print >> f, "    Rotational symmetry number: %i" % self.symmetry_number
+        print >> f, "    Threshold for non-zero moments of inertia [amu*bohr**2]: %e" % (self.im_threshold/amu)
+        print >> f, "    Non-zero moments of inertia: %i" % self.count
 
     def get_fixed_basis(self, coordinates):
         result = numpy.zeros((3, coordinates.size), float)
@@ -402,23 +415,11 @@ class Vibrations(Info, StatFysTerms):
 
     def dump(self, f):
         Info.dump(self, f)
-        def print_freqs(label, freqs):
-            parts = ["  "]
-            for counter, freq in enumerate(freqs):
-                parts.append("% 8.1f" % (freq/lightspeed/(1/cm)))
-                if counter % 6 == 5:
-                    parts.append("\n  ")
-            if len(parts) > 1:
-                if parts[-1] == "\n  ":
-                    parts.pop()
-                parts.insert(0, "  %s Wavenumbers [1/cm]:\n" % label)
-                print >> f, "".join(parts)
-
-        print >> f, "  Total DOF: %i" % self.num_dim
-        print >> f, "  Vibrational DOF: %i" % self.num_free
-        print >> f, "  Other DOF: %i" % self.num_fixed
-        print_freqs("Real", self.positive_freqs)
-        print_freqs("Imaginary", self.negative_freqs)
+        print >> f, "    Total DOF: %i" % self.num_dim
+        print >> f, "    Vibrational DOF: %i" % self.num_free
+        print >> f, "    Other DOF: %i" % self.num_fixed
+        self.dump_values(f, "Real Wavenumbers [1/cm]", self.positive_freqs/(lightspeed/cm), "% 8.1f", 8)
+        self.dump_values(f, "Imaginary Wavenumbers [1/cm]", self.negative_freqs/(lightspeed/cm), "% 8.1f", 8)
 
     def log_eval_terms(self, temp):
         if self.classical:
@@ -510,7 +511,7 @@ class PartFun(Info, StatFys):
         print >> f, "Moments of inertia [amu*bohr**2]: %f  %f %f" % tuple(
             numpy.linalg.eigvalsh(self.molecule.inertia_tensor)/amu
         )
-        print >> f, "Modifications:"
+        print >> f, "Contributions to the partition function:"
         self.vibrational.dump(f)
         self.electronic.dump(f)
         for mod in self.modifications:

@@ -26,10 +26,74 @@ from tamkin.partf import compute_rate_coeff
 from molmod.units import kjmol, second, meter, mol
 from molmod.constants import boltzmann
 
-import numpy, pylab
+import sys, numpy, pylab, types
 
 
-__all__ = ["ReactionAnalysis"]
+__all__ = ["ThermoTable", "ThermoAnalysis", "ReactionAnalysis"]
+
+
+class ThermoTable(object):
+    def __init__(self, label, format, unit, unit_name, method_name, pf, temps):
+        self.label = label
+        self.format = format
+        self.unit = unit
+        self.unit_name = unit_name
+        self.method_name = method_name
+        self.pf = pf
+        self.temps = temps
+
+        self.keys = []
+        data =  []
+        for term in (pf,) + pf.contributions:
+            self.keys.append(term.name)
+            method = getattr(term, method_name, None)
+            if isinstance(method, types.MethodType):
+                row = []
+                for temp in temps:
+                    row.append(method(temp))
+                data.append(numpy.array(row,ndmin=2))
+            method = getattr(term, "%s_terms" % method_name, None)
+            if isinstance(method, types.MethodType):
+                columns = []
+                for i in xrange(term.num_terms):
+                    self.keys.append("%s (%i)" % (term.name, i))
+                for temp in temps:
+                    columns.append(method(temp))
+                data.append(numpy.array(columns).transpose())
+        self.data = numpy.concatenate(data)
+
+    def dump(self, f):
+        """Dumps the table in csv format"""
+        print >> f, '"%s","[%s]"' % (self.label, self.unit_name)
+        print >> f, '"Temperatures",', ",".join("%.1f" % temp for temp in self.temps)
+        for key, row in zip(self.keys, self.data):
+            print >> f, '"%s",' % key, ",".join(self.format % (value/self.unit) for value in row)
+
+
+class ThermoAnalysis(object):
+    def __init__(self, pf, temps):
+        from molmod.units import kjmol, J, mol, K
+        self.pf = pf
+        self.temps = temps
+        self.tables = [
+            ThermoTable("Energy", "%.1f", kjmol, "kJ/mol", "internal_energy", pf, temps),
+            ThermoTable("Free energy", "%.1f", kjmol, "kJ/mol", "free_energy", pf, temps),
+            ThermoTable("Heat capacity", "%.3f", J/mol/K, "J/(mol*K)", "heat_capacity", pf, temps),
+            ThermoTable("Entropy", "%.1f",  J/mol/K, "J/(mol*K)", "entropy", pf, temps),
+            ThermoTable("log(q)", "%.1f", 1, "1", "log_eval", pf, temps),
+            ThermoTable("d log(q) / dT", "%.3e", 1/K, "1/K", "log_deriv", pf, temps),
+            ThermoTable("d^2 log(q) / dT^2", "%.1e", 1/K, "1//K", "log_deriv2", pf, temps)
+        ]
+
+    def write_to_file(self, filename):
+        f = file(filename, "w")
+        self.dump(f)
+        f.close()
+
+    def dump(self, f=sys.stdout):
+        for table in self.tables:
+            table.dump(f)
+            print >> f
 
 
 class ReactionAnalysis(object):
@@ -107,7 +171,7 @@ class ReactionAnalysis(object):
         self.dump(f)
         f.close()
 
-    def plot(self, filename):
+    def plot(self, filename=sys.stdout):
         temps_inv_line = numpy.linspace(self.temps_inv.min(),self.temps_inv.max(),100)
         ln_rate_coeffs_line = self.parameters[0] - self.parameters[1]*temps_inv_line
 

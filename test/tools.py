@@ -21,7 +21,7 @@
 # --
 
 
-from tamkin.tools import ReactionAnalysis
+from tamkin.tools import ReactionAnalysis, ThermoAnalysis
 from tamkin.partf import PartFun, ExternalTranslation, ExternalRotation
 from tamkin.io import load_molecule_g03fchk
 
@@ -68,5 +68,8 @@ class ToolsTestCase(unittest.TestCase):
         ra.plot("output/arrhenius_mat2.png")
         ra.write_to_file("output/reaction_mat2.txt")
 
-
+    def test_thermo_analysis_mat(self):
+        pf = PartFun(load_molecule_g03fchk("input/mat/5Te_etheen_react_deel2.fchk"), [ExternalTranslation(), ExternalRotation(1)])
+        ta = ThermoAnalysis(pf, [200,300,400,500,600,700,800,900])
+        ta.write_to_file("output/thermo_mat2.csv")
 

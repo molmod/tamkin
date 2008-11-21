@@ -141,6 +141,9 @@ class StatFys(object):
 
 
 class StatFysTerms(StatFys):
+    def __init__(self, num_terms):
+        self.num_terms = num_terms
+
     def log_eval(self, temp):
         return self.log_eval_terms(temp).sum()
 
@@ -174,7 +177,7 @@ class StatFysTerms(StatFys):
         """Computes the entropy contribution per molecule (separate terms)"""
         return self.entropy(temp, self.log_eval_terms, self.log_deriv_terms)
 
-    def free_energy(self, temp, log_eval=None):
+    def free_energy_terms(self, temp, log_eval=None):
         """Computes the free energy per molecule (separate terms)"""
         return self.free_energy(temp, self.log_eval_terms)
 
@@ -347,6 +350,8 @@ class Vibrations(Info, StatFysTerms):
             eigen_mode /= numpy.linalg.norm(eigen_mode)
             self.eigen_modes.append(eigen_mode)
 
+        StatFysTerms.__init__(self, len(self.positive_freqs))
+
     num_fixed = property(lambda self: len(self.fixed_basis))
     num_free = property(lambda self: len(self.hessian)-len(self.fixed_basis))
     num_dim = property(lambda self: len(self.hessian))
@@ -475,7 +480,7 @@ class PartFun(Info, StatFys):
         else:
             self.electronic = electronic
         self.electronic.init_part_fun(self.molecule)
-        self.contributions = (self.vibrational, self.electronic) + self.contributions
+        self.contributions = self.contributions + (self.electronic, self.vibrational)
         # use convenient attribute names:
         for mod in self.modifications:
             self.__dict__[mod.name] = mod

@@ -566,4 +566,3 @@ class PartFunTestCase(unittest.TestCase):
         self.assertAlmostEqual(pf.rotational.heat_capacity(298.15)/(calmolK), 1.987, 2)
         self.assertAlmostEqual(pf.rotational.entropy(298.15)/(calmolK), 13.130, 2)
 
-

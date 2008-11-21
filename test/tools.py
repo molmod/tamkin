@@ -34,7 +34,7 @@ import numpy
 __all__ = ["ToolsTestCase"]
 
 class ToolsTestCase(unittest.TestCase):
-    def test_reaction_analysis(self):
+    def test_reaction_analysis_sterck(self):
         pf_react1 = PartFun(load_molecule_g03fchk("input/sterck/aa.fchk"), [ExternalTranslation(), ExternalRotation(1)])
         pf_react2 = PartFun(load_molecule_g03fchk("input/sterck/aarad.fchk"), [ExternalTranslation(), ExternalRotation(1)])
         pf_trans = PartFun(load_molecule_g03fchk("input/sterck/paats.fchk"), [ExternalTranslation(), ExternalRotation(1)])
@@ -43,10 +43,30 @@ class ToolsTestCase(unittest.TestCase):
         # not a very accurate check because the fit is carried out differently
         # in the fancy excel file where these numbers come from.
         self.assertAlmostEqual(ra.Ea/kjmol, 25.96, 1)
-        self.assertAlmostEqual(ra.A/ra.unit, 2.29E+02, -1)
+        self.assertAlmostEqual(numpy.log(ra.A/ra.unit), numpy.log(2.29E+02), 3)
 
         ra.plot("output/arrhenius_aa.png")
         ra.write_to_file("output/reaction_aa.txt")
+
+    def test_reaction_analysis_mat(self):
+        pf_react = PartFun(load_molecule_g03fchk("input/mat/5Te_etheen_react_deel2.fchk"), [ExternalTranslation(), ExternalRotation(1)])
+        pf_trans = PartFun(load_molecule_g03fchk("input/mat/5Te_etheen_ts_deel2_punt108_freq.fchk"), [ExternalTranslation(), ExternalRotation(1)])
+
+        ra = ReactionAnalysis([pf_react], pf_trans, 100, 1200)
+        # not a very accurate check because the fit is carried out differently
+        # in the fancy excel file where these numbers come from.
+        self.assertAlmostEqual(ra.Ea/kjmol, 160.6, 1)
+        self.assertAlmostEqual(numpy.log(ra.A/ra.unit), numpy.log(3.33e10), 3)
+        ra.plot("output/arrhenius_mat1.png")
+        ra.write_to_file("output/reaction_mat1.txt")
+
+        ra = ReactionAnalysis([pf_react], pf_trans, 670, 770)
+        # not a very accurate check because the fit is carried out differently
+        # in the fancy excel file where these numbers come from.
+        self.assertAlmostEqual(ra.Ea/kjmol, 161.9, 1)
+        self.assertAlmostEqual(numpy.log(ra.A/ra.unit), numpy.log(4.08e10), 2)
+        ra.plot("output/arrhenius_mat2.png")
+        ra.write_to_file("output/reaction_mat2.txt")
 
 
 

@@ -121,9 +121,8 @@ class ReactionAnalysis(object):
         design_matrix = numpy.zeros((len(self.temps),2), float)
         design_matrix[:,0] = 1
         design_matrix[:,1] = -self.temps_inv
-        self.parameters, residuals, rank, s = numpy.linalg.lstsq(design_matrix, self.ln_rate_coeffs)
+        self.parameters, SSE, rank, s = numpy.linalg.lstsq(design_matrix, self.ln_rate_coeffs)
 
-        SSE = (residuals**2).sum()
         SST = ((self.ln_rate_coeffs - self.ln_rate_coeffs.mean())**2).sum()
         self.R2 = 1-SSE/SST
 

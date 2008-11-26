@@ -43,7 +43,7 @@ class ToolsTestCase(unittest.TestCase):
         # not a very accurate check because the fit is carried out differently
         # in the fancy excel file where these numbers come from.
         self.assertAlmostEqual(ra.Ea/kjmol, 25.96, 1)
-        self.assertAlmostEqual(numpy.log(ra.A/ra.unit), numpy.log(2.29E+02), 3)
+        self.assertAlmostEqual(numpy.log(ra.A/ra.unit), numpy.log(2.29E+02), 2)
 
         ra.plot("output/arrhenius_aa.png")
         ra.write_to_file("output/reaction_aa.txt")
@@ -56,7 +56,7 @@ class ToolsTestCase(unittest.TestCase):
         # not a very accurate check because the fit is carried out differently
         # in the fancy excel file where these numbers come from.
         self.assertAlmostEqual(ra.Ea/kjmol, 160.6, 1)
-        self.assertAlmostEqual(numpy.log(ra.A/ra.unit), numpy.log(3.33e10), 3)
+        self.assertAlmostEqual(numpy.log(ra.A/ra.unit), numpy.log(3.33e10), 2)
         ra.plot("output/arrhenius_mat1.png")
         ra.write_to_file("output/reaction_mat1.txt")
 

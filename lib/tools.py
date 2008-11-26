@@ -23,7 +23,7 @@
 
 from tamkin.partf import compute_rate_coeff
 
-from molmod.units import kjmol, second, meter, mol
+from molmod.units import kjmol, second, meter, mol, K
 from molmod.constants import boltzmann
 
 import sys, numpy, pylab, types
@@ -97,17 +97,19 @@ class ThermoAnalysis(object):
 
 
 class ReactionAnalysis(object):
-    def __init__(self, pfs_react, pf_trans, temp_low, temp_high, mol_volume=None, num_temp=100):
+    def __init__(self, pfs_react, pf_trans, temp_low, temp_high, mol_volume=None, temp_step=10*K):
         if len(pfs_react) == 0:
             raise ValueError("At least one reactant must be given.")
         self.pfs_react = pfs_react
         self.pf_trans = pf_trans
-        self.temp_low = temp_low
-        self.temp_high = temp_high
+        self.temp_low = float(temp_low)
+        self.temp_high = float(temp_high)
+        self.temp_step = float(temp_step)
+        self.temp_high = numpy.ceil((self.temp_high-self.temp_low)/self.temp_step)*self.temp_step+self.temp_low
         self.mol_volume = mol_volume
-        self.num_temp = num_temp
 
-        self.temps = numpy.arange(num_temp,dtype=float)/(num_temp-1)*(temp_high-temp_low) + temp_low
+        # make sure that the final temperature is included
+        self.temps = numpy.arange(self.temp_low,self.temp_high+0.5*self.temp_step,self.temp_step)
         self.rate_coeffs = numpy.array([
             compute_rate_coeff(pfs_react, pf_trans, temp, mol_volume)
             for temp in self.temps
@@ -143,7 +145,8 @@ class ReactionAnalysis(object):
         print >> f
         print >> f, "T_low [K] = %.1f" % self.temp_low
         print >> f, "T_high [K] = %.1f" % self.temp_high
-        print >> f, "number of T steps = %i" % self.num_temp
+        print >> f, "T_step [K] = %.1f" % self.temp_step
+        print >> f, "Number of steps = %i" % len(self.temps)
         print >> f, "R2 (Pearson) = %.2f%%" % (self.R2*100)
         print >> f
         delta_E = self.pf_trans.molecule.energy - sum(pf_react.molecule.energy for pf_react in self.pfs_react)
@@ -151,7 +154,7 @@ class ReactionAnalysis(object):
         print >> f
         print >> f, "Reaction rate coefficients"
         print >> f, "    T [K]     Delta G [kJ/mol]       k(T) [%s]" % self.unit_name
-        for i in xrange(self.num_temp):
+        for i in xrange(len(self.temps)):
             temp = self.temps[i]
             delta_G = self.pf_trans.free_energy(temp) - sum(pf_react.free_energy(temp) for pf_react in self.pfs_react)
             print >> f, "% 10.2f      %8.1f             % 10.5e" % (

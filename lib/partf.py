@@ -30,7 +30,8 @@ import numpy
 __all__ = [
     "IdealGasVolume", "FixedVolume", "Info", "StatFys", "StatFysTerms",
     "Constraint", "Electronic", "PHVA", "ExternalTranslation",
-    "ExternalRotation", "Vibrations", "PartFun", "compute_rate_coeff"
+    "ExternalRotation", "Vibrations", "PartFun",
+    "compute_rate_coeff", "compute_equilibrium_constant"
 ]
 
 
@@ -532,4 +533,14 @@ def compute_rate_coeff(pfs_react, pf_trans, temp, mol_volume=None):
         log_result += numpy.log(mol_volume(temp))*(len(pfs_react)-1)
     return boltzmann*temp/(2*numpy.pi)*numpy.exp(log_result)
 
+
+def compute_equilibrium_constant(pfs_A, pfs_B, temp, mol_volume=None):
+    log_K = 0
+    log_K += sum(pf.log_eval(temp) for pf in pfs_A)
+    log_K -= sum(pf.log_eval(temp) for pf in pfs_B)
+    if len(pfs_A) != len(pfs_B):
+        if mol_volume is None:
+            mol_volume = FixedVolume()
+        log_K += (len(pfs_B)-len(pfs_A))*numpy.log(mol_volume(temp))
+    return log_K
 

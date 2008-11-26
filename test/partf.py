@@ -566,3 +566,16 @@ class PartFunTestCase(unittest.TestCase):
         self.assertAlmostEqual(pf.rotational.heat_capacity(298.15)/(calmolK), 1.987, 2)
         self.assertAlmostEqual(pf.rotational.entropy(298.15)/(calmolK), 13.130, 2)
 
+    def test_equilibrium(self):
+        pf_react1 = PartFun(load_molecule_g03fchk("input/sterck/aa_1h2o_a.fchk"), [ExternalTranslation(), ExternalRotation(1)])
+        pf_react2 = PartFun(load_molecule_g03fchk("input/sterck/aarad.fchk"), [ExternalTranslation(), ExternalRotation(1)])
+        pf_comlex = PartFun(load_molecule_g03fchk("input/sterck/paaprc_1h2o_b_aa.fchk"), [ExternalTranslation(), ExternalRotation(1)])
+        pf_trans = PartFun(load_molecule_g03fchk("input/sterck/paats_1h2o_b_aa.fchk"), [ExternalTranslation(), ExternalRotation(1)])
+
+        for temp in numpy.arange(100,1000,10.0):
+            K = compute_equilibrium_constant([pf_react1, pf_react2], [pf_comlex], temp)
+            k = compute_rate_coeff([pf_react1, pf_react2], pf_trans, temp)
+            k_prime = compute_rate_coeff([pf_comlex], pf_trans, temp)
+            self.assertAlmostEqual(K*k_prime, k)
+
+

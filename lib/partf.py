@@ -535,12 +535,14 @@ def compute_rate_coeff(pfs_react, pf_trans, temp, mol_volume=None):
 
 
 def compute_equilibrium_constant(pfs_A, pfs_B, temp, mol_volume=None):
-    log_K = 0
-    log_K += sum(pf.log_eval(temp) for pf in pfs_A)
-    log_K -= sum(pf.log_eval(temp) for pf in pfs_B)
+    delta_G = 0.0
+    delta_G += sum(pf_A.free_energy(temp) for pf_A in pfs_A)
+    delta_G -= sum(pf_B.free_energy(temp) for pf_B in pfs_B)
+    log_K = -delta_G/(boltzmann*temp)
     if len(pfs_A) != len(pfs_B):
         if mol_volume is None:
             mol_volume = FixedVolume()
         log_K += (len(pfs_B)-len(pfs_A))*numpy.log(mol_volume(temp))
     return log_K
+
 

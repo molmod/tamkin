@@ -28,7 +28,7 @@ from molmod.graphs import cached
 import numpy
 
 
-__all__ = ["Molecule"]
+__all__ = ["Molecule", "BareNucleus", "Proton", "MDMolecule"]
 
 
 class Molecule(BaseMolecule):
@@ -73,4 +73,25 @@ class Molecule(BaseMolecule):
             "%s%i" % (periodic[number].symbol, count)
             for number, count in sorted(counts.iteritems(), reverse=True)
         )
+
+
+class BareNucleus(Molecule):
+    def __init__(self, number, mass=None):
+        if mass is None:
+            mass = periodic[number].mass
+        Molecule.__init__(self, [number], [[0,0,0]], [mass], 0.0, [[0,0,0]], [[0,0,0],[0,0,0],[0,0,0]], 1)
+
+
+class Proton(BareNucleus):
+    def __init__(self, mass=None):
+        BareNucleus.__init__(self, 1, mass)
+
+
+class MDMolecule(object):
+    def __init__(self, freqs, amplitudes, temp, internal_energy=None):
+        mask = freqs > 0
+        self.freqs = freqs[mask]
+        self.amplitudes = amplitudes[mask]
+        self.temp = temp
+        self.internal_energy = internal_energy
 

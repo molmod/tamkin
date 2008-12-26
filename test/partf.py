@@ -22,6 +22,7 @@
 
 from tamkin.partf import *
 from tamkin.io import load_molecule_g03fchk, load_fixed_g03com
+from tamkin.data import Proton
 
 from molmod.constants import lightspeed, boltzmann
 from molmod.units import cm, s, atm, amu, meter, mol, kcalmol, cal, K
@@ -578,4 +579,15 @@ class PartFunTestCase(unittest.TestCase):
             k_prime = compute_rate_coeff([pf_comlex], pf_trans, temp)
             self.assertAlmostEqual(K*k_prime, k)
 
+    def test_proton(self):
+        mol = Proton()
+        pf = PartFun(mol, [ExternalTranslation()])
+        temp = 298.15
+        self.assertAlmostEqual(pf.heat_capacity(temp), 1.5*boltzmann)
+        self.assertAlmostEqual(pf.internal_energy(temp), 1.5*boltzmann*temp)
+        qt = (mol.masses[0]*boltzmann*temp/(2*numpy.pi))**1.5 * boltzmann*temp/(1*atm)
+        self.assertAlmostEqual(
+            pf.entropy(temp),
+            boltzmann*(numpy.log(qt) + 1.5 + 1)
+        )
 

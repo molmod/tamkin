@@ -30,7 +30,7 @@ import numpy
 __all__ = [
     "IdealGasVolume", "FixedVolume", "Info", "StatFys", "StatFysTerms",
     "Constraint", "Electronic", "PHVA", "ExternalTranslation",
-    "ExternalRotation", "Vibrations", "PartFun",
+    "ExternalRotation", "Vibrations", "PartFun", "MDPartFun",
     "compute_rate_coeff", "compute_equilibrium_constant"
 ]
 
@@ -348,21 +348,28 @@ class Vibrations(Info, StatFysTerms):
         else:
             self.fixed_basis = []
             self.free_basis = None
-        # solve the vibrational problem in the free basis
-        free_hessian = self.to_free(self.to_weighted(molecule.hessian))
-        evals, evecs = numpy.linalg.eigh(free_hessian)
 
-        self.freqs = numpy.sqrt(abs(evals))/(2*numpy.pi)
-        self.freqs *= (evals > 0)*2-1
-        self.positive_freqs = self.freqs[self.freqs > 0]
-        self.negative_freqs = self.freqs[self.freqs < 0]
+        if self.free_basis is None or len(self.free_basis) > 0:
+            # solve the vibrational problem in the free basis
+            free_hessian = self.to_free(self.to_weighted(molecule.hessian))
+            evals, evecs = numpy.linalg.eigh(free_hessian)
 
-        # convert the eigenmodes back to normal coordinates
-        self.eigen_modes = []
-        for evec in evecs.transpose():
-            eigen_mode = self.from_weighted(self.from_free(evec))
-            eigen_mode /= numpy.linalg.norm(eigen_mode)
-            self.eigen_modes.append(eigen_mode)
+            self.freqs = numpy.sqrt(abs(evals))/(2*numpy.pi)
+            self.freqs *= (evals > 0)*2-1
+            self.positive_freqs = self.freqs[self.freqs > 0]
+            self.negative_freqs = self.freqs[self.freqs < 0]
+
+            # convert the eigenmodes back to normal coordinates
+            self.eigen_modes = []
+            for evec in evecs.transpose():
+                eigen_mode = self.from_weighted(self.from_free(evec))
+                eigen_mode /= numpy.linalg.norm(eigen_mode)
+                self.eigen_modes.append(eigen_mode)
+        else:
+            self.freqs = numpy.array([])
+            self.positive_freqs = numpy.array([])
+            self.positive_freqs = numpy.array([])
+            self.eigen_modes = []
 
         StatFysTerms.__init__(self, len(self.positive_freqs))
 
@@ -522,6 +529,64 @@ class PartFun(Info, StatFys):
         f = file(filename, 'w')
         self.dump(f)
         f.close()
+
+
+class MDPartFun(Info, StatFys):
+    def __init__(self, md_molecule, classical=False):
+        self.md_molecule = md_molecule
+        self.classical = classical
+        Info.__init__(self, "mdtotal")
+        if self.freqs.min() <= 0:
+            raise ValueError("Only positive frequencies are allowed.")
+        self.energy_correction = 0.0
+        if self.md_molecule.internal_energy is not None:
+            self.energy_correction = (
+                self.md_molecule.internal_energy -
+                self.internal_energy(self.md_molecule.temp)
+            )
+
+    freqs = property(lambda self: self.md_molecule.freqs)
+    amplitudes = property(lambda self: self.md_molecule.amplitudes)
+
+    def integrate(self, fn):
+        delta_f = self.freqs[1] - self.freqs[0]
+        return (fn*self.amplitudes).sum()*delta_f
+
+    def log_eval(self, temp):
+        if self.classical:
+            return self.integrate(numpy.log(0.5*boltzmann*temp/numpy.pi/self.freqs))
+        else:
+            exp_arg = -2*numpy.pi*self.freqs/boltzmann/temp
+            return self.integrate((exp_arg/2 - numpy.log(1-numpy.exp(exp_arg))))
+
+    def log_deriv(self, temp):
+        if self.classical:
+            return self.integrate(numpy.ones(len(self.freqs))/temp)
+        else:
+            exp_arg = -2*numpy.pi*self.freqs/boltzmann/temp
+            exp_arg_deriv = -exp_arg/temp
+            return self.integrate(exp_arg_deriv*(0.5-1/(1-numpy.exp(-exp_arg))))
+
+    def log_deriv2(self, temp):
+        if self.classical:
+            return self.integrate(-numpy.ones(len(self.freqs))/temp**2)
+        else:
+            exp_arg = -2*numpy.pi*self.freqs/boltzmann/temp
+            exp_arg_deriv = -exp_arg/temp
+            exp_arg_deriv2 = -2*exp_arg_deriv/temp
+            e = numpy.exp(-exp_arg)
+            x = 1/(1-e)
+            return self.integrate(exp_arg_deriv2*(0.5-x) + (exp_arg_deriv*x)**2*e)
+
+    def internal_energy(self, temp):
+        result = StatFys.internal_energy(self, temp)
+        result += self.energy_correction
+        return result
+
+    def free_energy(self, temp):
+        result = StatFys.free_energy(self, temp)
+        result += self.energy_correction
+        return result
 
 
 def compute_rate_coeff(pfs_react, pf_trans, temp, mol_volume=None):

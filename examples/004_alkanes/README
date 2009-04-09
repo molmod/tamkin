@@ -1,0 +1,17 @@
+
+This example is a bit more complicated than the previous ones. It shows how
+most of the computations and anaysis can be automated. The computations use the
+charmm force field. The parameters have been published in:
+
+J. Chem. Theory Comput., Vol. 3, No. 3. (8 May 2007), pp. 1120-1133.
+
+This is the workflow, applied to alkane_2 (ethane):
+
+bin/run_static.sh alkane_2
+bin/analyse_static.sh alkane_2 6
+bin/run_md.sh alkane_2
+bin/analyse_md.sh alkane_2
+
+It is instructive to modify the scripts, to plot the output and to compare the
+output with experimental data. Have fun.
+

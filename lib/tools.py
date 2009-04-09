@@ -142,21 +142,25 @@ class ThermoTable(object):
 
 
 class ReactionAnalysis(object):
-    def __init__(self, pfs_react, pf_trans, temp_low, temp_high, mol_volume=None, temp_step=10*K):
+    def __init__(self, pfs_react, pf_trans, temp_low, temp_high, mol_volume=None, temp_step=10*K, tunneling=None):
         """Initialize a reaction analysis object
 
            Arguments:
              pfs_react  --  a list of partition functions for the reactants
              pf_trans  --  the partition function of the transition state
              temp_low  --  the lower bound of the temperature interval in Kelvin
-             temp_high  --  the upper bound of the temperature interval in Kelvin
+             temp_high  --  the upper bound of the temperature interval in
+                            Kelvin
 
            Optional arguments:
              mol_volume  --  An object that computes the molecular volume as
                              function of the temperature. When not given, a
                              constant volume corresponding to normal conditions
                              is assumed.
-             temp_step  --  The resolution of the temperature grid. [default=10K]
+             temp_step  --  The resolution of the temperature grid.
+                            [default=10K]
+             tunneling  --  A tunneling correction object. If not given, no
+                            tunneling correction is applied.
 
            The rate coefficients are computed on the specified temperature grid
            and afterwards the kinetic parameters are fitted to these data. All
@@ -186,6 +190,7 @@ class ReactionAnalysis(object):
         self.temp_step = float(temp_step)
         self.temp_high = numpy.ceil((self.temp_high-self.temp_low)/self.temp_step)*self.temp_step+self.temp_low
         self.mol_volume = mol_volume
+        self.tunneling = tunneling
 
         # make sure that the final temperature is included
         self.temps = numpy.arange(self.temp_low,self.temp_high+0.5*self.temp_step,self.temp_step)
@@ -193,6 +198,11 @@ class ReactionAnalysis(object):
             compute_rate_coeff(pfs_react, pf_trans, temp, mol_volume)
             for temp in self.temps
         ])
+        if self.tunneling is None:
+            self.corrections = None
+        else:
+            self.corrections = self.tunneling(self.temps)
+            self.rate_coeffs *= self.corrections
 
         self.temps_inv = 1/numpy.array(self.temps,float)
         self.ln_rate_coeffs = numpy.log(self.rate_coeffs)
@@ -252,13 +262,24 @@ class ReactionAnalysis(object):
         print >> f, "Number of steps = %i" % len(self.temps)
         print >> f
         print >> f, "Reaction rate coefficients"
-        print >> f, "    T [K]     Delta G [kJ/mol]       k(T) [%s]" % self.unit_name
+        if self.tunneling is None:
+            print >> f, "    T [K]     Delta G [kJ/mol]       k(T) [%s]" % self.unit_name
+        else:
+            print >> f, "    T [K]     Delta G [kJ/mol]       k(T) [%s]         cor(T) [1]         k_tun(T) [%s]" % (self.unit_name, self.unit_name)
         for i in xrange(len(self.temps)):
             temp = self.temps[i]
             delta_G = self.pf_trans.free_energy(temp) - sum(pf_react.free_energy(temp) for pf_react in self.pfs_react)
-            print >> f, "% 10.2f      %8.1f             % 10.5e" % (
-                temp, delta_G/kjmol, self.rate_coeffs[i]/self.unit
-            )
+            if self.tunneling is None:
+                print >> f, "% 10.2f      %8.1f             % 10.5e" % (
+                    temp, delta_G/kjmol, self.rate_coeffs[i]/self.unit
+                )
+            else:
+                print >> f, "% 10.2f      %8.1f             % 10.5e       % 10.5e       % 10.5e" % (
+                    temp, delta_G/kjmol,
+                    self.rate_coeffs[i]/self.unit/self.corrections[i], # division undoes the correction
+                    self.corrections[i], # the correction factor
+                    self.rate_coeffs[i]/self.unit, # with correction
+                )
         print >> f
         for counter, pf_react in enumerate(self.pfs_react):
             print >> f, "Reactant %i partition function" % counter
@@ -376,7 +397,7 @@ class ReactionAnalysis(object):
             alter_freqs(self.pf_trans, scale_freq, scale_energy)
             altered_ra = ReactionAnalysis(
                 self.pfs_react, self.pf_trans, self.temp_low, self.temp_high,
-                self.mol_volume, self.temp_step
+                self.mol_volume, self.temp_step, self.tunneling
             )
             solutions[i] = altered_ra.parameters
 

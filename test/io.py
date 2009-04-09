@@ -1,5 +1,5 @@
 # TAMkin is a post-processing toolkit for thermochemistry and kinetics analysis.
-# Copyright (C) 2008 Toon Verstraelen <Toon.Verstraelen@UGent.be>,
+# Copyright (C) 2008-2009 Toon Verstraelen <Toon.Verstraelen@UGent.be>,
 # Matthias Vandichel <Matthias.Vandichel@UGent.be> and
 # An Ghysels <An.Ghysels@UGent.be>
 #
@@ -84,5 +84,6 @@ class IOTestCase(unittest.TestCase):
         self.assertAlmostEqual(nma1.energy, nma2.energy)
         self.assertEqual(nma1.multiplicity, nma2.multiplicity)
         self.assertEqual(nma1.symmetry_number, nma2.symmetry_number)
+
 
 

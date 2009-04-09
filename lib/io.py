@@ -1,5 +1,5 @@
 # TAMkin is a post-processing toolkit for thermochemistry and kinetics analysis.
-# Copyright (C) 2008 Toon Verstraelen <Toon.Verstraelen@UGent.be>,
+# Copyright (C) 2008-2009 Toon Verstraelen <Toon.Verstraelen@UGent.be>,
 # Matthias Vandichel <Matthias.Vandichel@UGent.be> and
 # An Ghysels <An.Ghysels@UGent.be>
 #
@@ -251,6 +251,7 @@ def dump_chk(filename, data):
         else:
             raise TypeError("Type %s not supported." % type(value))
     f.close()
+
 
 
 

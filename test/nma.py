@@ -1,5 +1,5 @@
 # TAMkin is a post-processing toolkit for thermochemistry and kinetics analysis.
-# Copyright (C) 2008 Toon Verstraelen <Toon.Verstraelen@UGent.be>,
+# Copyright (C) 2008-2009 Toon Verstraelen <Toon.Verstraelen@UGent.be>,
 # Matthias Vandichel <Matthias.Vandichel@UGent.be> and
 # An Ghysels <An.Ghysels@UGent.be>
 #
@@ -398,6 +398,7 @@ class NMATestCase(unittest.TestCase):
             4646.530637, 4657.432936, 4671.093295, 4751.240132, 4751.291450
         ])
         self.check_freqs(expected_freqs, nma, 1)
+
 
 
 

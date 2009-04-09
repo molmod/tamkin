@@ -1,5 +1,5 @@
 # TAMkin is a post-processing toolkit for thermochemistry and kinetics analysis.
-# Copyright (C) 2008 Toon Verstraelen <Toon.Verstraelen@UGent.be>,
+# Copyright (C) 2008-2009 Toon Verstraelen <Toon.Verstraelen@UGent.be>,
 # Matthias Vandichel <Matthias.Vandichel@UGent.be> and
 # An Ghysels <An.Ghysels@UGent.be>
 #
@@ -92,6 +92,7 @@ class TunnelingTestCase(unittest.TestCase):
                 self.assert_(abs(our-c)/c < 0.09)
                 #if not (("%.1e" % our)==("%.1e" % c)):
                 #    print "%.1e" % our, "%.1e" % c
+
 
 
 

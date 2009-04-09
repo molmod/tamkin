@@ -1,5 +1,5 @@
 # TAMkin is a post-processing toolkit for thermochemistry and kinetics analysis.
-# Copyright (C) 2008 Toon Verstraelen <Toon.Verstraelen@UGent.be>,
+# Copyright (C) 2008-2009 Toon Verstraelen <Toon.Verstraelen@UGent.be>,
 # Matthias Vandichel <Matthias.Vandichel@UGent.be> and
 # An Ghysels <An.Ghysels@UGent.be>
 #
@@ -87,4 +87,5 @@ class ToolsTestCase(unittest.TestCase):
         pf = PartFun(NMA(load_molecule_g03fchk("input/mat/5Te_etheen_react_deel2.fchk")), [ExternalTranslation(), ExternalRotation(1)])
         ta = ThermoAnalysis(pf, [200,300,400,500,600,700,800,900])
         ta.write_to_file("output/thermo_mat2.csv")
+
 

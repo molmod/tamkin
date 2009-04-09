@@ -296,7 +296,6 @@ class Vibrations(Info, StatFysTerms):
 
     def init_part_fun(self, nma):
         zero_indexes = nma.zeros
-        StatFysTerms.__init__(self, len(nma.freqs)-len(zero_indexes))
         nonzero_mask = numpy.ones(len(nma.freqs), dtype=bool)
         nonzero_mask[zero_indexes] = False
 
@@ -304,6 +303,8 @@ class Vibrations(Info, StatFysTerms):
         self.zero_freqs = nma.freqs[zero_indexes]
         self.positive_freqs = nma.freqs[(nma.freqs > 0) & nonzero_mask]
         self.negative_freqs = nma.freqs[(nma.freqs < 0) & nonzero_mask]
+
+        StatFysTerms.__init__(self, len(self.positive_freqs))
 
     def dump(self, f):
         Info.dump(self, f)

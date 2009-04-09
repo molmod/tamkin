@@ -389,6 +389,7 @@ class Full(Treatment):
     """
     def __init__(self, svd_threshold=1e-5):
         self.svd_threshold = svd_threshold
+        Treatment.__init__(self)
 
     def compute_zeros(self, molecule, do_modes):
         # An unambigous way to define the 'external' degrees of freedom is as

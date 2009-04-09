@@ -29,9 +29,8 @@ import numpy
 
 __all__ = [
     "IdealGasVolume", "FixedVolume", "Info", "StatFys", "StatFysTerms",
-    "Constraint", "Electronic", "PHVA", "ExternalTranslation",
-    "ExternalRotation", "Vibrations", "PartFun", "MDPartFun",
-    "compute_rate_coeff", "compute_equilibrium_constant"
+    "Electronic", "ExternalTranslation", "ExternalRotation", "Vibrations",
+    "PartFun", "compute_rate_coeff", "compute_equilibrium_constant"
 ]
 
 
@@ -110,7 +109,7 @@ class Info(object):
 
 
 class StatFys(object):
-    def init_part_fun(self, molecule):
+    def init_part_fun(self, nma):
         pass
 
     def log_eval(self, temp):
@@ -196,20 +195,16 @@ class StatFysTerms(StatFys):
         return self.free_energy(temp, self.log_eval_terms)
 
 
-class Constraint(object):
-    def get_fixed_basis(self, coordinates):
-        raise NotImplementedError
-
-
 class Electronic(Info, StatFys):
-    # TODO: include this one automatically?
     def __init__(self, multiplicity=None):
         self.multiplicity = multiplicity
         Info.__init__(self, "electronic")
 
-    def init_part_fun(self, molecule):
+    def init_part_fun(self, nma):
         if self.multiplicity is None:
-            self.multiplicity = molecule.multiplicity
+            self.multiplicity = nma.multiplicity
+            if self.multiplicity is None:
+                raise ValueError("Spin multiplicity is not defined.")
 
     def dump(self, f):
         Info.dump(self, f)
@@ -225,25 +220,7 @@ class Electronic(Info, StatFys):
         return 0.0
 
 
-class PHVA(Info, Constraint):
-    def __init__(self, fixed_indices):
-        self.fixed_indices = fixed_indices
-        Info.__init__(self, "phva")
-
-    def dump(self, f):
-        Info.dump(self, f)
-        self.dump_values(f, "  Fixed atoms (counting starts at zero)", self.fixed_indices, " %8i", 8)
-
-    def get_fixed_basis(self, coordinates):
-        result = numpy.zeros((len(self.fixed_indices)*3, coordinates.size), float)
-        for i, fixed_index in enumerate(self.fixed_indices):
-            result[3*i  ,fixed_index*3  ] = 1
-            result[3*i+1,fixed_index*3+1] = 1
-            result[3*i+2,fixed_index*3+2] = 1
-        return result
-
-
-class ExternalTranslation(Info, Constraint, StatFys):
+class ExternalTranslation(Info, StatFys):
     def __init__(self, mol_volume=None):
         if mol_volume is None:
             self.mol_volume = FixedVolume()
@@ -251,19 +228,13 @@ class ExternalTranslation(Info, Constraint, StatFys):
             self.mol_volume = mol_volume
         Info.__init__(self, "translational")
 
-    def init_part_fun(self, molecule):
-        self.mass = molecule.mass
+    def init_part_fun(self, nma):
+        self.mass = nma.mass
 
     def dump(self, f):
         Info.dump(self, f)
         print >> f, "    %s" % self.mol_volume.description
-
-    def get_fixed_basis(self, coordinates):
-        result = numpy.zeros((3, coordinates.size), float)
-        result[0, 0::3] = 1
-        result[1, 1::3] = 1
-        result[2, 2::3] = 1
-        return result
+        print >> f, "    Mass [amu]: %f" % (self.mass/amu)
 
     def log_eval(self, temp):
         return (
@@ -281,36 +252,32 @@ class ExternalTranslation(Info, Constraint, StatFys):
         return -1.5/temp**2 + (V_deriv2 - V_deriv**2/V)/V
 
 
-
-class ExternalRotation(Info, Constraint, StatFys):
-    def __init__(self, symmetry_number, im_threshold=1.0):
+class ExternalRotation(Info, StatFys):
+    def __init__(self, symmetry_number=None, im_threshold=1.0):
         self.symmetry_number = symmetry_number
         self.im_threshold = im_threshold
         Info.__init__(self, "rotational")
 
-    def init_part_fun(self, molecule):
-        self.com = molecule.com
-        evals = numpy.linalg.eigvalsh(molecule.inertia_tensor)
+    def init_part_fun(self, nma):
+        if nma.periodic:
+            raise ValueError("There is no external rotation in periodic systems.")
+        self.inertia_tensor = nma.inertia_tensor
+        self.moments = numpy.linalg.eigvalsh(nma.inertia_tensor)
+        if self.symmetry_number is None:
+            self.symmetry_number = nma.symmetry_number
+            if self.symmetry_number is None:
+                raise ValueError("Symmetry number is not defined.")
         self.factor = numpy.sqrt(numpy.product([
-            2*numpy.pi*v*boltzmann for v in evals if v > self.im_threshold
+            2*numpy.pi*m*boltzmann for m in self.moments if m > self.im_threshold
         ]))/self.symmetry_number/numpy.pi
-        self.count = (evals > self.im_threshold).sum()
+        self.count = (self.moments > self.im_threshold).sum()
 
     def dump(self, f):
         Info.dump(self, f)
         print >> f, "    Rotational symmetry number: %i" % self.symmetry_number
+        print >> f, "    Moments of inertia [amu*bohr**2]: %f  %f %f" % tuple(self.moments/amu)
         print >> f, "    Threshold for non-zero moments of inertia [amu*bohr**2]: %e" % (self.im_threshold/amu)
         print >> f, "    Non-zero moments of inertia: %i" % self.count
-
-    def get_fixed_basis(self, coordinates):
-        result = numpy.zeros((3, coordinates.size), float)
-        result[0, 1::3] =  coordinates[:,2] - self.com[2]
-        result[0, 2::3] = -coordinates[:,1] + self.com[1]
-        result[1, 2::3] =  coordinates[:,0] - self.com[0]
-        result[1, 0::3] = -coordinates[:,2] + self.com[2]
-        result[2, 0::3] =  coordinates[:,1] - self.com[1]
-        result[2, 1::3] = -coordinates[:,0] + self.com[0]
-        return result
 
     def log_eval(self, temp):
         return numpy.log(temp)*0.5*self.count + numpy.log(self.factor)
@@ -327,105 +294,23 @@ class Vibrations(Info, StatFysTerms):
         self.classical = classical
         Info.__init__(self, "vibrational")
 
-    def init_part_fun(self, constraints, molecule):
-        self.constraints = constraints
-        self.hessian = molecule.hessian
-        self.m3sqrt = numpy.sqrt(numpy.array([molecule.masses, molecule.masses, molecule.masses]).transpose().ravel())
+    def init_part_fun(self, nma):
+        zero_indexes = nma.zeros
+        StatFysTerms.__init__(self, len(nma.freqs)-len(zero_indexes))
+        nonzero_mask = numpy.ones(len(nma.freqs), dtype=bool)
+        nonzero_mask[zero_indexes] = False
 
-        fixed_basis = []
-        for constr in self.constraints:
-            for row in constr.get_fixed_basis(molecule.coordinates):
-                fixed_basis.append(self.to_weighted(row))
-
-        if len(fixed_basis) > 0:
-            fixed_basis = numpy.array(fixed_basis)
-            U, V, Wt = numpy.linalg.svd(fixed_basis, full_matrices=True)
-
-            # from now on, the basis vectors are orthogonal...
-            num_fixed = sum(V > V.max()*1e-10)
-            self.fixed_basis = Wt[:num_fixed]
-            self.free_basis = Wt[num_fixed:]
-        else:
-            self.fixed_basis = []
-            self.free_basis = None
-
-        if self.free_basis is None or len(self.free_basis) > 0:
-            # solve the vibrational problem in the free basis
-            free_hessian = self.to_free(self.to_weighted(molecule.hessian))
-            evals, evecs = numpy.linalg.eigh(free_hessian)
-
-            self.freqs = numpy.sqrt(abs(evals))/(2*numpy.pi)
-            self.freqs *= (evals > 0)*2-1
-            self.positive_freqs = self.freqs[self.freqs > 0]
-            self.negative_freqs = self.freqs[self.freqs < 0]
-
-            # convert the eigenmodes back to normal coordinates
-            self.eigen_modes = []
-            for evec in evecs.transpose():
-                eigen_mode = self.from_weighted(self.from_free(evec))
-                eigen_mode /= numpy.linalg.norm(eigen_mode)
-                self.eigen_modes.append(eigen_mode)
-        else:
-            self.freqs = numpy.array([])
-            self.positive_freqs = numpy.array([])
-            self.positive_freqs = numpy.array([])
-            self.eigen_modes = []
-
-        StatFysTerms.__init__(self, len(self.positive_freqs))
-
-    num_fixed = property(lambda self: len(self.fixed_basis))
-    num_free = property(lambda self: len(self.hessian)-len(self.fixed_basis))
-    num_dim = property(lambda self: len(self.hessian))
-
-    def to_free(self, mat):
-        if self.num_fixed == 0:
-            return mat
-        elif len(mat.shape) == 2 and mat.shape[0] == self.num_dim and mat.shape[1] == self.num_dim:
-            return numpy.dot(self.free_basis, numpy.dot(mat, self.free_basis.transpose()))
-        elif len(mat.shape) == 2 and mat.shape[0] == self.num_dim and mat.shape[1] == 1:
-            return numpy.dot(self.free_basis, mat.transpose()).transpose()
-        elif len(mat.shape) == 1 and mat.shape[0] == self.num_dim:
-            return numpy.dot(self.free_basis, mat)
-        else:
-            raise NotImplementedError
-
-    def from_free(self, mat):
-        if self.num_fixed == 0:
-            return mat
-        elif len(mat.shape) == 2 and mat.shape[0] == self.num_free and mat.shape[1] == self.num_free:
-            return numpy.dot(self.free_basis.transpose(), numpy.dot(mat, self.free_basis))
-        elif len(mat.shape) == 2 and mat.shape[0] == self.num_free and mat.shape[1] == 1:
-            return numpy.dot(self.free_basis.transpose(), mat.transpose()).transpose()
-        elif len(mat.shape) == 1 and mat.shape[0] == self.num_free:
-            return numpy.dot(self.free_basis.transpose(), mat)
-        else:
-            raise NotImplementedError
-
-    def to_weighted(self, mat):
-        if len(mat.shape) == 2 and mat.shape[0] == self.num_dim and mat.shape[1] == self.num_dim:
-            return (mat/self.m3sqrt).transpose()/self.m3sqrt         # mass weighted hessian
-        elif len(mat.shape) == 2 and mat.shape[0] == self.num_dim and mat.shape[1] == 1:
-            return (mat.transpose()*self.m3sqrt).transpose()
-        elif len(mat.shape) == 1 and mat.shape[0] == self.num_dim:
-            return mat*self.m3sqrt
-        else:
-            raise NotImplementedError
-
-    def from_weighted(self, mat):
-        if len(mat.shape) == 2 and mat.shape[0] == self.num_dim and mat.shape[1] == self.num_dim:
-            return (mat*self.m3sqrt).transpose()*self.m3sqrt         # mass weighted hessian
-        elif len(mat.shape) == 2 and mat.shape[0] == self.num_dim and mat.shape[1] == 1:
-            return (mat.transpose()/self.m3sqrt).transpose()
-        elif len(mat.shape) == 1 and mat.shape[0] == self.num_dim:
-            return mat/self.m3sqrt
-        else:
-            raise NotImplementedError
+        self.freqs = nma.freqs[nonzero_mask]
+        self.zero_freqs = nma.freqs[zero_indexes]
+        self.positive_freqs = nma.freqs[(nma.freqs > 0) & nonzero_mask]
+        self.negative_freqs = nma.freqs[(nma.freqs < 0) & nonzero_mask]
 
     def dump(self, f):
         Info.dump(self, f)
-        print >> f, "    Total DOF: %i" % self.num_dim
-        print >> f, "    Vibrational DOF: %i" % self.num_free
-        print >> f, "    Other DOF: %i" % self.num_fixed
+        print >> f, "    Number of zero wavenumbers: %i " % (len(self.zero_freqs))
+        print >> f, "    Number of real wavenumbers: %i " % (len(self.positive_freqs))
+        print >> f, "    Number of imaginary wavenumbers: %i" % (len(self.negative_freqs))
+        self.dump_values(f, "Zero Wavenumbers [1/cm]", self.zero_freqs/(lightspeed/cm), "% 8.1f", 8)
         self.dump_values(f, "Real Wavenumbers [1/cm]", self.positive_freqs/(lightspeed/cm), "% 8.1f", 8)
         self.dump_values(f, "Imaginary Wavenumbers [1/cm]", self.negative_freqs/(lightspeed/cm), "% 8.1f", 8)
 
@@ -463,46 +348,45 @@ class Vibrations(Info, StatFysTerms):
 
 class PartFun(Info, StatFys):
     __reserved_names__ = set([
-        "modifications", "vibrational", "electronic", "constraints",
-        "contributions",
+        "terms"
     ])
 
-    def __init__(self, molecule, modifications, vibrational=None, electronic=None):
-        self.molecule = molecule
+    def __init__(self, nma, terms=None):
+        if terms is None:
+            terms = []
+        self.terms = terms
         # perform a sanity check on the names of the contributions:
-        for mod in modifications:
-            if mod.name in self.__reserved_names__:
-                raise ValueError("A partition function modification can not have the name '%s'" % mod.name)
+        for term in self.terms:
+            if term.name in self.__reserved_names__:
+                raise ValueError("An additional partition function term can not have the name '%s'" % mod.name)
         # done testing, start initialization
-        self.modifications = tuple(modifications)
-        self.constraints = tuple(mod for mod in self.modifications if isinstance(mod, Constraint))
-        self.contributions = tuple(mod for mod in self.modifications if isinstance(mod, StatFys))
-        for contribution in self.contributions:
-            contribution.init_part_fun(self.molecule)
-        if vibrational is None:
+        self.vibrational = None
+        self.electronic = None
+        for term in self.terms:
+            self.__dict__[term.name] = term
+
+        if self.vibrational is None:
             self.vibrational = Vibrations()
-        else:
-            self.vibrational = vibrational
-        self.vibrational.init_part_fun(self.constraints, self.molecule)
-        if electronic is None:
+            self.terms.append(self.vibrational)
+
+        if self.electronic is None:
             self.electronic = Electronic()
-        else:
-            self.electronic = electronic
-        self.electronic.init_part_fun(self.molecule)
-        self.contributions = self.contributions + (self.electronic, self.vibrational)
-        # use convenient attribute names:
-        for mod in self.modifications:
-            self.__dict__[mod.name] = mod
+            self.terms.append(self.electronic)
+
+        for term in self.terms:
+            term.init_part_fun(nma)
+
+        self.energy = nma.energy
         Info.__init__(self, "total")
 
     def log_eval(self, temp):
-        return sum(contribution.log_eval(temp) for contribution in self.contributions)
+        return sum(term.log_eval(temp) for term in self.terms)
 
     def log_deriv(self, temp):
-        return sum(contribution.log_deriv(temp) for contribution in self.contributions)
+        return sum(term.log_deriv(temp) for term in self.terms)
 
     def log_deriv2(self, temp):
-        return sum(contribution.log_deriv2(temp) for contribution in self.contributions)
+        return sum(term.log_deriv2(temp) for term in self.terms)
 
     def entropy(self, temp):
         """Compute the total entropy"""
@@ -510,83 +394,17 @@ class PartFun(Info, StatFys):
 
     def free_energy(self, temp):
         """Computes the free energy"""
-        return StatFys.free_energy(self, temp) + self.molecule.energy
+        return StatFys.free_energy(self, temp) + self.energy
 
     def dump(self, f):
-        print >> f, "Chemical formula: %s" % self.molecule.chemical_formula
-        print >> f, "Number of atoms: %s" % self.molecule.size
-        print >> f, "Mass [amu]: %f" % (self.molecule.mass/amu)
-        print >> f, "Moments of inertia [amu*bohr**2]: %f  %f %f" % tuple(
-            numpy.linalg.eigvalsh(self.molecule.inertia_tensor)/amu
-        )
         print >> f, "Contributions to the partition function:"
-        self.vibrational.dump(f)
-        self.electronic.dump(f)
-        for mod in self.modifications:
-            mod.dump(f)
+        for term in self.terms:
+            term.dump(f)
 
     def write_to_file(self, filename):
         f = file(filename, 'w')
         self.dump(f)
         f.close()
-
-
-class MDPartFun(Info, StatFys):
-    def __init__(self, md_molecule, classical=False):
-        self.md_molecule = md_molecule
-        self.classical = classical
-        Info.__init__(self, "mdtotal")
-        if self.freqs.min() <= 0:
-            raise ValueError("Only positive frequencies are allowed.")
-        self.energy_correction = 0.0
-        if self.md_molecule.internal_energy is not None:
-            self.energy_correction = (
-                self.md_molecule.internal_energy -
-                self.internal_energy(self.md_molecule.temp)
-            )
-
-    freqs = property(lambda self: self.md_molecule.freqs)
-    amplitudes = property(lambda self: self.md_molecule.amplitudes)
-
-    def integrate(self, fn):
-        delta_f = self.freqs[1] - self.freqs[0]
-        return (fn*self.amplitudes).sum()*delta_f
-
-    def log_eval(self, temp):
-        if self.classical:
-            return self.integrate(numpy.log(0.5*boltzmann*temp/numpy.pi/self.freqs))
-        else:
-            exp_arg = -2*numpy.pi*self.freqs/boltzmann/temp
-            return self.integrate((exp_arg/2 - numpy.log(1-numpy.exp(exp_arg))))
-
-    def log_deriv(self, temp):
-        if self.classical:
-            return self.integrate(numpy.ones(len(self.freqs))/temp)
-        else:
-            exp_arg = -2*numpy.pi*self.freqs/boltzmann/temp
-            exp_arg_deriv = -exp_arg/temp
-            return self.integrate(exp_arg_deriv*(0.5-1/(1-numpy.exp(-exp_arg))))
-
-    def log_deriv2(self, temp):
-        if self.classical:
-            return self.integrate(-numpy.ones(len(self.freqs))/temp**2)
-        else:
-            exp_arg = -2*numpy.pi*self.freqs/boltzmann/temp
-            exp_arg_deriv = -exp_arg/temp
-            exp_arg_deriv2 = -2*exp_arg_deriv/temp
-            e = numpy.exp(-exp_arg)
-            x = 1/(1-e)
-            return self.integrate(exp_arg_deriv2*(0.5-x) + (exp_arg_deriv*x)**2*e)
-
-    def internal_energy(self, temp):
-        result = StatFys.internal_energy(self, temp)
-        result += self.energy_correction
-        return result
-
-    def free_energy(self, temp):
-        result = StatFys.free_energy(self, temp)
-        result += self.energy_correction
-        return result
 
 
 def compute_rate_coeff(pfs_react, pf_trans, temp, mol_volume=None):

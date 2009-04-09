@@ -20,7 +20,9 @@
 #
 # --
 
+
 from data import *
 from io import *
+from nma import *
 from partf import *
 from tools import *

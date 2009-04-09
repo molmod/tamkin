@@ -28,11 +28,11 @@ from molmod.graphs import cached
 import numpy
 
 
-__all__ = ["Molecule", "BareNucleus", "Proton", "MDMolecule"]
+__all__ = ["Molecule", "BareNucleus", "Proton"]
 
 
 class Molecule(BaseMolecule):
-    def __init__(self, numbers, coordinates, masses, energy, gradient, hessian, multiplicity):
+    def __init__(self, numbers, coordinates, masses, energy, gradient, hessian, multiplicity, symmetry_number, periodic):
         BaseMolecule.__init__(self, numbers, coordinates)
         self._masses = numpy.array(masses, float)
         self._masses.setflags(write=False)
@@ -42,12 +42,16 @@ class Molecule(BaseMolecule):
         self._hessian = numpy.array(hessian, float)
         self._hessian.setflags(write=False)
         self._multiplicity = multiplicity
+        self._symmetry_number = symmetry_number
+        self._periodic = periodic
 
     masses = property(lambda self: self._masses)
     energy = property(lambda self: self._energy)
     gradient = property(lambda self: self._gradient)
     hessian = property(lambda self: self._hessian)
     multiplicity = property(lambda self: self._multiplicity)
+    symmetry_number = property(lambda self: self._symmetry_number)
+    periodic = property(lambda self: self._periodic)
 
     @cached
     def mass(self):
@@ -74,24 +78,43 @@ class Molecule(BaseMolecule):
             for number, count in sorted(counts.iteritems(), reverse=True)
         )
 
+    @cached
+    def external_basis(self):
+        """The basis for small displacements in the external degrees of freedom.
+        """
+        if self.periodic:
+            result = numpy.zeros((3, self.coordinates.size), float)
+        else:
+            result = numpy.zeros((6, self.coordinates.size), float)
+        # translation
+        result[0, 0::3] = 1
+        result[1, 1::3] = 1
+        result[2, 2::3] = 1
+        if not self.periodic:
+            # rotation
+            result[3, 1::3] =  self.coordinates[:,2]
+            result[3, 2::3] = -self.coordinates[:,1]
+            result[4, 2::3] =  self.coordinates[:,0]
+            result[4, 0::3] = -self.coordinates[:,2]
+            result[5, 0::3] =  self.coordinates[:,1]
+            result[5, 1::3] = -self.coordinates[:,0]
+        result *= numpy.sqrt(self.masses3) # transform basis to mass weighted coordinates
+        return result
+
+    @cached
+    def masses3(self):
+        return numpy.array([self.masses, self.masses, self.masses]).transpose().ravel()
+
 
 class BareNucleus(Molecule):
     def __init__(self, number, mass=None):
         if mass is None:
             mass = periodic[number].mass
-        Molecule.__init__(self, [number], [[0,0,0]], [mass], 0.0, [[0,0,0]], [[0,0,0],[0,0,0],[0,0,0]], 1)
+        Molecule.__init__(self, [number], [[0,0,0]], [mass], 0.0, [[0,0,0]], [[0,0,0],[0,0,0],[0,0,0]], 1, None, False)
 
 
 class Proton(BareNucleus):
     def __init__(self, mass=None):
         BareNucleus.__init__(self, 1, mass)
 
-
-class MDMolecule(object):
-    def __init__(self, freqs, amplitudes, temp, internal_energy=None):
-        mask = freqs > 0
-        self.freqs = freqs[mask]
-        self.amplitudes = amplitudes[mask]
-        self.temp = temp
-        self.internal_energy = internal_energy
 

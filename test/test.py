@@ -21,6 +21,7 @@
 #
 # --
 
+
 import sys, os, unittest, glob
 
 retcode = os.system("(cd ..; python setup.py build)")
@@ -34,5 +35,6 @@ if not os.path.isdir("output"):
 from io import *
 from partf import *
 from tools import *
+from nma import *
 unittest.main()
 

@@ -21,8 +21,7 @@
 # --
 
 
-from tamkin.partf import PartFun, ExternalTranslation, ExternalRotation
-from tamkin.io import load_fixed_g03com, load_molecule_g03fchk, load_molecule_cp2k
+from tamkin import *
 
 from molmod.data.periodic import periodic
 from molmod.units import angstrom, cm
@@ -58,20 +57,32 @@ class IOTestCase(unittest.TestCase):
         self.assertAlmostEqual(molecule.coordinates[5,1]/angstrom, 13.9457396458)
         self.assertAlmostEqual(molecule.gradient[0,2], 0.0000000038, 9)
         self.assertAlmostEqual(molecule.gradient[11,0], 0.0000000177, 9)
+        self.assertAlmostEqual(molecule.hessian[0,0], 1.08660340, 6)
+        self.assertAlmostEqual(molecule.hessian[-1,-1], 0.528947590, 6)
 
-        pf = PartFun(molecule, [])
-        expected_freqs = numpy.array([ # taken from cp2k output file
-            125.923216, 132.737491, 251.881675, 258.656045, 260.028863,
-            489.690362, 522.430525, 836.589205, 924.800235, 1069.391906,
-            1152.109253, 1182.947666, 1226.649618, 1279.047068, 1494.291889,
-            1505.963333, 1526.247839, 1526.770449, 1527.220869, 1554.895642,
-            1574.963368, 1664.772539, 1726.540705, 1730.035399, 1730.370082,
-            1740.966064, 1740.971286, 1758.656380, 1767.704604, 1790.726516,
-            1825.670669, 1980.257356, 2107.134204, 4515.156994, 4526.218064,
-            4540.443901, 4578.619346, 4578.624300, 4581.926079, 4582.125771,
-            4646.530637, 4657.432936, 4671.093295, 4751.240132, 4751.291450
-        ])
-        conv = cm/lightspeed
-        for i in xrange(len(expected_freqs)):
-            self.assertAlmostEqual(expected_freqs[i], pf.vibrational.freqs[i+6]*conv, 1)
+    def test_checkpoint(self):
+        molecule = load_molecule_cp2k("input/cp2k/pentane/opt.xyz", "input/cp2k/pentane/sp.out", "input/cp2k/pentane/freq.out")
+        nma1 = NMA(molecule)
+        nma1.write_to_file("output/test.chk")
+        nma2 = NMA.read_from_file("output/test.chk")
+
+        self.assertEqual(nma1.freqs.shape, nma2.freqs.shape)
+        self.assertEqual(nma1.modes.shape, nma2.modes.shape)
+        self.assertEqual(nma1.masses.shape, nma2.masses.shape)
+        self.assertEqual(nma1.numbers.shape, nma2.numbers.shape)
+        self.assertEqual(nma1.coordinates.shape, nma2.coordinates.shape)
+        self.assertEqual(nma1.inertia_tensor.shape, nma2.inertia_tensor.shape)
+
+        self.assert_(abs(nma1.freqs - nma2.freqs).max()/abs(nma1.freqs).max() < 1e-15)
+        self.assert_(abs(nma1.modes - nma2.modes).max()/abs(nma1.modes).max() < 1e-15)
+        self.assert_(abs(nma1.masses - nma2.masses).max()/abs(nma1.masses).max() < 1e-15)
+        self.assert_(abs(nma1.coordinates - nma2.coordinates).max()/abs(nma1.coordinates).max() < 1e-15)
+        self.assert_(abs(nma1.inertia_tensor - nma2.inertia_tensor).max()/abs(nma1.inertia_tensor).max() < 1e-15)
+        self.assert_((nma1.numbers==nma2.numbers).all())
+
+        self.assertAlmostEqual(nma1.mass, nma2.mass)
+        self.assertAlmostEqual(nma1.energy, nma2.energy)
+        self.assertEqual(nma1.multiplicity, nma2.multiplicity)
+        self.assertEqual(nma1.symmetry_number, nma2.symmetry_number)
+
 

@@ -31,7 +31,10 @@ from molmod.data.periodic import periodic
 import numpy
 
 
-__all__ = ["load_fixed_g03com", "load_molecule_g03fchk", "load_molecule_cp2k"]
+__all__ = [
+    "load_fixed_g03com", "load_molecule_g03fchk", "load_molecule_cp2k",
+    "load_chk", "dump_chk",
+]
 
 
 def load_fixed_g03com(filename):
@@ -83,9 +86,12 @@ def load_molecule_g03fchk(filename_freq,filename_ener=None): # if one file conta
         fchk_freq.fields["Cartesian Gradient"],
         fchk_freq.get_hessian(),
         fchk_freq.fields["Multiplicity"],
+        None, # gaussian is very poor at computing the rotational symmetry number
+        False,
     )
 
-def load_molecule_cp2k(fn_xyz, fn_sp, fn_freq, multiplicity=1):
+
+def load_molecule_cp2k(fn_xyz, fn_sp, fn_freq, multiplicity=1, is_periodic=True):
     molecule = XYZFile(fn_xyz).get_molecule()
     masses = numpy.array([periodic[number].mass for number in molecule.numbers])
 
@@ -150,6 +156,101 @@ def load_molecule_cp2k(fn_xyz, fn_sp, fn_freq, multiplicity=1):
     hessian *= conv.reshape((-1,1))
 
     return Molecule(
-        molecule.numbers, molecule.coordinates,
-        masses, energy, gradient, hessian, multiplicity
+        molecule.numbers, molecule.coordinates, masses, energy, gradient,
+        hessian, multiplicity, None, is_periodic
     )
+
+
+def load_chk(filename):
+    f = file(filename)
+    result = {}
+    while True:
+        line = f.readline()
+        if line == "":
+            break
+        if len(line) < 54:
+            raise IOError("Header lines must be at least 54 characters long.")
+        key = line[:40].strip()
+        kind = line[47:52].strip()
+        value = line[53:-1] # discard newline
+        if kind == 'str':
+            result[key] = value
+        elif kind == 'int':
+            result[key] = int(value)
+        elif kind == 'flt':
+            result[key] = float(value)
+        elif kind[3:5] == 'ar':
+            if kind[:3] == 'int':
+                dtype = int
+            elif kind[:3] == 'flt':
+                dtype = float
+            else:
+                raise IOError("Unsupported kind: %s" % kind)
+            shape = tuple(int(i) for i in value.split(","))
+            array = numpy.zeros(shape, dtype)
+            work = array.ravel()
+            counter = 0
+            while True:
+                short = f.readline().split()
+                for s in short:
+                    work[counter] = dtype(s)
+                    counter += 1
+                    if counter == array.size:
+                        break
+                if counter == array.size:
+                    break
+            result[key] = array
+        elif kind == 'none':
+            result[key] = None
+        else:
+            raise IOError("Unsupported kind: %s" % kind)
+    f.close()
+    return result
+
+
+def dump_chk(filename, data):
+    f = file(filename, "w")
+    for key, value in sorted(data.iteritems()):
+        if not isinstance(key, str):
+            raise TypeError("The keys must be strings.")
+        if len(key) > 40:
+            raise ValueError("Key strings can not be longer than 40 characters.")
+        if isinstance(value, str):
+            if len(value) > 256:
+                raise TypeError("Only small strings are supported (256 chars).")
+            if "\n" in value:
+                raise ValueError("The string can not contain new lines.")
+            print >> f, "%40s  kind=str   %s" % (key.ljust(40), value)
+        elif isinstance(value, int):
+            print >> f, "%40s  kind=int   %i" % (key.ljust(40), value)
+        elif isinstance(value, float):
+            print >> f, "%40s  kind=flt   %22.15e" % (key.ljust(40), value)
+        elif isinstance(value, numpy.ndarray):
+            if value.dtype.fields is not None:
+                raise TypeError("Arrays with fields are not supported.")
+            shape_str = ",".join(str(i) for i in value.shape)
+            if issubclass(value.dtype.type, int):
+                print >> f, "%40s  kind=intar %s" % (key.ljust(40), shape_str)
+                format_str = "%22i"
+            elif issubclass(value.dtype.type, float):
+                print >> f, "%40s  kind=fltar %s" % (key.ljust(40), shape_str)
+                format_str = "%22.15e"
+            else:
+                raise TypeError("Numpy array dtype %s not supported." % value.dtype)
+            short_len = 4
+            short = []
+            for x in value.ravel():
+                short.append(x)
+                if len(short) == 4:
+                    print >> f, " ".join(format_str  % s for s in short)
+                    short = []
+            if len(short) > 0:
+                print >> f, " ".join(format_str  % s for s in short)
+        elif value is None:
+            print >> f, "%40s  kind=none   None" % key.ljust(40)
+        else:
+            raise TypeError("Type %s not supported." % type(value))
+    f.close()
+
+
+

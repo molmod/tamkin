@@ -40,7 +40,7 @@ import numpy
 
 __all__ = [
     "NMA", "AtomDivision", "Transform", "MassMatrix", "Treatment",
-    "Full", "ConstrainExt", "PHVA", "VSA","VSA_no_mass",
+    "Full", "ConstrainExt", "PHVA", "VSA","VSANoMass",
 ]
 
 
@@ -626,7 +626,7 @@ class VSA(Treatment):
             self.transform = Transform( numpy.concatenate( (- hessian_e1_es, numpy.identity(len(subs3))),0), atom_division)
 
 
-class VSA_no_mass(Treatment):
+class VSANoMass(Treatment):
     def __init__(self, subs, svd_threshold=1e-5):
         """Initialize the VSA treatment.
 

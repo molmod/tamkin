@@ -412,17 +412,17 @@ class NMATestCase(unittest.TestCase):
         molecule = load_molecule_g03fchk("input/an/butane.cis.freq.fchk")
 
         subs = load_subs_txt("input/an/fixed.01.txt")
-        nma = NMA(molecule, VSA_no_mass(subs))
+        nma = NMA(molecule, VSANoMass(subs))
         self.assert_(len(nma.zeros)==3)
 
         #subs = load_subs_txt("input/an/fixed.02.txt")
-        #nma = NMA(molecule, VSA_no_mass(subs))
+        #nma = NMA(molecule, VSANoMass(subs))
         #self.assert_(len(nma.zeros)==3)
 
 
         subs = load_subs_txt("input/an/fixed.03.txt")
-        nma = NMA(molecule, VSA_no_mass(subs))
-        self.assert_(len(nma.zeros)==3)
+        nma = NMA(molecule, VSANoMass(subs))
+        self.assert_(len(nma.zeros)==6)
 
 
 

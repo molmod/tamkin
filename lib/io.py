@@ -257,9 +257,9 @@ def dump_chk(filename, data):
 def load_fixed_txt(filename,shift=-1):
     """Read the fixed atoms into the list fixed_atoms.
     Empty lines are skipped.
-    
+
     Arguments:
-    filename  --  file that contains the fixed atoms: 
+    filename  --  file that contains the fixed atoms:
                   1 atom on every line, empty lines are skipped
     shift  --  default on -1, because numbering in Python starts with -1
     """
@@ -277,9 +277,9 @@ def load_fixed_txt(filename,shift=-1):
 def load_subs_txt(filename,shift=-1):
     """Read the subsystem atoms into a list (for VSA treatment).
     Empty lines are skipped.
-    
+
     Arguments:
-    filename  --  file that contains the subsystem atoms: 
+    filename  --  file that contains the subsystem atoms:
                   1 atom on every line, empty lines are skipped
     shift  --  default on -1, because numbering in Python starts with -1
     """
@@ -289,18 +289,18 @@ def load_subs_txt(filename,shift=-1):
 def load_envi_txt(filename,shift=-1):
     """Read the environment atoms into a list (for VSA treatment).
     Empty lines are skipped.
-    
+
     Arguments:
-    filename  --  file that contains the environment atoms: 
+    filename  --  file that contains the environment atoms:
                   1 atom on every line, empty lines are skipped
     shift  --  default on -1, because numbering in Python starts with -1
     """
     return load_fixed_txt(filename,shift=shift)
 
-    
 
 
-    
+
+
 
 
 

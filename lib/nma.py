@@ -40,7 +40,7 @@ import numpy
 
 __all__ = [
     "NMA", "AtomDivision", "Transform", "MassMatrix", "Treatment",
-    "Full", "ConstrainExt", "PHVA",
+    "Full", "ConstrainExt", "PHVA", "VSA","VSA_no_mass",
 ]
 
 
@@ -219,6 +219,10 @@ class Transform(object):
               atom_division -- set AtomDivision class
               matrix -- the linear transformation from the transformed
                         displacements to Cartesian coordinates.
+
+           Attributes:
+              matrix  --  see above
+              scalars  --  ...
         """
         if matrix is None:
             matrix = numpy.zeros((0,0), float)
@@ -298,13 +302,13 @@ class MassMatrix(object):
 
            Arguments, if one is given and it is a one-dimensional matrix:
               mass_diag -- the diagonal of the mass matrix associated with the
-                           free atoms
+                           free atoms (each mass appears three times)
 
            Arguments, if two are given:
               mass_block -- the mass matrix associated with the transformed
                             coordinates
               mass_diag -- the diagonal of the mass matrix associated with the
-                           free atoms
+                           free atoms (each mass appears three times)
 
            The mass of the fixed atoms does not really matter here.
         """
@@ -327,12 +331,12 @@ class MassMatrix(object):
         if len(self.mass_block) == 0:
             self.mass_block_inv_sqrt = numpy.zeros((0,0), float)
         else:
-            evecs, evals = numpy.linalg.evalh(self.mass_block)
+            evals, evecs = numpy.linalg.eigh(self.mass_block)
             self.mass_block_inv_sqrt = numpy.dot(evecs/numpy.sqrt(evals), evecs.transpose())
         self.mass_diag_inv_sqrt = 1/numpy.sqrt(self.mass_diag)
 
     def get_weighted_hessian(self, hessian):
-        hessian_mw = numpy.zeros(hessian.shape)
+        hessian_mw = numpy.zeros(hessian.shape,float)
         n = len(self.mass_block)
         # transform block by block:
         hessian_mw[:n,:n] = numpy.dot(numpy.dot(self.mass_block_inv_sqrt, hessian[:n,:n]), self.mass_block_inv_sqrt)
@@ -516,5 +520,196 @@ class PHVA(Treatment):
         if do_modes:
             atom_division = AtomDivision([], free, self.fixed)
             self.transform = Transform(None, atom_division)
+
+
+
+class VSA(Treatment):
+    def __init__(self, subs, svd_threshold=1e-5):
+        """Initialize the VSA treatment.
+
+           Frequencies and modes are calculated with the VSA approach:
+           Vibrational Subsystem Analysis
+           - Zheng and Brooks, ... (2006)
+           - Woodcock, ... (2008)
+
+           One argument:
+             subs  --  a list with the subsystem atoms, counting starts from zero.
+        """
+        # QA:
+        if len(subs) == 0:
+            raise ValueError("At least one subsystem atom is required.")
+        # Rest of init:
+        self.subs = numpy.array(subs)
+        #self.subs.sort()
+        self.svd_threshold = svd_threshold
+        Treatment.__init__(self)
+
+    def compute_zeros(self, molecule, do_modes):
+        # Number of zeros for VSA:
+        # 6 zeros if atoms of subsystem are non-collinear
+        # 5 zeros if atoms of subsystem are collinear, e.g. when the subsystem contains only 2 atoms
+        # 3 zeros if subsystem contains 1 atom
+        #
+        # method:
+        # Construct a kind of inertia matrix (without inertia) of the subsystem
+        #           A = transrot_subs . transrot_sub**T
+        # Diagonalize A. The rank is the number of expected zero freqs.
+
+        # information subsystem/environment atoms/coordinates:
+        subs  = self.subs.tolist()
+        subs3 = sum([[3*at, 3*at+1, 3*at+2] for at in xrange(molecule.size) if at in subs],[])
+        masses3_subs = molecule.masses3[subs3]
+
+        # transrot_subs contains the 6 global translations and rotations of the subsystem
+        # dimension trabsrot: 6 x 3*molecule.size  =>  select subs atoms (6 x 3*len(self.subs))
+        transrot_subs = numpy.take(molecule.external_basis,subs3,1)
+        A    = numpy.dot( transrot_subs, transrot_subs.transpose() )
+        eigv = numpy.linalg.eigvalsh(A)
+        rank = (abs(eigv) > abs(eigv[-1])*self.svd_threshold).sum()
+        self.num_zeros = rank
+
+        if do_modes and self.num_zeros > 0:
+            if self.num_zeros == 3:
+                self.external_basis = molecule.external_basis[:3,:]
+            elif self.num_zeros == 5:
+                # TODO: fix this
+                # select 3 translations + 2 rotations
+                #self.exernal_basis = external_basis
+                raise NotImplementedError
+            elif self.num_zeros == 6:
+                self.external_basis = molecule.external_basis
+            else:
+                raise ValueError("Number of zeros is expected to be 3, 5 or 6, but found %i." % self.num_zeros)
+
+
+    def compute_hessian(self, molecule, do_modes):
+
+        # fill lists with subsystem/environment atoms/coordinates
+        subs = self.subs.tolist()
+        envi = sum([[at] for at in xrange(molecule.size) if at not in subs],[])
+        subs3 = sum([[3*at, 3*at+1, 3*at+2] for at in xrange(molecule.size) if at in subs],[])
+        envi3 = sum([[3*at, 3*at+1, 3*at+2] for at in xrange(molecule.size) if at not in subs],[])
+
+        # 1. Construct Hessian (small: 3Nsubs x 3Nsubs)
+        # construct H_ss, H_ee, H_es
+        hessian_ss = numpy.take(numpy.take(molecule.hessian,subs3,0), subs3,1)
+        hessian_ee = numpy.take(numpy.take(molecule.hessian,envi3,0), envi3,1)
+        hessian_es = numpy.take(numpy.take(molecule.hessian,envi3,0), subs3,1)
+        # construct H_ee**-1 and H_ee**-1 . H_es
+        hessian_e1 = numpy.linalg.inv(hessian_ee)
+        hessian_e1_es = numpy.dot(hessian_e1,hessian_es)
+        # construct H_ss - H_se . H_ee**-1 . H_es
+        self.hessian_small = hessian_ss - numpy.dot( hessian_es.transpose(), hessian_e1_es)
+
+        # 2. Construct mass matrix (small: 3Nsubs x 3Nsubs)
+        # with corrected mass matrix
+        masses3_subs = molecule.masses3[subs3]               # masses subsystem
+        masses3_envi = molecule.masses3[envi3]               # masses environment
+        tempmat = numpy.zeros((len(envi3),len(subs3)),float) # temporary matrix
+
+        # construct   M_e . H_ee**-1 . H_es
+        tempmat = masses3_envi.reshape((-1,1))*hessian_e1_es
+        # construct   H_se . H_ee**-1 . M_e . H_ee**-1 . H_es
+        massmatrixsmall = numpy.dot(hessian_e1_es.transpose(), tempmat)
+        # construct   M_s + H_se . H_ee**-1 . M_e . H_ee**-1 . H_es
+        # by adding the diagonal contributions
+        massmatrixsmall.ravel()[::len(massmatrixsmall)+1] += masses3_subs
+        self.mass_matrix_small = MassMatrix( massmatrixsmall )
+
+        if do_modes:
+            atom_division = AtomDivision(envi+subs,[],[])
+            self.transform = Transform( numpy.concatenate( (- hessian_e1_es, numpy.identity(len(subs3))),0), atom_division)
+
+
+class VSA_no_mass(Treatment):
+    def __init__(self, subs, svd_threshold=1e-5):
+        """Initialize the VSA treatment.
+
+           Frequencies and modes are calculated with the VSA approach:
+           Vibrational Subsystem Analysis
+           - Zheng and Brooks, ... (2006)
+           - Woodcock, ... (2008)
+
+           VSA is performed according to the original version of 2006:
+           no mass correction for the environment is included.
+           The version of VSA corresponds to the approximation
+           of zero mass for all environment atoms.
+
+           One argument:
+             subs  --  a list with the subsystem atoms, counting starts from zero.
+        """
+        # QA:
+        if len(subs) == 0:
+            raise ValueError("At least one subsystem atom is required.")
+        # Rest of init:
+        self.subs = numpy.array(subs)
+        #self.subs.sort()
+        self.svd_threshold = svd_threshold
+        Treatment.__init__(self)
+
+    def compute_zeros(self, molecule, do_modes):
+        # Number of zeros for VSA:
+        # 6 zeros if atoms of subsystem are non-collinear
+        # 5 zeros if atoms of subsystem are collinear, e.g. when the subsystem contains only 2 atoms
+        # 3 zeros if subsystem contains 1 atom
+        #
+        # method:
+        # Construct a kind of inertia matrix (without inertia) of the subsystem
+        #           A = transrot_subs . transrot_sub**T
+        # Diagonalize A. The rank is the number of expected zero freqs.
+
+        # information subsystem/environment atoms/coordinates:
+        subs  = self.subs.tolist()
+        subs3 = sum([[3*at, 3*at+1, 3*at+2] for at in xrange(molecule.size) if at in subs],[])
+        masses3_subs = molecule.masses3[subs3]
+
+        # transrot_subs contains the 6 global translations and rotations of the subsystem
+        # dimension trabsrot: 6 x 3*molecule.size  =>  select subs atoms (6 x 3*len(self.subs))
+        transrot_subs = numpy.take(molecule.external_basis,subs3,1)
+        A    = numpy.dot( transrot_subs, transrot_subs.transpose() )
+        eigv = numpy.linalg.eigvalsh(A)
+        rank = (abs(eigv) > abs(eigv[-1])*self.svd_threshold).sum()
+        self.num_zeros = rank
+
+        if do_modes and self.num_zeros > 0:
+            if self.num_zeros == 3:
+                self.external_basis = molecule.external_basis[:3,:]
+            elif self.num_zeros == 5:
+                # TODO: fix this
+                # select 3 translations + 2 rotations
+                #self.exernal_basis = external_basis
+                raise NotImplementedError
+            elif self.num_zeros == 6:
+                self.external_basis = molecule.external_basis
+            else:
+                raise ValueError("Number of zeros is expected to be 3, 5 or 6, but found %i." % self.num_zeros)
+
+
+    def compute_hessian(self, molecule, do_modes):
+
+        # fill lists with subsystem/environment atoms/coordinates
+        subs = self.subs.tolist()
+        envi = sum([[at] for at in xrange(molecule.size) if at not in subs],[])
+        subs3 = sum([[3*at, 3*at+1, 3*at+2] for at in xrange(molecule.size) if at in subs],[])
+        envi3 = sum([[3*at, 3*at+1, 3*at+2] for at in xrange(molecule.size) if at not in subs],[])
+
+        # 1. Construct Hessian (small: 3Nsubs x 3Nsubs)
+        # construct H_ss, H_ee, H_es
+        hessian_ss = numpy.take(numpy.take(molecule.hessian,subs3,0), subs3,1)
+        hessian_ee = numpy.take(numpy.take(molecule.hessian,envi3,0), envi3,1)
+        hessian_es = numpy.take(numpy.take(molecule.hessian,envi3,0), subs3,1)
+        # construct H_ee**-1 and H_ee**-1 . H_es
+        hessian_e1 = numpy.linalg.inv(hessian_ee)
+        hessian_e1_es = numpy.dot(hessian_e1,hessian_es)
+        # construct H_ss - H_se . H_ee**-1 . H_es
+        self.hessian_small = hessian_ss - numpy.dot( hessian_es.transpose(), hessian_e1_es)
+
+        # 2. Construct mass matrix (small: 3Nsubs x 3Nsubs)
+        # with plain submatrix M_s
+        self.mass_matrix_small = MassMatrix( numpy.diag(numpy.take(molecule.masses3,subs3)) )
+
+        if do_modes:
+            atom_division = AtomDivision(envi+subs,[],[])
+            self.transform = Transform( numpy.concatenate( (- hessian_e1_es, numpy.identity(len(subs3))),0), atom_division)
 
 

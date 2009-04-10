@@ -1,5 +1,5 @@
 # TAMkin is a post-processing toolkit for thermochemistry and kinetics analysis.
-# Copyright (C) 2008 Toon Verstraelen <Toon.Verstraelen@UGent.be>,
+# Copyright (C) 2008-2009 Toon Verstraelen <Toon.Verstraelen@UGent.be>,
 # Matthias Vandichel <Matthias.Vandichel@UGent.be> and
 # An Ghysels <An.Ghysels@UGent.be>
 #
@@ -54,7 +54,7 @@ class ToolsTestCase(unittest.TestCase):
         pf_react = PartFun(NMA(load_molecule_g03fchk("input/mat/5Te_etheen_react_deel2.fchk")), [ExternalTranslation(), ExternalRotation(1)])
         pf_trans = PartFun(NMA(load_molecule_g03fchk("input/mat/5Te_etheen_ts_deel2_punt108_freq.fchk")), [ExternalTranslation(), ExternalRotation(1)])
 
-        ra = ReactionAnalysis([pf_react], pf_trans, 100, 1200)
+        ra = ReactionAnalysis([pf_react], pf_trans, 100, 1200, temp_step=50)
         # not a very accurate check because the fit is carried out differently
         # in the fancy excel file where these numbers come from.
         self.assertAlmostEqual(ra.Ea/kjmol, 160.6, 0)
@@ -63,6 +63,14 @@ class ToolsTestCase(unittest.TestCase):
         ra.monte_carlo()
         ra.write_to_file("output/reaction_mat1.txt")
         ra.plot_parameters("output/parameters_mat1.png")
+
+        wigner = Wigner(pf_trans) # Blind test of the wigner correction and
+        # the corrected reaction analysis.
+        ra = ReactionAnalysis([pf_react], pf_trans, 100, 1200, temp_step=50, tunneling=wigner)
+        ra.plot("output/arrhenius_mat1w.png")
+        ra.monte_carlo()
+        ra.write_to_file("output/reaction_mat1w.txt")
+        ra.plot_parameters("output/parameters_mat1w.png")
 
         ra = ReactionAnalysis([pf_react], pf_trans, 670, 770)
         # not a very accurate check because the fit is carried out differently
@@ -79,4 +87,5 @@ class ToolsTestCase(unittest.TestCase):
         pf = PartFun(NMA(load_molecule_g03fchk("input/mat/5Te_etheen_react_deel2.fchk")), [ExternalTranslation(), ExternalRotation(1)])
         ta = ThermoAnalysis(pf, [200,300,400,500,600,700,800,900])
         ta.write_to_file("output/thermo_mat2.csv")
+
 

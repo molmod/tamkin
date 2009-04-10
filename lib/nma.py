@@ -1,5 +1,5 @@
 # TAMkin is a post-processing toolkit for thermochemistry and kinetics analysis.
-# Copyright (C) 2008 Toon Verstraelen <Toon.Verstraelen@UGent.be>,
+# Copyright (C) 2008-2009 Toon Verstraelen <Toon.Verstraelen@UGent.be>,
 # Matthias Vandichel <Matthias.Vandichel@UGent.be> and
 # An Ghysels <An.Ghysels@UGent.be>
 #
@@ -438,7 +438,13 @@ class ConstrainExt(Treatment):
 
     def compute_hessian(self, molecule, do_modes):
         if abs(molecule.gradient).max() > self.gradient_threshold:
-            raise ValueError("Some components of the gradient exceeds the threshold. The current implementation of the GassPhase treatment only works on optimized geometries.")
+            raise ValueError(
+                "Some components of the gradient exceed the threshold "
+                "(%.1e > %.1e). The current implementation of the ConstrainExt "
+                "treatment only works on optimized geometries." % (
+                    abs(molecule.gradient).max(), self.gradient_threshold
+                )
+            )
         # project the hessian on the orthogonal complement of the basis of small
         # displacements in the external degrees of freedom.
         U, W, Vt = numpy.linalg.svd(molecule.external_basis, full_matrices=True)
@@ -520,7 +526,6 @@ class PHVA(Treatment):
         if do_modes:
             atom_division = AtomDivision([], free, self.fixed)
             self.transform = Transform(None, atom_division)
-
 
 
 class VSA(Treatment):

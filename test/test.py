@@ -1,6 +1,6 @@
 #!/usr/bin/python
 # TAMkin is a post-processing toolkit for thermochemistry and kinetics analysis.
-# Copyright (C) 2008 Toon Verstraelen <Toon.Verstraelen@UGent.be>,
+# Copyright (C) 2008-2009 Toon Verstraelen <Toon.Verstraelen@UGent.be>,
 # Matthias Vandichel <Matthias.Vandichel@UGent.be> and
 # An Ghysels <An.Ghysels@UGent.be>
 #
@@ -36,5 +36,7 @@ from io import *
 from partf import *
 from tools import *
 from nma import *
+from tunneling import *
 unittest.main()
+
 

@@ -1,5 +1,5 @@
 # TAMkin is a post-processing toolkit for thermochemistry and kinetics analysis.
-# Copyright (C) 2008 Toon Verstraelen <Toon.Verstraelen@UGent.be>,
+# Copyright (C) 2008-2009 Toon Verstraelen <Toon.Verstraelen@UGent.be>,
 # Matthias Vandichel <Matthias.Vandichel@UGent.be> and
 # An Ghysels <An.Ghysels@UGent.be>
 #
@@ -142,21 +142,25 @@ class ThermoTable(object):
 
 
 class ReactionAnalysis(object):
-    def __init__(self, pfs_react, pf_trans, temp_low, temp_high, mol_volume=None, temp_step=10*K):
+    def __init__(self, pfs_react, pf_trans, temp_low, temp_high, temp_step=10*K, mol_volume=None, tunneling=None):
         """Initialize a reaction analysis object
 
            Arguments:
              pfs_react  --  a list of partition functions for the reactants
              pf_trans  --  the partition function of the transition state
              temp_low  --  the lower bound of the temperature interval in Kelvin
-             temp_high  --  the upper bound of the temperature interval in Kelvin
+             temp_high  --  the upper bound of the temperature interval in
+                            Kelvin
 
            Optional arguments:
+             temp_step  --  The resolution of the temperature grid.
+                            [default=10K]
              mol_volume  --  An object that computes the molecular volume as
                              function of the temperature. When not given, a
                              constant volume corresponding to normal conditions
                              is assumed.
-             temp_step  --  The resolution of the temperature grid. [default=10K]
+             tunneling  --  A tunneling correction object. If not given, no
+                            tunneling correction is applied.
 
            The rate coefficients are computed on the specified temperature grid
            and afterwards the kinetic parameters are fitted to these data. All
@@ -186,6 +190,7 @@ class ReactionAnalysis(object):
         self.temp_step = float(temp_step)
         self.temp_high = numpy.ceil((self.temp_high-self.temp_low)/self.temp_step)*self.temp_step+self.temp_low
         self.mol_volume = mol_volume
+        self.tunneling = tunneling
 
         # make sure that the final temperature is included
         self.temps = numpy.arange(self.temp_low,self.temp_high+0.5*self.temp_step,self.temp_step)
@@ -193,6 +198,11 @@ class ReactionAnalysis(object):
             compute_rate_coeff(pfs_react, pf_trans, temp, mol_volume)
             for temp in self.temps
         ])
+        if self.tunneling is None:
+            self.corrections = None
+        else:
+            self.corrections = self.tunneling(self.temps)
+            self.rate_coeffs *= self.corrections
 
         self.temps_inv = 1/numpy.array(self.temps,float)
         self.ln_rate_coeffs = numpy.log(self.rate_coeffs)
@@ -244,6 +254,7 @@ class ReactionAnalysis(object):
             print >> f, "Error on A [%s] = %10.5e" % (self.unit_name, numpy.sqrt(self.covariance[0,0])*self.A/self.unit)
             print >> f, "Error on ln(A [a.u.]) = %.2f" % numpy.sqrt(self.covariance[0,0])
             print >> f, "Error on Ea [kJ/mol] = %.2f" % (numpy.sqrt(self.covariance[1,1])/kjmol)
+            print >> f, "Parameter correlation = %.2f" % (self.covariance[0,1]/numpy.sqrt(self.covariance[0,0]*self.covariance[1,1]))
             print >> f
         print >> f, "Temperature grid"
         print >> f, "T_low [K] = %.1f" % self.temp_low
@@ -252,13 +263,24 @@ class ReactionAnalysis(object):
         print >> f, "Number of steps = %i" % len(self.temps)
         print >> f
         print >> f, "Reaction rate coefficients"
-        print >> f, "    T [K]     Delta G [kJ/mol]       k(T) [%s]" % self.unit_name
+        if self.tunneling is None:
+            print >> f, "    T [K]     Delta G [kJ/mol]       k(T) [%s]" % self.unit_name
+        else:
+            print >> f, "    T [K]     Delta G [kJ/mol]       k(T) [%s]         cor(T) [1]         k_tun(T) [%s]" % (self.unit_name, self.unit_name)
         for i in xrange(len(self.temps)):
             temp = self.temps[i]
             delta_G = self.pf_trans.free_energy(temp) - sum(pf_react.free_energy(temp) for pf_react in self.pfs_react)
-            print >> f, "% 10.2f      %8.1f             % 10.5e" % (
-                temp, delta_G/kjmol, self.rate_coeffs[i]/self.unit
-            )
+            if self.tunneling is None:
+                print >> f, "% 10.2f      %8.1f             % 10.5e" % (
+                    temp, delta_G/kjmol, self.rate_coeffs[i]/self.unit
+                )
+            else:
+                print >> f, "% 10.2f      %8.1f             % 10.5e       % 10.5e       % 10.5e" % (
+                    temp, delta_G/kjmol,
+                    self.rate_coeffs[i]/self.unit/self.corrections[i], # division undoes the correction
+                    self.corrections[i], # the correction factor
+                    self.rate_coeffs[i]/self.unit, # with correction
+                )
         print >> f
         for counter, pf_react in enumerate(self.pfs_react):
             print >> f, "Reactant %i partition function" % counter
@@ -328,17 +350,17 @@ class ReactionAnalysis(object):
            in the frequencies.
 
            Optional argument:
-             freq_error  --  The relative systematic error on the frequencies
+             freq_error  --  The systematic relative error on the frequencies
                              [default=0.05]
-             energy_error  --  The relative systematic error on the energies
+             energy_error  --  The systematic relative error on the energies
                                [default=0.00]
              num_iter  --  The number of Monte Carlo iterations [default=1000]
 
         """
-        if freq_error < 0.0:
-            raise ValueError("The argument freq_error must be positive.")
-        if energy_error < 0.0:
-            raise ValueError("The argument energy_error must be positive.")
+        if freq_error < 0.0 or freq_error >= 1.0:
+            raise ValueError("The argument freq_error must be in the range [0,1[.")
+        if energy_error < 0.0 or freq_error >= 1.0:
+            raise ValueError("The argument energy_error must be in the range [0,1[.")
         if num_iter <= 0:
             raise ValueError("The number of iterations must be strictly positive.")
         self.freq_error = freq_error
@@ -376,7 +398,7 @@ class ReactionAnalysis(object):
             alter_freqs(self.pf_trans, scale_freq, scale_energy)
             altered_ra = ReactionAnalysis(
                 self.pfs_react, self.pf_trans, self.temp_low, self.temp_high,
-                self.mol_volume, self.temp_step
+                self.temp_step, self.mol_volume, self.tunneling
             )
             solutions[i] = altered_ra.parameters
 
@@ -388,7 +410,7 @@ class ReactionAnalysis(object):
             restore_freqs(pf_react)
         restore_freqs(self.pf_trans)
 
-    def plot_parameters(self, filename=None, label=None, color="red"):
+    def plot_parameters(self, filename=None, label=None, color="red", error=True):
         """Plot the kinetic parameters.
 
            Optional arguments:
@@ -402,10 +424,8 @@ class ReactionAnalysis(object):
              color -- Determines the color of the plotted data points and line.
                       [default="red"]. Common color names, html codes and RGB
                       tuples are accepted. (See matplotlib docs for more info.)
-             error -- A boolean that determines whether the parameter
-                      uncertainty is plotted as an ellipse around the optimal
-                      point. [default=True] A relative error of 400% on the
-                      rate coefficients is assumed.
+             error -- A boolean that determines whether the monte carlo results
+                      are plotted when they are available. [default=True]
         """
         if filename is not None:
             pylab.clf()
@@ -423,7 +443,7 @@ class ReactionAnalysis(object):
             label_data = "_nolegend_"
             label_scatter = "_nolegend_"
 
-        if self.covariance is not None:
+        if self.covariance is not None and error:
             ## Let us assume a relative Gaussian error of 400% on the k values.
             ## This is ab absolute Gaussian error of ln(4) on ln(k).
             ## We divide the Hessian with ln(4)**2 and then invert it to
@@ -451,4 +471,5 @@ class ReactionAnalysis(object):
             pylab.legend(loc=0)
         if filename is not None:
             pylab.savefig(filename)
+
 

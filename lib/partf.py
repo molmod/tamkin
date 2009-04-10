@@ -1,5 +1,5 @@
 # TAMkin is a post-processing toolkit for thermochemistry and kinetics analysis.
-# Copyright (C) 2008 Toon Verstraelen <Toon.Verstraelen@UGent.be>,
+# Copyright (C) 2008-2009 Toon Verstraelen <Toon.Verstraelen@UGent.be>,
 # Matthias Vandichel <Matthias.Vandichel@UGent.be> and
 # An Ghysels <An.Ghysels@UGent.be>
 #
@@ -428,5 +428,6 @@ def compute_equilibrium_constant(pfs_A, pfs_B, temp, mol_volume=None):
             mol_volume = FixedVolume()
         log_K += (len(pfs_B)-len(pfs_A))*numpy.log(mol_volume(temp))
     return log_K
+
 
 

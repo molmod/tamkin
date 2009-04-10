@@ -1,5 +1,5 @@
 # TAMkin is a post-processing toolkit for thermochemistry and kinetics analysis.
-# Copyright (C) 2008 Toon Verstraelen <Toon.Verstraelen@UGent.be>,
+# Copyright (C) 2008-2009 Toon Verstraelen <Toon.Verstraelen@UGent.be>,
 # Matthias Vandichel <Matthias.Vandichel@UGent.be> and
 # An Ghysels <An.Ghysels@UGent.be>
 #
@@ -296,6 +296,7 @@ def load_envi_txt(filename,shift=-1):
     shift  --  default on -1, because numbering in Python starts with -1
     """
     return load_fixed_txt(filename,shift=shift)
+
 
 
 

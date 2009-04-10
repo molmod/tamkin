@@ -34,6 +34,7 @@ import numpy
 __all__ = [
     "load_fixed_g03com", "load_molecule_g03fchk", "load_molecule_cp2k",
     "load_chk", "dump_chk",
+    "load_fixed_txt", "load_subs_txt", "load_envi_txt",
 ]
 
 
@@ -251,6 +252,55 @@ def dump_chk(filename, data):
         else:
             raise TypeError("Type %s not supported." % type(value))
     f.close()
+
+
+def load_fixed_txt(filename,shift=-1):
+    """Read the fixed atoms into the list fixed_atoms.
+    Empty lines are skipped.
+    
+    Arguments:
+    filename  --  file that contains the fixed atoms: 
+                  1 atom on every line, empty lines are skipped
+    shift  --  default on -1, because numbering in Python starts with -1
+    """
+    fixed_atoms = []
+    f = file(filename)
+    for line in f:
+        if line != "\n":    # skip empty lines
+            fixed_atoms.append(int(line)+shift)
+    f.close()
+    # TODO
+    # check that every atom appears once
+    return fixed_atoms
+
+
+def load_subs_txt(filename,shift=-1):
+    """Read the subsystem atoms into a list (for VSA treatment).
+    Empty lines are skipped.
+    
+    Arguments:
+    filename  --  file that contains the subsystem atoms: 
+                  1 atom on every line, empty lines are skipped
+    shift  --  default on -1, because numbering in Python starts with -1
+    """
+    return load_fixed_txt(filename,shift=shift)
+
+
+def load_envi_txt(filename,shift=-1):
+    """Read the environment atoms into a list (for VSA treatment).
+    Empty lines are skipped.
+    
+    Arguments:
+    filename  --  file that contains the environment atoms: 
+                  1 atom on every line, empty lines are skipped
+    shift  --  default on -1, because numbering in Python starts with -1
+    """
+    return load_fixed_txt(filename,shift=shift)
+
+    
+
+
+    
 
 
 

@@ -401,11 +401,22 @@ class NMATestCase(unittest.TestCase):
 
 
     def test_vsa(self):
-        subs =[0,1,2,3] # load_fixed_g03com("input/mat/Zp_p_react.14mei.com")
         molecule = load_molecule_g03fchk("input/an/butane.cis.freq.fchk")
 
+        subs = load_subs_txt("input/an/fixed.01.txt")
         nma = NMA(molecule, VSA(subs))
         self.check_ortho(nma.modes)
+        self.assert_(len(nma.zeros)==3)
+
+        #subs = load_subs_txt("input/an/fixed.02.txt")
+        #nma = NMA(molecule, VSA(subs))
+        #self.check_ortho(nma.modes)
+        #self.assert_(len(nma.zeros)==5)
+
+        subs = load_subs_txt("input/an/fixed.03.txt")
+        nma = NMA(molecule, VSA(subs))
+        self.check_ortho(nma.modes)
+        self.assert_(len(nma.zeros)==6)
 
 
     def test_vsa_no_mass(self):
@@ -417,8 +428,7 @@ class NMATestCase(unittest.TestCase):
 
         #subs = load_subs_txt("input/an/fixed.02.txt")
         #nma = NMA(molecule, VSANoMass(subs))
-        #self.assert_(len(nma.zeros)==3)
-
+        #self.assert_(len(nma.zeros)==5)
 
         subs = load_subs_txt("input/an/fixed.03.txt")
         nma = NMA(molecule, VSANoMass(subs))

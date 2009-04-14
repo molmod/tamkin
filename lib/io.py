@@ -244,14 +244,15 @@ def load_molecule_cpmd(fn_out, fn_geometry, fn_hessian, multiplicity=1, is_perio
 
 
 def load_molecule_charmm(charmmfile_cor, charmmfile_hess,
-                multiplicity = None, is_periodic = False):
-    # Units: CHARMM in kcal/mol/angstrom, TAMkin in internally all converted to atomic units
+                  is_periodic = False):
+    # Units: CHARMM gradient in kcal/mol/angstrom, TAMkin internally all in atomic units
 
     # Read from first CHARMM file
     # format:  nb of atoms = N
     #          energy
     #          gradient (N lines, 3 elements on each line)
     #          Hessian  (upper triangular form, 1 element on each line)
+    #          coordinates (N lines, 3 elements on each line)
     f = file(charmmfile_hess)
 
     N = int(f.readline().split()[-1])   # nb of atoms
@@ -259,14 +260,13 @@ def load_molecule_charmm(charmmfile_cor, charmmfile_hess,
 
     energy = float(f.readline().split()[-1]) * 1000*calorie/avogadro
 
-    gradient = []
-    for line in f:
+    gradient = numpy.zeros((N,3),float)
+    for i,line in enumerate(f):
         words = line.split()
-        gradient.append([float(word) for word in words])
-        if len(gradient) == N:
+        gradient[i,:] = [float(word) for word in words]
+        if i == (N-1):
             break
-    gradient = numpy.array(gradient) * 1000*calorie/avogadro/angstrom
-
+    gradient *= 1000*calorie/avogadro/angstrom
     hessian = numpy.zeros((3*N,3*N),float)
     row = 0
     col = 0
@@ -282,13 +282,12 @@ def load_molecule_charmm(charmmfile_cor, charmmfile_hess,
                break
     hessian = hessian * 1000*calorie/avogadro /angstrom**2
 
-    positions = []
-    for line in f:
+    positions = numpy.zeros((N,3),float)
+    for i,line in enumerate(f):
         words = line.split()
-        positions.append([float(word) for word in words])
-        if len(positions) == N:
+        positions[i,:] = [float(word)*angstrom for word in words]
+        if i == (N-1):
             break
-    positions = numpy.array(positions) * angstrom
     f.close()
 
     # Read from second CHARMM file
@@ -296,34 +295,36 @@ def load_molecule_charmm(charmmfile_cor, charmmfile_hess,
     #          N lines with   - mass in last column
     #                         - atomic type in 4th column
     f = file(charmmfile_cor)
-    masses = []
+    masses = numpy.zeros(N,float)
     symbols  = []
     for line in f:
         if not line.startswith("*"): # skip header lines
             break
-    for line in f:
+    for i,line in enumerate(f):
         words = line.split()
-        masses.append(float(words[-1]))    # mass
+        masses[i] = float(words[-1])*amu   # mass
         symbols.append( words[3] )         # symbol
-        if len(masses) == N:
+        if i == (N-1):
             break
-    masses = numpy.array(masses) * amu
+    f.close()
 
     # get corresponding atomic numbers
-    atomicnumbers = []
+    mass_table = numpy.zeros(len(periodic))
+    for i in xrange(1, len(mass_table)):
+        m1 = periodic[i].mass
+        if m1 is None:
+            m1 = 200000.0
+        m2 = periodic[i+1].mass
+        if m2 is None:
+            m2 = 200000.0
+        mass_table[i] = 0.5*(m1+m2)
+    atomicnumbers = numpy.zeros(N, int)
     for i,mass in enumerate(masses):
-        for j in xrange(1,400):
-            if periodic[j] is not None:
-                mass2 = periodic[j].mass
-                if mass2 is not None:
-                    if numpy.floor(mass)==numpy.floor(mass2):
-                        atomicnumbers.append(j)
-                        break
-    f.close()
+        atomicnumbers[i] = mass_table.searchsorted(mass)
 
     return Molecule(
         atomicnumbers, positions, masses, energy, gradient,
-        hessian, multiplicity, None, is_periodic
+        hessian, 1, None, is_periodic
     )
 
 

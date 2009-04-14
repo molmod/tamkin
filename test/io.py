@@ -24,7 +24,7 @@
 from tamkin import *
 
 from molmod.data.periodic import periodic
-from molmod.units import angstrom, cm
+from molmod.units import angstrom, cm, calorie, avogadro
 from molmod.constants import lightspeed
 
 import unittest, numpy
@@ -59,6 +59,20 @@ class IOTestCase(unittest.TestCase):
         self.assertAlmostEqual(molecule.gradient[11,0], 0.0000000177, 9)
         self.assertAlmostEqual(molecule.hessian[0,0], 1.08660340, 6)
         self.assertAlmostEqual(molecule.hessian[-1,-1], 0.528947590, 6)
+
+    def test_load_molecule_charmm(self):
+        molecule = load_molecule_charmm("input/an/ethanol.cor","input/an/ethanol.hess.full")
+        self.assertAlmostEqual(molecule.energy/(1000*calorie/avogadro), -2.1303308955)
+        #self.assertEqual(molecule.multiplicity, 1)
+        #self.assertEqual(molecule.numbers[0], 6)
+        #self.assertEqual(molecule.numbers[4], 1)
+#        self.assertAlmostEqual(molecule.masses[0], periodic[6].mass)
+#        self.assertAlmostEqual(molecule.masses[4], periodic[1].mass)
+        self.assertAlmostEqual(molecule.coordinates[5,1]/angstrom, 1.3582528196)
+        self.assertAlmostEqual(molecule.gradient[0,2]/(1000*calorie/avogadro/angstrom), -0.0000000007, 9)
+        self.assertAlmostEqual(molecule.gradient[8,0]/(1000*calorie/avogadro/angstrom), -0.0000001462, 9)
+        self.assertAlmostEqual(molecule.hessian[0,0]/(1000*calorie/avogadro /angstrom**2), 1409.7091337384, 6)
+        self.assertAlmostEqual(molecule.hessian[-1,-1]/(1000*calorie/avogadro /angstrom**2), 474.7950312957, 6)
 
     def test_checkpoint(self):
         molecule = load_molecule_cp2k("input/cp2k/pentane/opt.xyz", "input/cp2k/pentane/sp.out", "input/cp2k/pentane/freq.out")

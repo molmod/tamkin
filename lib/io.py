@@ -25,14 +25,14 @@ from tamkin.data import Molecule
 
 from molmod.io.gaussian03.fchk import FCHKFile
 from molmod.io.xyz import XYZFile
-from molmod.units import amu
+from molmod.units import amu, calorie, avogadro, angstrom
 from molmod.data.periodic import periodic
 
 import numpy
 
 
 __all__ = [
-    "load_fixed_g03com", "load_molecule_g03fchk", "load_molecule_cp2k",
+    "load_fixed_g03com", "load_molecule_g03fchk", "load_molecule_cp2k", "load_molecule_charmm",
     "load_chk", "dump_chk",
     "load_fixed_txt", "load_subs_txt", "load_envi_txt",
 ]
@@ -158,6 +158,90 @@ def load_molecule_cp2k(fn_xyz, fn_sp, fn_freq, multiplicity=1, is_periodic=True)
 
     return Molecule(
         molecule.numbers, molecule.coordinates, masses, energy, gradient,
+        hessian, multiplicity, None, is_periodic
+    )
+
+
+def load_molecule_charmm(charmmfile_cor, charmmfile_hess,
+                multiplicity = None, is_periodic = False):
+    # Units: CHARMM in kcal/mol/angstrom, TAMkin in internally all converted to atomic units
+
+    # Read from first CHARMM file
+    # format:  nb of atoms = N
+    #          energy
+    #          gradient (N lines, 3 elements on each line)
+    #          Hessian  (upper triangular form, 1 element on each line)
+    f = file(charmmfile_hess)
+
+    N = int(f.readline().split()[-1])   # nb of atoms
+    assert N > 0   # nb of atoms should be > 0
+
+    energy = float(f.readline().split()[-1]) * 1000*calorie/avogadro
+
+    gradient = []
+    for line in f:
+        words = line.split()
+        gradient.append([float(word) for word in words])
+        if len(gradient) == N:
+            break
+    gradient = numpy.array(gradient) * 1000*calorie/avogadro/angstrom
+
+    hessian = numpy.zeros((3*N,3*N),float)
+    row = 0
+    col = 0
+    for line in f:
+        element = float(line.split()[-1])
+        hessian[row,col]=element
+        hessian[col,row]=element
+        col += 1
+        if col>=3*N:        #if this new col doesn't exist
+            row += 1        #go to next row
+            col = row       #to diagonal element
+            if row >= 3*N:  #if this new row doesn't exist
+               break
+    hessian = hessian * 1000*calorie/avogadro /angstrom**2
+
+    positions = []
+    for line in f:
+        words = line.split()
+        positions.append([float(word) for word in words])
+        if len(positions) == N:
+            break
+    positions = numpy.array(positions) * angstrom
+    f.close()
+
+    # Read from second CHARMM file
+    # format:  comment lines, which start with *
+    #          N lines with   - mass in last column
+    #                         - atomic type in 4th column
+    f = file(charmmfile_cor)
+    masses = []
+    symbols  = []
+    for line in f:
+        if not line.startswith("*"):
+            break
+    for line in f:
+        words = line.split()
+        masses.append(float(words[-1]))    # mass
+        symbols.append( words[3] )         # symbol
+        if len(masses) == N:
+            break
+    masses = numpy.array(masses) * amu
+
+    # get corresponding atomic numbers
+    atomicnumbers = []
+    for i,mass in enumerate(masses):
+        for j in xrange(1,400):
+            if periodic[j] is not None:
+                mass2 = periodic[j].mass
+                if mass2 is not None:
+                    if numpy.floor(mass)==numpy.floor(mass2):
+                        atomicnumbers.append(j)
+                        break
+    f.close()
+
+    return Molecule(
+        atomicnumbers, positions, masses, energy, gradient,
         hessian, multiplicity, None, is_periodic
     )
 

@@ -34,7 +34,7 @@ import numpy
 __all__ = [
     "load_fixed_g03com", "load_molecule_g03fchk", "load_molecule_cp2k", "load_molecule_charmm",
     "load_chk", "dump_chk",
-    "load_fixed_txt", "load_subs_txt", "load_envi_txt",
+    "load_fixed_txt", "load_subs_txt", "load_envi_txt", "load_blocks_txt",
 ]
 
 
@@ -211,14 +211,14 @@ def load_molecule_charmm(charmmfile_cor, charmmfile_hess,
     f.close()
 
     # Read from second CHARMM file
-    # format:  comment lines, which start with *
+    # format:  header lines, which start with *
     #          N lines with   - mass in last column
     #                         - atomic type in 4th column
     f = file(charmmfile_cor)
     masses = []
     symbols  = []
     for line in f:
-        if not line.startswith("*"):
+        if not line.startswith("*"): # skip header lines
             break
     for line in f:
         words = line.split()
@@ -382,7 +382,8 @@ def load_envi_txt(filename,shift=-1):
     return load_fixed_txt(filename,shift=shift)
 
 
-
+def load_blocks_txt(filename,shift=-1):
+    pass
 
 
 

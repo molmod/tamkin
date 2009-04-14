@@ -64,10 +64,10 @@ class IOTestCase(unittest.TestCase):
         molecule = load_molecule_charmm("input/an/ethanol.cor","input/an/ethanol.hess.full")
         self.assertAlmostEqual(molecule.energy/(1000*calorie/avogadro), -2.1303308955)
         #self.assertEqual(molecule.multiplicity, 1)
-        #self.assertEqual(molecule.numbers[0], 6)
-        #self.assertEqual(molecule.numbers[4], 1)
-#        self.assertAlmostEqual(molecule.masses[0], periodic[6].mass)
-#        self.assertAlmostEqual(molecule.masses[4], periodic[1].mass)
+        self.assertEqual(molecule.numbers[0], 6)
+        self.assertEqual(molecule.numbers[4], 1)
+        self.assertAlmostEqual(molecule.masses[0], periodic[6].mass)
+        self.assertAlmostEqual(molecule.masses[4], periodic[1].mass)
         self.assertAlmostEqual(molecule.coordinates[5,1]/angstrom, 1.3582528196)
         self.assertAlmostEqual(molecule.gradient[0,2]/(1000*calorie/avogadro/angstrom), -0.0000000007, 9)
         self.assertAlmostEqual(molecule.gradient[8,0]/(1000*calorie/avogadro/angstrom), -0.0000001462, 9)
@@ -100,4 +100,5 @@ class IOTestCase(unittest.TestCase):
         self.assertEqual(nma1.symmetry_number, nma2.symmetry_number)
 
 
-
+    def test_load_blocks_txt(self):
+        pass

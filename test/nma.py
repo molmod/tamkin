@@ -401,38 +401,69 @@ class NMATestCase(unittest.TestCase):
 
 
     def test_vsa(self):
-        molecule = load_molecule_g03fchk("input/an/butane.cis.freq.fchk")
+        molecule = load_molecule_charmm("input/an/ethanol.cor","input/an/ethanol.hess.full")
 
+#  --- single atom as subsystem: results should be three translations
         subs = load_subs_txt("input/an/fixed.01.txt")
         nma = NMA(molecule, VSA(subs))
         self.check_ortho(nma.modes)
         self.assert_(len(nma.zeros)==3)
+        expected_freqs = numpy.array( [-0.13042437, 0.01018769, 0.0842998 ])
+        self.check_freqs(expected_freqs, nma, 1)
 
-        #subs = load_subs_txt("input/an/fixed.02.txt")
-        #nma = NMA(molecule, VSA(subs))
-        #self.check_ortho(nma.modes)
-        #self.assert_(len(nma.zeros)==5)
+#  ---  atoms of subsystem are collinear: not yet external_basis implemented...
+#        subs = load_subs_txt("input/an/fixed.02.txt")
+#        nma = NMA(molecule, VSA(subs))
+#        self.check_ortho(nma.modes)
+#        self.assert_(len(nma.zeros)==5)
+#        expected_freqs = numpy.array([ # taken from previous working python version
+#                   -0.424554834762,-0.118506309095,0.0326753211105,0.0892841407593,
+#                   0.302158468014,  # These are the zeros.
+#                   1051.16201857 ])
+#        self.check_freqs(expected_freqs, nma, 1)
 
-        subs = load_subs_txt("input/an/fixed.03.txt")
+#  --- atoms of subsystem are not collinear
+        subs = load_subs_txt("input/an/fixed.03.txt")  # atom 1 to atom 7
         nma = NMA(molecule, VSA(subs))
-        self.check_ortho(nma.modes)
+        self.check_ortho(nma.modes)  # No, a priori known to be non-orthogonal.
         self.assert_(len(nma.zeros)==6)
+        expected_freqs = numpy.array([ # taken from previous working python version
+               -0.00962070029417,-0.00653077581838,-0.000469690606812,-0.000148860724889,
+               0.000379327735493, 0.0142496837765,   # These are the zeros.
+               302.048797009,1001.64994625,1045.10286172,1232.6538326,2814.79944849,
+               3653.7642078 ])
+        self.check_freqs(expected_freqs, nma, 1)
 
 
     def test_vsa_no_mass(self):
-        molecule = load_molecule_g03fchk("input/an/butane.cis.freq.fchk")
+        molecule = load_molecule_charmm("input/an/ethanol.cor","input/an/ethanol.hess.full")
 
+#  --- single atom as subsystem: results should be three translations
         subs = load_subs_txt("input/an/fixed.01.txt")
         nma = NMA(molecule, VSANoMass(subs))
         self.assert_(len(nma.zeros)==3)
+        expected_freqs = numpy.array([-0.43075903, 0.0380713, 0.17073513])
+        self.check_freqs(expected_freqs, nma, 1)
 
-        #subs = load_subs_txt("input/an/fixed.02.txt")
-        #nma = NMA(molecule, VSANoMass(subs))
-        #self.assert_(len(nma.zeros)==5)
+#  ---  atoms of subsystem are collinear: not yet external_basis implemented...
+#        subs = load_subs_txt("input/an/fixed.02.txt")
+#        nma = NMA(molecule, VSANoMass(subs))
+#        #self.assert_(len(nma.zeros)==5)
+#        expected_freqs = numpy.array([ # taken from previous working python version
+#              # -0.766656547256,-0.244718344327,0.00416783270901,0.105059840715,
+#              #0.487512653505,       # These are zeros.
+#              1217.04836718 ])
+#       self.check_freqs(expected_freqs, nma, 1)
 
-        subs = load_subs_txt("input/an/fixed.03.txt")
+#  --- atoms of subsystem are not collinear
+        subs = load_subs_txt("input/an/fixed.03.txt")  # atom 1 to atom 7
         nma = NMA(molecule, VSANoMass(subs))
+        # self.check_ortho(nma.modes)  # No, a priori known to be non-orthogonal.
         self.assert_(len(nma.zeros)==6)
-
-
+        expected_freqs = numpy.array([ # taken from previous working python version
+                        -0.0299898080453, -0.0124485604422, -0.000583010131998, -0.000190084696013,
+                        0.000469660947606, 0.0233987667917,    # These are the zeros.
+                        388.990852247, 1055.12229682, 1251.18647899, 1352.32135672,
+                        2864.80440032, 3680.49886454 ] )
+        self.check_freqs(expected_freqs, nma, 1)
 

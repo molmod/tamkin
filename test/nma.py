@@ -38,19 +38,19 @@ class NMATestCase(unittest.TestCase):
         error_max = abs(unit_matrix - numpy.identity(len(unit_matrix))).max()
         self.assert_(error_max < 1e-5)
 
-    def check_freqs(self, expected_freqs, nma, precision=3, has_zeros=False):
+    def check_freqs(self, expected_freqs, nma, precision=3, check_zeros=False):
         """Check the frequencies in the partition function against expected values
 
         The expected values are given in 1/cm while the partition function works
         with atomic units.
         """
-        if has_zeros:
+        if check_zeros:
             self.assertEqual(len(expected_freqs), len(nma.freqs))
         else:
             self.assertEqual(len(expected_freqs), len(nma.freqs)-len(nma.zeros))
         counter = 0
         for i in xrange(len(nma.freqs)):
-            if has_zeros or (i not in nma.zeros):
+            if check_zeros or (i not in nma.zeros):
                 freq_in_cm = (nma.freqs[i]/lightspeed)/(1/cm)
                 expected_freq = expected_freqs[counter]
                 self.assertAlmostEqual(
@@ -408,7 +408,7 @@ class NMATestCase(unittest.TestCase):
             -333.5480, -86.0913, -39.3998, 49.2809, 63.4021, 190.1188,
             1595.5610, 3724.2110, 3825.7550
         ])
-        self.check_freqs(expected_freqs, nma, 4, has_zeros=True)
+        self.check_freqs(expected_freqs, nma, 4, check_zeros=True)
 
         nma = NMA(molecule, ConstrainExt(), do_modes=False)
         expected_freqs = numpy.array([
@@ -426,7 +426,7 @@ class NMATestCase(unittest.TestCase):
         self.check_ortho(nma.modes)
         self.assert_(len(nma.zeros)==3)
         expected_freqs = numpy.array( [-0.13042437, 0.01018769, 0.0842998 ])
-        self.check_freqs(expected_freqs, nma, 1)
+        self.check_freqs(expected_freqs, nma, 4, check_zeros=True)
 
 #  ---  atoms of subsystem are collinear: not yet external_basis implemented...
 #        subs = load_subs_txt("input/an/fixed.02.txt")
@@ -449,7 +449,7 @@ class NMATestCase(unittest.TestCase):
                0.000379327735493, 0.0142496837765,   # These are the zeros.
                302.048797009,1001.64994625,1045.10286172,1232.6538326,2814.79944849,
                3653.7642078 ])
-        self.check_freqs(expected_freqs, nma, 1)
+        self.check_freqs(expected_freqs, nma, 4, check_zeros=True)
 
 
     def test_vsa_no_mass(self):
@@ -460,7 +460,7 @@ class NMATestCase(unittest.TestCase):
         nma = NMA(molecule, VSANoMass(subs))
         self.assert_(len(nma.zeros)==3)
         expected_freqs = numpy.array([-0.43075903, 0.0380713, 0.17073513])
-        self.check_freqs(expected_freqs, nma, 1)
+        self.check_freqs(expected_freqs, nma, 4, check_zeros=True)
 
 #  ---  atoms of subsystem are collinear: not yet external_basis implemented...
 #        subs = load_subs_txt("input/an/fixed.02.txt")
@@ -482,5 +482,5 @@ class NMATestCase(unittest.TestCase):
                         0.000469660947606, 0.0233987667917,    # These are the zeros.
                         388.990852247, 1055.12229682, 1251.18647899, 1352.32135672,
                         2864.80440032, 3680.49886454 ] )
-        self.check_freqs(expected_freqs, nma, 1)
+        self.check_freqs(expected_freqs, nma, 4, check_zeros=True)
 

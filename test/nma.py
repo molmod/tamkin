@@ -38,16 +38,19 @@ class NMATestCase(unittest.TestCase):
         error_max = abs(unit_matrix - numpy.identity(len(unit_matrix))).max()
         self.assert_(error_max < 1e-5)
 
-    def check_freqs(self, expected_freqs, nma, precision=3):
+    def check_freqs(self, expected_freqs, nma, precision=3, has_zeros=False):
         """Check the frequencies in the partition function against expected values
 
         The expected values are given in 1/cm while the partition function works
         with atomic units.
         """
-        self.assertEqual(len(expected_freqs), len(nma.freqs)-len(nma.zeros))
+        if has_zeros:
+            self.assertEqual(len(expected_freqs), len(nma.freqs))
+        else:
+            self.assertEqual(len(expected_freqs), len(nma.freqs)-len(nma.zeros))
         counter = 0
         for i in xrange(len(nma.freqs)):
-            if i not in nma.zeros:
+            if has_zeros or (i not in nma.zeros):
                 freq_in_cm = (nma.freqs[i]/lightspeed)/(1/cm)
                 expected_freq = expected_freqs[counter]
                 self.assertAlmostEqual(
@@ -381,7 +384,6 @@ class NMATestCase(unittest.TestCase):
             ])
             self.assert_(abs(evecs-expected_evecs).max() < 1e-3)
 
-
     def test_gas_pentane(self):
         molecule = load_molecule_cp2k("input/cp2k/pentane/opt.xyz", "input/cp2k/pentane/sp.out", "input/cp2k/pentane/freq.out", is_periodic=False)
         nma = NMA(molecule, ConstrainExt(), do_modes=False)
@@ -399,6 +401,21 @@ class NMATestCase(unittest.TestCase):
         ])
         self.check_freqs(expected_freqs, nma, 1)
 
+    def test_gas_water_cpmd(self):
+        molecule = load_molecule_cpmd("input/cpmd/damp.out", "input/cpmd/GEOMETRY.xyz", "input/cpmd/MOLVIB", is_periodic=True)
+        nma = NMA(molecule, Full(), do_modes=False)
+        expected_freqs = numpy.array([
+            -333.5480, -86.0913, -39.3998, 49.2809, 63.4021, 190.1188,
+            1595.5610, 3724.2110, 3825.7550
+        ])
+        self.check_freqs(expected_freqs, nma, 4, has_zeros=True)
+
+        nma = NMA(molecule, ConstrainExt(), do_modes=False)
+        expected_freqs = numpy.array([
+            -119.052347919, -80.8279424581, 51.861869587, 1595.55084877, 3724.21041319, 3825.75442327 # tamkin values
+            #-664.0947, -83.1893, 128.0597, 1620.6557, 3730.2012, 3831.2725 # cpmd values
+        ])
+        self.check_freqs(expected_freqs, nma, 4)
 
     def test_vsa(self):
         molecule = load_molecule_g03fchk("input/an/butane.cis.freq.fchk")

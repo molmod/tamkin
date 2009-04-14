@@ -25,7 +25,7 @@ from tamkin.data import Molecule
 
 from molmod.io.gaussian03.fchk import FCHKFile
 from molmod.io.xyz import XYZFile
-from molmod.units import amu
+from molmod.units import amu, angstrom
 from molmod.data.periodic import periodic
 
 import numpy
@@ -33,6 +33,7 @@ import numpy
 
 __all__ = [
     "load_fixed_g03com", "load_molecule_g03fchk", "load_molecule_cp2k",
+    "load_molecule_cpmd",
     "load_chk", "dump_chk",
     "load_fixed_txt", "load_subs_txt", "load_envi_txt",
 ]
@@ -159,6 +160,86 @@ def load_molecule_cp2k(fn_xyz, fn_sp, fn_freq, multiplicity=1, is_periodic=True)
     return Molecule(
         molecule.numbers, molecule.coordinates, masses, energy, gradient,
         hessian, multiplicity, None, is_periodic
+    )
+
+
+def load_molecule_cpmd(fn_out, fn_geometry, fn_hessian, multiplicity=1, is_periodic=True):
+    # go through the output file: grep the total energy
+    energy = None
+    f = file(fn_out)
+    while True:
+        line = f.readline()
+        if line == "":
+            raise IOError("Could not find final results in %s. Is the output file truncated?" % fn_out)
+        if line == " *                        FINAL RESULTS                         *\n":
+            break
+    while True:
+        line = f.readline()
+        if line == "":
+            raise IOError("Could not find total energy in %s. Is the output file truncated?" % fn_out)
+        if line.startswith(" (K+E1+L+N+X)           TOTAL ENERGY ="):
+            words= (line.strip()).split()
+            energy = float(words[4])
+            break
+    f.close()
+
+    f = file(fn_geometry)
+    num_atoms = int(f.readline())
+    numbers = numpy.zeros(num_atoms, int)
+    coordinates = numpy.zeros((num_atoms,3), float)
+    gradient = numpy.zeros((num_atoms,3), float)
+
+    f.readline()
+    i = 0
+    while True:
+        line = f.readline()
+        if line == "":
+            break # end of file
+        words = (line.strip()).split()
+        if len(words) == 7:
+            numbers[i] = periodic[words[0]].number
+            coordinates[i][0] = float(words[1])*angstrom
+            coordinates[i][1] = float(words[2])*angstrom
+            coordinates[i][2] = float(words[3])*angstrom
+            gradient[i][1] = float(words[4])
+            gradient[i][1] = float(words[5])
+            gradient[i][2] = float(words[6])
+            i += 1
+        else:
+            raise IOError("Expecting seven words at each atom line in %s." % fn_geometry)
+    if i != num_atoms:
+        raise IOError("The number of atoms is incorrect in %s." % fn_geometry)
+    f.close()
+
+    # go trhough the freq file: hessian
+    f = file(fn_hessian)
+
+    line = f.readline()
+    if not line.startswith(" &CART"):
+        raise IOError("File %s does not start with &CART." % fn_hessian)
+    masses = numpy.zeros(num_atoms, float)
+    for i in xrange(num_atoms):
+        line = f.readline()
+        words = line.split()
+        masses[i] = float(words[4])*amu
+    f.readline() # &END
+
+    line = f.readline()
+    if not line.startswith(" &FCON"):
+        raise IOError("File %s does not contain section &FCON." % fn_hessian)
+    num_cart = num_atoms*3
+    hessian = numpy.zeros((num_cart, num_cart), float)
+    for i in xrange(num_cart):
+        line = f.readline()
+        words = line.split()
+        for j in xrange(num_cart):
+            hessian[i,j] = float(words[j])
+
+    f.close()
+
+    return Molecule(
+        numbers, coordinates, masses, energy, gradient, hessian, multiplicity,
+        None, is_periodic
     )
 
 

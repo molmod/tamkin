@@ -24,7 +24,7 @@
 from tamkin import *
 
 from molmod.data.periodic import periodic
-from molmod.units import angstrom, cm, calorie, avogadro
+from molmod.units import angstrom, cm, amu, calorie, avogadro
 from molmod.constants import lightspeed
 
 import unittest, numpy
@@ -59,6 +59,20 @@ class IOTestCase(unittest.TestCase):
         self.assertAlmostEqual(molecule.gradient[11,0], 0.0000000177, 9)
         self.assertAlmostEqual(molecule.hessian[0,0], 1.08660340, 6)
         self.assertAlmostEqual(molecule.hessian[-1,-1], 0.528947590, 6)
+
+    def test_load_molecule_cpmd(self):
+        molecule = load_molecule_cpmd("input/cpmd/damp.out", "input/cpmd/GEOMETRY.xyz", "input/cpmd/MOLVIB")
+        self.assertAlmostEqual(molecule.energy, -17.14142079)
+        self.assertEqual(molecule.multiplicity, 1)
+        self.assertEqual(molecule.numbers[0], 8)
+        self.assertEqual(molecule.numbers[2], 1)
+        self.assertAlmostEqual(molecule.masses[0]/amu, 15.999400)
+        self.assertAlmostEqual(molecule.masses[2]/amu, 1.007970)
+        self.assertAlmostEqual(molecule.coordinates[2,0]/angstrom, .907207019799)
+        self.assertAlmostEqual(molecule.gradient[0,2], 0.0)
+        self.assertAlmostEqual(molecule.gradient[2,0], 0.0)
+        self.assertAlmostEqual(molecule.hessian[0,0], 0.530679165332463953, 6)
+        self.assertAlmostEqual(molecule.hessian[-1,-1], 0.921045226686428159E-01, 6)
 
     def test_load_molecule_charmm(self):
         molecule = load_molecule_charmm("input/an/ethanol.cor","input/an/ethanol.hess.full")

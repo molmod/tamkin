@@ -1,0 +1,584 @@
+ PROGRAM CPMD STARTED AT: Thu Apr  9 15:49:35 2009
+ 
+ SETCNST| USING: CODATA 2006 UNITS
+
+
+               ******  ******    ****  ****  ******   
+              *******  *******   **********  *******  
+             ***       **   ***  ** **** **  **   *** 
+             **        **   ***  **  **  **  **    ** 
+             **        *******   **      **  **    ** 
+             ***       ******    **      **  **   *** 
+              *******  **        **      **  *******  
+               ******  **        **      **  ******   
+
+                          VERSION 3.13.2
+
+                            COPYRIGHT
+                      IBM RESEARCH DIVISION
+                MPI FESTKOERPERFORSCHUNG STUTTGART
+
+                       The CPMD consortium
+                  Home Page: http://www.cpmd.org
+               Mailing List: cpmd-list@cpmd.org
+                     E-mail: cpmd@cpmd.org
+
+
+                  ***  Oct 29 2008 -- 10:35:56  ***
+
+ THE INPUT FILE IS:                                      damp.inp
+ THIS JOB RUNS ON:                              moldyn66.UGent.be
+ THE CURRENT DIRECTORY IS: 
+                                                /scratch/mat/H2O_
+ THE TEMPORARY DIRECTORY IS: 
+                                                /scratch/mat/H2O_
+ THE PROCESS ID IS:                                         49900
+ THE JOB WAS SUBMITTED BY:                                   root
+ 
+
+ OPTIMIZATION OF IONIC POSITIONS
+
+ PATH TO THE RESTART FILES:                                    ./
+ RESTART WITH OLD ORBITALS
+ RESTART WITH LATEST RESTART FILE
+ GRAM-SCHMIDT ORTHOGONALIZATION
+ MAXIMUM NUMBER OF STEPS:                             10000 STEPS
+ MAXIMUM NUMBER OF ITERATIONS FOR SC:                 10000 STEPS
+ PRINT INTERMEDIATE RESULTS EVERY                        10 STEPS
+ STORE INTERMEDIATE RESULTS EVERY                     10001 STEPS
+ STORE INTERMEDIATE RESULTS EVERY     10001 SELF-CONSISTENT STEPS
+ NUMBER OF DISTINCT RESTART FILES:                              1
+ TEMPERATURE IS CALCULATED ASSUMING EXTENDED BULK BEHAVIOR 
+ FICTITIOUS ELECTRON MASS:                               400.0000
+ TIME STEP FOR ELECTRONS:                                  5.0000
+ TIME STEP FOR IONS:                                       5.0000
+ CONVERGENCE CRITERIA FOR WAVEFUNCTION OPTIMIZATION:   1.0000E-05
+ WAVEFUNCTION OPTIMIZATION BY PRECONDITIONED DIIS
+ THRESHOLD FOR THE WF-HESSIAN IS                            .5000
+ MAXIMUM NUMBER OF VECTORS RETAINED FOR DIIS:                  10
+ STEPS UNTIL DIIS RESET ON POOR PROGRESS:                      50
+ FULL ELECTRONIC GRADIENT IS USED 
+ CONVERGENCE CRITERIA FOR GEOMETRY OPTIMIZATION:     5.000000E-04
+ GEOMETRY OPTIMIZATION BY GDIIS/BFGS      
+   SIZE OF GDIIS MATRIX:                                        5
+ EMPIRICAL INITIAL HESSIAN (DISCO PARAMETRISATION) 
+ USE EMPIRICAL VAN DER WAALS CORRECTION
+ SPLINE INTERPOLATION IN G-SPACE FOR PSEUDOPOTENTIAL FUNCTIONS
+    NUMBER OF SPLINE POINTS:                                 5000
+ 
+ EXCHANGE CORRELATION FUNCTIONALS 
+    LDA EXCHANGE:                                            NONE
+    LDA XC THROUGH PADE APPROXIMATION
+    S.GOEDECKER, J.HUTTER, M.TETER PRB 54 1703 (1996)
+    GRADIENT CORRECTED FUNCTIONAL
+    DENSITY THRESHOLD:                                5.00000E-05
+    EXCHANGE ENERGY
+       [A.D. BECKE, PHYS. REV. A 38, 3098 (1988)]
+       PARAMETER BETA:                                    .004200
+    CORRELATION ENERGY
+       [J.P. PERDEW, PHYS. REV. B 33, 8822 (1986)]
+ 
+ ***     DETSP| SIZE OF THE PROGRAM IS  7752 KBytes ***
+
+ EMPIRICAL VAN DER WAALS CORRECTION AFTER:
+    S. GRIMME, J. COMP. CHEM. 27, 1787 (2006)
+    PARAMETERS FOR PAIRS OF TYPE Al AND TYPE Al:       GRIMME MODEL
+       VDW STRENGTH (ST):                        187.0963341 A.U.
+       DECAY FACTOR (RM):                          6.1945222 A.U.
+       DECAY FACTOR (BETA):                       20.0000000 A.U.
+    PARAMETERS FOR PAIRS OF TYPE Al AND TYPE  O:       GRIMME MODEL
+       VDW STRENGTH (ST):                         47.6544625 A.U.
+       DECAY FACTOR (RM):                          5.6332736 A.U.
+       DECAY FACTOR (BETA):                       20.0000000 A.U.
+    PARAMETERS FOR PAIRS OF TYPE Al AND TYPE  C:       GRIMME MODEL
+       VDW STRENGTH (ST):                         75.3483212 A.U.
+       DECAY FACTOR (RM):                          5.8411435 A.U.
+       DECAY FACTOR (BETA):                       20.0000000 A.U.
+    PARAMETERS FOR PAIRS OF TYPE Al AND TYPE  H:       GRIMME MODEL
+       VDW STRENGTH (ST):                         21.3117235 A.U.
+       DECAY FACTOR (RM):                          4.9888770 A.U.
+       DECAY FACTOR (BETA):                       20.0000000 A.U.
+    PARAMETERS FOR PAIRS OF TYPE  O AND TYPE  O:       GRIMME MODEL
+       VDW STRENGTH (ST):                         12.1378530 A.U.
+       DECAY FACTOR (RM):                          5.0720249 A.U.
+       DECAY FACTOR (BETA):                       20.0000000 A.U.
+    PARAMETERS FOR PAIRS OF TYPE  O AND TYPE  C:       GRIMME MODEL
+       VDW STRENGTH (ST):                         19.1916307 A.U.
+       DECAY FACTOR (RM):                          5.2798948 A.U.
+       DECAY FACTOR (BETA):                       20.0000000 A.U.
+    PARAMETERS FOR PAIRS OF TYPE  O AND TYPE  H:       GRIMME MODEL
+       VDW STRENGTH (ST):                          5.4282129 A.U.
+       DECAY FACTOR (RM):                          4.4276283 A.U.
+       DECAY FACTOR (BETA):                       20.0000000 A.U.
+    PARAMETERS FOR PAIRS OF TYPE  C AND TYPE  C:       GRIMME MODEL
+       VDW STRENGTH (ST):                         30.3446325 A.U.
+       DECAY FACTOR (RM):                          5.4877647 A.U.
+       DECAY FACTOR (BETA):                       20.0000000 A.U.
+    PARAMETERS FOR PAIRS OF TYPE  C AND TYPE  H:       GRIMME MODEL
+       VDW STRENGTH (ST):                          8.5827582 A.U.
+       DECAY FACTOR (RM):                          4.6354982 A.U.
+       DECAY FACTOR (BETA):                       20.0000000 A.U.
+    PARAMETERS FOR PAIRS OF TYPE  H AND TYPE  H:       GRIMME MODEL
+       VDW STRENGTH (ST):                          2.4275706 A.U.
+       DECAY FACTOR (RM):                          3.7832317 A.U.
+       DECAY FACTOR (BETA):                       20.0000000 A.U.
+    VAN DER WAALS SUM IN REAL SPACE OVER  1* 1* 1 CELLS
+ 
+
+ ***************************** ATOMS ****************************
+   NR   TYPE        X(bohr)        Y(bohr)        Z(bohr)     MBL
+    1      O        .000000        .000000        .000000       3
+    2      H        .000000        .000000       1.795240       3
+    3      H       1.692569        .000000       -.598414       3
+ ****************************************************************
+
+ NUMBER OF STATES:                                              4
+ NUMBER OF ELECTRONS:                                     8.00000
+ CHARGE:                                                   .00000
+ ELECTRON TEMPERATURE(KELVIN):                             .00000
+ OCCUPATION
+  2.0  2.0  2.0  2.0
+ 
+ ****************************************************************
+                                                                 
+ Atomic symbol                       : Al                        
+                                                                 
+ Atomic number                       :  13                       
+ Effective core charge               :   3                       
+ Number of core states               :   3                       
+ Number of valence states            :  13                       
+ Electronic configuration (s,p,d,...):     2    1                
+                                                                 
+ Exchange-correlation functional     : BP                        
+                                                                 
+       r(loc)         C(1)                                       
+     0.450000    -7.517924                                       
+                                                                 
+         r(0)     h(i,j)^0                                       
+     0.486266     6.977756    -1.915682                          
+                               2.473135                          
+         r(1)     h(i,j)^1                                       
+     0.561928     1.855842                                       
+                                                                 
+ Please cite:                                                    
+                                                                 
+ - S. Goedecker, M. Teter, and J. Hutter,                        
+   Phys. Rev. B 54, 1703 (1996)                                  
+ - C. Hartwigsen, S. Goedecker, and J. Hutter,                   
+   Phys. Rev. B 58, 3641 (1998)                                  
+ - M. Krack,                                                     
+   Theor. Chem. Acc. 114, 145 (2005)                             
+                                                                 
+ ****************************************************************
+ 
+ ****************************************************************
+                                                                 
+ Atomic symbol                       : O                         
+                                                                 
+ Atomic number                       :   8                       
+ Effective core charge               :   6                       
+ Number of core states               :   1                       
+ Number of valence states            :   9                       
+ Electronic configuration (s,p,d,...):     2    4                
+                                                                 
+ Exchange-correlation functional     : BP                        
+                                                                 
+       r(loc)         C(1)         C(2)                          
+     0.244018   -16.705908     2.492927                          
+                                                                 
+         r(0)     h(i,j)^0                                       
+     0.220865    18.347594                                       
+                                                                 
+ Please cite:                                                    
+                                                                 
+ - S. Goedecker, M. Teter, and J. Hutter,                        
+   Phys. Rev. B 54, 1703 (1996)                                  
+ - C. Hartwigsen, S. Goedecker, and J. Hutter,                   
+   Phys. Rev. B 58, 3641 (1998)                                  
+ - M. Krack,                                                     
+   Theor. Chem. Acc. 114, 145 (2005)                             
+                                                                 
+ ****************************************************************
+ 
+ ****************************************************************
+                                                                 
+ Atomic symbol                       : C                         
+                                                                 
+ Atomic number                       :   6                       
+ Effective core charge               :   4                       
+ Number of core states               :   1                       
+ Number of valence states            :   9                       
+ Electronic configuration (s,p,d,...):     2    2                
+                                                                 
+ Exchange-correlation functional     : BP                        
+                                                                 
+       r(loc)         C(1)         C(2)                          
+     0.336797    -8.868487     1.354476                          
+                                                                 
+         r(0)     h(i,j)^0                                       
+     0.302410     9.622712                                       
+                                                                 
+ Please cite:                                                    
+                                                                 
+ - S. Goedecker, M. Teter, and J. Hutter,                        
+   Phys. Rev. B 54, 1703 (1996)                                  
+ - C. Hartwigsen, S. Goedecker, and J. Hutter,                   
+   Phys. Rev. B 58, 3641 (1998)                                  
+ - M. Krack,                                                     
+   Theor. Chem. Acc. 114, 145 (2005)                             
+                                                                 
+ ****************************************************************
+ 
+ ****************************************************************
+                                                                 
+ Atomic symbol                       : H                         
+                                                                 
+ Atomic number                       :   1                       
+ Effective core charge               :   1                       
+ Number of core states               :   0                       
+ Number of valence states            :  10                       
+ Electronic configuration (s,p,d,...):     1                     
+                                                                 
+ Exchange-correlation functional     : BP                        
+                                                                 
+       r(loc)         C(1)         C(2)                          
+     0.200000    -4.185769     0.726940                          
+                                                                 
+ Please cite:                                                    
+                                                                 
+ - S. Goedecker, M. Teter, and J. Hutter,                        
+   Phys. Rev. B 54, 1703 (1996)                                  
+ - C. Hartwigsen, S. Goedecker, and J. Hutter,                   
+   Phys. Rev. B 58, 3641 (1998)                                  
+ - M. Krack,                                                     
+   Theor. Chem. Acc. 114, 145 (2005)                             
+                                                                 
+ ****************************************************************
+ 
+ ****************************************************************
+ *   ATOM       MASS   RAGGIO NLCC              PSEUDOPOTENTIAL *
+ *     Al    26.9815   1.2000  NO    GOEDECKER      S  NONLOCAL *
+ *                                                  P  NONLOCAL *
+ *                                                  D     LOCAL *
+ *      O    15.9994   1.2000  NO    GOEDECKER      S  NONLOCAL *
+ *                                                  P  NONLOCAL *
+ *                                                  D     LOCAL *
+ *      C    12.0112   1.2000  NO    GOEDECKER      S  NONLOCAL *
+ *                                                  P  NONLOCAL *
+ *                                                  D     LOCAL *
+ *      H     1.0080   1.2000  NO                   S     LOCAL *
+ ****************************************************************
+ 
+
+ PARAPARAPARAPARAPARAPARAPARAPARAPARAPARAPARAPARAPARAPARAPARAPARA
+  NCPU     NGW     NHG  PLANES  GXRAYS  HXRAYS ORBITALS Z-PLANES
+     0   48761  389220     120    2561   10229       4       1
+                G=0 COMPONENT ON PROCESSOR :     0
+ PARAPARAPARAPARAPARAPARAPARAPARAPARAPARAPARAPARAPARAPARAPARAPARA
+
+ ***    LOADPA| SIZE OF THE PROGRAM IS 25624 KBytes ***
+
+ OPENMPOPENMPOPENMPOPENMPOPENMPOPENMPOPENMPOPENMPOPENMPOPENMPOPEN
+ NUMBER OF CPUS PER TASK                                        1
+ OPENMPOPENMPOPENMPOPENMPOPENMPOPENMPOPENMPOPENMPOPENMPOPENMPOPEN
+
+ ***     RGGEN| SIZE OF THE PROGRAM IS 33224 KBytes ***
+
+ ************************** SUPERCELL ***************************
+ SYMMETRY:                                           ORTHORHOMBIC
+ LATTICE CONSTANT(a.u.):                                 18.89726
+ CELL DIMENSION:  18.8973  1.0000  1.0000   .0000   .0000   .0000
+ VOLUME(OMEGA IN BOHR^3):                              6748.33450
+ LATTICE VECTOR A1(BOHR):           18.8973      .0000      .0000
+ LATTICE VECTOR A2(BOHR):             .0000    18.8973      .0000
+ LATTICE VECTOR A3(BOHR):             .0000      .0000    18.8973
+ RECIP. LAT. VEC. B1(2Pi/BOHR):       .0529      .0000      .0000
+ RECIP. LAT. VEC. B2(2Pi/BOHR):       .0000      .0529      .0000
+ RECIP. LAT. VEC. B3(2Pi/BOHR):       .0000      .0000      .0529
+ REAL SPACE MESH:                   120          120          120
+ WAVEFUNCTION CUTOFF(RYDBERG):                           90.00000
+ DENSITY CUTOFF(RYDBERG):          (DUAL= 4.00)         360.00000
+ NUMBER OF PLANE WAVES FOR WAVEFUNCTION CUTOFF:             48761
+ NUMBER OF PLANE WAVES FOR DENSITY CUTOFF:                 389220
+ ****************************************************************
+ 
+ ***  RINFORCE| SIZE OF THE PROGRAM IS 79344 KBytes ***
+ ***    FFTPRP| SIZE OF THE PROGRAM IS 134712 KBytes ***
+
+ GENERATE ATOMIC BASIS SET
+     Al        SLATER ORBITALS
+        3S        ALPHA=   1.3724      OCCUPATION= 2.00
+        3P        ALPHA=   1.3552      OCCUPATION= 1.00
+      O        SLATER ORBITALS
+        2S        ALPHA=   2.2458      OCCUPATION= 2.00
+        2P        ALPHA=   2.2266      OCCUPATION= 4.00
+      C        SLATER ORBITALS
+        2S        ALPHA=   1.6083      OCCUPATION= 2.00
+        2P        ALPHA=   1.5679      OCCUPATION= 2.00
+      H        SLATER ORBITALS
+        1S        ALPHA=   1.0000      OCCUPATION= 1.00
+ 
+
+ INITIALIZATION TIME:                                2.12 SECONDS
+
+ ***    GMOPTS| SIZE OF THE PROGRAM IS 142716 KBytes ***
+
+ RESTART INFORMATION READ ON FILE                     ./RESTART.1
+ ***     PHFAC| SIZE OF THE PROGRAM IS 147440 KBytes ***
+
+ ****************************************************************
+ *                      ATOMIC COORDINATES                      *
+ ****************************************************************
+       1       O            .000000        .000000        .000000
+       2       H            .000000        .000000       1.795240
+       3       H           1.692569        .000000       -.598414
+ ****************************************************************
+
+ 
+ INITIALIZE EMPIRICAL HESSIAN 
+                           <<<<< ASSUMED BONDS >>>>>
+    2 <-->  1    3 <-->  1
+ TOTAL NUMBER OF MOLECULAR STRUCTURES:  1
+
+ ****************************************************************
+ *                      ATOMIC COORDINATES                      *
+ ****************************************************************
+       1       O            .000000        .000000        .000000
+       2       H            .000000        .000000       1.795240
+       3       H           1.692569        .000000       -.598414
+ ****************************************************************
+
+ CPU TIME FOR INITIALIZATION                          .12 SECONDS
+
+
+ ================================================================
+ =                  GEOMETRY OPTIMIZATION                       =
+ ================================================================
+ NFI      GEMAX       CNORM           ETOT        DETOT      TCPU
+ EWALD| SUM IN REAL SPACE OVER                      1* 1* 1 CELLS
+   1  3.424E-06   2.726E-07     -17.139168   -1.714E+01      3.72
+   2  6.391E-06   1.342E-07     -17.139168   -6.274E-10      3.89
+
+ RESTART INFORMATION WRITTEN ON FILE                  ./RESTART.1
+
+   ATOM          COORDINATES            GRADIENTS (-FORCES)
+   1  O   .0000   .0000   .0000   3.255E-02 -1.215E-08  2.298E-02
+   2  H   .0000   .0000  1.7952  -7.081E-03  2.082E-09 -2.737E-02
+   3  H  1.6926   .0000  -.5984  -2.825E-02  6.722E-09  2.438E-03
+ ****************************************************************
+ *** TOTAL STEP NR.     2           GEOMETRY STEP NR.      1  ***
+ *** GNMAX=  3.255290E-02                ETOT=    -17.139168  ***
+ *** GNORM=  1.883028E-02               DETOT=     0.000E+00  ***
+ *** CNSTR=  0.000000E+00                TCPU=          7.68  ***
+ ****************************************************************
+   1  1.226E-02   3.704E-03     -17.028247    1.109E-01      3.59
+   2  1.191E-02   9.817E-04     -17.126925   -9.868E-02      2.98
+   3  2.288E-03   5.996E-04     -17.137627   -1.070E-02      3.52
+   4  1.854E-03   2.748E-04     -17.140416   -2.789E-03      3.04
+   5  1.083E-03   1.079E-04     -17.141090   -6.744E-04      3.66
+   6  7.431E-04   3.528E-05     -17.141225   -1.351E-04      3.40
+   7  2.173E-04   1.563E-05     -17.141245   -1.913E-05      3.35
+   8  1.348E-04   8.178E-06     -17.141249   -3.887E-06      3.56
+   9  6.277E-05   4.293E-06     -17.141250   -1.109E-06      2.99
+  10  3.955E-05   2.318E-06     -17.141250   -3.635E-07      3.82
+  11  2.579E-05   1.244E-06     -17.141250   -1.241E-07      3.56
+  12  1.284E-05   8.176E-07     -17.141250   -3.759E-08      3.31
+  13  7.333E-06   4.843E-07     -17.141250   -1.315E-08      3.62
+
+ RESTART INFORMATION WRITTEN ON FILE                  ./RESTART.1
+
+   ATOM          COORDINATES            GRADIENTS (-FORCES)
+   1  O  -.0415   .0000  -.0293   8.219E-03 -2.670E-08  5.867E-03
+   2  H   .0200   .0000  1.8110  -3.167E-03  2.182E-08 -3.306E-03
+   3  H  1.7141   .0000  -.5849  -4.134E-03 -2.326E-09 -1.892E-03
+ ****************************************************************
+ *** TOTAL STEP NR.    15           GEOMETRY STEP NR.      2  ***
+ *** GNMAX=  8.219390E-03 [4.15E-02]     ETOT=    -17.141250  ***
+ *** GNORM=  3.994679E-03               DETOT=    -2.082E-03  ***
+ *** CNSTR=  0.000000E+00                TCPU=         44.41  ***
+ ****************************************************************
+   1  3.436E-03   1.042E-03     -17.132665    8.585E-03      3.49
+   2  2.727E-03   2.670E-04     -17.140577   -7.912E-03      3.36
+   3  5.943E-04   1.468E-04     -17.141174   -5.976E-04      3.71
+   4  6.343E-04   6.545E-05     -17.141339   -1.646E-04      3.45
+   5  3.219E-04   2.339E-05     -17.141381   -4.177E-05      3.37
+   6  1.471E-04   8.059E-06     -17.141388   -7.492E-06      3.21
+   7  4.800E-05   4.999E-06     -17.141389   -1.206E-06      3.43
+   8  2.730E-05   2.659E-06     -17.141390   -5.147E-07      3.56
+   9  2.237E-05   1.412E-06     -17.141390   -1.726E-07      3.49
+  10  1.846E-05   7.733E-07     -17.141390   -6.374E-08      3.59
+  11  8.821E-06   4.420E-07     -17.141390   -1.739E-08      3.73
+
+ RESTART INFORMATION WRITTEN ON FILE                  ./RESTART.1
+
+   ATOM          COORDINATES            GRADIENTS (-FORCES)
+   1  O  -.0532   .0000  -.0376   3.613E-03  2.420E-07  2.695E-03
+   2  H   .0315   .0000  1.8071  -1.213E-03  8.253E-09 -1.362E-03
+   3  H  1.7142   .0000  -.5726  -1.662E-03 -2.937E-08 -6.776E-04
+ ****************************************************************
+ *** TOTAL STEP NR.    26           GEOMETRY STEP NR.      3  ***
+ *** GNMAX=  3.612506E-03 [1.22E-02]     ETOT=    -17.141390  ***
+ *** GNORM=  1.727452E-03               DETOT=    -1.401E-04  ***
+ *** CNSTR=  0.000000E+00                TCPU=         38.42  ***
+ ****************************************************************
+   1  1.987E-03   6.021E-04     -17.138502    2.888E-03      3.41
+   2  1.563E-03   1.544E-04     -17.141150   -2.648E-03      3.34
+   3  3.397E-04   8.413E-05     -17.141348   -1.979E-04      3.63
+   4  3.786E-04   3.756E-05     -17.141402   -5.412E-05      3.14
+   5  1.897E-04   1.342E-05     -17.141416   -1.397E-05      3.66
+   6  8.472E-05   4.750E-06     -17.141419   -2.539E-06      3.15
+   7  2.934E-05   3.021E-06     -17.141419   -4.319E-07      3.33
+   8  1.751E-05   1.609E-06     -17.141419   -1.954E-07      3.71
+   9  1.422E-05   8.447E-07     -17.141420   -6.694E-08      3.72
+  10  1.192E-05   4.746E-07     -17.141420   -2.282E-08      3.44
+  11  4.964E-06   2.742E-07     -17.141420   -5.969E-09      3.67
+
+ RESTART INFORMATION WRITTEN ON FILE                  ./RESTART.1
+
+   ATOM          COORDINATES            GRADIENTS (-FORCES)
+   1  O  -.0600   .0000  -.0425   8.777E-04  1.686E-07  7.444E-04
+   2  H   .0382   .0000  1.8049  -5.471E-05  2.369E-08 -1.341E-04
+   3  H  1.7143   .0000  -.5656  -2.124E-04 -1.239E-08  4.135E-05
+ ****************************************************************
+ *** TOTAL STEP NR.    37           GEOMETRY STEP NR.      4  ***
+ *** GNMAX=  8.777045E-04 [7.03E-03]     ETOT=    -17.141420  ***
+ *** GNORM=  3.933128E-04               DETOT=    -2.932E-05  ***
+ *** CNSTR=  0.000000E+00                TCPU=         38.30  ***
+ ****************************************************************
+   1  4.894E-04   1.482E-04     -17.141244    1.757E-04      3.43
+   2  3.830E-04   3.801E-05     -17.141405   -1.607E-04      3.43
+   3  8.311E-05   2.059E-05     -17.141416   -1.193E-05      3.11
+   4  9.808E-05   9.272E-06     -17.141420   -3.242E-06      3.29
+   5  4.658E-05   3.329E-06     -17.141421   -8.620E-07      3.53
+   6  2.051E-05   1.204E-06     -17.141421   -1.601E-07      3.22
+   7  7.370E-06   7.775E-07     -17.141421   -2.867E-08      3.74
+
+ RESTART INFORMATION WRITTEN ON FILE                  ./RESTART.1
+
+ TOTAL INTEGRATED ELECTRONIC DENSITY
+    IN G-SPACE =                                         8.000000
+    IN R-SPACE =                                         8.000000
+
+ (K+E1+L+N+X)           TOTAL ENERGY =          -17.14142079 A.U.
+ (K)                  KINETIC ENERGY =           13.11757453 A.U.
+ (E1=A-S+R)     ELECTROSTATIC ENERGY =          -11.45754124 A.U.
+ (S)                           ESELF =           12.63317221 A.U.
+ (R)                             ESR =             .80294148 A.U.
+ (L)    LOCAL PSEUDOPOTENTIAL ENERGY =          -15.79225469 A.U.
+ (N)      N-L PSEUDOPOTENTIAL ENERGY =            1.22125831 A.U.
+ (X)     EXCHANGE-CORRELATION ENERGY =           -4.23040927 A.U.
+          GRADIENT CORRECTION ENERGY =            -.13912365 A.U.
+ 
+
+   ATOM          COORDINATES            GRADIENTS (-FORCES)
+   1  O  -.0616   .0000  -.0437   3.987E-04 -9.794E-08  3.796E-04
+   2  H   .0398   .0000  1.8044   2.375E-04  4.021E-08  2.256E-04
+   3  H  1.7144   .0000  -.5639   1.739E-04 -3.780E-08  2.136E-04
+ ****************************************************************
+ *** TOTAL STEP NR.    44           GEOMETRY STEP NR.      5  ***
+ *** GNMAX=  3.987232E-04 [1.69E-03]     ETOT=    -17.141421  ***
+ *** GNORM=  2.324340E-04               DETOT=    -1.251E-06  ***
+ *** CNSTR=  0.000000E+00                TCPU=         23.75  ***
+ ****************************************************************
+ ================================================================
+ =              END OF GEOMETRY OPTIMIZATION                    =
+ ================================================================
+
+
+
+ RESTART INFORMATION WRITTEN ON FILE                  ./RESTART.1
+
+ ****************************************************************
+ *                                                              *
+ *                        FINAL RESULTS                         *
+ *                                                              *
+ ****************************************************************
+
+   ATOM          COORDINATES            GRADIENTS (-FORCES)
+   1  O  -.0616   .0000  -.0437   3.987E-04 -9.794E-08  3.796E-04
+   2  H   .0398   .0000  1.8044   2.375E-04  4.021E-08  2.256E-04
+   3  H  1.7144   .0000  -.5639   1.739E-04 -3.780E-08  2.136E-04
+ 
+ ****************************************************************
+
+ 
+ ELECTRONIC GRADIENT:
+    MAX. COMPONENT =    7.37034E-06         NORM =    7.77503E-07
+ NUCLEAR GRADIENT: 
+    MAX. COMPONENT =    3.98723E-04         NORM =    2.32434E-04
+ 
+
+ TOTAL INTEGRATED ELECTRONIC DENSITY
+    IN G-SPACE =                                         8.000000
+    IN R-SPACE =                                         8.000000
+
+ (K+E1+L+N+X)           TOTAL ENERGY =          -17.14142079 A.U.
+ (K)                  KINETIC ENERGY =           13.11757453 A.U.
+ (E1=A-S+R)     ELECTROSTATIC ENERGY =          -11.45754124 A.U.
+ (S)                           ESELF =           12.63317221 A.U.
+ (R)                             ESR =             .80294148 A.U.
+ (L)    LOCAL PSEUDOPOTENTIAL ENERGY =          -15.79225469 A.U.
+ (N)      N-L PSEUDOPOTENTIAL ENERGY =            1.22125831 A.U.
+ (X)     EXCHANGE-CORRELATION ENERGY =           -4.23040927 A.U.
+          GRADIENT CORRECTION ENERGY =            -.13912365 A.U.
+ 
+                           <<<<< ASSUMED BONDS >>>>>
+    2 <-->  1    3 <-->  1
+ TOTAL NUMBER OF MOLECULAR STRUCTURES:  1
+                               BONDS
+ ATOM 1  ATOM 2   TYPE 1   TYPE 2      DISTANCE (BOHR, ANGSTROM)
+    2       1        H        O              1.85087      .97944
+    3       1        H        O              1.85061      .97930
+                               ANGLES
+    ATOM NUMBERS        ATOM TYPES       BOND ANGLES(DEGREES)     
+     2   1   3         H     O     H              103.1849
+ ****************************************************************
+
+
+ ================================================================
+                      BIG MEMORY ALLOCATIONS 
+ PME              1950520                INZHP            1751491
+ XF               3543122                RHOE             1771561
+ RHOPS            1556880                SCR              9636455
+ YF               3543122                SCR              1556880
+ SCR              9636445                PSI              3543122
+ ----------------------------------------------------------------
+ [PEAK NUMBER  105]      PEAK MEMORY     40544576 =  324.4 MBytes
+ ================================================================
+
+
+ ****************************************************************
+ *                                                              *
+ *                            TIMING                            *
+ *                                                              *
+ ****************************************************************
+ SUBROUTINE            CALLS         CPU TIME        ELAPSED TIME
+     GCENER               44            48.69               48.69
+      FWFFT              220            24.13               24.13
+     INVFFT              176            16.12               16.12
+    FFT-G/S             1584            11.78               11.78
+     XCENER               44            10.08               10.08
+    INVFFTN              176             9.28                9.28
+     FWFFTN               88             5.14                5.14
+     GRADEN               44             4.88                4.88
+    VOFRHOA               44             3.58                3.58
+      PHASE              396             3.23                3.23
+     FFTCOM              396             2.49                2.49
+     RHOOFR               44             2.35                2.35
+      ODIIS               44             2.16                2.16
+       VPSI               44             1.95                1.96
+     EICALC               44             1.95                1.95
+    VOFRHOB               44             1.83                1.83
+     LOADPA                1              .91                 .91
+    FNONLOC               44              .58                 .58
+     RNLSM1               44              .53                 .53
+ ----------------------------------------------------------------
+ TOTAL TIME                            151.68              151.68
+ ****************************************************************
+
+       CPU TIME :    0 HOURS  2 MINUTES 35.08 SECONDS     
+   ELAPSED TIME :    0 HOURS  2 MINUTES 35.08 SECONDS     
+ ***      CPMD| SIZE OF THE PROGRAM IS 288648 KBytes ***
+
+ PROGRAM CPMD ENDED AT:   Thu Apr  9 15:52:10 2009
+ 

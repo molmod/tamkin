@@ -115,4 +115,6 @@ class IOTestCase(unittest.TestCase):
 
 
     def test_load_blocks_txt(self):
-        pass
+        blocks = load_blocks_txt("input/an/fixed.07.txt")
+
+

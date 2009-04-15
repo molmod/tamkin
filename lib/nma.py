@@ -40,7 +40,7 @@ import numpy
 
 __all__ = [
     "NMA", "AtomDivision", "Transform", "MassMatrix", "Treatment",
-    "Full", "ConstrainExt", "PHVA", "VSA","VSANoMass",
+    "Full", "ConstrainExt", "PHVA", "VSA","VSANoMass", "MBH",
 ]
 
 
@@ -304,7 +304,7 @@ class MassMatrix(object):
               mass_diag -- the diagonal of the mass matrix associated with the
                            free atoms (each mass appears three times)
 
-           Arguments, if two are given:
+           Arguments, if two are given:  ! Attention for order of arguments.
               mass_block -- the mass matrix associated with the transformed
                             coordinates
               mass_diag -- the diagonal of the mass matrix associated with the
@@ -322,8 +322,8 @@ class MassMatrix(object):
             else:
                 raise TypeError("When MassMatrix.__init__ gets one argument, it must be a one- or two-dimensional array.")
         elif len(args) == 2:
-            self.mass_block = mass_block
-            self.mass_diag = mass_diag
+            self.mass_block = args[0]  #mass_block is first argument
+            self.mass_diag  = args[1]  #mass_diag is second argument
         else:
             raise TypeError("MassMatrix.__init__ takes one or two arguments, %i given." % len(args))
 
@@ -562,8 +562,7 @@ class VSA(Treatment):
 
         # information subsystem/environment atoms/coordinates:
         subs  = self.subs.tolist()
-        subs3 = sum([[3*at, 3*at+1, 3*at+2] for at in xrange(molecule.size) if at in subs],[])
-        masses3_subs = molecule.masses3[subs3]
+        subs3 = sum([[3*at, 3*at+1, 3*at+2] for at in subs],[])
 
         # transrot_subs contains the 6 global translations and rotations of the subsystem
         # dimension trabsrot: 6 x 3*molecule.size  =>  select subs atoms (6 x 3*len(self.subs))
@@ -592,7 +591,7 @@ class VSA(Treatment):
         # fill lists with subsystem/environment atoms/coordinates
         subs = self.subs.tolist()
         envi = sum([[at] for at in xrange(molecule.size) if at not in subs],[])
-        subs3 = sum([[3*at, 3*at+1, 3*at+2] for at in xrange(molecule.size) if at in subs],[])
+        subs3 = sum([[3*at, 3*at+1, 3*at+2] for at in subs],[])
         envi3 = sum([[3*at, 3*at+1, 3*at+2] for at in xrange(molecule.size) if at not in subs],[])
 
         # 1. Construct Hessian (small: 3Nsubs x 3Nsubs)
@@ -665,8 +664,7 @@ class VSANoMass(Treatment):
 
         # information subsystem/environment atoms/coordinates:
         subs  = self.subs.tolist()
-        subs3 = sum([[3*at, 3*at+1, 3*at+2] for at in xrange(molecule.size) if at in subs],[])
-        masses3_subs = molecule.masses3[subs3]
+        subs3 = sum([[3*at, 3*at+1, 3*at+2] for at in subs],[])
 
         # transrot_subs contains the 6 global translations and rotations of the subsystem
         # dimension trabsrot: 6 x 3*molecule.size  =>  select subs atoms (6 x 3*len(self.subs))
@@ -695,7 +693,7 @@ class VSANoMass(Treatment):
         # fill lists with subsystem/environment atoms/coordinates
         subs = self.subs.tolist()
         envi = sum([[at] for at in xrange(molecule.size) if at not in subs],[])
-        subs3 = sum([[3*at, 3*at+1, 3*at+2] for at in xrange(molecule.size) if at in subs],[])
+        subs3 = sum([[3*at, 3*at+1, 3*at+2] for at in subs],[])
         envi3 = sum([[3*at, 3*at+1, 3*at+2] for at in xrange(molecule.size) if at not in subs],[])
 
         # 1. Construct Hessian (small: 3Nsubs x 3Nsubs)
@@ -717,4 +715,360 @@ class VSANoMass(Treatment):
             atom_division = AtomDivision(envi+subs,[],[])
             self.transform = Transform( numpy.concatenate( (- hessian_e1_es, numpy.identity(len(subs3))),0), atom_division)
 
+
+class MBH(Treatment):
+    def __init__(self, blocks, svd_threshold=1e-5):
+        """Initialize the MBH treatment.
+
+           Frequencies and modes are calculated with the MBH approach:
+           Mobile Block Hessian method
+           -  ... (2007)
+           -  ... (2007)
+
+           MBH is ...
+
+           One argument:
+             blocks  --  a list of blocks, each block is a list of atoms,
+                         counting starts from zero.
+        """
+        # QA:
+        if len(blocks) == 0:
+            raise ValueError("At least one block is required.")
+        # Rest of init:
+        self.blocks = blocks
+        self.svd_threshold = svd_threshold
+        Treatment.__init__(self)
+
+    def compute_zeros(self, molecule, do_modes):
+        # Number of zeros for MBH:
+        # 6 zeros if atoms of system are non-collinear
+        # 5 zeros if atoms of system are collinear, e.g. when the subsystem contains only 2 atoms
+        # 3 zeros if system contains just 1 atom
+        #
+        # method:
+        # Construct a kind of inertia matrix (6x6) of the system
+        #           A = external_basis . external_basis**T
+        # Diagonalize A. The rank is the number of expected zero freqs.
+
+        # external_basis contains the 6 global translations and rotations of the subsystem (6 x 3*molecule.size)
+        A    = numpy.dot( molecule.external_basis, molecule.external_basis.transpose() )
+        eigv = numpy.linalg.eigvalsh(A)
+        rank = (abs(eigv) > abs(eigv[-1])*self.svd_threshold).sum()
+        self.num_zeros = rank
+
+        if do_modes and self.num_zeros > 0:
+            if self.num_zeros == 3:
+                self.external_basis = molecule.external_basis[:3,:]
+            elif self.num_zeros == 5:
+                # TODO: fix this
+                # select 3 translations + 2 rotations
+                #self.exernal_basis = external_basis
+                raise NotImplementedError
+            elif self.num_zeros == 6:
+                self.external_basis = molecule.external_basis
+            else:
+                raise ValueError("Number of zeros is expected to be 3, 5 or 6, but found %i." % self.num_zeros)
+
+    def compute_hessian(self, molecule, do_modes):
+        # Notation: b,b0,b1   --  a block index
+        #           block  --  a list of atoms, e.g. [at1,at4,at6]
+        #           alphas  --  the 6 block parameter indices (or 5 for linear block)
+
+        # Block information
+        blkinfo = Blocks(self.blocks, molecule, self.svd_threshold)
+        mbhdim1 = 6*blkinfo.nb_nlin + 5*blkinfo.nb_lin + 3*len(blkinfo.free)
+
+        # FIRST TRANSFORM: from CARTESIAN to BLOCK PARAMETERS
+
+        # Construct U
+        D = molecule.external_basis   # is mass-weighted
+
+        U = numpy.zeros((3*molecule.size, mbhdim1),float)
+
+        for b,block in enumerate(blkinfo.blocks_nlin_strict):
+            for at in block:
+                for alpha in range(6):
+                    U[3*at:3*(at+1), 6*b+alpha] = D[alpha,3*at:3*(at+1)]/numpy.sqrt(molecule.masses[at])
+
+        for b,block in enumerate(blkinfo.blocks_lin_strict):
+            for at in block:
+                alphas = [index for index in range(6) if index != blkinfo.skip_axis_lin[b]]
+                for i,alpha in enumerate(alphas):
+                    col = 6*blkinfo.nb_nlin + 5*b + i
+                    U[3*at:3*(at+1), col] = D[alpha,3*at:3*(at+1)]/numpy.sqrt(molecule.masses[at])
+
+        for i,at in enumerate(blkinfo.free):
+            for mu in range(3):
+                U[3*at+mu, 6*blkinfo.nb_nlin+5*blkinfo.nb_lin+3*i +mu] = 1.0
+
+
+        # Construct Hessian in block parameters: Hp = U**T . H . U + correction
+        Hp = numpy.dot(numpy.dot( U.transpose(), molecule.hessian) , U)
+
+        # gradient correction
+        if True:    # TODO: make this correction optional
+         for b,block in enumerate(blkinfo.blocks_nlin_strict+blkinfo.blocks_lin_strict):   # Nonlinear AND linear blocks
+            GP = numpy.zeros((3,3),float)
+            G = numpy.take(molecule.gradient,block,0)
+            P = numpy.take(molecule.coordinates,block,0)
+            for i in range(len(block)):
+                GP += numpy.dot(G[i,:].reshape((3,1)),P[i,:].reshape((1,3)))
+            # note: GP is not symmetric
+            p = GP[0,0] # Gx.x
+            q = GP[1,1] # Gy.y
+            r = GP[2,2] # Gz.z
+            s = GP[1,0] # Gy.x
+            t = GP[2,0] # Gz.x
+            u = GP[2,1] # Gz.y
+
+            corr    = numpy.zeros((6,6),float)
+            corr[3:,3:] = numpy.diag([-q-r, -p-r, -p-q])
+            corr[3,4]   =  corr[4,3] = s
+            corr[3,5]   =  corr[5,3] = t
+            corr[4,5]   =  corr[5,4] = u
+
+            if b < blkinfo.nb_nlin:             # Nonlinear block
+                alphas = range(6)
+                col = 6*b
+                dim = 6
+                Hp[col:(col+dim),col:(col+dim)] += corr
+
+            else:                               # Linear block
+                b   = b - blkinfo.nb_nlin       # reset
+                col = 6*blkinfo.nb_nlin + 5*b   # offset
+                dim = 5
+
+                alphas = [index for index in range(6) if index != blkinfo.skip_axis_lin[b]]
+                Hp[col:(col+dim),col:(col+dim)] += numpy.take(numpy.take(corr,alphas,0),alphas,1)
+
+
+        # Construct mass matrix in block parameters: Mp = U**T . M . U
+        for i in xrange(3*molecule.size):
+            U[i,:] *= numpy.sqrt(molecule.masses3[i])   # mass-weight U
+        Mp = numpy.dot(U.transpose(),U)
+# TODO: use MassMatrix object efficiently
+#         print "nlin",blkinfo.blocks_nlin_strict, type(blkinfo.blocks_nlin_strict)
+#         print "lin",blkinfo.blocks_lin_strict, type(blkinfo.blocks_lin_strict)
+#         fixed = sum(blkinfo.blocks_nlin_strict+blkinfo.blocks_lin_strict,[])
+#         print "fixed",fixed
+#         fixed3 = sum([[3*i,3*i+1,3*i+2] for i in fixed],[])
+#         free3  = sum([[3*i,3*i+1,3*i+2] for i in blkinfo.free],[])
+
+        if not blkinfo.is_linked:
+            self.hessian_small = Hp
+            self.mass_matrix_small = MassMatrix(Mp)
+
+        else:
+        # SECOND TRANSFORM: from BLOCK PARAMETERS to Y VARIABLES
+        # Necessary if blocks are linked to each other.
+
+            # Construct K matrix, with constraints
+            nbrows = (numpy.sum(blkinfo.sharenbs)-molecule.size)*3
+            K=numpy.zeros(( nbrows, mbhdim1-3*len(blkinfo.free)), float)
+            row=0
+            for (at,apps) in blkinfo.appearances.iteritems():
+                if len(apps) >= 2:
+                    # the first block
+                    b0 = apps[0]
+                    D0 = D[:,3*at:3*(at+1)]
+
+                    if b0 < blkinfo.nb_nlin:  # if b0 is nonlinear block
+                        sta0 = 6*b0
+                        end0 = 6*(b0+1)
+                        D0 = D[:,3*at:3*(at+1)]
+
+                    else:   # if b0 is a linear block
+                        b0 = b0 - blkinfo.nb_nlin     # reset
+                        sta0 = 6*blkinfo.nb_nlin + 5*b0       # offset
+                        end0 = 6*blkinfo.nb_nlin + 5*(b0+1)
+                        alphas = [index for index in range(6) if index != blkinfo.skip_axis_lin[b0]]
+                        D0 = numpy.take(D[:,3*at:3*(at+1)],alphas,0)
+
+                    for b1 in apps[1:]:
+                        # add 3 rows to K, for each block connected to b0
+                        K[row:row+3, sta0:end0] = D0.transpose()
+
+                        if b1 < blkinfo.nb_nlin:  # if b1 is nonlinear block
+                            sta1 = 6*b1
+                            end1 = 6*(b1+1)
+                            D1 = D[:,3*at:3*(at+1)]
+
+                        else:   # if b1 is a linear block
+                            b1 = b1 - blkinfo.nb_nlin     # reset
+                            sta1 = 6*blkinfo.nb_nlin + 5*b1       # offset
+                            end1 = 6*blkinfo.nb_nlin + 5*(b1+1)
+                            alphas = [index for index in range(6) if index != blkinfo.skip_axis_lin[b1]]
+                            D1 = numpy.take(D[:,3*at:3*(at+1)],alphas,0)
+
+                        K[row:row+3,sta1:end1] = -D1.transpose()
+                        row += 3
+
+            # Do SVD of matrix K
+            u,s,vh = numpy.linalg.svd(K)
+
+            # construct nullspace of K
+            rank = sum(s>max(s)*self.svd_threshold)
+            nullspace = vh[rank:,:].transpose()
+            [r_null,c_null] = nullspace.shape
+            n = numpy.zeros((mbhdim1,c_null+3*len(blkinfo.free)),float)
+            n[:r_null,:c_null] = nullspace
+            n[r_null:,c_null:] = numpy.identity(3*len(blkinfo.free),float)
+            nullspace = n
+
+            M = numpy.dot(nullspace.transpose(), numpy.dot( Mp,nullspace) )
+            H = numpy.dot(nullspace.transpose(), numpy.dot( Hp,nullspace) )
+
+            # TODO
+            # gradient correction of the second transform...
+
+            self.hessian_small = H
+            self.mass_matrix_small = MassMatrix(M)
+
+
+        if do_modes:
+            if not blkinfo.is_linked:
+                atom_division = AtomDivision(range(molecule.size),[],[])
+                self.transform = Transform( U, atom_division)
+            else:
+                U = numpy.dot(U, nullspace)
+                atom_division = AtomDivision(range(molecule.size),[],[])
+                self.transform = Transform( U, atom_division)
+
+# TODO: to make use of efficiency offered by AtomDivision and MassMatrix objects.
+#             atom_division = AtomDivision(fixed,blkinfo.free,[])
+#             self.transform = Transform( U[fixed3,:(6*blkinfo.nb_nlin+5*blkinfo.nb_lin)], atom_division)
+
+
+class Blocks(object):
+    def __init__(self,blocks,molecule,svd_threshold):
+        """
+        initialization:  Blocks(blocks,N) with
+        blocks --   a list of lists of atoms
+                 [ [at1,at5,at3], [at4,at5], ...]
+                 with a list of atoms for each block
+        molecule -- Molecule object, necessary for N (total nb
+                    of atoms) and positions (linearity of blocks).
+        """
+        N = molecule.size
+        # check for empty blocks and single-atom-blocks
+        to_remove = []
+        for b,block in enumerate(blocks):
+            if len(block)==0:
+                to_remove.append(b)
+            elif len(block)==1:
+                to_remove.append(b)
+            elif max(block)>=N:
+                raise Error("block "+str(b)+": atoms should be in range [0,N-1], N="+str(N))
+            elif min(block)<0:
+                raise Error("block "+str(b)+": atoms should be in range [0,N-1], N="+str(N))
+        #remove single atoms and empty blocks
+        for i in range(len(to_remove)):
+            del blocks[to_remove[len(to_remove)-i-1]]   #remove starting from largests b
+
+        #checking
+        fixed = set(sum(blocks,[]))
+        free  = [atom for atom in range(N) if atom not in fixed] #list of N_E integers or empty list
+        fixed = [atom for atom in range(N) if atom in fixed]
+
+        # check for linearity and fill in dimensions
+        D = molecule.external_basis
+        dim_block=numpy.zeros((len(blocks)),int)
+        indices_blocks_nlin = []    # nonlinear blocks
+        indices_blocks_lin  = []    # linear blocks
+        for b,block in enumerate(blocks):
+            # method:
+            # Construct a kind of inertia matrix (without inertia) of the subsystem
+            #           A = transrot_subs . transrot_sub**T
+            # Diagonalize A. The rank is the number of expected zero freqs.
+
+            block3 = sum([[3*at, 3*at+1, 3*at+2] for at in block],[])
+            # transrot_block contains the 6 global translations and rotations of the block
+            # dimension trabsrot: 6 x 3*molecule.size  =>  select atoms of block (6 x 3*len(block))
+            transrot_block = numpy.take(molecule.external_basis,block3,1)
+            A    = numpy.dot( transrot_block, transrot_block.transpose() )
+            eigv = numpy.linalg.eigvalsh(A)
+            rank = (abs(eigv) > abs(eigv[-1])*svd_threshold).sum()
+            dim_block[b] = rank
+            if rank==6:    indices_blocks_nlin.append(b)
+            elif rank==5:  indices_blocks_lin.append(b)
+            else:          raise Error("In principle rank should have been 5 or 6, found "+str(rank))
+
+        # REORDER THE BLOCKS: nonlinear blocks, linear blocks, single-atom-blocks
+        blocks_nlin = []
+        blocks_lin  = []
+        for b in indices_blocks_nlin:
+            blocks_nlin.append(blocks[b])
+        for b in indices_blocks_lin:
+            blocks_lin.append(blocks[b])
+        orderedblocks = blocks_nlin + blocks_lin
+        nb_nlin = len(blocks_nlin)
+        nb_lin  = len(blocks_lin)
+
+        # fill in appearances
+        appearances = {}
+        for b,block in enumerate(orderedblocks):
+            for atom in block:
+                # If atom is not already in appearances,
+                # setdefault sets appearances[atom] to an empty list.
+                appearances.setdefault(atom,[]).append(b)
+        for i,atom in enumerate(free):
+            appearances.setdefault(atom,[]).append( i+len(orderedblocks) )
+
+        # make a strict partition of the atoms: each atom belongs to one block only
+        bA1 = numpy.zeros((molecule.size),int)
+        for (at,apps) in appearances.iteritems():
+            bA1[at] = apps[0]
+
+        blocks_nlin_strict = []
+        for b,block in enumerate(blocks_nlin):
+            atoms = []
+            for at in block:
+                if bA1[at] == b:
+                    atoms.append(at)
+            blocks_nlin_strict.append(atoms)
+
+        blocks_lin_strict = []
+        for b,block in enumerate(blocks_lin):
+            atoms = []
+            for at in block:
+                if bA1[at] == (b+nb_nlin):
+                    atoms.append(at)
+            blocks_lin_strict.append(atoms)
+
+        # for linear blocks: axis?
+        # Calculate direction of the linear block (with two atoms) and check for highest
+        # alignment with one of the axes.
+        skip_axis_lin = numpy.zeros((nb_lin),int)
+        for b,block in enumerate(blocks_lin):       # do not use strict partition here
+            diff = molecule.coordinates[block[0]] - molecule.coordinates[block[1]]
+            skip_axis_lin[b] = 3+abs(diff).tolist().index(max(abs(diff)))   # axis to be skipped
+
+
+        # Check if there are linked blocks
+        sharenbs = numpy.zeros((molecule.size),int)  # share number of each atom
+        for (at,apps) in appearances.iteritems():
+            sharenbs[at] = len(apps)
+        is_linked = False
+        for sharenb in numpy.ravel(sharenbs):
+            if sharenb > 1:
+                is_linked = True
+                break
+
+
+        self.blocks = orderedblocks
+        self.free   = free
+        self.nb_nlin   = nb_nlin
+        self.nb_lin    = nb_lin
+        self.blocks_nlin = blocks_nlin
+        self.blocks_lin  = blocks_lin
+
+        self.blocks_nlin_strict = blocks_nlin_strict
+        self.blocks_lin_strict  = blocks_lin_strict
+
+        self.appearances = appearances
+        self.bA1 = bA1
+        self.skip_axis_lin = skip_axis_lin
+
+        self.sharenbs = sharenbs
+        self.is_linked = is_linked
 

@@ -465,10 +465,29 @@ def load_envi_txt(filename,shift=-1):
 
 
 def load_blocks_txt(filename,shift=-1):
-    pass
-
-
-
+    """Read the block structure into a list of blocks.
+    Returns  blocks, a list of lists of atoms:
+                 [ [at1,at5,at3], [at4,at5], ...]
+    Arguments:
+    filename  --  file that contains the block structure:
+                  one line per atom
+                  one or more empty lines separate subsequent blocks
+    shift  --  default on -1, because numbering in Python starts with -1
+    """
+    blocks = []
+    block  = []
+    f = file(filename)
+    for line in f:
+        if line == "\n":     # empty line seperates blocks
+            if len(block)!=0:
+                blocks.append(block)
+                block = []   # start new block
+        else:
+            block.append(int(line)+shift)  # add atom to current block
+    if len(block)!=0:
+        blocks.append(block)   # add last block to blocks list
+    f.close()
+    return blocks
 
 
 

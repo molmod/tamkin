@@ -484,3 +484,9 @@ class NMATestCase(unittest.TestCase):
                         2864.80440032, 3680.49886454 ] )
         self.check_freqs(expected_freqs, nma, 4, check_zeros=True)
 
+
+    def test_mbh(self):
+        molecule = load_molecule_charmm("input/an/ethanol.cor","input/an/ethanol.hess.full")
+        blocks = load_blocks_txt("input/an/fixed.07.txt")
+        nma = NMA(molecule, MBH(blocks))
+

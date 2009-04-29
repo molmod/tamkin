@@ -1,4 +1,4 @@
-#! /bin/sh
+#! /bin/bash
 # This is a very simplistic install scipt. Use with care!
 
 if [ -n $1 ] && [ "$1" = "--system" ]; then

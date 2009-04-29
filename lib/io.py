@@ -557,30 +557,21 @@ Number     Number      Type              X           Y           Z
 
 
 
-def make_moldenfile(filename, masses, atomicnumbers, positions, a, ev):
-  # this function produces a molden-readable file: coordinates + frequencies + modes
-  # a:  input: each col is mode in mass weighted coordinates = modes
-  #     converted: each row is mode, not mass-weighted = modes^T . M^(-1/2)
-  # ev: eigenvalues (freqs)
+def make_moldenfile(filename, masses, atomicnumbers, positions, modes, ev):
+    """This function produces a molden-readable file: coordinates + frequencies + modes
 
-    ev = ev/lightspeed*cm                   # convert to cm-1
-    positions_xyz = positions/angstrom      # convert to angstrom
-
-    a = a.transpose()     # because of previous Numeric package...  a = modes^T
-    for i in range(a.shape[0]):
-        a[:,i] /= numpy.sqrt(masses[i/3])   # undo mass weighting
-
-    # TODO:  can't this normalization be avoided???
-    for row in a:
-        row[:] /= numpy.linalg.norm(row)    # normalize
-
+    positions  -- coordinates, convert to angstrom
+    modes  -- each col is a mode in mass weighted Cartesian coordinates
+             un-mass-weighting necessary and renormalization (in order to see some movement)
+    ev  -- eigenvalues (freqs), convert to cm-1
+    """
+    masses3_sqrt1 = numpy.array(sum([[1/m,1/m,1/m] for m in numpy.sqrt(masses)],[]))
     HEAD, head_coordinates, head_basisfunctions, \
     head_freq0, head_freq1, head_freq2, head_freq3, head_end = make_molden_texts()
 
-    [rows,cols]=a.shape
-
-    number_of_atoms = cols/3
-    number_of_modes = rows
+    [rows,cols]=modes.shape
+    number_of_atoms = rows/3
+    number_of_modes = cols
     number_of_iterations = number_of_modes/3    # organisation of file: per 3 modes
 
     #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
@@ -594,7 +585,9 @@ def make_moldenfile(filename, masses, atomicnumbers, positions, a, ev):
     for at in range(number_of_atoms):
        print >> f, '%5d %10d %13s %15f %11f %11f' %(
                    at+1,atomicnumbers[at],"0",
-                   positions_xyz[at,0],positions_xyz[at,1],positions_xyz[at,2])
+                   positions[at,0]/angstrom,
+                   positions[at,1]/angstrom,
+                   positions[at,2]/angstrom)
 
     # ORBITAL PART
     print >> f, head_basisfunctions
@@ -605,50 +598,65 @@ def make_moldenfile(filename, masses, atomicnumbers, positions, a, ev):
 
     for iteration in range(number_of_iterations):
         nb = 3*iteration   #number of mode
+        mode1 = modes[:,nb]  *masses3_sqrt1
+        mode2 = modes[:,nb+1]*masses3_sqrt1
+        mode3 = modes[:,nb+2]*masses3_sqrt1
+        mode1 = mode1/numpy.linalg.norm(mode1)
+        mode2 = mode2/numpy.linalg.norm(mode2)
+        mode3 = mode3/numpy.linalg.norm(mode3)
         print >> f, '%22d %22d %22d' %(nb+1,nb+2,nb+3)
         print >> f, head_freq1[2]
-        print >> f, '%s %10.4f %22.4f %22.4f' %(head_freq2,ev[nb],ev[nb+1],ev[nb+2])
+        print >> f, '%s %10.4f %22.4f %22.4f' %(head_freq2,
+                                ev[nb]/lightspeed*cm,
+                                ev[nb+1]/lightspeed*cm,
+                                ev[nb+2]/lightspeed*cm)
         print >> f, head_freq3[2]
         for atomnb in range(number_of_atoms):
             i = 3*atomnb
             print >> f, '%4d %3d %8.2f %6.2f %6.2f %8.2f %6.2f %6.2f %8.2f %6.2f %6.2f' %(
                    atomnb+1 , atomicnumbers[atomnb],
-                   a[nb,i],     a[nb,i+1], a[nb,i+2],
-                   a[nb+1,i], a[nb+1,i+1], a[nb+1,i+2],
-                   a[nb+2,i], a[nb+2,i+1], a[nb+2,i+2])
+                   mode1[i], mode1[i+1], mode1[i+2],
+                   mode2[i], mode2[i+1], mode2[i+2],
+                   mode3[i], mode3[i+1], mode3[i+2])
 
     rest = number_of_modes - 3*number_of_iterations
 
     if rest == 1:
         nb = number_of_modes-1   #number of mode: the last one
+        mode1 = modes[:,nb]*masses3_sqrt1
+        mode1 = mode1/numpy.linalg.norm(mode1)
         print >> f, '%22d' %(nb+1)
         print >> f, head_freq1[0]
-        print >> f, '%s %10.4f' %(head_freq2,ev[nb])
+        print >> f, '%s %10.4f' %(head_freq2, ev[nb]/lightspeed*cm)
         print >> f, head_freq3[0]
         for atomnb in range(number_of_atoms):
             i = 3*atomnb
             print >> f, '%4d %3d %8.2f %6.2f %6.2f' %(
                    atomnb+1 , atomicnumbers[atomnb],
-                   a[nb,i],     a[nb,i+1], a[nb,i+2])
+                   mode1[i], mode1[i+1], mode1[i+2])
 
     elif rest == 2:
         nb = number_of_modes-2   #number of mode: the 2 last ones
+        mode1 = modes[:,nb]  *masses3_sqrt1
+        mode2 = modes[:,nb+1]*masses3_sqrt1
+        mode1 = mode1/numpy.linalg.norm(mode1)
+        mode2 = mode2/numpy.linalg.norm(mode2)
         print >> f, '%22d %22d' %(nb+1,nb+2)
         print >> f, head_freq1[1]
-        print >> f, '%s %10.4f %22.4f' %(head_freq2,ev[nb],ev[nb+1])
+        print >> f, '%s %10.4f %22.4f' %(head_freq2,
+                            ev[nb]  /lightspeed*cm,
+                            ev[nb+1]/lightspeed*cm)
         print >> f, head_freq3[1]
         for atomnb in range(number_of_atoms):
             i = 3*atomnb
             print >> f, '%4d %3d %8.2f %6.2f %6.2f %8.2f %6.2f %6.2f' %(
                    atomnb+1 , atomicnumbers[atomnb],
-                   a[nb,i],     a[nb,i+1], a[nb,i+2],
-                   a[nb+1,i], a[nb+1,i+1], a[nb+1,i+2])
+                   mode1[i], mode1[i+1], mode1[i+2],
+                   mode2[i], mode2[i+1], mode2[i+2],)
 
     elif rest != 0:
          print "error?! in number of iterations/number of atoms (writing molden file)"
-    print >> f, ""
     print >> f, head_end
-    print >> f, ""
 
     f.close()
     print "file written: ", filename

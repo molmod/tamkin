@@ -489,4 +489,7 @@ class NMATestCase(unittest.TestCase):
         molecule = load_molecule_charmm("input/an/ethanol.cor","input/an/ethanol.hess.full")
         blocks = load_blocks_txt("input/an/fixed.07.txt")
         nma = NMA(molecule, MBH(blocks))
+        self.check_ortho(nma.modes)
+        nma.write_logfile_gaussian("input/an/ethanol.molden.log")
+        self.check_ortho(nma.modes)   # write_logfile_gaussian should not have changed
 

@@ -33,7 +33,7 @@
 #   weighted Hessian in the new coordinates.
 
 
-from tamkin.io import load_chk, dump_chk
+from tamkin.io import load_chk, dump_chk, make_moldenfile
 
 import numpy
 
@@ -96,7 +96,7 @@ class NMA(object):
 
         if do_modes:
             # At this point the transform object transforms unweighted reduced
-            # coordinates into Cartesian coordinates. Now we will alter it so that
+            # coordinates into Cartesian coordinates. Now we will alter it, so that
             # it transforms from weighted reduced coordinates to Cartesian
             # coordinates.
             if treatment.mass_matrix_small is not None:
@@ -147,6 +147,18 @@ class NMA(object):
             keys = ["freqs", "mass", "inertia_tensor", "multiplicity", "symmetry_number", "periodic", "energy", "zeros"]
             data = dict((key, self.__dict__[key]) for key in keys)
         dump_chk(filename, data)
+
+    def write_logfile_gaussian(self,filename):
+        """Write a logfile with the modes and frequencies
+        in the way Gaussian03 does, such that molden can
+        read this logfile.
+        """
+        if filename is None:
+            filename = "molden.log"
+        if self.modes is None:
+            raise Error("No modes available (do_modes=False), cannot write logfile with modes.")
+        make_moldenfile(filename, self.masses, self.numbers, self.coordinates,
+                       self.modes, self.freqs )
 
     @classmethod
     def read_from_file(cls, filename):
@@ -778,7 +790,7 @@ class MBH(Treatment):
         blkinfo = Blocks(self.blocks, molecule, self.svd_threshold)
         mbhdim1 = 6*blkinfo.nb_nlin + 5*blkinfo.nb_lin + 3*len(blkinfo.free)
 
-        # FIRST TRANSFORM: from CARTESIAN to BLOCK PARAMETERS
+        # TRANSFORM from CARTESIAN to BLOCK PARAMETERS
 
         # Construct U
         D = molecule.external_basis   # is mass-weighted
@@ -843,16 +855,7 @@ class MBH(Treatment):
 
 
         # Construct mass matrix in block parameters: Mp = U**T . M . U
-        for i in xrange(3*molecule.size):
-            U[i,:] *= numpy.sqrt(molecule.masses3[i])   # mass-weight U
-        Mp = numpy.dot(U.transpose(),U)
-# TODO: use MassMatrix object efficiently
-#         print "nlin",blkinfo.blocks_nlin_strict, type(blkinfo.blocks_nlin_strict)
-#         print "lin",blkinfo.blocks_lin_strict, type(blkinfo.blocks_lin_strict)
-#         fixed = sum(blkinfo.blocks_nlin_strict+blkinfo.blocks_lin_strict,[])
-#         print "fixed",fixed
-#         fixed3 = sum([[3*i,3*i+1,3*i+2] for i in fixed],[])
-#         free3  = sum([[3*i,3*i+1,3*i+2] for i in blkinfo.free],[])
+        Mp = numpy.dot(U.transpose(),  U * molecule.masses3.reshape((-1,1)))
 
         if not blkinfo.is_linked:
             self.hessian_small = Hp
@@ -861,7 +864,6 @@ class MBH(Treatment):
         else:
         # SECOND TRANSFORM: from BLOCK PARAMETERS to Y VARIABLES
         # Necessary if blocks are linked to each other.
-
             # Construct K matrix, with constraints
             nbrows = (numpy.sum(blkinfo.sharenbs)-molecule.size)*3
             K=numpy.zeros(( nbrows, mbhdim1-3*len(blkinfo.free)), float)
@@ -915,28 +917,20 @@ class MBH(Treatment):
             n[r_null:,c_null:] = numpy.identity(3*len(blkinfo.free),float)
             nullspace = n
 
-            M = numpy.dot(nullspace.transpose(), numpy.dot( Mp,nullspace) )
-            H = numpy.dot(nullspace.transpose(), numpy.dot( Hp,nullspace) )
+            My = numpy.dot(nullspace.transpose(), numpy.dot( Mp,nullspace) )
+            Hy = numpy.dot(nullspace.transpose(), numpy.dot( Hp,nullspace) )
 
             # TODO
             # gradient correction of the second transform...
 
-            self.hessian_small = H
-            self.mass_matrix_small = MassMatrix(M)
-
+            self.hessian_small = Hy
+            self.mass_matrix_small = MassMatrix(My)
 
         if do_modes:
             if not blkinfo.is_linked:
-                atom_division = AtomDivision(range(molecule.size),[],[])
-                self.transform = Transform( U, atom_division)
+                self.transform = Transform(U)
             else:
-                U = numpy.dot(U, nullspace)
-                atom_division = AtomDivision(range(molecule.size),[],[])
-                self.transform = Transform( U, atom_division)
-
-# TODO: to make use of efficiency offered by AtomDivision and MassMatrix objects.
-#             atom_division = AtomDivision(fixed,blkinfo.free,[])
-#             self.transform = Transform( U[fixed3,:(6*blkinfo.nb_nlin+5*blkinfo.nb_lin)], atom_division)
+                self.transform = Transform( numpy.dot(U, nullspace) )
 
 
 class Blocks(object):

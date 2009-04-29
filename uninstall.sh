@@ -1,10 +1,12 @@
 #! /bin/sh
 # This is a very simplistic uninstall scipt. Use with care!
 
-if [ -z $1 ] && [ "$1" = "--system" ]; then
-  rm -vr /usr/share/molmod
-  rm -vr /usr/lib/python*/site-packages/molmod
+if [ -n $1 ] && [ "$1" = "--system" ]; then
+  rm -vr /usr/lib/python*/site-packages/tamkin
 else
-  rm -vr $HOME/share/molmod
-  rm -vr $HOME/lib/molmod
+  if [ -z $PYTHONPATH ]
+    echo 'WARNING: $PYTHONPATH is not defined, defaulting to \$HOME/lib/python'
+    PYTHONPATH=$HOME/lib/python
+  fi
+  rm -vr $PYTHONPATH/tamkin
 fi

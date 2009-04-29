@@ -3,7 +3,7 @@
 
 if [ -n $1 ] && [ "$1" = "--system" ]; then
   ./uninstall.sh --system
-  python setup.py install
+  python setup.py install --prefix=/usr/local
   ./cleanfiles.sh
 else
   ./uninstall.sh

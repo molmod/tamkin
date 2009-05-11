@@ -25,7 +25,7 @@ from tamkin.data import Molecule
 
 from molmod.io.gaussian03.fchk import FCHKFile
 from molmod.io.xyz import XYZFile
-from molmod.units import amu, calorie, avogadro, angstrom, cm, lightspeed
+from molmod.units import amu, calorie, avogadro, angstrom, cm, lightspeed, eV
 from molmod.data.periodic import periodic
 
 import numpy
@@ -33,7 +33,7 @@ import numpy
 
 __all__ = [
     "load_fixed_g03com", "load_molecule_g03fchk", "load_molecule_cp2k",
-    "load_molecule_cpmd", "load_molecule_charmm",
+    "load_molecule_cpmd", "load_molecule_charmm", "load_molecule_vasp",
     "load_chk", "dump_chk",
     "load_fixed_txt", "load_subs_txt", "load_envi_txt", "load_blocks_txt",
 ]
@@ -247,7 +247,7 @@ def load_molecule_charmm(charmmfile_cor, charmmfile_hess,
                   is_periodic = False):
     # Units: CHARMM gradient in kcal/mol/angstrom, TAMkin internally all in atomic units
 
-    # Read from first CHARMM file
+    # Read from Hessian-CHARMM-file
     # format:  nb of atoms = N
     #          energy
     #          gradient (N lines, 3 elements on each line)
@@ -290,7 +290,7 @@ def load_molecule_charmm(charmmfile_cor, charmmfile_hess,
             break
     f.close()
 
-    # Read from second CHARMM file
+    # Read from coordinates-CHARMM-file
     # format:  header lines, which start with *
     #          N lines with   - mass in last column
     #                         - atomic type in 4th column
@@ -327,6 +327,93 @@ def load_molecule_charmm(charmmfile_cor, charmmfile_hess,
         hessian, 1, None, is_periodic
     )
 
+
+def load_molecule_vasp(vaspfile_xyz, vaspfile_out,
+                  is_periodic = True):
+    """ reading molecule from VASP outputfile"""
+    # Units: VASP gradient in eV/angstrom, TAMkin internally all in atomic units
+
+    # Read atomtypes from xyz-VASP-file
+    # format:  one atom per line
+    #          atomtype (Si, C, ...)   x-cor  y-cor  z-cor
+    f = open(vaspfile_xyz)
+    atomtypes = []
+    for line in f:
+        words = line.split()
+        if len(words) == 4:
+            atomtypes.append(words[0])
+    f.close()
+    atomtypes = numpy.array(atomtypes)
+
+    # Read other data from out-VASP-file OUTCAR
+    f = open(vaspfile_out)
+
+    # number of atoms (N)
+    for line in f:
+        if line.strip().startswith("Dimension of arrays:"):  break
+    f.next()
+    for line in f:
+        words = line.split()
+        N = int(words[-1])
+        break
+
+    # masses
+    masses = numpy.zeros((N),float)
+    for at,atomtype in enumerate(atomtypes):
+        table = { "H": 1.000,   "C": 12.011, "O": 16.000,
+                  "Al": 26.982, "Si": 28.085,
+                }
+        masses[at] = table[atomtype]*amu
+
+    # get corresponding atomic numbers
+    atomicnumbers = numpy.zeros(N, int)
+    mass_table = numpy.zeros(len(periodic))
+    for i in xrange(1, len(mass_table)):
+        m1 = periodic[i].mass
+        if m1 is None:
+            m1 = 200000.0
+        m2 = periodic[i+1].mass
+        if m2 is None:
+            m2 = 200000.0
+        mass_table[i] = 0.5*(m1+m2)
+    for i,mass in enumerate(masses):
+        atomicnumbers[i] = mass_table.searchsorted(mass)
+
+    # positions, gradient
+    positions = numpy.zeros((N,3),float)
+    gradient = numpy.zeros((N,3),float)
+    for line in f:          # go to first time POSITION is printed (reference point)
+        if line.strip().startswith("POSITION"): break
+    f.next()
+    row = 0
+    for line in f:
+        words = line.split()
+        positions[row,:] = [ float(word)*angstrom for word in words[:3] ]
+        gradient[row,:] = [ float(word)*eV/angstrom for word in words[3:6] ]
+        row += 1
+        if row >= N: break
+
+    # hessian, symmetrized, somehow with a negative sign
+    hessian = numpy.zeros((3*N,3*N),float)
+    for line in f:
+        if line.strip().startswith("SECOND DERIVATIVES (SYMMETRYZED)"):  break
+    f.next()
+    f.next()
+    row = 0
+    for line in f:
+        words = line.split()
+        for col in xrange(3*N):
+            hessian[row,col] = -float(words[col+1])*eV/angstrom**2 # skip first col
+        row += 1
+        if row >= 3*N: break
+    f.close()
+
+    is_periodic = True
+    multiplicity = 1
+    energy = 0.0
+    return Molecule(
+        atomicnumbers, positions, masses, energy, gradient,
+        hessian, multiplicity, None, is_periodic )
 
 def load_chk(filename):
     f = file(filename)

@@ -56,6 +56,8 @@
 # --
 
 
+from tamkin.geom import transrot_basis
+
 from molmod.molecules import Molecule as BaseMolecule
 from molmod.data.periodic import periodic
 from molmod.graphs import cached
@@ -117,22 +119,7 @@ class Molecule(BaseMolecule):
     def external_basis(self):
         """The basis for small displacements in the external degrees of freedom.
         """
-        if self.periodic:
-            result = numpy.zeros((3, self.coordinates.size), float)
-        else:
-            result = numpy.zeros((6, self.coordinates.size), float)
-        # translation
-        result[0, 0::3] = 1
-        result[1, 1::3] = 1
-        result[2, 2::3] = 1
-        if not self.periodic:
-            # rotation
-            result[3, 1::3] =  self.coordinates[:,2]
-            result[3, 2::3] = -self.coordinates[:,1]
-            result[4, 2::3] =  self.coordinates[:,0]
-            result[4, 0::3] = -self.coordinates[:,2]
-            result[5, 0::3] =  self.coordinates[:,1]
-            result[5, 1::3] = -self.coordinates[:,0]
+        result = transrot_basis(self.coordinates, not self.periodic)
         result *= numpy.sqrt(self.masses3) # transform basis to mass weighted coordinates
         return result
 

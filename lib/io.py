@@ -443,7 +443,7 @@ def load_molecule_vasp(vaspfile_xyz, vaspfile_out,
         if row >= 3*N: break
     f.close()
 
-    is_periodic = False #True
+    is_periodic = True
     multiplicity = 1
     energy = 0.0
     return Molecule(

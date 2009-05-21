@@ -809,7 +809,7 @@ class MBH(Treatment):
         else:
             self.hessian_small,self.mass_matrix_small = \
                      self.calculate_matrices_small(molecule,do_modes)
-        
+
     def calculate_matrices_small(self, molecule, do_modes):
         # Notation: b,b0,b1   --  a block index
         #           block  --  a list of atoms, e.g. [at1,at4,at6]
@@ -868,7 +868,7 @@ class MBH(Treatment):
             # SECOND TRANSFORM: from BLOCK PARAMETERS to Y VARIABLES
             # Necessary if blocks are linked to each other.
             nullspace = construct_nullspace_K(molecule,mbhdim1,blkinfo)
-        
+
             My = numpy.dot(nullspace.transpose(), numpy.dot( Mp,nullspace) )
             Hy = numpy.dot(nullspace.transpose(), numpy.dot( Hp,nullspace) )
 
@@ -885,24 +885,26 @@ class MBH(Treatment):
                 return Hp, MassMatrix(Mp)
             else:
                 return Hy, MassMatrix(My)
- 
+
     def construct_U(self,molecule,mbhdim1,blkinfo):
         # Construct first transformation matrix
-        D = molecule.external_basis   # is mass-weighted
+        D = transrot_basis(molecule.coordinates)   # is NOT mass-weighted
 
         U = numpy.zeros((3*molecule.size, mbhdim1),float)
 
         for b,block in enumerate(blkinfo.blocks_nlin_strict):
             for at in block:
                 for alpha in range(6):
-                    U[3*at:3*(at+1), 6*b+alpha] = D[alpha,3*at:3*(at+1)]/numpy.sqrt(molecule.masses[at])
+                    print 'a',alpha,at
+                    print 3*at,3*(at+1),6*b+alpha,alpha,3*at,3*(at+1)
+                    U[3*at:3*(at+1), 6*b+alpha] = D[alpha,3*at:3*(at+1)]
 
         for b,block in enumerate(blkinfo.blocks_lin_strict):
             for at in block:
                 alphas = [index for index in range(6) if index != blkinfo.skip_axis_lin[b]]
                 for i,alpha in enumerate(alphas):
                     col = 6*blkinfo.nb_nlin + 5*b + i
-                    U[3*at:3*(at+1), col] = D[alpha,3*at:3*(at+1)]/numpy.sqrt(molecule.masses[at])
+                    U[3*at:3*(at+1), col] = D[alpha,3*at:3*(at+1)]
 
         for i,at in enumerate(blkinfo.free):
             for mu in range(3):
@@ -1004,7 +1006,7 @@ class Blocks(object):
         dim_block=numpy.zeros((len(blocks)),int)
         indices_blocks_nlin = []    # nonlinear blocks
         indices_blocks_lin  = []    # linear blocks
-        for b,block in enumerate(blocks):            
+        for b,block in enumerate(blocks):
             rank = rank_linearity(numpy.take(molecule.coordinates,block,0), svd_threshold=svd_threshold)
             if rank==6:    indices_blocks_nlin.append(b)
             elif rank==5:  indices_blocks_lin.append(b)
@@ -1113,7 +1115,7 @@ class PHVA_MBH(MBH):
             # TODO: fix this
             #self.exernal_basis = ...
             raise NotImplementedError
-        
+
     def compute_hessian(self,molecule,do_modes):
         # Make submolecule
         selectedatoms = [at for at in xrange(molecule.size) if at not in self.fixedatoms]

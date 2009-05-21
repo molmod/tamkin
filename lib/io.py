@@ -136,10 +136,7 @@ def load_molecule_cp2k(fn_xyz, fn_sp, fn_freq, multiplicity=1, is_periodic=True)
     energy = None
     gradient = None
     f = file(fn_sp)
-    count=0
     while True:
-        count+=1
-        print count
         line = f.readline()
         if line == "":
             break

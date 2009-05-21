@@ -69,6 +69,7 @@
 
 
 from tamkin.io import load_chk, dump_chk, make_moldenfile
+from tamkin.geom import transrot_basis, rank_linearity
 
 import numpy
 
@@ -76,6 +77,7 @@ import numpy
 __all__ = [
     "NMA", "AtomDivision", "Transform", "MassMatrix", "Treatment",
     "Full", "ConstrainExt", "PHVA", "VSA","VSANoMass", "MBH",
+    "PHVA_MBH",
 ]
 
 
@@ -598,30 +600,19 @@ class VSA(Treatment):
 
     def compute_zeros(self, molecule, do_modes):
         # Number of zeros for VSA:
+        #- If nonperiodic system:
         # 6 zeros if atoms of subsystem are non-collinear
         # 5 zeros if atoms of subsystem are collinear, e.g. when the subsystem contains only 2 atoms
         # 3 zeros if subsystem contains 1 atom
-        #
-        # method:
-        # Construct a kind of inertia matrix (without inertia) of the subsystem
-        #           A = transrot_subs . transrot_sub**T
-        # Diagonalize A. The rank is the number of expected zero freqs.
-
-        # information subsystem/environment atoms/coordinates:
-        subs  = self.subs.tolist()
-        subs3 = sum([[3*at, 3*at+1, 3*at+2] for at in subs],[])
-
-        # transrot_subs contains the 6 global translations and rotations of the subsystem
-        # dimension trabsrot: 6 x 3*molecule.size  =>  select subs atoms (6 x 3*len(self.subs))
-        transrot_subs = numpy.take(molecule.external_basis,subs3,1)
-        A    = numpy.dot( transrot_subs, transrot_subs.transpose() )
-        eigv = numpy.linalg.eigvalsh(A)
-        rank = (abs(eigv) > abs(eigv[-1])*self.svd_threshold).sum()
-        self.num_zeros = rank
-
+        #- If periodic system:
+        # 3 zeros in all cases
+        if not molecule.periodic:
+            self.num_zeros = rank_linearity(molecule.coordinates, svd_threshold = self.svd_threshold)
+        else:
+            self.num_zeros = 3
         if do_modes and self.num_zeros > 0:
             if self.num_zeros == 3:
-                self.external_basis = molecule.external_basis[:3,:]
+                self.external_basis = molecule.external_basis[:3,:]  # three translations
             elif self.num_zeros == 5:
                 # TODO: fix this
                 # select 3 translations + 2 rotations
@@ -788,21 +779,16 @@ class MBH(Treatment):
 
     def compute_zeros(self, molecule, do_modes):
         # Number of zeros for MBH:
+        #- If nonperiodic system:
         # 6 zeros if atoms of system are non-collinear
         # 5 zeros if atoms of system are collinear, e.g. when the subsystem contains only 2 atoms
         # 3 zeros if system contains just 1 atom
-        #
-        # method:
-        # Construct a kind of inertia matrix (6x6) of the system
-        #           A = external_basis . external_basis**T
-        # Diagonalize A. The rank is the number of expected zero freqs.
-
-        # external_basis contains the 6 global translations and rotations of the subsystem (6 x 3*molecule.size)
-        A    = numpy.dot( molecule.external_basis, molecule.external_basis.transpose() )
-        eigv = numpy.linalg.eigvalsh(A)
-        rank = (abs(eigv) > abs(eigv[-1])*self.svd_threshold).sum()
-        self.num_zeros = rank
-
+        #- If periodic system:
+        # 3 zeros in all cases
+        if not molecule.periodic:
+            self.num_zeros = rank_linearity(molecule.coordinates, svd_threshold = self.svd_threshold)
+        else:
+            self.num_zeros = 3
         if do_modes and self.num_zeros > 0:
             if self.num_zeros == 3:
                 self.external_basis = molecule.external_basis[:3,:]
@@ -817,6 +803,14 @@ class MBH(Treatment):
                 raise ValueError("Number of zeros is expected to be 3, 5 or 6, but found %i." % self.num_zeros)
 
     def compute_hessian(self, molecule, do_modes):
+        if do_modes:
+            self.hessian_small,self.mass_matrix_small,self.transform = \
+                     self.calculate_matrices_small(molecule,do_modes)
+        else:
+            self.hessian_small,self.mass_matrix_small = \
+                     self.calculate_matrices_small(molecule,do_modes)
+        
+    def calculate_matrices_small(self, molecule, do_modes):
         # Notation: b,b0,b1   --  a block index
         #           block  --  a list of atoms, e.g. [at1,at4,at6]
         #           alphas  --  the 6 block parameter indices (or 5 for linear block)
@@ -826,28 +820,7 @@ class MBH(Treatment):
         mbhdim1 = 6*blkinfo.nb_nlin + 5*blkinfo.nb_lin + 3*len(blkinfo.free)
 
         # TRANSFORM from CARTESIAN to BLOCK PARAMETERS
-
-        # Construct U
-        D = molecule.external_basis   # is mass-weighted
-
-        U = numpy.zeros((3*molecule.size, mbhdim1),float)
-
-        for b,block in enumerate(blkinfo.blocks_nlin_strict):
-            for at in block:
-                for alpha in range(6):
-                    U[3*at:3*(at+1), 6*b+alpha] = D[alpha,3*at:3*(at+1)]/numpy.sqrt(molecule.masses[at])
-
-        for b,block in enumerate(blkinfo.blocks_lin_strict):
-            for at in block:
-                alphas = [index for index in range(6) if index != blkinfo.skip_axis_lin[b]]
-                for i,alpha in enumerate(alphas):
-                    col = 6*blkinfo.nb_nlin + 5*b + i
-                    U[3*at:3*(at+1), col] = D[alpha,3*at:3*(at+1)]/numpy.sqrt(molecule.masses[at])
-
-        for i,at in enumerate(blkinfo.free):
-            for mu in range(3):
-                U[3*at+mu, 6*blkinfo.nb_nlin+5*blkinfo.nb_lin+3*i +mu] = 1.0
-
+        U = self.construct_U(molecule,mbhdim1,blkinfo)
 
         # Construct Hessian in block parameters: Hp = U**T . H . U + correction
         Hp = numpy.dot(numpy.dot( U.transpose(), molecule.hessian) , U)
@@ -888,21 +861,62 @@ class MBH(Treatment):
                 alphas = [index for index in range(6) if index != blkinfo.skip_axis_lin[b]]
                 Hp[col:(col+dim),col:(col+dim)] += numpy.take(numpy.take(corr,alphas,0),alphas,1)
 
-
         # Construct mass matrix in block parameters: Mp = U**T . M . U
         Mp = numpy.dot(U.transpose(),  U * molecule.masses3.reshape((-1,1)))
 
-        if not blkinfo.is_linked:
-            self.hessian_small = Hp
-            self.mass_matrix_small = MassMatrix(Mp)
+        if blkinfo.is_linked:
+            # SECOND TRANSFORM: from BLOCK PARAMETERS to Y VARIABLES
+            # Necessary if blocks are linked to each other.
+            nullspace = construct_nullspace_K(molecule,mbhdim1,blkinfo)
+        
+            My = numpy.dot(nullspace.transpose(), numpy.dot( Mp,nullspace) )
+            Hy = numpy.dot(nullspace.transpose(), numpy.dot( Hp,nullspace) )
 
+            # TODO
+            # gradient correction of the second transform...
+
+        if do_modes:
+            if not blkinfo.is_linked:
+                return Hp, MassMatrix(Mp), Transform(U)
+            else:
+                return Hy, MassMatrix(My), Transform(numpy.dot(U, nullspace))
         else:
+            if not blkinfo.is_linked:
+                return Hp, MassMatrix(Mp)
+            else:
+                return Hy, MassMatrix(My)
+ 
+    def construct_U(self,molecule,mbhdim1,blkinfo):
+        # Construct first transformation matrix
+        D = molecule.external_basis   # is mass-weighted
+
+        U = numpy.zeros((3*molecule.size, mbhdim1),float)
+
+        for b,block in enumerate(blkinfo.blocks_nlin_strict):
+            for at in block:
+                for alpha in range(6):
+                    U[3*at:3*(at+1), 6*b+alpha] = D[alpha,3*at:3*(at+1)]/numpy.sqrt(molecule.masses[at])
+
+        for b,block in enumerate(blkinfo.blocks_lin_strict):
+            for at in block:
+                alphas = [index for index in range(6) if index != blkinfo.skip_axis_lin[b]]
+                for i,alpha in enumerate(alphas):
+                    col = 6*blkinfo.nb_nlin + 5*b + i
+                    U[3*at:3*(at+1), col] = D[alpha,3*at:3*(at+1)]/numpy.sqrt(molecule.masses[at])
+
+        for i,at in enumerate(blkinfo.free):
+            for mu in range(3):
+                U[3*at+mu, 6*blkinfo.nb_nlin+5*blkinfo.nb_lin+3*i +mu] = 1.0
+        return U
+
+
+    def construct_nullspace_K(self,molecule,mbhdim1,blkinfo):
         # SECOND TRANSFORM: from BLOCK PARAMETERS to Y VARIABLES
         # Necessary if blocks are linked to each other.
             # Construct K matrix, with constraints
             nbrows = (numpy.sum(blkinfo.sharenbs)-molecule.size)*3
-            K=numpy.zeros(( nbrows, mbhdim1-3*len(blkinfo.free)), float)
-            row=0
+            K = numpy.zeros(( nbrows, mbhdim1-3*len(blkinfo.free)), float)
+            row = 0
             for (at,apps) in blkinfo.appearances.iteritems():
                 if len(apps) >= 2:
                     # the first block
@@ -950,22 +964,8 @@ class MBH(Treatment):
             n = numpy.zeros((mbhdim1,c_null+3*len(blkinfo.free)),float)
             n[:r_null,:c_null] = nullspace
             n[r_null:,c_null:] = numpy.identity(3*len(blkinfo.free),float)
-            nullspace = n
+            return n
 
-            My = numpy.dot(nullspace.transpose(), numpy.dot( Mp,nullspace) )
-            Hy = numpy.dot(nullspace.transpose(), numpy.dot( Hp,nullspace) )
-
-            # TODO
-            # gradient correction of the second transform...
-
-            self.hessian_small = Hy
-            self.mass_matrix_small = MassMatrix(My)
-
-        if do_modes:
-            if not blkinfo.is_linked:
-                self.transform = Transform(U)
-            else:
-                self.transform = Transform( numpy.dot(U, nullspace) )
 
 
 class Blocks(object):
@@ -1004,20 +1004,8 @@ class Blocks(object):
         dim_block=numpy.zeros((len(blocks)),int)
         indices_blocks_nlin = []    # nonlinear blocks
         indices_blocks_lin  = []    # linear blocks
-        for b,block in enumerate(blocks):
-            # method:
-            # Construct a kind of inertia matrix (without inertia) of the subsystem
-            #           A = transrot_subs . transrot_sub**T
-            # Diagonalize A. The rank is the number of expected zero freqs.
-
-            block3 = sum([[3*at, 3*at+1, 3*at+2] for at in block],[])
-            # transrot_block contains the 6 global translations and rotations of the block
-            # dimension trabsrot: 6 x 3*molecule.size  =>  select atoms of block (6 x 3*len(block))
-            transrot_block = numpy.take(molecule.external_basis,block3,1)
-            A    = numpy.dot( transrot_block, transrot_block.transpose() )
-            eigv = numpy.linalg.eigvalsh(A)
-            rank = (abs(eigv) > abs(eigv[-1])*svd_threshold).sum()
-            dim_block[b] = rank
+        for b,block in enumerate(blocks):            
+            rank = rank_linearity(numpy.take(molecule.coordinates,block,0), svd_threshold=svd_threshold)
             if rank==6:    indices_blocks_nlin.append(b)
             elif rank==5:  indices_blocks_lin.append(b)
             else:          raise Error("In principle rank should have been 5 or 6, found "+str(rank))
@@ -1102,3 +1090,59 @@ class Blocks(object):
         self.is_linked = is_linked
 
 
+class PHVA_MBH(MBH):
+    def __init__(self, fixed, blocks, svd_threshold=1e-5):
+        self.fixedatoms = fixed
+        self.blocks = blocks
+        self.svd_threshold = svd_threshold
+
+    def compute_zeros(self, molecule, do_modes):
+        # [ See explanation PHVA ]
+        U, W, Vt = numpy.linalg.svd(molecule.external_basis, full_matrices=False)
+        rank = (abs(W) > abs(W[0])*self.svd_threshold).sum()
+        external_basis = Vt[:rank]
+        fixed3 = []
+        for i in self.fixedatoms:
+            fixed3.append(3*i)
+            fixed3.append(3*i+1)
+            fixed3.append(3*i+2)
+        system = external_basis[:,fixed3].transpose()
+        U, W, Vt = numpy.linalg.svd(system, full_matrices=False)
+        self.num_zeros = (abs(W) < abs(W[0])*self.svd_threshold).sum()
+        if do_modes and self.num_zeros > 0:
+            # TODO: fix this
+            #self.exernal_basis = ...
+            raise NotImplementedError
+        
+    def compute_hessian(self,molecule,do_modes):
+        # Make submolecule
+        selectedatoms = [at for at in xrange(molecule.size) if at not in self.fixedatoms]
+        selectedcoords = sum([[3*at,3*at+1,3*at+2] for at in selectedatoms],[])
+
+        from tamkin.data import Molecule
+        submolecule=  Molecule( numpy.take(molecule.numbers, selectedatoms),
+                numpy.take(molecule.coordinates, selectedatoms, 0),
+                numpy.take(molecule.masses, selectedatoms),
+                molecule.energy,
+                numpy.take(molecule.gradient,selectedatoms,0),
+                numpy.take(numpy.take(molecule.hessian,selectedcoords,0),selectedcoords,1),
+                molecule.multiplicity, None, False) #molecule.is_periodic)
+
+        # adapt numbering in blocks
+        shifts = numpy.zeros((molecule.size),int)
+        for fixat in self.fixedatoms:
+            shifts[fixat:] = shifts[fixat:]+1
+        for bl,block in enumerate(self.blocks):
+            for at,atom in enumerate(block):
+                self.blocks[bl][at] = atom - shifts[atom]
+
+        # check if no atoms both in fixedatoms and in blocks
+        # ... TODO
+
+        if do_modes:
+            self.hessian_small, self.mass_matrix_small, transform = self.calculate_matrices_small(submolecule, do_modes)
+            transf = numpy.zeros((3*molecule.size, transform.matrix.shape[1]),float)
+            transf[selectedcoords,:] = transform.matrix
+            self.transform = Transform(transf)
+        else:
+            self.hessian_small, self.mass_matrix_small = self.calculate_matrices_small(submolecule, do_modes)

@@ -781,7 +781,6 @@ def make_moldenfile(filename, masses, atomicnumbers, positions, modes, ev):
     print >> f, head_end
 
     f.close()
-    print "file written: ", filename
 
 #======================================
 #    (END) write logfile as Gaussian03 does

@@ -154,7 +154,7 @@ class NMA(object):
                 # take the 20 lowest modes and compute the overlap with the
                 # external basis
                 num_try = 20
-                to_try = abs(self.freqs).argsort()[:num_try]
+                to_try = abs(self.freqs).argsort()[:num_try]   #indices of lowest 20 modes
                 overlaps = numpy.zeros(num_try, float)
                 for counter, i in enumerate(to_try):
                     components = numpy.dot(treatment.external_basis, self.modes[:,i])
@@ -607,22 +607,22 @@ class VSA(Treatment):
         #- If periodic system:
         # 3 zeros in all cases
         if not molecule.periodic:
-            self.num_zeros = rank_linearity(molecule.coordinates, svd_threshold = self.svd_threshold)
+            self.num_zeros = rank_linearity(numpy.take(molecule.coordinates,self.subs,0), svd_threshold = self.svd_threshold)
         else:
             self.num_zeros = 3
         if do_modes and self.num_zeros > 0:
             if self.num_zeros == 3:
                 self.external_basis = molecule.external_basis[:3,:]  # three translations
             elif self.num_zeros == 5:
-                # TODO: fix this
-                # select 3 translations + 2 rotations
-                #self.exernal_basis = external_basis
-                raise NotImplementedError
+                # Calculate direction of the linear subsystem (with two atoms) and check for highest alignment with one of the axes.
+                diff = molecule.coordinates[self.subs[0]] - molecule.coordinates[self.subs[1]]
+                axis = 3+abs(diff).tolist().index(max(abs(diff)))   # axis to be skipped
+                alphas = [i for i in range(6) if i is not axis]
+                self.external_basis = numpy.take(molecule.external_basis,alphas,0)
             elif self.num_zeros == 6:
                 self.external_basis = molecule.external_basis
             else:
                 raise ValueError("Number of zeros is expected to be 3, 5 or 6, but found %i." % self.num_zeros)
-
 
     def compute_hessian(self, molecule, do_modes):
 
@@ -691,40 +691,29 @@ class VSANoMass(Treatment):
 
     def compute_zeros(self, molecule, do_modes):
         # Number of zeros for VSA:
+        #- If nonperiodic system:
         # 6 zeros if atoms of subsystem are non-collinear
         # 5 zeros if atoms of subsystem are collinear, e.g. when the subsystem contains only 2 atoms
         # 3 zeros if subsystem contains 1 atom
-        #
-        # method:
-        # Construct a kind of inertia matrix (without inertia) of the subsystem
-        #           A = transrot_subs . transrot_sub**T
-        # Diagonalize A. The rank is the number of expected zero freqs.
-
-        # information subsystem/environment atoms/coordinates:
-        subs  = self.subs.tolist()
-        subs3 = sum([[3*at, 3*at+1, 3*at+2] for at in subs],[])
-
-        # transrot_subs contains the 6 global translations and rotations of the subsystem
-        # dimension trabsrot: 6 x 3*molecule.size  =>  select subs atoms (6 x 3*len(self.subs))
-        transrot_subs = numpy.take(molecule.external_basis,subs3,1)
-        A    = numpy.dot( transrot_subs, transrot_subs.transpose() )
-        eigv = numpy.linalg.eigvalsh(A)
-        rank = (abs(eigv) > abs(eigv[-1])*self.svd_threshold).sum()
-        self.num_zeros = rank
-
+        #- If periodic system:
+        # 3 zeros in all cases
+        if not molecule.periodic:
+            self.num_zeros = rank_linearity(numpy.take(molecule.coordinates,self.subs,0), svd_threshold = self.svd_threshold)
+        else:
+            self.num_zeros = 3
         if do_modes and self.num_zeros > 0:
             if self.num_zeros == 3:
-                self.external_basis = molecule.external_basis[:3,:]
+                self.external_basis = molecule.external_basis[:3,:]  # three translations
             elif self.num_zeros == 5:
-                # TODO: fix this
-                # select 3 translations + 2 rotations
-                #self.exernal_basis = external_basis
-                raise NotImplementedError
+                # Calculate direction of the linear subsystem (with two atoms) and check for highest alignment with one of the axes.
+                diff = molecule.coordinates[self.subs[0]] - molecule.coordinates[self.subs[1]]
+                axis = 3+abs(diff).tolist().index(max(abs(diff)))   # axis to be skipped
+                alphas = [i for i in range(6) if i is not axis]
+                self.external_basis = numpy.take(molecule.external_basis,alphas,0)
             elif self.num_zeros == 6:
                 self.external_basis = molecule.external_basis
             else:
                 raise ValueError("Number of zeros is expected to be 3, 5 or 6, but found %i." % self.num_zeros)
-
 
     def compute_hessian(self, molecule, do_modes):
 
@@ -895,8 +884,6 @@ class MBH(Treatment):
         for b,block in enumerate(blkinfo.blocks_nlin_strict):
             for at in block:
                 for alpha in range(6):
-                    print 'a',alpha,at
-                    print 3*at,3*(at+1),6*b+alpha,alpha,3*at,3*(at+1)
                     U[3*at:3*(at+1), 6*b+alpha] = D[alpha,3*at:3*(at+1)]
 
         for b,block in enumerate(blkinfo.blocks_lin_strict):
@@ -910,7 +897,6 @@ class MBH(Treatment):
             for mu in range(3):
                 U[3*at+mu, 6*blkinfo.nb_nlin+5*blkinfo.nb_lin+3*i +mu] = 1.0
         return U
-
 
     def construct_nullspace_K(self,molecule,mbhdim1,blkinfo):
         # SECOND TRANSFORM: from BLOCK PARAMETERS to Y VARIABLES
@@ -967,7 +953,6 @@ class MBH(Treatment):
             n[:r_null,:c_null] = nullspace
             n[r_null:,c_null:] = numpy.identity(3*len(blkinfo.free),float)
             return n
-
 
 
 class Blocks(object):
@@ -1094,9 +1079,23 @@ class Blocks(object):
 
 class PHVA_MBH(MBH):
     def __init__(self, fixed, blocks, svd_threshold=1e-5):
-        self.fixedatoms = fixed
-        self.blocks = blocks
-        self.svd_threshold = svd_threshold
+        """Initialize the PHVA_MBH treatment.
+
+           Two arguments:
+             fixed  --  a list with fixed atoms, counting starts from zero.
+             blocks  --  a list of blocks, each block is a list of atoms
+        """
+        # QA:
+        if len(fixed) == 0:
+            raise ValueError("At least one fixed atom is required.")
+        # check if no atoms both in fixedatoms AND in blocks
+        for block in blocks:
+            for at in block:
+                if at in fixed:
+                    raise ValueError("Atoms in blocks can not be part of fixed atom region: atom "+str(at)+" is in both regions.")
+        # Rest of init:
+        self.fixed = fixed
+        MBH.__init__(self, blocks, svd_threshold=svd_threshold)
 
     def compute_zeros(self, molecule, do_modes):
         # [ See explanation PHVA ]
@@ -1104,7 +1103,7 @@ class PHVA_MBH(MBH):
         rank = (abs(W) > abs(W[0])*self.svd_threshold).sum()
         external_basis = Vt[:rank]
         fixed3 = []
-        for i in self.fixedatoms:
+        for i in self.fixed:
             fixed3.append(3*i)
             fixed3.append(3*i+1)
             fixed3.append(3*i+2)
@@ -1118,7 +1117,7 @@ class PHVA_MBH(MBH):
 
     def compute_hessian(self,molecule,do_modes):
         # Make submolecule
-        selectedatoms = [at for at in xrange(molecule.size) if at not in self.fixedatoms]
+        selectedatoms = [at for at in xrange(molecule.size) if at not in self.fixed]
         selectedcoords = sum([[3*at,3*at+1,3*at+2] for at in selectedatoms],[])
 
         from tamkin.data import Molecule
@@ -1132,14 +1131,11 @@ class PHVA_MBH(MBH):
 
         # adapt numbering in blocks
         shifts = numpy.zeros((molecule.size),int)
-        for fixat in self.fixedatoms:
+        for fixat in self.fixed:
             shifts[fixat:] = shifts[fixat:]+1
         for bl,block in enumerate(self.blocks):
             for at,atom in enumerate(block):
                 self.blocks[bl][at] = atom - shifts[atom]
-
-        # check if no atoms both in fixedatoms and in blocks
-        # ... TODO
 
         if do_modes:
             self.hessian_small, self.mass_matrix_small, transform = self.calculate_matrices_small(submolecule, do_modes)

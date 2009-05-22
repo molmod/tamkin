@@ -92,7 +92,7 @@ def rank_linearity(coordinates,svd_threshold=1e-5):
     6 dof if atoms of system are non-collinear
     5 dof if atoms of system are collinear, e.g. when the subsystem contains only 2 atoms
     3 dof if system contains just 1 atom
-    
+
     method:
     Construct a kind of inertia matrix (6x6) of the system
               A = transrot_basis . transrot_basis**T

@@ -455,29 +455,27 @@ class NMATestCase(unittest.TestCase):
     def test_vsa(self):
         molecule = load_molecule_charmm("input/an/ethanol.cor","input/an/ethanol.hess.full")
 
-#  --- single atom as subsystem: results should be three translations
+        #  --- single atom as subsystem: results should be three translations
         subs = load_subs_txt("input/an/fixed.01.txt")
         nma = NMA(molecule, VSA(subs))
         self.check_ortho(nma.modes)
         self.assert_(len(nma.zeros)==3)
-        expected_freqs = numpy.array( [-0.13042437, 0.01018769, 0.0842998 ])
+        expected_freqs = numpy.array([-0.23313896,  0.01475299,  0.06910995])
         self.check_freqs(expected_freqs, nma, 4, check_zeros=True)
 
-#  ---  atoms of subsystem are collinear: not yet external_basis implemented...
-#        subs = load_subs_txt("input/an/fixed.02.txt")
-#        nma = NMA(molecule, VSA(subs))
-#        self.check_ortho(nma.modes)
-#        self.assert_(len(nma.zeros)==5)
-#        expected_freqs = numpy.array([ # taken from previous working python version
-#                   -0.424554834762,-0.118506309095,0.0326753211105,0.0892841407593,
-#                   0.302158468014,  # These are the zeros.
-#                   1051.16201857 ])
-#        self.check_freqs(expected_freqs, nma, 1)
+        #  ---  atoms of subsystem are collinear: not yet external_basis implemented...
+        subs = load_subs_txt("input/an/fixed.02.txt")
+        nma = NMA(molecule, VSA(subs))
+        self.check_ortho(nma.modes)
+        self.assert_(len(nma.zeros)==5)
+        expected_freqs = numpy.array([ -3.30245504e-01,-2.51869284e-01, -1.16805787e-01,
+               1.37273058e-01,1.82394281e-01,1.05116208e+03])
+        self.check_freqs(expected_freqs, nma, 1, check_zeros=True)
 
-#  --- atoms of subsystem are not collinear
+        #  --- atoms of subsystem are not collinear
         subs = load_subs_txt("input/an/fixed.03.txt")  # atom 1 to atom 7
         nma = NMA(molecule, VSA(subs))
-        self.check_ortho(nma.modes)  # No, a priori known to be non-orthogonal.
+        self.check_ortho(nma.modes)
         self.assert_(len(nma.zeros)==6)
         expected_freqs = numpy.array([ # taken from previous working python version
                -0.00962070029417,-0.00653077581838,-0.000469690606812,-0.000148860724889,
@@ -488,29 +486,27 @@ class NMATestCase(unittest.TestCase):
 
 
     def test_vsa_no_mass(self):
+        # Modes are a priori known to be non-orthogonal, so no 'self.check_ortho(nma.modes)'
         molecule = load_molecule_charmm("input/an/ethanol.cor","input/an/ethanol.hess.full")
 
-#  --- single atom as subsystem: results should be three translations
+        #  --- single atom as subsystem: results should be three translations
         subs = load_subs_txt("input/an/fixed.01.txt")
         nma = NMA(molecule, VSANoMass(subs))
         self.assert_(len(nma.zeros)==3)
-        expected_freqs = numpy.array([-0.43075903, 0.0380713, 0.17073513])
+        expected_freqs = numpy.array([-0.4205594, 0.03940166, 0.13774798])
         self.check_freqs(expected_freqs, nma, 4, check_zeros=True)
 
-#  ---  atoms of subsystem are collinear: not yet external_basis implemented...
-#        subs = load_subs_txt("input/an/fixed.02.txt")
-#        nma = NMA(molecule, VSANoMass(subs))
-#        #self.assert_(len(nma.zeros)==5)
-#        expected_freqs = numpy.array([ # taken from previous working python version
-#              # -0.766656547256,-0.244718344327,0.00416783270901,0.105059840715,
-#              #0.487512653505,       # These are zeros.
-#              1217.04836718 ])
-#       self.check_freqs(expected_freqs, nma, 1)
+        #  ---  atoms of subsystem are collinear
+        subs = load_subs_txt("input/an/fixed.02.txt")
+        nma = NMA(molecule, VSANoMass(subs))
+        self.assert_(len(nma.zeros)==5)
+        expected_freqs = numpy.array([-6.07975753e-01,-3.47371852e-01,6.34080688e-02,
+                1.05589989e-01,1.68657446e-01,1.21704836e+03])
+        self.check_freqs(expected_freqs, nma, 1,  check_zeros=True)
 
-#  --- atoms of subsystem are not collinear
+        #  --- atoms of subsystem are not collinear
         subs = load_subs_txt("input/an/fixed.03.txt")  # atom 1 to atom 7
         nma = NMA(molecule, VSANoMass(subs))
-        # self.check_ortho(nma.modes)  # No, a priori known to be non-orthogonal.
         self.assert_(len(nma.zeros)==6)
         expected_freqs = numpy.array([ # taken from previous working python version
                         -0.0299898080453, -0.0124485604422, -0.000583010131998, -0.000190084696013,
@@ -534,6 +530,5 @@ class NMATestCase(unittest.TestCase):
         blocks = load_blocks_txt("input/an/fixed.07.txt")
         fixed = load_fixed_txt("input/an/fixed.06.txt")
         nma = NMA(molecule, PHVA_MBH(fixed,blocks))
-        #print nma.freqs/lightspeed*cm
 
 

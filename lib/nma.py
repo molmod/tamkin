@@ -614,7 +614,7 @@ class VSA(Treatment):
             if self.num_zeros == 3:
                 self.external_basis = molecule.external_basis[:3,:]  # three translations
             elif self.num_zeros == 5:
-                # Calculate direction of the linear subsystem (with two atoms) and check for highest alignment with one of the axes.
+                # Calculate direction of the linear SUBSystem (with two atoms) and check for highest alignment with one of the axes.
                 diff = molecule.coordinates[self.subs[0]] - molecule.coordinates[self.subs[1]]
                 axis = 3+abs(diff).tolist().index(max(abs(diff)))   # axis to be skipped
                 alphas = [i for i in range(6) if i is not axis]
@@ -690,7 +690,7 @@ class VSANoMass(Treatment):
         Treatment.__init__(self)
 
     def compute_zeros(self, molecule, do_modes):
-        # Number of zeros for VSA:
+        # Number of zeros for VSANoMass:
         #- If nonperiodic system:
         # 6 zeros if atoms of subsystem are non-collinear
         # 5 zeros if atoms of subsystem are collinear, e.g. when the subsystem contains only 2 atoms
@@ -705,7 +705,7 @@ class VSANoMass(Treatment):
             if self.num_zeros == 3:
                 self.external_basis = molecule.external_basis[:3,:]  # three translations
             elif self.num_zeros == 5:
-                # Calculate direction of the linear subsystem (with two atoms) and check for highest alignment with one of the axes.
+                # Calculate direction of the linear SUBSystem (with two atoms) and check for highest alignment with one of the axes.
                 diff = molecule.coordinates[self.subs[0]] - molecule.coordinates[self.subs[1]]
                 axis = 3+abs(diff).tolist().index(max(abs(diff)))   # axis to be skipped
                 alphas = [i for i in range(6) if i is not axis]
@@ -782,10 +782,11 @@ class MBH(Treatment):
             if self.num_zeros == 3:
                 self.external_basis = molecule.external_basis[:3,:]
             elif self.num_zeros == 5:
-                # TODO: fix this
-                # select 3 translations + 2 rotations
-                #self.exernal_basis = external_basis
-                raise NotImplementedError
+                # Calculate direction of the linear SYSTEM (with two atoms) and check for highest alignment with one of the axes.
+                diff = molecule.coordinates[0,:] - molecule.coordinates[1,:]
+                axis = 3+abs(diff).tolist().index(max(abs(diff)))   # axis to be skipped
+                alphas = [i for i in range(6) if i is not axis]
+                self.external_basis = numpy.take(molecule.external_basis,alphas,0)
             elif self.num_zeros == 6:
                 self.external_basis = molecule.external_basis
             else:
@@ -1094,7 +1095,7 @@ class PHVA_MBH(MBH):
                 if at in fixed:
                     raise ValueError("Atoms in blocks can not be part of fixed atom region: atom "+str(at)+" is in both regions.")
         # Rest of init:
-        self.fixed = fixed
+        self.fixed = numpy.array(fixed)
         MBH.__init__(self, blocks, svd_threshold=svd_threshold)
 
     def compute_zeros(self, molecule, do_modes):

@@ -134,6 +134,21 @@ class IOTestCase(unittest.TestCase):
         self.assertAlmostEqual(molecule.gradient[8,0]/(eV/angstrom), 0.035937, 5)
         self.assertAlmostEqual( - molecule.hessian[0,0]/(eV/angstrom**2), -46.644731, 6)
         self.assertAlmostEqual( - molecule.hessian[-1,-1]/(eV/angstrom**2), -5.524062, 6)
+        # if VASP contains only a partial Hessian
+        molecule = load_molecule_vasp("input/vasp/xyz-structure-part","input/vasp/OUTCAR-part")
+        fixed = load_fixed_vasp("input/vasp/OUTCAR-part")
+        self.assertEqual(molecule.numbers[0],14)
+        self.assertEqual(molecule.numbers[107],13)
+        self.assertAlmostEqual(molecule.masses[0]/amu, 28.085)
+        self.assertAlmostEqual(molecule.masses[120]/amu, 1.000)
+        self.assertAlmostEqual(molecule.coordinates[5,1]/angstrom, 2.93027 )
+        self.assertAlmostEqual(molecule.gradient[0,2]/(eV/angstrom), -0.016923, 5)
+        self.assertAlmostEqual(molecule.gradient[8,0]/(eV/angstrom), 0.036518, 5)
+        self.assertAlmostEqual( - molecule.hessian[0,0]/(eV/angstrom**2), -46.646216, 6)
+        self.assertAlmostEqual( - molecule.hessian[-1,-1]/(eV/angstrom**2), -5.524077, 6)
+        fixed = load_fixed_vasp("input/vasp/OUTCAR-part")
+        self.assertEqual(fixed[0],2)
+        self.assertEqual(fixed[30],53)
 
     def test_checkpoint(self):
         molecule = load_molecule_cp2k("input/cp2k/pentane/opt.xyz", "input/cp2k/pentane/sp.out", "input/cp2k/pentane/freq.out")

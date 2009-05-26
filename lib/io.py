@@ -69,6 +69,7 @@ import numpy
 __all__ = [
     "load_fixed_g03com", "load_molecule_g03fchk", "load_molecule_cp2k",
     "load_molecule_cpmd", "load_molecule_charmm", "load_molecule_vasp",
+    "load_fixed_vasp",
     "load_chk", "dump_chk",
     "load_fixed_txt", "load_subs_txt", "load_envi_txt", "load_blocks_txt",
 ]
@@ -393,6 +394,7 @@ def load_molecule_vasp(vaspfile_xyz, vaspfile_out,
         break
 
     # masses
+    # TODO: should be made more general?
     masses = numpy.zeros((N),float)
     for at,atomtype in enumerate(atomtypes):
         table = { "H": 1.000,   "C": 12.011, "O": 16.000,
@@ -428,6 +430,27 @@ def load_molecule_vasp(vaspfile_xyz, vaspfile_out,
         row += 1
         if row >= N: break
 
+    # hessian, not symmetrized, useful to find indices of Hessian elements
+    hessian = numpy.zeros((3*N,3*N),float)
+    for line in f:
+        if line.strip().startswith("SECOND DERIVATIVES (NOT SYMMETRIZED)"):  break
+    f.next()
+    for line in f:
+        Nfree = len(line.split())/3   # nb of non-fixed atoms
+        break
+    # find the (cartesian) indices of non-fixed atoms
+    indices_free = []
+    row = 0
+    mu = 0
+    for line in f:
+        if mu==0:
+            atom = int(line.split()[0][:-1])
+        indices_free.append(3*(atom-1) + mu)
+        mu+=1
+        row+=1
+        if mu >= 3: mu=0
+        if row >= 3*Nfree: break
+
     # hessian, symmetrized, somehow with a negative sign
     hessian = numpy.zeros((3*N,3*N),float)
     for line in f:
@@ -435,12 +458,14 @@ def load_molecule_vasp(vaspfile_xyz, vaspfile_out,
     f.next()
     f.next()
     row = 0
-    for line in f:
+    for line in f:   # put Hessian elements at appropriate place
+        index_row = indices_free[row]
         words = line.split()
-        for col in xrange(3*N):
-            hessian[row,col] = -float(words[col+1])*eV/angstrom**2 # skip first col
+        for col in xrange(3*Nfree):
+            index_col = indices_free[col]
+            hessian[index_row,index_col] = -float(words[col+1])*eV/angstrom**2 # skip first col
         row += 1
-        if row >= 3*N: break
+        if row >= 3*Nfree: break
     f.close()
 
     is_periodic = True
@@ -449,6 +474,43 @@ def load_molecule_vasp(vaspfile_xyz, vaspfile_out,
     return Molecule(
         atomicnumbers, positions, masses, energy, gradient,
         hessian, multiplicity, None, is_periodic )
+
+def load_fixed_vasp(filename):
+    """ reading molecule from VASP outputfile"""
+    # Read data from out-VASP-file OUTCAR
+    f = open(filename)
+
+    # number of atoms (N)
+    for line in f:
+        if line.strip().startswith("Dimension of arrays:"):  break
+    f.next()
+    for line in f:
+        words = line.split()
+        N = int(words[-1])
+        break
+
+    # hessian, not symmetrized, useful to find indices of Hessian elements
+    for line in f:
+        if line.strip().startswith("SECOND DERIVATIVES (NOT SYMMETRIZED)"):  break
+    f.next()
+    for line in f:
+        Nfree = len(line.split())/3   # nb of non-fixed atoms
+        break
+    # find the non-fixed atoms
+    atoms_free = []
+    row = 0
+    mu = 0
+    for line in f:
+        if mu==0:
+            atom = int(line.split()[0][:-1])
+            atoms_free.append(atom-1)
+        mu+=1
+        row+=1
+        if mu >= 3: mu=0
+        if row >= 3*Nfree: break
+
+    fixed_atoms = [at for at in xrange(N) if at not in atoms_free]
+    return numpy.array(fixed_atoms)
 
 def load_chk(filename):
     f = file(filename)

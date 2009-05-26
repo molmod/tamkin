@@ -136,7 +136,6 @@ class IOTestCase(unittest.TestCase):
         self.assertAlmostEqual( - molecule.hessian[-1,-1]/(eV/angstrom**2), -5.524062, 6)
         # if VASP contains only a partial Hessian
         molecule = load_molecule_vasp("input/vasp/xyz-structure-part","input/vasp/OUTCAR-part")
-        fixed = load_fixed_vasp("input/vasp/OUTCAR-part")
         self.assertEqual(molecule.numbers[0],14)
         self.assertEqual(molecule.numbers[107],13)
         self.assertAlmostEqual(molecule.masses[0]/amu, 28.085)

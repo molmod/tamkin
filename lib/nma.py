@@ -193,7 +193,7 @@ class NMA(object):
         if filename is None:
             filename = "molden.log"
         if self.modes is None:
-            raise Error("No modes available (do_modes=False), cannot write logfile with modes.")
+            raise ValueError("No modes available (do_modes=False), cannot write logfile with modes.")
         make_moldenfile(filename, self.masses, self.numbers, self.coordinates,
                        self.modes, self.freqs )
 
@@ -975,9 +975,9 @@ class Blocks(object):
             elif len(block)==1:
                 to_remove.append(b)
             elif max(block)>=N:
-                raise Error("block "+str(b)+": atoms should be in range [0,N-1], N="+str(N))
+                raise ValueError("block "+str(b)+": atoms should be in range [0,N-1], N="+str(N))
             elif min(block)<0:
-                raise Error("block "+str(b)+": atoms should be in range [0,N-1], N="+str(N))
+                raise ValueError("block "+str(b)+": atoms should be in range [0,N-1], N="+str(N))
         #remove single atoms and empty blocks
         for i in range(len(to_remove)):
             del blocks[to_remove[len(to_remove)-i-1]]   #remove starting from largests b
@@ -996,7 +996,7 @@ class Blocks(object):
             rank = rank_linearity(numpy.take(molecule.coordinates,block,0), svd_threshold=svd_threshold)
             if rank==6:    indices_blocks_nlin.append(b)
             elif rank==5:  indices_blocks_lin.append(b)
-            else:          raise Error("In principle rank should have been 5 or 6, found "+str(rank))
+            else:          raise ValueError("In principle rank should have been 5 or 6, found "+str(rank))
 
         # REORDER THE BLOCKS: nonlinear blocks, linear blocks, single-atom-blocks
         blocks_nlin = []

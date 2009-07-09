@@ -105,7 +105,7 @@ def load_fixed_g03com(filename):
     return fixed_atoms
 
 
-def load_molecule_g03fchk(filename_freq,filename_ener=None): # if one file contains every information, give the name twice
+def load_molecule_g03fchk(filename_freq,filename_ener=None,filename_vdw=None): # if one file contains every information, give the name twice
     fchk_freq = FCHKFile(filename_freq, ignore_errors=True, field_labels=[
         "Cartesian Force Constants", "Real atomic weights", "Total Energy",
         "Multiplicity", "Cartesian Gradient"
@@ -116,11 +116,22 @@ def load_molecule_g03fchk(filename_freq,filename_ener=None): # if one file conta
         fchk_ener = FCHKFile(filename_ener, ignore_errors=True, field_labels=[
             "Total Energy"
         ])
+    vdw = 0
+    if filename_vdw is not None:
+         f = file(filename_vdw)
+         for line in f:
+             if line.startswith("Van der Waals correction ="):
+                 words = line.split()
+                 vdw = float(words[5])
+                 break
+         f.close()
+
+
     return Molecule(
         fchk_freq.molecule.numbers,
         fchk_freq.molecule.coordinates,
         fchk_freq.fields["Real atomic weights"]*amu,
-        fchk_ener.fields["Total Energy"],
+        fchk_ener.fields["Total Energy"]+vdw,
         fchk_freq.fields["Cartesian Gradient"],
         fchk_freq.get_hessian(),
         fchk_freq.fields["Multiplicity"],

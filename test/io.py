@@ -81,6 +81,13 @@ class IOTestCase(unittest.TestCase):
         self.assertEqual(molecule.hessian.shape,(atoms*3,atoms*3))
         self.assertAlmostEqual(molecule.energy, -18613.135744186180, 7)
 
+    def test_load_molecule_g03fchkvdw(self):
+        atoms = 179
+        molecule = load_molecule_g03fchk("input/matvdw/R.fchk","input/matvdw/R_SCF.fchk","input/matvdw/R_b3lyp-d.out")
+
+        self.assertEqual(molecule.hessian.shape,(atoms*3,atoms*3))
+        self.assertAlmostEqual(molecule.energy,-18612.352569964281 , 7)
+
     def test_load_molecule_cp2k(self):
         molecule = load_molecule_cp2k("input/cp2k/pentane/opt.xyz", "input/cp2k/pentane/sp.out", "input/cp2k/pentane/freq.out")
         self.assertAlmostEqual(molecule.energy, 0.012255059530862)

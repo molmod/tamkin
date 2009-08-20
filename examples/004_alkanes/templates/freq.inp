@@ -15,9 +15,8 @@
   &END MM
   &SUBSYS
     &CELL
-      ABC 30 30 30
+      ABC [angstrom] 30 30 30
       PERIODIC NONE
-      UNIT ANGSTROM
     &END CELL
     &TOPOLOGY
       COORD_FILE_FORMAT XYZ

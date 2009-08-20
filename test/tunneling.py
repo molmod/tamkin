@@ -138,3 +138,18 @@ class TunnelingTestCase(unittest.TestCase):
 
         Eckart([pf_react], pf_trans, [pf_react])
 
+    def test_eckart_tugba(self):
+        mol_react1 = load_molecule_g03fchk("input/tugba/monomer.fchk")
+        mol_react2 = load_molecule_g03fchk("input/tugba/radical.fchk")
+        mol_trans = load_molecule_g03fchk("input/tugba/ts.fchk")
+        mol_prod = load_molecule_g03fchk("input/tugba/prod.fchk")
+
+        pf_react1 = PartFun(NMA(mol_react1))
+        pf_react2 = PartFun(NMA(mol_react2))
+        pf_trans = PartFun(NMA(mol_trans))
+        pf_prod = PartFun(NMA(mol_prod))
+
+        eckart = Eckart([pf_react1, pf_react2], pf_trans, [pf_prod])
+        eckart([620,770])
+
+

@@ -97,8 +97,8 @@ class Eckart(TunnelingCorrection):
             raise ValueError("At least one reactant is required.")
         if len(pfs_react) == 0:
             raise ValueError("At least one product is required.")
-        self.Ef = sum(energy for pf.energy in pfs_react) - pf_trans.energy
-        self.Er = sum(energy for pf.energy in pfs_prod) - pf_trans.energy
+        self.Ef = sum(pf.energy for pf in pfs_react) - pf_trans.energy
+        self.Er = sum(pf.energy for pf in pfs_prod) - pf_trans.energy
         self.nu = pf_trans.vibrational.negative_freqs
 
     @classmethod

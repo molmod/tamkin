@@ -128,4 +128,13 @@ class TunnelingTestCase(unittest.TestCase):
                 #if not (("%.1e" % our)==("%.1e" % c)):
                 #    print "%.1e" % our, "%.1e" % c
 
+    def test_eckart_init(self):
+        fixed_atoms = load_fixed_g03com("input/mat/Zp_p_react.14mei.com")
+        mol_react = load_molecule_g03fchk("input/mat/Zp_p_react.28aug.fchk")
+        mol_trans = load_molecule_g03fchk("input/mat/Zp_p_TS.28aug.fchk")
+
+        pf_react = PartFun(NMA(mol_react, PHVA(fixed_atoms)))
+        pf_trans = PartFun(NMA(mol_trans, PHVA(fixed_atoms)))
+
+        Eckart([pf_react], pf_trans, [pf_react])
 

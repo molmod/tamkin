@@ -58,7 +58,7 @@
 import numpy
 import matplotlib, pylab
 from molmod.constants import lightspeed
-from molmod.units import angstrom, amu, cm
+from molmod.units import angstrom, amu, centimeter
 from tamkin.data import Molecule
 
 __all__ = [
@@ -142,7 +142,7 @@ def load_modes_charmm(filename):
             freq_sq = float(word) #squared value
             if freq_sq > 0.0:  freq =  numpy.sqrt( freq_sq)
             else:              freq = -numpy.sqrt(-freq_sq) #actually imaginary
-            freqs[countfreq] = freq * CNVFRQ * lightspeed/cm # conversion factor CHARMM, put into Tamkin internal units
+            freqs[countfreq] = freq * CNVFRQ * lightspeed/centimeter # conversion factor CHARMM, put into Tamkin internal units
             countfreq += 1
         countline += 1
         if countline >= nblines: break
@@ -197,8 +197,8 @@ def write_overlap(freqs1, freqs2, overlap, filename=None):
     freqs1 | mat1^T . mat2
     ------------------------
     """
-    #freqs1 = freqs1 /lightspeed*cm
-    #freqs2 = freqs2 /lightspeed*cm
+    #freqs1 = freqs1 /lightspeed*centimeter
+    #freqs2 = freqs2 /lightspeed*centimeter
 
     # write to file
     if filename==None:
@@ -592,7 +592,7 @@ def plot_spectrum(label, filename, freqlist, min=None, max=None, Imax=None,
         for i,freqs in enumerate(freqlist):
             if amplitudes is not None: ampl = amplitudes[i]
             else: ampl = 1.0
-            do_plot_dos(ax, freqs /lightspeed*cm, min=min, max=max,
+            do_plot_dos(ax, freqs /lightspeed*centimeter, min=min, max=max,
                               step=step, width=width, amplitude=ampl)
         # clean up
         if Imax is not None:  ax.set_ylim(0.0,IMax)
@@ -609,7 +609,7 @@ def plot_spectrum(label, filename, freqlist, min=None, max=None, Imax=None,
         pylab.hold(True)
         # do plotting
         for i,freqs in enumerate(freqlist):
-            for freq in freqs /lightspeed*cm :
+            for freq in freqs /lightspeed*centimeter :
                 if (freq>min or min is None) and (freq<max or max is None):
                     pylab.plot([i+0.75,i+1.25],[freq,freq],"k-")
         # clean up
@@ -855,9 +855,9 @@ def make_moldenfile(filename, masses, atomicnumbers, positions, modes, ev):
         print >> f, '%22d %22d %22d' %(nb+1,nb+2,nb+3)
         print >> f, head_freq1[2]
         print >> f, '%s %10.4f %22.4f %22.4f' %(head_freq2,
-                                ev[nb]/lightspeed*cm,
-                                ev[nb+1]/lightspeed*cm,
-                                ev[nb+2]/lightspeed*cm)
+                                ev[nb]/lightspeed*centimeter,
+                                ev[nb+1]/lightspeed*centimeter,
+                                ev[nb+2]/lightspeed*centimeter)
         print >> f, head_freq3[2]
         for atomnb in range(number_of_atoms):
             i = 3*atomnb
@@ -875,7 +875,7 @@ def make_moldenfile(filename, masses, atomicnumbers, positions, modes, ev):
         mode1 = mode1/numpy.linalg.norm(mode1)
         print >> f, '%22d' %(nb+1)
         print >> f, head_freq1[0]
-        print >> f, '%s %10.4f' %(head_freq2, ev[nb]/lightspeed*cm)
+        print >> f, '%s %10.4f' %(head_freq2, ev[nb]/lightspeed*centimeter)
         print >> f, head_freq3[0]
         for atomnb in range(number_of_atoms):
             i = 3*atomnb
@@ -892,8 +892,8 @@ def make_moldenfile(filename, masses, atomicnumbers, positions, modes, ev):
         print >> f, '%22d %22d' %(nb+1,nb+2)
         print >> f, head_freq1[1]
         print >> f, '%s %10.4f %22.4f' %(head_freq2,
-                            ev[nb]  /lightspeed*cm,
-                            ev[nb+1]/lightspeed*cm)
+                            ev[nb]  /lightspeed*centimeter,
+                            ev[nb+1]/lightspeed*centimeter)
         print >> f, head_freq3[1]
         for atomnb in range(number_of_atoms):
             i = 3*atomnb

@@ -58,7 +58,7 @@
 
 from tamkin import *
 
-from molmod.units import kjmol, cm
+from molmod.units import kjmol, centimeter
 from molmod.constants import lightspeed
 
 import unittest, numpy
@@ -96,7 +96,7 @@ class TunnelingTestCase(unittest.TestCase):
             [1941, 1829, 2038, 1569, 1185],
             [2029, 2010, 2073, 1765, 1126],
             [1866, 1859, 1924, 1574, 1046],
-        ], float).transpose()*lightspeed/cm
+        ], float).transpose()*lightspeed/centimeter
 
         eckart_corrections = numpy.array([
             [7.8E+5, 3.2E+4, 4.0E+5, 1.1E+4, 7.2E+0],

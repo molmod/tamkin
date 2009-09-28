@@ -58,10 +58,9 @@
 
 from tamkin import *
 
-from molmod.units import cm, amu, kjmol, joule, mol, kelvin
-from molmod.constants import lightspeed, boltzmann
-from molmod.data.periodic import periodic
-from molmod.io.xyz import XYZFile
+from molmod import centimeter, amu, kjmol, joule, mol, kelvin, lightspeed, boltzmann
+from molmod.periodic import periodic
+from molmod.io import XYZFile
 
 import unittest, os, numpy
 
@@ -207,7 +206,7 @@ class RotorTestCase(unittest.TestCase):
         rotscan1 = load_rotscan_g03log("input/rotor/gaussian.log")
         rotscan1.potential[1][:] = nma.energy
         rotor1 = Rotor(rotscan1, molecule, rotsym=3, even=True)
-        self.assertAlmostEqual(rotor1.cancel_freq/lightspeed*cm, 314, 0)
+        self.assertAlmostEqual(rotor1.cancel_freq/lightspeed*centimeter, 314, 0)
         pf1 = PartFun(nma, [ExtTrans(), ExtRot(6), rotor1])
         rotscan2 = RotScan(rotscan1.dihedral, top_indexes=rotscan1.top_indexes)
         rotor2 = Rotor(rotscan2, molecule, rotsym=3, even=True)
@@ -252,7 +251,7 @@ class RotorTestCase(unittest.TestCase):
         nma = NMA(molecule)
         rot_scan = load_rotscan_g03log("input/rotor/gaussian.log")
         rotor = Rotor(rot_scan, molecule, rotsym=3, even=True)
-        self.assertAlmostEqual(rotor.cancel_freq/lightspeed*cm, 314, 0)
+        self.assertAlmostEqual(rotor.cancel_freq/lightspeed*centimeter, 314, 0)
         pf = PartFun(nma, [ExtTrans(), ExtRot(6), rotor])
         self.assertArraysAlmostEqual(
             rotor.hb.eval_fn(rot_scan.potential[0], rotor.v_coeffs),
@@ -279,7 +278,7 @@ class RotorTestCase(unittest.TestCase):
         dihedral = [5, 1, 0, 2]
         rot_scan = RotScan(dihedral, molecule)
         rotor = Rotor(rot_scan, molecule, rotsym=6, even=True)
-        self.assertAlmostEqual(rotor.cancel_freq/lightspeed*cm, 141.2, 0)
+        self.assertAlmostEqual(rotor.cancel_freq/lightspeed*centimeter, 141.2, 0)
         pf = PartFun(nma, [ExtTrans(), ExtRot(1), rotor])
         # reference data from legacy code (Veronique & co)
         self.assertAlmostEqual(rotor.reduced_moment/amu, 4.007, 1)

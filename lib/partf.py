@@ -79,8 +79,7 @@
 """
 
 
-from molmod.constants import boltzmann, lightspeed
-from molmod.units import atm, bar, amu, cm, kjmol
+from molmod import boltzmann, lightspeed, atm, bar, amu, centimeter, kjmol
 
 import numpy
 
@@ -599,9 +598,9 @@ class Vibrations(Info, StatFysTerms):
         print >> f, "    Number of imaginary wavenumbers: %i" % (len(self.negative_freqs))
         print >> f, "    Frequency scaling factor: %.4f" % self.freq_scaling
         print >> f, "    Zero-Point scaling factor: %.4f" % self.zp_scaling
-        self.dump_values(f, "Zero Wavenumbers [1/cm]", self.zero_freqs/(lightspeed/cm), "% 10.3f", 7)
-        self.dump_values(f, "Real Wavenumbers [1/cm]", self.positive_freqs/(lightspeed/cm), "% 10.3f", 7)
-        self.dump_values(f, "Imaginary Wavenumbers [1/cm]", self.negative_freqs/(lightspeed/cm), "% 10.3f", 7)
+        self.dump_values(f, "Zero Wavenumbers [1/cm]", self.zero_freqs/(lightspeed/centimeter), "% 8.1f", 8)
+        self.dump_values(f, "Real Wavenumbers [1/cm]", self.positive_freqs/(lightspeed/centimeter), "% 8.1f", 8)
+        self.dump_values(f, "Imaginary Wavenumbers [1/cm]", self.negative_freqs/(lightspeed/centimeter), "% 8.1f", 8)
         print >> f, "    Free energy contribution at T=0 [kJ/mol]: %.7f" % (self.free_energy(0.0)/kjmol)
 
     def helper0_terms(self, temp, n):

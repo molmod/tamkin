@@ -58,9 +58,8 @@
 
 from tamkin.geom import transrot_basis
 
-from molmod.molecules import Molecule as BaseMolecule
-from molmod.molecular_graphs import MolecularGraph
-from molmod.data.periodic import periodic
+from molmod import Molecule as BaseMolecule, MolecularGraph
+from molmod.periodic import periodic
 from molmod.graphs import cached
 
 import numpy
@@ -90,31 +89,6 @@ class Molecule(BaseMolecule):
     multiplicity = property(lambda self: self._multiplicity)
     symmetry_number = property(lambda self: self._symmetry_number)
     periodic = property(lambda self: self._periodic)
-
-    @cached
-    def mass(self):
-        return self.masses.sum()
-
-    @cached
-    def com(self):
-        return (self.coordinates*self.masses.reshape((-1,1))).sum(axis=0)/self.mass
-
-    @cached
-    def inertia_tensor(self):
-        return sum(
-            m*(numpy.identity(3)*(r**2).sum()-numpy.outer(r,r))
-            for m, r in zip(self.masses, (self.coordinates-self.com))
-        )
-
-    @cached
-    def chemical_formula(self):
-        counts = {}
-        for number in self.numbers:
-            counts[number] = counts.get(number, 0)+1
-        return " ".join(
-            "%s%i" % (periodic[number].symbol, count)
-            for number, count in sorted(counts.iteritems(), reverse=True)
-        )
 
     @cached
     def external_basis(self):

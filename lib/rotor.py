@@ -69,7 +69,7 @@ from tamkin.partf import Info, StatFysTerms, helper0_vibrations, \
 from tamkin.nma import NMA, MBH
 from tamkin.geom import transrot_basis
 
-from molmod.units import deg, kjmol, angstrom, cm, amu
+from molmod.units import deg, kjmol, angstrom, centimeter, amu
 from molmod.constants import boltzmann, lightspeed
 
 import numpy
@@ -437,7 +437,7 @@ class Rotor(Info, StatFysTerms):
         print >> f, "    Axis [1]: % 8.2f % 8.2f % 8.2f" % tuple(self.axis)
         print >> f, "    Moment [amu*bohr**2]: %f" % (self.moment/amu)
         print >> f, "    Reduced moment [amu*bohr**2]: %f" % (self.reduced_moment/amu)
-        print >> f, "    Cancel wavenumber [1/cm]: %.1f" % (self.cancel_freq/(lightspeed/cm))
+        print >> f, "    Cancel wavenumber [1/cm]: %.1f" % (self.cancel_freq/(lightspeed/centimeter))
         self.dump_values(f, "Energy levels [kJ/mol]", self.energy_levels/kjmol, "% 8.2f", 8)
         if self.hb is not None:
             print >> f, "    Number of basis functions: %i" % (self.hb.size)

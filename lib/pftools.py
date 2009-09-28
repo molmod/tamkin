@@ -58,7 +58,7 @@
 
 from tamkin.partf import compute_rate_coeff
 
-from molmod.units import kjmol, second, meter, mol, K, J
+from molmod.units import kjmol, second, meter, mol, kelvin, joule
 from molmod.constants import boltzmann
 
 import sys, numpy, pylab, types
@@ -89,11 +89,11 @@ class ThermoAnalysis(object):
         self.tables = [
             ThermoTable("Energy", "%.5f", kjmol, "kJ/mol", "internal_energy", pf, temps),
             ThermoTable("Free energy", "%.5f", kjmol, "kJ/mol", "free_energy", pf, temps),
-            ThermoTable("Heat capacity", "%.5f", J/mol/K, "J/(mol*K)", "heat_capacity", pf, temps),
-            ThermoTable("Entropy", "%.5f",  J/mol/K, "J/(mol*K)", "entropy", pf, temps),
+            ThermoTable("Heat capacity", "%.3f", joule/mol/kelvin, "J/(mol*K)", "heat_capacity", pf, temps),
+            ThermoTable("Entropy", "%.5f",  joule/mol/kelvin, "J/(mol*K)", "entropy", pf, temps),
             ThermoTable("log(q)", "%.1f", 1, "1", "log_eval", pf, temps),
-            ThermoTable("d log(q) / dT", "%.3e", 1/K, "1/K", "log_deriv", pf, temps),
-            ThermoTable("d^2 log(q) / dT^2", "%.1e", 1/K, "1//K", "log_deriv2", pf, temps)
+            ThermoTable("d log(q) / dT", "%.3e", 1/kelvin, "1/K", "log_deriv", pf, temps),
+            ThermoTable("d^2 log(q) / dT^2", "%.1e", 1/kelvin, "1//K", "log_deriv2", pf, temps)
         ]
 
     def write_to_file(self, filename):
@@ -177,7 +177,7 @@ class ThermoTable(object):
 
 
 class ReactionAnalysis(object):
-    def __init__(self, pfs_react, pf_trans, temp_low, temp_high, temp_step=10*K, mol_volume=None, tunneling=None):
+    def __init__(self, pfs_react, pf_trans, temp_low, temp_high, temp_step=10*kelvin, mol_volume=None, tunneling=None):
         """Initialize a reaction analysis object
 
            Arguments:

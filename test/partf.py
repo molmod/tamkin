@@ -58,8 +58,8 @@
 
 from tamkin import *
 
-from molmod.constants import lightspeed, boltzmann
-from molmod.units import cm, s, atm, amu, meter, mol, kcalmol, cal, K, kjmol
+from molmod import lightspeed, boltzmann, second, atm, amu, meter, mol, \
+    kcalmol, calorie, kelvin, kjmol
 
 import unittest, numpy
 
@@ -95,7 +95,7 @@ class PartFunTestCase(unittest.TestCase):
         ])
         for i in xrange(len(temps)):
             k = compute_rate_coeff([pf_react], pf_trans, temps[i])
-            self.assertAlmostEqual(numpy.log(k/(1/s)), numpy.log(expected_ks[i]),5)
+            self.assertAlmostEqual(numpy.log(k/(1/second)), numpy.log(expected_ks[i]),5)
 
     def test_gas_react_sterck(self):
         # Test both Full and ConstrainExt:
@@ -174,7 +174,7 @@ class PartFunTestCase(unittest.TestCase):
             6.87398E-03, 9.74722E-02, 5.36970E-01, 1.82272E+00, 4.65134E+00,
             9.86811E+00, 1.84247E+01, 3.13480E+01, 4.97189E+01,
         ])
-        unit = meter**3/mol/s
+        unit = meter**3/mol/second
         for i in xrange(len(temps)):
             k = compute_rate_coeff([pf_react1, pf_react2], pf_trans, temps[i])
             # Sometimes, the fancy excel files use slightly different constants.
@@ -226,10 +226,10 @@ class PartFunTestCase(unittest.TestCase):
         pf = PartFun(nma, [ExtTrans(FixedVolume()), ExtRot(1)])
 
         # values taken from aa.log
-        calmolK = cal/mol/K
+        calmolK = calorie/mol/kelvin
         # gaussian seems to add the constant R to the translational part of the
         # entropy for some reason. I hope there is a mistake somewhere.
-        R = 1.98720649773 # R in cal/(mol*K)
+        R = 1.98720649773 # R in calorie/(mol*K)
         # electronic
         self.assertAlmostEqual(pf.electronic.internal_energy(298.15)/(kcalmol), 0.000)
         self.assertAlmostEqual(pf.electronic.heat_capacity(298.15)/(calmolK), 0.000)
@@ -265,8 +265,8 @@ class PartFunTestCase(unittest.TestCase):
                 self.assertAlmostEqual(value, boltzmann, 10)
 
     def test_external_separate(self):
-        calmolK = cal/mol/K
-        R = 1.98720649773 # R in cal/(mol*K)
+        calmolK = calorie/mol/kelvin
+        R = 1.98720649773 # R in calorie/(mol*K)
 
         # values taken from aa.log
         molecule = load_molecule_g03fchk("input/sterck/aa.fchk")
@@ -304,7 +304,7 @@ class PartFunTestCase(unittest.TestCase):
         # check the count of the external rotation contribution
         self.assertEqual(pf.rotational.count, 2)
         # derived quantities
-        calmolK = cal/mol/K
+        calmolK = calorie/mol/kelvin
         self.assertAlmostEqual(pf.rotational.internal_energy(298.15)/(kcalmol), 0.592, 2)
         self.assertAlmostEqual(pf.rotational.heat_capacity(298.15)/(calmolK), 1.987, 2)
         self.assertAlmostEqual(pf.rotational.entropy(298.15)/(calmolK), 13.130, 2)

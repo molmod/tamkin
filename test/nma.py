@@ -59,7 +59,7 @@
 from tamkin import *
 
 from molmod.constants import lightspeed, boltzmann
-from molmod.units import cm, s, atm, amu, meter, mol, kcalmol, cal, K
+from molmod.units import centimeter, atm, amu, meter, mol, kcalmol
 
 import unittest, numpy
 
@@ -86,7 +86,7 @@ class NMATestCase(unittest.TestCase):
         counter = 0
         for i in xrange(len(nma.freqs)):
             if check_zeros or (i not in nma.zeros):
-                freq_in_cm = (nma.freqs[i]/lightspeed)/(1/cm)
+                freq_in_cm = (nma.freqs[i]/lightspeed)/(1/centimeter)
                 expected_freq = expected_freqs[counter]
                 self.assertAlmostEqual(
                     expected_freq, freq_in_cm, precision,
@@ -530,7 +530,7 @@ class NMATestCase(unittest.TestCase):
         nma = NMA(molecule, MBH(blocks))
         self.assertEqual(len(nma.freqs), 7)
         non_zero = [i for i in xrange(7) if i not in nma.zeros][0]
-        self.assertAlmostEqual(nma.freqs[non_zero]/lightspeed*cm, 314, 0)
+        self.assertAlmostEqual(nma.freqs[non_zero]/lightspeed*centimeter, 314, 0)
 
     def test_phva_mbh(self):
         molecule = load_molecule_charmm("input/an/ethanol.cor","input/an/ethanol.hess.full")
@@ -541,13 +541,13 @@ class NMATestCase(unittest.TestCase):
     def test_constrain(self):
         molecule = load_molecule_charmm("input/an/ethanol.cor","input/an/ethanol.hess.full")
         nma = NMA(molecule)
-        print nma.freqs/lightspeed*cm
+        print nma.freqs/lightspeed*centimeter
         fixed = [[1,2]]
         nma = NMA(molecule, Constrain(fixed))
-        print nma.freqs/lightspeed*cm
+        print nma.freqs/lightspeed*centimeter
         nma.write_logfile_gaussian("output/ethanol.constr.molden.1.log")
 
         fixed = [[1,2], [0,4], [0,5],[2,8],[3,4],[4,5],[5,6],[6,7],[7,8],[7,1],[7,3]]
         nma = NMA(molecule, Constrain(fixed))
-        print nma.freqs/lightspeed*cm
+        print nma.freqs/lightspeed*centimeter
         nma.write_logfile_gaussian("output/ethanol.constr.molden.2.log")

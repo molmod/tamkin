@@ -58,8 +58,8 @@
 
 from tamkin import *
 
-from molmod.data.periodic import periodic
-from molmod.units import angstrom, cm, amu, calorie, avogadro, eV
+from molmod.periodic import periodic
+from molmod.units import angstrom, amu, calorie, avogadro, electronvolt
 from molmod.constants import lightspeed
 
 import unittest, numpy
@@ -160,10 +160,10 @@ class IOTestCase(unittest.TestCase):
         self.assertAlmostEqual(molecule.masses[0]/amu, 28.085)
         self.assertAlmostEqual(molecule.masses[120]/amu, 1.000)
         self.assertAlmostEqual(molecule.coordinates[5,1]/angstrom, 2.93027 )
-        self.assertAlmostEqual(molecule.gradient[0,2]/(eV/angstrom), -0.016534, 5)
-        self.assertAlmostEqual(molecule.gradient[8,0]/(eV/angstrom), 0.035937, 5)
-        self.assertAlmostEqual( - molecule.hessian[0,0]/(eV/angstrom**2), -46.644731, 6)
-        self.assertAlmostEqual( - molecule.hessian[-1,-1]/(eV/angstrom**2), -5.524062, 6)
+        self.assertAlmostEqual(molecule.gradient[0,2]/(electronvolt/angstrom), -0.016534, 5)
+        self.assertAlmostEqual(molecule.gradient[8,0]/(electronvolt/angstrom), 0.035937, 5)
+        self.assertAlmostEqual( - molecule.hessian[0,0]/(electronvolt/angstrom**2), -46.644731, 6)
+        self.assertAlmostEqual( - molecule.hessian[-1,-1]/(electronvolt/angstrom**2), -5.524062, 6)
         # if VASP contains only a partial Hessian
         molecule = load_molecule_vasp("input/vasp/xyz-structure-part","input/vasp/OUTCAR-part")
         self.assertEqual(molecule.numbers[0],14)
@@ -171,10 +171,10 @@ class IOTestCase(unittest.TestCase):
         self.assertAlmostEqual(molecule.masses[0]/amu, 28.085)
         self.assertAlmostEqual(molecule.masses[120]/amu, 1.000)
         self.assertAlmostEqual(molecule.coordinates[5,1]/angstrom, 2.93027 )
-        self.assertAlmostEqual(molecule.gradient[0,2]/(eV/angstrom), -0.016923, 5)
-        self.assertAlmostEqual(molecule.gradient[8,0]/(eV/angstrom), 0.036518, 5)
-        self.assertAlmostEqual( - molecule.hessian[0,0]/(eV/angstrom**2), -46.646216, 6)
-        self.assertAlmostEqual( - molecule.hessian[-1,-1]/(eV/angstrom**2), -5.524077, 6)
+        self.assertAlmostEqual(molecule.gradient[0,2]/(electronvolt/angstrom), -0.016923, 5)
+        self.assertAlmostEqual(molecule.gradient[8,0]/(electronvolt/angstrom), 0.036518, 5)
+        self.assertAlmostEqual( - molecule.hessian[0,0]/(electronvolt/angstrom**2), -46.646216, 6)
+        self.assertAlmostEqual( - molecule.hessian[-1,-1]/(electronvolt/angstrom**2), -5.524077, 6)
         fixed = load_fixed_vasp("input/vasp/OUTCAR-part")
         self.assertEqual(fixed[0],2)
         self.assertEqual(fixed[30],53)

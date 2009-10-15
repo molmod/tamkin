@@ -72,7 +72,7 @@ __all__ = [
 
 class IdealGasVolume(object):
     """Computes the volume of a molecule in an ideal gas as a function of the
-    temperature, at a fixed refrence pressure.
+    temperature, at a fixed reference pressure.
 
     This law can be used to set up a constant pressure gas phase partition function
     """

@@ -72,6 +72,7 @@ __all__ = [
     "load_fixed_vasp",
     "load_chk", "dump_chk",
     "load_fixed_txt", "load_subs_txt", "load_envi_txt", "load_blocks_txt",
+    "write_modes_for_VMD",
 ]
 
 
@@ -859,4 +860,41 @@ def make_moldenfile(filename, masses, atomicnumbers, positions, modes, ev):
 #    (END) write logfile as Gaussian03 does
 #======================================
 
+def write_modes_for_VMD(molecule, nma, index, filename=None,
+                        A = 50.0, frames = 36):
+    """This function selects calls the function write_modes_for_VMD_2,
+    where the mode trajectory is actually written.
+    The function selects the relevant attributes."""
+
+    import math
+
+    if filename is None: filename = "mode"+str(index)+".txt"
+
+    # Select mode from the nma.modes and undo mass-weighting
+    mode = nma.modes[:,index]
+    for at in range(len(mode)/3):
+        mode[3*at:3*at+3] /=math.sqrt(molecule.masses[at])
+
+    write_modes_for_VMD_2(molecule.numbers, molecule.coordinates, mode, filename=filename, A=A, frames=frames)
+
+
+
+def write_modes_for_VMD_2(atomicnumbers, coordinates, mode, filename=None, A=50.0, frames=36):
+
+    import math
+    if filename is None: filename = "mode.xyz"
+
+    nbatoms = len(atomicnumbers)
+    positions = coordinates/angstrom   # units for VMD
+
+    f = open(filename,'w')
+
+    for time in range(frames+1):
+        factor = A * math.sin( 2*math.pi * float(time)/frames)
+        print >> f, nbatoms
+        print >> f, 'i='+str(time)
+        for at in range(nbatoms):
+            coor = positions[at,:] + factor * mode[3*at:3*at+3]
+            print >> f, "%-5i  %10.4f  %10.4f  %10.4f" %(atomicnumbers[at], coor[0],coor[1],coor[2])
+    f.close
 

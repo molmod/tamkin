@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # TAMkin is a post-processing toolkit for thermochemistry and kinetics analysis.
 # Copyright (C) 2008-2009 Toon Verstraelen <Toon.Verstraelen@UGent.be>,
 # Matthias Vandichel <Matthias.Vandichel@UGent.be> and
@@ -57,22 +56,18 @@
 # --
 
 
-import sys, os, unittest, glob
+from tamkin import *
 
-retcode = os.system("(cd ..; python setup.py build)")
-if retcode != 0: sys.exit(retcode)
-lib_dir = glob.glob(os.path.join("../build/lib*"))[0]
-sys.path.insert(0, lib_dir)
+from molmod.constants import lightspeed, boltzmann
+from molmod.units import cm, s, atm, amu, meter, mol, kcalmol, cal, K
 
-if not os.path.isdir("output"):
-    os.mkdir("output")
+import unittest, numpy
 
-from io import *
-from partf import *
-from tools import *
-from nma import *
-from nmatools import *
-from tunneling import *
-unittest.main()
 
+__all__ = ["NMAToolsTestCase"]
+
+
+class NMAToolsTestCase(unittest.TestCase):
+    def check_overlap(self):
+        pass
 

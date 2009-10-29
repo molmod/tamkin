@@ -524,6 +524,13 @@ class NMATestCase(unittest.TestCase):
         nma.write_logfile_gaussian("input/an/ethanol.mbh.molden.log")
         self.check_ortho(nma.modes)   # write_logfile_gaussian should not have changed this
 
+    def test_mbh_ethane(self):
+        molecule = load_molecule_g03fchk("input/ethane/gaussian.fchk")
+        blocks = [[1, 0, 2, 6, 7], [1, 0, 3, 4, 5]]
+        nma = NMA(molecule, MBH(blocks))
+        self.assertEqual(len(nma.freqs), 7)
+        non_zero = [i for i in xrange(7) if i not in nma.zeros][0]
+        self.assertAlmostEqual(nma.freqs[non_zero], 0.0) # TODO: fill in right value
 
     def test_phva_mbh(self):
         molecule = load_molecule_charmm("input/an/ethanol.cor","input/an/ethanol.hess.full")

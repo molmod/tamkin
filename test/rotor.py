@@ -58,6 +58,9 @@
 
 from tamkin import *
 
+from molmod.units import cm
+from molmod.constants import lightspeed
+
 import unittest
 import numpy
 
@@ -101,7 +104,7 @@ class RotorTestCase(unittest.TestCase):
         hb = HarmonicBasis(10, a)
         grid = numpy.arange(0.0, 10.01, 1.0)
         f = numpy.exp(-((grid-5)/2)**2)
-        coeffs = hb.fit_fn(grid, f)
+        coeffs = hb.fit_fn(grid, f, 10)
         g = hb.eval_fn(grid, coeffs)
         self.assertArraysAlmostEqual(f, g)
 
@@ -111,17 +114,11 @@ class RotorTestCase(unittest.TestCase):
         grid = numpy.arange(0.0, 1.501, 0.1)
         f = numpy.exp(-(grid/2)**2)
         f -= f.mean()
-        coeffs = hb.fit_fn(grid, f, rotsym=3, even=True)
+        coeffs = hb.fit_fn(grid, f, 30, rotsym=3, even=True)
         g = hb.eval_fn(grid, coeffs)
         self.assertArraysAlmostEqual(f, g)
         grid = numpy.arange(0.0, 9.001, 0.1)
         g = hb.eval_fn(grid, coeffs)
-        if False:
-            import pylab
-            pylab.clf()
-            pylab.plot(grid, g)
-            pylab.plot(grid[:16], f)
-            pylab.savefig("output/test.png")
         self.assertArraysAlmostEqual(f, g[0:16])
         self.assertArraysAlmostEqual(f, g[30:46])
         self.assertArraysAlmostEqual(f, g[60:76])
@@ -129,44 +126,66 @@ class RotorTestCase(unittest.TestCase):
         self.assertArraysAlmostEqual(f[::-1], g[45:61])
         self.assertArraysAlmostEqual(f[::-1], g[75:91])
 
+        import pylab
+        pylab.clf()
+        pylab.plot(grid, g, "k-", lw=2)
+        pylab.plot(grid[:16], f, "rx", mew=2)
+        pylab.savefig("output/test_fit_fn_sym.png")
+
     def test_flat(self):
         a = 10.0
         mass = 1.0
         hb = HarmonicBasis(10, a)
-        energies, orbitals = hb.solve(mass, numpy.zeros(hb.size))
+        energies = hb.solve(mass, numpy.zeros(hb.size))
         indexes = numpy.array([1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10])
         expected = 0.5/mass*(2*indexes*numpy.pi/a)**2
         self.assertArraysAlmostEqual(energies, expected, 1e-4)
 
-    def test_harmonic_oscillator(self):
+    def test_harmonic(self):
         a = 20.0
         hb = HarmonicBasis(20, a)
         x = numpy.arange(0.0, a, 0.1)
         v = 0.5*(x-a/2)**2
         #v = 5*(1+numpy.cos(2*numpy.pi*x/a))**2
-        v_coeffs = hb.fit_fn(x, v)
+        v_coeffs = hb.fit_fn(x, v, 20, even=True)
         v_ref = -v.mean()
-        energies, orbitals = hb.solve(1, v_coeffs)
+        energies, orbitals = hb.solve(1, v_coeffs, evecs=True)
         expected = numpy.arange(10) + 0.5
-
-        if False:
-            import pylab
-            x = numpy.arange(0.0, a, 0.001)
-            pylab.clf()
-            for i in xrange(10):
-                f = hb.eval_fn(x, orbitals[:,i])
-                pylab.plot(x, f)
-            pylab.savefig("output/wavefunctions.png")
-            pylab.clf()
-            v = hb.eval_fn(x, v_coeffs)
-            pylab.plot(x, v-v_ref)
-            for energy in energies[:10]:
-                pylab.axhline(energy-v_ref)
-            pylab.xlim(0,a)
-            pylab.savefig("output/energy_levels.png")
-
         self.assertAlmostEqual(energies[0]-v_ref, 1.5, 1)
         self.assertAlmostEqual(energies[2]-v_ref, 3.5, 1)
         self.assertAlmostEqual(energies[4]-v_ref, 5.5, 1)
         self.assertAlmostEqual(energies[6]-v_ref, 7.5, 1)
+
+        import pylab
+        x = numpy.arange(0.0, a, 0.001)
+        pylab.clf()
+        for i in xrange(10):
+            f = hb.eval_fn(x, orbitals[:,i])
+            pylab.plot(x, f)
+        pylab.savefig("output/test_harmonic_wavefunctions.png")
+        pylab.clf()
+        v = hb.eval_fn(x, v_coeffs)
+        pylab.plot(x, v-v_ref)
+        for energy in energies[:10]:
+            pylab.axhline(energy-v_ref)
+        pylab.xlim(0,a)
+        pylab.savefig("output/test_harmonic_levels.png")
+
+    def test_ethane_hindered(self):
+        molecule = load_molecule_g03fchk("input/ethane/gaussian.fchk")
+        nma = NMA(molecule)
+        dihedral, angles, energies, geometries, top_indexes = load_rotscan_g03(
+            "input/rotor/gaussian.com", "input/rotor/gaussian.fchk"
+        )
+        cancel_freq = compute_cancel_frequency(molecule, top_indexes)
+        rotor = Rotor(top_indexes, cancel_freq, rotsym=3, even=True, potential=(angles, energies, 2), num_levels=50)
+        pf = PartFun(nma, [
+            ExternalTranslation(),
+            ExternalRotation(6),
+            rotor,
+        ])
+        rotor.plot_levels("output/ethane_hindered_levels.png", 300)
+        pf.write_to_file("output/ethane_hindered.txt")
+        ta = ThermoAnalysis(pf, [200,300,400,500,600,700,800,900])
+        ta.write_to_file("output/ethane_hindered_thermo.csv")
 

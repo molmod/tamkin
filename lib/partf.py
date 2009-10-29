@@ -65,6 +65,7 @@ import numpy
 __all__ = [
     "IdealGasVolume", "FixedVolume", "Info", "StatFys", "StatFysTerms",
     "Electronic", "ExternalTranslation", "ExternalRotation", "Vibrations",
+    "log_eval_vibrations", "log_deriv_vibrations", "log_deriv2_vibrations",
     "PartFun", "compute_rate_coeff", "compute_equilibrium_constant"
 ]
 
@@ -324,6 +325,42 @@ class ExternalRotation(Info, StatFys):
         return -0.5*self.count/temp**2
 
 
+def log_eval_vibrations(temp, freqs, classical=False):
+    """the logarithm of the partition function for a harmonic vibration"""
+    # this is defined as a function because multiple classes need it
+    if classical:
+        return numpy.log(0.5*boltzmann*temp/numpy.pi/freqs)
+    else:
+        # The zero point correction is included in the partition function and
+        # should not be taken into account when computing the reaction barrier.
+        exp_arg = -2*numpy.pi*freqs/boltzmann/temp
+        return (exp_arg/2 - numpy.log(1-numpy.exp(exp_arg)))
+        # This would be the version when the zero point energy corrections are
+        # included in the energy difference when computing the reaction rate:
+        #return -numpy.log(1-numpy.exp(exp_arg))
+
+def log_deriv_vibrations(temp, freqs, classical=False):
+    # this is defined as a function because multiple classes need it
+    if classical:
+        return numpy.ones(len(freqs))/temp
+    else:
+        exp_arg = -2*numpy.pi*freqs/boltzmann/temp
+        exp_arg_deriv = -exp_arg/temp
+        return exp_arg_deriv*(0.5-1/(1-numpy.exp(-exp_arg)))
+
+def log_deriv2_vibrations(temp, freqs, classical=False):
+    # this is defined as a function because multiple classes need it
+    if classical:
+        return -numpy.ones(len(freqs))/temp**2
+    else:
+        exp_arg = -2*numpy.pi*freqs/boltzmann/temp
+        exp_arg_deriv = -exp_arg/temp
+        exp_arg_deriv2 = -2*exp_arg_deriv/temp
+        e = numpy.exp(-exp_arg)
+        x = 1/(1-e)
+        return exp_arg_deriv2*(0.5-x) + (exp_arg_deriv*x)**2*e
+
+
 class Vibrations(Info, StatFysTerms):
     def __init__(self, classical=False):
         self.classical = classical
@@ -351,35 +388,13 @@ class Vibrations(Info, StatFysTerms):
         self.dump_values(f, "Imaginary Wavenumbers [1/cm]", self.negative_freqs/(lightspeed/cm), "% 8.1f", 8)
 
     def log_eval_terms(self, temp):
-        if self.classical:
-            return numpy.log(0.5*boltzmann*temp/numpy.pi/self.positive_freqs)
-        else:
-            # The zero point correction is included in the partition function and
-            # should not be taken into account when computing the reaction barrier.
-            exp_arg = -2*numpy.pi*self.positive_freqs/boltzmann/temp
-            return (exp_arg/2 - numpy.log(1-numpy.exp(exp_arg)))
-            # This would be the version when the zero point energy corrections are
-            # included in the energy difference when computing the reaction rate:
-            #return -numpy.log(1-numpy.exp(exp_arg))
+        return log_eval_vibrations(temp, self.positive_freqs, self.classical)
 
     def log_deriv_terms(self, temp):
-        if self.classical:
-            return numpy.ones(len(self.positive_freqs))/temp
-        else:
-            exp_arg = -2*numpy.pi*self.positive_freqs/boltzmann/temp
-            exp_arg_deriv = -exp_arg/temp
-            return exp_arg_deriv*(0.5-1/(1-numpy.exp(-exp_arg)))
+        return log_deriv_vibrations(temp, self.positive_freqs, self.classical)
 
     def log_deriv2_terms(self, temp):
-        if self.classical:
-            return -numpy.ones(len(self.positive_freqs))/temp**2
-        else:
-            exp_arg = -2*numpy.pi*self.positive_freqs/boltzmann/temp
-            exp_arg_deriv = -exp_arg/temp
-            exp_arg_deriv2 = -2*exp_arg_deriv/temp
-            e = numpy.exp(-exp_arg)
-            x = 1/(1-e)
-            return exp_arg_deriv2*(0.5-x) + (exp_arg_deriv*x)**2*e
+        return log_deriv2_vibrations(temp, self.positive_freqs, self.classical)
 
 
 class PartFun(Info, StatFys):

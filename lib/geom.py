@@ -103,5 +103,16 @@ def rank_linearity(coordinates,svd_threshold=1e-5):
     transrot = transrot_basis(coordinates)
     A    = numpy.dot( transrot, transrot.transpose() )
     eigv = numpy.linalg.eigvalsh(A)
+    # TODO clean up comment
+    #print "svd: eigv", eigv
     rank = (abs(eigv) > abs(eigv[-1])*svd_threshold).sum()
+    #print "rank", rank
+
+    #print "again..."
+    #transrot = transrot_basis(coordinates + numpy.zeros((len(coordinates),3), float)*50.0)
+    #A    = numpy.dot( transrot, transrot.transpose() )
+    #eigv = numpy.linalg.eigvalsh(A)
+    #print "svd: eigv", eigv
+    #rank = (abs(eigv) > abs(eigv[-1])*svd_threshold).sum()
+    #print "rank", rank
     return rank

@@ -857,7 +857,7 @@ class MBH(Treatment):
         if blkinfo.is_linked:
             # SECOND TRANSFORM: from BLOCK PARAMETERS to Y VARIABLES
             # Necessary if blocks are linked to each other.
-            nullspace = construct_nullspace_K(molecule,mbhdim1,blkinfo)
+            nullspace = self.construct_nullspace_K(molecule,mbhdim1,blkinfo)
 
             My = numpy.dot(nullspace.transpose(), numpy.dot( Mp,nullspace) )
             Hy = numpy.dot(nullspace.transpose(), numpy.dot( Hp,nullspace) )
@@ -903,6 +903,7 @@ class MBH(Treatment):
         # SECOND TRANSFORM: from BLOCK PARAMETERS to Y VARIABLES
         # Necessary if blocks are linked to each other.
             # Construct K matrix, with constraints
+            D = transrot_basis(molecule.coordinates)   # is NOT mass-weighted
             nbrows = (numpy.sum(blkinfo.sharenbs)-molecule.size)*3
             K = numpy.zeros(( nbrows, mbhdim1-3*len(blkinfo.free)), float)
             row = 0
@@ -988,12 +989,16 @@ class Blocks(object):
         fixed = [atom for atom in range(N) if atom in fixed]
 
         # check for linearity and fill in dimensions
-        D = molecule.external_basis
-        dim_block=numpy.zeros((len(blocks)),int)
+        #D = molecule.external_basis
+        #dim_block=numpy.zeros((len(blocks)),int)
         indices_blocks_nlin = []    # nonlinear blocks
         indices_blocks_lin  = []    # linear blocks
+        print "\n***"
         for b,block in enumerate(blocks):
-            rank = rank_linearity(numpy.take(molecule.coordinates,block,0), svd_threshold=svd_threshold)
+            print "b,block", b, block
+            rank = rank_linearity(numpy.take(molecule.coordinates,block,0), svd_threshold=svd_threshold/1000.0)
+            print numpy.take(molecule.coordinates,block,0)
+            print rank
             if rank==6:    indices_blocks_nlin.append(b)
             elif rank==5:  indices_blocks_lin.append(b)
             else:          raise ValueError("In principle rank should have been 5 or 6, found "+str(rank))

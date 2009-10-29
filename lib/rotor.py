@@ -54,7 +54,14 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
+"""Implementation of free and hindered rotors
 
+   The current implementation supports one-dimensional free and hindered rotors.
+   For practical applications it is apparently not necessary to consider higher-
+   dimensional hindered rotors. [1]
+
+   [1] Chemical Physics, Vol. 328 (1-3) 251 - 258, 2006
+"""
 
 from tamkin.partf import Info, StatFysTerms, log_eval_vibrations, \
     log_deriv_vibrations, log_deriv2_vibrations
@@ -71,6 +78,20 @@ __all__ = ["HarmonicBasis", "compute_cancel_frequency", "Rotor"]
 
 
 class HarmonicBasis(object):
+    """A harmonic basis set for periodic one-dimensional QM systems
+
+       In addition to the definition of the basis set, this class also
+       implements the kinetic and potential energy operators required for the
+       solution of the schrodinger equation. The workflow is as follows:
+
+       >>> a = 10.0                             # the size of the system
+       >>> hb = HarmonicBasis(10, a)            # create basis object
+       >>> grid = numpy.arange(0.0, 10.01, 1.0) # define a grid
+       >>> v = -numpy.exp(-((grid-5)/2)**2)     # define a potential on the grid
+       >>> v_coeffs = hb.fit_fn(grid, v, 10)    # expand the potential in the basis
+       >>> mass = 1.0
+       >>> energies, wfns = hb.solve(mass, v_coeffs, evecs=True) # solve problem
+    """
     def __init__(self, nmax, a):
         """Initialize a harmonic basis
 
@@ -200,20 +221,17 @@ class HarmonicBasis(object):
             result[2*rotsym-1::2*rotsym] = coeffs[1::2]
         return result
 
-    def derive(self, coeffs):
-        result = numpy.zeros(self.size)
-        tmp = (2*numpy.pi/self.a)*numpy.arange(1, self.nmax+1)
-        result[::2] = -coeffs[1::2]*tmp
-        result[1::2] = coeffs[::2]*tmp
-        return result
-
 
 def compute_cancel_frequency(molecule, top_indexes):
     """Compute the frequency of the rotor in the HO approximation
 
        This function is based on the MNH method and returns the frequency that
        has to be canceled when this mode is replaced by a free or hindered
-       rotor
+       rotor.
+
+       Arguments:
+         molecule  --  A Molecule object (see data.py)
+         top_indexes  --  the indexes of the rotor atoms
     """
     blocks = [
         top_indexes,
@@ -224,13 +242,23 @@ def compute_cancel_frequency(molecule, top_indexes):
 
 
 class Rotor(Info, StatFysTerms):
+    """Partition function term for a one-dimensional rotor
+
+       The contribution from the free or hindered rotor to the partition
+       function is based on the quantum mechanical solution of the rotational
+       motion. To avoid double counting problems, one must also provide the
+       frequency of this motion as if it was treated as a harmonic oscillator.
+       The corresponding contribution to the partition function is subtracted.
+       (Use compute_cancel_frequency to obtain this frequency.)
+    """
     def __init__(self, indexes, cancel_freq, suffix=None, rotsym=1, even=False, potential=None, num_levels=50):
         """Initialize a Rotor term for the partition function
 
            Arguments:
              indexes  --  a list of atom indexes involved in the rotor. the
                           first two indexes define the rotation axis
-             cancel_freq  --  the frequency to cancel in the partition function
+             cancel_freq  --  the frequency to cancel in the vibrational
+                              partition function
 
            Optional arguments:
              suffix  --  a name suffix used to distinguish between different
@@ -263,6 +291,14 @@ class Rotor(Info, StatFysTerms):
         StatFysTerms.__init__(self, 2) # two terms
 
     def init_part_fun(self, nma):
+        """Compute all the partition function parameters based on the nma
+
+           This method is part of the PartFun API. It should never be called
+           directly.
+
+           Arguments:
+             nma  --  An NMA object (see nma.py)
+        """
         if nma.periodic:
             raise NotImplementedError("Rotors in periodic systems are not supported yet")
         self.center = nma.coordinates[self.indexes[0]]
@@ -302,6 +338,15 @@ class Rotor(Info, StatFysTerms):
             self.energy_levels = self.energy_levels[:self.num_levels]-self.v_ref
 
     def dump(self, f):
+        """Write all the information about the rotor to a file
+
+           This method is part of the PartFun API and should never be called
+           directly. It will only work properly once the init_part_fun method
+           is called.
+
+           Arguments:
+             f  --  a file-like object
+        """
         Info.dump(self, f)
         # parameters
         print >> f, "    Indexes: %s" % " ".join(str(i) for i in self.indexes)
@@ -371,6 +416,13 @@ class Rotor(Info, StatFysTerms):
         pylab.savefig(filename)
 
     def log_eval_terms(self, temp):
+        """Compute the conbtributions to the logarithm of the partition function
+
+           Argument:
+             temp  --  the temperature
+
+           Returns: 1D numpy arrays with contributions
+        """
         eks = self.energy_levels/(temp*boltzmann)
         bfs = numpy.exp(-eks)
         Z = bfs.sum()
@@ -380,6 +432,14 @@ class Rotor(Info, StatFysTerms):
         ])
 
     def log_deriv_terms(self, temp):
+        """Compute the conbtributions to the derivative of the logarithm of the
+           partition function
+
+           Argument:
+             temp  --  the temperature
+
+           Returns: 1D numpy arrays with contributions
+        """
         eks = self.energy_levels/(temp*boltzmann)
         bfs = numpy.exp(-eks)
         Z = bfs.sum()
@@ -389,6 +449,14 @@ class Rotor(Info, StatFysTerms):
         ])
 
     def log_deriv2_terms(self, temp):
+        """Compute the conbtributions to the second derivative of the logarithm
+           of the partition function
+
+           Argument:
+             temp  --  the temperature
+
+           Returns: 1D numpy arrays with contributions
+        """
         eks = self.energy_levels/(temp*boltzmann)
         bfs = numpy.exp(-eks)
         Z = bfs.sum()

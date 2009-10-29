@@ -58,9 +58,6 @@
 
 from tamkin import *
 
-from molmod.constants import lightspeed, boltzmann
-from molmod.units import cm, s, atm, amu, meter, mol, kcalmol, cal, K
-
 import unittest, numpy
 
 
@@ -68,6 +65,15 @@ __all__ = ["NMAToolsTestCase"]
 
 
 class NMAToolsTestCase(unittest.TestCase):
+
+    def test_overlap(self):
+        molecule = load_molecule_charmm("input/an/ethanol.cor","input/an/ethanol.hess.full")
+        nma1 = NMA(molecule)
+        fixed = load_fixed_txt("input/an/fixed.06.txt")
+        nma2 = NMA(molecule, PHVA(fixed))
+        overlap = calculate_overlap_nma(nma1, nma2)
+        print overlap
+
     def check_overlap(self):
         pass
 

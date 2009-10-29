@@ -62,21 +62,12 @@ import numpy
 ###import sys, numpy, pylab, types
 
 
-__all__ = ["ThermoAnalysis", "ThermoTable", "ReactionAnalysis"]
-
-__all__ = ["read_charmm_cor", "read_charmm_modes"
-def calculate_overlap_nma(nma1, nma2, filename=None):
-def calculate_overlap(mat1, freqs1, mat2, freqs2, filename=None):
-def calculate_overlapmatrix(mat1, mat2):
-def write_overlap(freqs1, freqs2, overlap, filename=None):
-    """Write overlap matrix to a file, default is overlap.csv. Format:
-def get_Delta_vector_charmmcor(charmmfile1, charmmfile2):
-def get_Delta_vector_nma(molecule1, molecule2):
+__all__ = [
+           "calculate_overlap_nma", "calculate_overlap",
+           "write_overlap"
+          ]
 
 
-
-# FUNCTIONs
-# USE SEE FURTHER (main)
 
 def read_an_freqs(filename):
     print  "-"*20
@@ -191,12 +182,13 @@ def calculate_overlap_nma(nma1, nma2, filename=None):
     calculate_overlapmatrix(nma1.modes, nma2.modes)
     if filename is not None:
         write_overlap(nma1.freqs, nma2.freqs, filename=filename)
+    return overlap
 
 def calculate_overlap(mat1, freqs1, mat2, freqs2, filename=None):
     overlap = calculate_overlapmatrix(mat1, mat2)
     if filename is not None:
         write_overlap(freqs1, freqs2, filename=filename)
-
+    return overlap
 
 def calculate_overlapmatrix(mat1, mat2):
     """Calculate overlap of matrices."""
@@ -264,6 +256,4 @@ def get_Delta_vector_nma(molecule1, molecule2):
         Delta[3*i:3*(i+1)] *=  numpy.sqrt(mass)
     Delta /= numpy.sqrt(numpy.sum(Delta**2))        # normalize
     return Delta
-
-
 

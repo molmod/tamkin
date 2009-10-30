@@ -993,12 +993,8 @@ class Blocks(object):
         #dim_block=numpy.zeros((len(blocks)),int)
         indices_blocks_nlin = []    # nonlinear blocks
         indices_blocks_lin  = []    # linear blocks
-        print "\n***"
         for b,block in enumerate(blocks):
-            print "b,block", b, block
-            rank = rank_linearity(numpy.take(molecule.coordinates,block,0), svd_threshold=svd_threshold/1000.0)
-            print numpy.take(molecule.coordinates,block,0)
-            print rank
+            rank = rank_linearity(numpy.take(molecule.coordinates,block,0), svd_threshold=svd_threshold)
             if rank==6:    indices_blocks_nlin.append(b)
             elif rank==5:  indices_blocks_lin.append(b)
             else:          raise ValueError("In principle rank should have been 5 or 6, found "+str(rank))

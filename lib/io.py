@@ -127,13 +127,12 @@ def load_molecule_g03fchk(filename_freq,filename_ener=None,filename_vdw=None): #
                  break
          f.close()
 
-
     return Molecule(
         fchk_freq.molecule.numbers,
         fchk_freq.molecule.coordinates,
         fchk_freq.fields["Real atomic weights"]*amu,
         fchk_ener.fields["Total Energy"]+vdw,
-        fchk_freq.fields["Cartesian Gradient"],
+        numpy.reshape(numpy.array(fchk_freq.fields["Cartesian Gradient"]), (len(fchk_freq.molecule.numbers),3)),
         fchk_freq.get_hessian(),
         fchk_freq.fields["Multiplicity"],
         None, # gaussian is very poor at computing the rotational symmetry number

@@ -104,9 +104,9 @@ class RotorTestCase(unittest.TestCase):
         hb = HarmonicBasis(10, a)
         grid = numpy.arange(0.0, 10.01, 1.0)
         f = numpy.exp(-((grid-5)/2)**2)
-        coeffs = hb.fit_fn(grid, f, 10)
+        ref, coeffs = hb.fit_fn(grid, f, 10)
         g = hb.eval_fn(grid, coeffs)
-        self.assertArraysAlmostEqual(f, g)
+        self.assertArraysAlmostEqual(f, g-ref)
 
     def test_fit_fn_sym(self):
         a = 9.0
@@ -114,21 +114,21 @@ class RotorTestCase(unittest.TestCase):
         grid = numpy.arange(0.0, 1.501, 0.1)
         f = numpy.exp(-(grid/2)**2)
         f -= f.mean()
-        coeffs = hb.fit_fn(grid, f, 30, rotsym=3, even=True)
+        ref, coeffs = hb.fit_fn(grid, f, 30, rotsym=3, even=True)
         g = hb.eval_fn(grid, coeffs)
-        self.assertArraysAlmostEqual(f, g)
+        self.assertArraysAlmostEqual(f, g-ref)
         grid = numpy.arange(0.0, 9.001, 0.1)
         g = hb.eval_fn(grid, coeffs)
-        self.assertArraysAlmostEqual(f, g[0:16])
-        self.assertArraysAlmostEqual(f, g[30:46])
-        self.assertArraysAlmostEqual(f, g[60:76])
-        self.assertArraysAlmostEqual(f[::-1], g[15:31])
-        self.assertArraysAlmostEqual(f[::-1], g[45:61])
-        self.assertArraysAlmostEqual(f[::-1], g[75:91])
+        self.assertArraysAlmostEqual(f, g[0:16]-ref)
+        self.assertArraysAlmostEqual(f, g[30:46]-ref)
+        self.assertArraysAlmostEqual(f, g[60:76]-ref)
+        self.assertArraysAlmostEqual(f[::-1], g[15:31]-ref)
+        self.assertArraysAlmostEqual(f[::-1], g[45:61]-ref)
+        self.assertArraysAlmostEqual(f[::-1], g[75:91]-ref)
 
         import pylab
         pylab.clf()
-        pylab.plot(grid, g, "k-", lw=2)
+        pylab.plot(grid, g-ref, "k-", lw=2)
         pylab.plot(grid[:16], f, "rx", mew=2)
         pylab.savefig("output/test_fit_fn_sym.png")
 
@@ -147,8 +147,8 @@ class RotorTestCase(unittest.TestCase):
         x = numpy.arange(0.0, a, 0.1)
         v = 0.5*(x-a/2)**2
         #v = 5*(1+numpy.cos(2*numpy.pi*x/a))**2
-        v_coeffs = hb.fit_fn(x, v, 20, even=True)
-        v_ref = -v.mean()
+        v_ref, v_coeffs = hb.fit_fn(x, v, 20, even=True)
+        self.assertAlmostEqual(v_ref, -v.mean())
         energies, orbitals = hb.solve(1, v_coeffs, evecs=True)
         expected = numpy.arange(10) + 0.5
         self.assertAlmostEqual(energies[0]-v_ref, 1.5, 1)
@@ -178,12 +178,20 @@ class RotorTestCase(unittest.TestCase):
             "input/rotor/gaussian.com", "input/rotor/gaussian.fchk"
         )
         cancel_freq = compute_cancel_frequency(molecule, top_indexes)
-        rotor = Rotor(top_indexes, cancel_freq, rotsym=3, even=True, potential=(angles, energies, 2), num_levels=50)
+        self.assertAlmostEqual(cancel_freq/lightspeed*cm, 314, 0)
+        rotor = Rotor(
+            top_indexes, cancel_freq, rotsym=3, even=True,
+            potential=(angles, energies, 5), num_levels=50
+        )
         pf = PartFun(nma, [
             ExternalTranslation(),
             ExternalRotation(6),
             rotor,
         ])
+        self.assertArraysAlmostEqual(
+            rotor.hb.eval_fn(angles, rotor.v_coeffs)-rotor.v_ref,
+            energies
+        )
         rotor.plot_levels("output/ethane_hindered_levels.png", 300)
         pf.write_to_file("output/ethane_hindered.txt")
         ta = ThermoAnalysis(pf, [200,300,400,500,600,700,800,900])

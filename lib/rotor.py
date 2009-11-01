@@ -176,13 +176,13 @@ class HarmonicBasis(object):
              coeffs  --  the expansion coefficients
         """
         result = numpy.zeros(grid.shape, float)
-        for i in xrange(0,self.nmax):
-            arg = 2*(i+1)*numpy.pi*grid/self.a
+        for i in xrange(self.nmax):
+            arg = ((i+1)*2*numpy.pi/self.a)*grid
             result += (coeffs[2*i  ]/numpy.sqrt(self.a/2))*numpy.cos(arg)
             result += (coeffs[2*i+1]/numpy.sqrt(self.a/2))*numpy.sin(arg)
         return result
 
-    def fit_fn(self, grid, f, dofmax, rotsym=1, even=False, rcond=1e-10):
+    def fit_fn(self, grid, f, dofmax, rotsym=1, even=False, rcond=0.0):
         """Fit the expansion coefficients that represent function f
 
            Arguments:
@@ -200,26 +200,35 @@ class HarmonicBasis(object):
         """
         if rotsym < 1:
             raise ValueError("rotym must be at least 1")
+        ncos = min(dofmax, self.nmax/rotsym)
         if even:
-            A = numpy.zeros((len(grid), self.nmax/rotsym), float)
+            A = numpy.zeros((len(grid), ncos+1), float)
         else:
-            A = numpy.zeros((len(grid), self.size/rotsym), float)
-        counter = 0
-        for i in xrange(min(dofmax, self.nmax/rotsym)):
-            arg = 2*(i+1)*rotsym*numpy.pi*grid/self.a
+            A = numpy.zeros((len(grid), 2*ncos+1), float)
+        A[:,0] = 1.0/numpy.sqrt(self.a)
+        counter = 1
+        for i in xrange(ncos):
+            arg = ((i+1)*rotsym*2*numpy.pi/self.a)*grid
             A[:,counter] = numpy.cos(arg)/numpy.sqrt(self.a/2)
             counter += 1
             if not even:
                 A[:,counter] = numpy.sin(arg)/numpy.sqrt(self.a/2)
                 counter += 1
+
         coeffs, residuals, rank, S = numpy.linalg.lstsq(A, f, rcond)
+        reference = -coeffs[0]/numpy.sqrt(self.a)
+        coeffs = coeffs[1:]
+
         result = numpy.zeros(self.size)
         if even:
-            result[2*rotsym-2::2*rotsym] = coeffs
+            tmp = result[2*rotsym-2::2*rotsym]
+            tmp[:ncos] = coeffs
         else:
-            result[2*rotsym-2::2*rotsym] = coeffs[::2]
-            result[2*rotsym-1::2*rotsym] = coeffs[1::2]
-        return result
+            tmp = result[2*rotsym-2::2*rotsym]
+            tmp[:ncos] = coeffs[::2]
+            tmp = result[2*rotsym-1::2*rotsym]
+            tmp[:ncos] = coeffs[1::2]
+        return reference, result
 
 
 def compute_cancel_frequency(molecule, top_indexes):
@@ -335,8 +344,7 @@ class Rotor(Info, StatFysTerms):
             angles, energies, dofmax = self.potential
             angles -= numpy.floor(angles/a)*a # apply periodic boundary conditions
             energies -= energies.min() # set reference to zero
-            self.v_coeffs = self.hb.fit_fn(angles, energies, dofmax, self.rotsym, self.even)
-            self.v_ref = -energies.mean()
+            self.v_ref, self.v_coeffs = self.hb.fit_fn(angles, energies, dofmax, self.rotsym, self.even)
             self.energy_levels = self.hb.solve(self.relative_moment, self.v_coeffs)
             self.energy_levels = self.energy_levels[:self.num_levels]-self.v_ref
 

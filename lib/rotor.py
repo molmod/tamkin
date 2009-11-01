@@ -238,7 +238,10 @@ def compute_cancel_frequency(molecule, top_indexes):
         top_indexes[:2] + list(set(xrange(molecule.size))-set(top_indexes)),
     ]
     nma = NMA(molecule, MBH(blocks))
-    raise NotImplementedError
+    if len(nma.freqs) != 7:
+        raise RuntimeError("Expecting 7 frequencies, got %i" % len(nma.freqs))
+    non_zero = [i for i in xrange(7) if i not in nma.zeros][0]
+    return nma.freqs[non_zero]
 
 
 class Rotor(Info, StatFysTerms):

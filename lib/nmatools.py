@@ -179,25 +179,26 @@ def read_charmm_modes(filename, nbfreqs = 0):
 
 
 def calculate_overlap_nma(nma1, nma2, filename=None):
-    calculate_overlapmatrix(nma1.modes, nma2.modes)
+    """Calculate overlap of modes of NMA objects, and print to file if requested."""
+    overlap = calculate_overlapmatrix(nma1.modes, nma2.modes)
     if filename is not None:
-        write_overlap(nma1.freqs, nma2.freqs, filename=filename)
+        write_overlap(nma1.freqs, nma2.freqs, overlap, filename=filename)
     return overlap
 
 def calculate_overlap(mat1, freqs1, mat2, freqs2, filename=None):
+    """Calculate overlap of matrices (with corresponding frequencies), and write to file if requested."""
     overlap = calculate_overlapmatrix(mat1, mat2)
     if filename is not None:
-        write_overlap(freqs1, freqs2, filename=filename)
+        write_overlap(freqs1, freqs2, overlap, filename=filename)
     return overlap
 
 def calculate_overlapmatrix(mat1, mat2):
     """Calculate overlap of matrices."""
     # check dimensions
-    if mat1.shape[0] != mat2.shape[O] :
+    if mat1.shape[0] != mat2.shape[0] :
         raise ValueError("Length of columns in mat1 and mat2 should be equal, but found "+str(mat1.shape[0])+" and "+str(mat2.shape[O]) )
     # calculate overlap
-    overlap = numpy.dot(numpy.transpose(mat1), mat2)
-    return overlap
+    return numpy.dot(numpy.transpose(mat1), mat2)
 
 
 def write_overlap(freqs1, freqs2, overlap, filename=None):
@@ -246,9 +247,10 @@ def get_Delta_vector_nma(molecule1, molecule2):
     """Calculate conformational change vector: positions molecule 1 - positions molecule 2.
     The vector is also mass weighted and normalized."""
     if molecule1.size != molecule2.size:
-        raise ValueError("Nb of atoms is not the same in the two molecules. Found "+str(molecule1)+" (1) and "+str(molecule)+" (2)."
-    if molecule1.numbers != molecule2.numbers:
-        raise ValueError("Atoms of molecule1 differ from those of molecule2 (different atomic numbers), but should be the same."
+        raise ValueError("Nb of atoms is not the same in the two molecules. Found "+str(molecule1)+" (1) and "+str(molecule)+" (2).")
+    for i in range(molecule1.size):
+        if molecule1.numbers[i] != molecule2.numbers[i]:
+            raise ValueError("Atoms of molecule1 differ from those of molecule2 (different atomic numbers), but should be the same.")
 
     Delta = molecule1.coordinates - molecule2.coordinates
     Delta = numpy.reshape(numpy.ravel(vec1 - vec2),(-1,1))
@@ -257,3 +259,6 @@ def get_Delta_vector_nma(molecule1, molecule2):
     Delta /= numpy.sqrt(numpy.sum(Delta**2))        # normalize
     return Delta
 
+
+def calculate_sensitivity(nma, i):
+    pass

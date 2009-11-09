@@ -72,7 +72,6 @@ class NMAToolsTestCase(unittest.TestCase):
         fixed = load_fixed_txt("input/an/fixed.06.txt")
         nma2 = NMA(molecule, PHVA(fixed))
         overlap = calculate_overlap_nma(nma1, nma2)
-        print overlap
 
     def check_overlap(self):
         pass

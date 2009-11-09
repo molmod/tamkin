@@ -59,6 +59,7 @@
 from data import *
 from io import *
 from nma import *
+from nmatools import *
 from partf import *
 from tools import *
 from tunneling import *

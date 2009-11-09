@@ -130,6 +130,20 @@ class IOTestCase(unittest.TestCase):
         self.assertAlmostEqual(molecule.hessian[0,0]/(1000*calorie/avogadro /angstrom**2), 1409.7091337384, 6)
         self.assertAlmostEqual(molecule.hessian[-1,-1]/(1000*calorie/avogadro /angstrom**2), 474.7950312957, 6)
 
+    def test_load_molecule_qchem(self):
+        molecule = load_molecule_qchem("input/an/methanol.b3lypd.cc-pvtz.freq.out")
+        self.assertAlmostEqual(molecule.energy, -115.7740000429)
+        self.assertEqual(molecule.multiplicity, 1)
+        self.assertEqual(molecule.numbers[0], 6)
+        self.assertEqual(molecule.numbers[3], 1)
+        self.assertAlmostEqual(molecule.masses[0]/amu, 12.01100, 2)
+        self.assertAlmostEqual(molecule.masses[3]/amu, 1.00800, 2)
+        self.assertAlmostEqual(molecule.coordinates[5,1]/angstrom, -0.756304)
+        self.assertAlmostEqual(molecule.gradient[0,2]/(1000*calorie/avogadro/angstrom), -0.00, 5)
+        self.assertAlmostEqual(molecule.gradient[5,0]/(1000*calorie/avogadro/angstrom), -0.00, 5)
+        self.assertAlmostEqual(molecule.hessian[0,0], 0.4591905, 6)
+        self.assertAlmostEqual(molecule.hessian[-1,-1], 0.0028270, 6)
+
     def test_load_molecule_vasp(self):
         molecule = load_molecule_vasp("input/vasp/xyz-structure","input/vasp/OUTCAR")
         self.assertEqual(molecule.numbers[0],14)

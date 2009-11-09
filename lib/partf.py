@@ -54,6 +54,29 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
+"""Partition functions based on the harmonic oscillator approximation & extensions
+
+   The workhorse of this module is the PartFun class. PartFun objects represent
+   a partition function with a interface that does not depend on the different
+   types of terms that are present in the partition function. PartFun objects
+   can be used to study chemical equilibrium, rate coefficients and various
+   thermodynamic properties. All the applications work without explicitly relying
+   on the individual contributions to the partition function.
+
+   Abstract classes:
+       Info, StatFys, StatFysTerms
+   Contributions:
+       Electronic, ExternalTranslation, ExternalRotation, Vibrations,
+       Rotor (see rotor.py)
+   Selection of the ensemble:
+       IdealGasVolume, FixedVolume
+       (these are used by ExternalTranslation)
+   Helper functions:
+       log_eval_vibrations, log_deriv_vibrations, log_deriv2_vibrations
+   Applications:
+       compute_rate_coeff, compute_equilibrium_constant
+       (see tools.py for a friendly interface to these functions)
+"""
 
 
 from molmod.constants import boltzmann, lightspeed
@@ -65,16 +88,18 @@ import numpy
 __all__ = [
     "IdealGasVolume", "FixedVolume", "Info", "StatFys", "StatFysTerms",
     "Electronic", "ExternalTranslation", "ExternalRotation", "Vibrations",
+    "log_eval_vibrations", "log_deriv_vibrations", "log_deriv2_vibrations",
     "PartFun", "compute_rate_coeff", "compute_equilibrium_constant"
 ]
 
 
 
 class IdealGasVolume(object):
-    """Computes the volume of a molecule in an ideal gas as a function of the
-    temperature, at a fixed reference pressure.
+    """Computes the volume of a molecule in an ideal gas
 
-    This law can be used to set up a constant pressure gas phase partition function
+       The volume is function of the temperature, at a fixed reference pressure.
+       This law can be used to set up a constant pressure gas phase partition
+       function.
     """
 
     def __init__(self, pressure=1*atm):
@@ -96,10 +121,10 @@ class IdealGasVolume(object):
 
 
 class FixedVolume(object):
-    """Computes the volume of a molecule in an ideal gas at a fixed reference
-    temperature and at a fixed reference pressure.
+    """Computes the volume of a molecule in system with fixed size
 
-    This law can be used to set up a constant volume gas phase partition function
+       This law can be used to set up a constant volume gas phase partition
+       function.
     """
 
     def __init__(self, temp=298.15, pressure=1*atm):
@@ -142,8 +167,13 @@ class Info(object):
             print >> f, "".join(parts)
 
 
-
 class StatFys(object):
+    """Abstract class for (contributions to) the parition function
+
+       The constructor (__init__) and the first four methods (init_part_fun,
+       log_eval, log_deriv and log_deriv2) must be implemented in derived
+       classes.
+    """
     def init_part_fun(self, nma):
         pass
 
@@ -189,6 +219,12 @@ class StatFys(object):
 
 
 class StatFysTerms(StatFys):
+    """Abstract class for (contributions to) the parition function with multiple terms
+
+       The constructor (__init__) and the four methods (init_part_fun,
+       log_eval_terms, log_deriv_terms and log_deriv2_terms) must be implemented
+       in derived classes.
+    """
     def __init__(self, num_terms):
         self.num_terms = num_terms
 
@@ -231,6 +267,11 @@ class StatFysTerms(StatFys):
 
 
 class Electronic(Info, StatFys):
+    """The electronic contribution to the partition function
+
+       TODO: this should also include the potential energy from the ab initio
+       computation
+    """
     def __init__(self, multiplicity=None):
         self.multiplicity = multiplicity
         Info.__init__(self, "electronic")
@@ -256,6 +297,7 @@ class Electronic(Info, StatFys):
 
 
 class ExternalTranslation(Info, StatFys):
+    """The contribution from the external translation"""
     def __init__(self, mol_volume=None):
         if mol_volume is None:
             self.mol_volume = FixedVolume()
@@ -288,6 +330,7 @@ class ExternalTranslation(Info, StatFys):
 
 
 class ExternalRotation(Info, StatFys):
+    """The contribution from the external rotation"""
     def __init__(self, symmetry_number=None, im_threshold=1.0):
         self.symmetry_number = symmetry_number
         self.im_threshold = im_threshold
@@ -324,7 +367,46 @@ class ExternalRotation(Info, StatFys):
         return -0.5*self.count/temp**2
 
 
+def log_eval_vibrations(temp, freqs, classical=False):
+    """The logarithm of the partition function for a harmonic vibration"""
+    # this is defined as a function because multiple classes need it
+    if classical:
+        return numpy.log(0.5*boltzmann*temp/numpy.pi/freqs)
+    else:
+        # The zero point correction is included in the partition function and
+        # should not be taken into account when computing the reaction barrier.
+        exp_arg = -2*numpy.pi*freqs/boltzmann/temp
+        return (exp_arg/2 - numpy.log(1-numpy.exp(exp_arg)))
+        # This would be the version when the zero point energy corrections are
+        # included in the energy difference when computing the reaction rate:
+        #return -numpy.log(1-numpy.exp(exp_arg))
+
+def log_deriv_vibrations(temp, freqs, classical=False):
+    """The derivative of the logarithm of the partition function for a harmonic vibration"""
+    # this is defined as a function because multiple classes need it
+    if classical:
+        return numpy.ones(len(freqs))/temp
+    else:
+        exp_arg = -2*numpy.pi*freqs/boltzmann/temp
+        exp_arg_deriv = -exp_arg/temp
+        return exp_arg_deriv*(0.5-1/(1-numpy.exp(-exp_arg)))
+
+def log_deriv2_vibrations(temp, freqs, classical=False):
+    """The second derivative of the logarithm of the partition function for a harmonic vibration"""
+    # this is defined as a function because multiple classes need it
+    if classical:
+        return -numpy.ones(len(freqs))/temp**2
+    else:
+        exp_arg = -2*numpy.pi*freqs/boltzmann/temp
+        exp_arg_deriv = -exp_arg/temp
+        exp_arg_deriv2 = -2*exp_arg_deriv/temp
+        e = numpy.exp(-exp_arg)
+        x = 1/(1-e)
+        return exp_arg_deriv2*(0.5-x) + (exp_arg_deriv*x)**2*e
+
+
 class Vibrations(Info, StatFysTerms):
+    """The vibrational contribution to the partition function"""
     def __init__(self, classical=False):
         self.classical = classical
         Info.__init__(self, "vibrational")
@@ -351,38 +433,23 @@ class Vibrations(Info, StatFysTerms):
         self.dump_values(f, "Imaginary Wavenumbers [1/cm]", self.negative_freqs/(lightspeed/cm), "% 8.1f", 8)
 
     def log_eval_terms(self, temp):
-        if self.classical:
-            return numpy.log(0.5*boltzmann*temp/numpy.pi/self.positive_freqs)
-        else:
-            # The zero point correction is included in the partition function and
-            # should not be taken into account when computing the reaction barrier.
-            exp_arg = -2*numpy.pi*self.positive_freqs/boltzmann/temp
-            return (exp_arg/2 - numpy.log(1-numpy.exp(exp_arg)))
-            # This would be the version when the zero point energy corrections are
-            # included in the energy difference when computing the reaction rate:
-            #return -numpy.log(1-numpy.exp(exp_arg))
+        return log_eval_vibrations(temp, self.positive_freqs, self.classical)
 
     def log_deriv_terms(self, temp):
-        if self.classical:
-            return numpy.ones(len(self.positive_freqs))/temp
-        else:
-            exp_arg = -2*numpy.pi*self.positive_freqs/boltzmann/temp
-            exp_arg_deriv = -exp_arg/temp
-            return exp_arg_deriv*(0.5-1/(1-numpy.exp(-exp_arg)))
+        return log_deriv_vibrations(temp, self.positive_freqs, self.classical)
 
     def log_deriv2_terms(self, temp):
-        if self.classical:
-            return -numpy.ones(len(self.positive_freqs))/temp**2
-        else:
-            exp_arg = -2*numpy.pi*self.positive_freqs/boltzmann/temp
-            exp_arg_deriv = -exp_arg/temp
-            exp_arg_deriv2 = -2*exp_arg_deriv/temp
-            e = numpy.exp(-exp_arg)
-            x = 1/(1-e)
-            return exp_arg_deriv2*(0.5-x) + (exp_arg_deriv*x)**2*e
+        return log_deriv2_vibrations(temp, self.positive_freqs, self.classical)
 
 
 class PartFun(Info, StatFys):
+    """The partition function
+
+       This object contains all contributions to the partition function in
+       self.terms and makes sure they are properly initialized. It also
+       implements all the methods defined in StatFys, e.g. it can compute
+       the entropy, the free energy and so on.
+    """
     __reserved_names__ = set([
         "terms"
     ])
@@ -444,6 +511,22 @@ class PartFun(Info, StatFys):
 
 
 def compute_rate_coeff(pfs_react, pf_trans, temp, mol_volume=None):
+    """Computes a (forward) rate coefficient
+
+       The implementation is based on transition state theory.
+
+       Arguments:
+         pfs_react  --  a list of partition functions objects, one for each
+                        reactant
+         pf_trans  --  the partition function of the transition state
+         temp  --  the temperature
+
+       Optional argument:
+         mol_volume  --  function that computes the molecular volume as a
+                         function of temperature. It should be the same as
+                         the mol_volume function for the ExternalTranslation
+                         object of all the partition functions.
+    """
     delta_G = pf_trans.free_energy(temp) - sum(pf_react.free_energy(temp) for pf_react in pfs_react)
     log_result = -delta_G/(boltzmann*temp)
     if len(pfs_react) > 1:
@@ -454,6 +537,19 @@ def compute_rate_coeff(pfs_react, pf_trans, temp, mol_volume=None):
 
 
 def compute_equilibrium_constant(pfs_A, pfs_B, temp, mol_volume=None):
+    """Computes the equilibrium constant between some reactants and some products
+
+       Arguments:
+         pfs_A  --  a list of reactant partition functions
+         pfs_B  --  a list of product partition functions
+         temp  --  the temperature
+
+       Optional argument:
+         mol_volume  --  function that computes the molecular volume as a
+                         function of temperature. It should be the same as
+                         the mol_volume function for the ExternalTranslation
+                         object of all the partition functions.
+    """
     delta_G = 0.0
     delta_G += sum(pf_A.free_energy(temp) for pf_A in pfs_A)
     delta_G -= sum(pf_B.free_energy(temp) for pf_B in pfs_B)

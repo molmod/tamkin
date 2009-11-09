@@ -100,8 +100,18 @@ def rank_linearity(coordinates,svd_threshold=1e-5):
 
     transrot_basis contains the 6 global translations and rotations of the subsystem (6 x 3*molecule.size)
     """
-    transrot = transrot_basis(coordinates)
+    # TODO clean up printing statements
+    #print "coooor", coordinates
+    corr = numpy.sum(coordinates,0)/len(coordinates)  # geometrical center
+    #print "corr", corr
+    #print numpy.resize(corr,(len(coordinates),3))
+    #print "coooor", coordinates - numpy.resize(corr,(len(coordinates),3))
+    transrot = transrot_basis(coordinates - numpy.resize(corr,(len(coordinates),3)) )
+    #print "transrot", transrot
+
     A    = numpy.dot( transrot, transrot.transpose() )
     eigv = numpy.linalg.eigvalsh(A)
+    #print "svd: eigv", eigv
     rank = (abs(eigv) > abs(eigv[-1])*svd_threshold).sum()
+    #print "rank", rank
     return rank

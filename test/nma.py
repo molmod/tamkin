@@ -461,7 +461,7 @@ class NMATestCase(unittest.TestCase):
         self.check_ortho(nma.modes)
         self.assert_(len(nma.zeros)==3)
         expected_freqs = numpy.array([-0.23313896,  0.01475299,  0.06910995])
-        self.check_freqs(expected_freqs, nma, 4, check_zeros=True)
+        self.check_freqs(expected_freqs, nma, 0, check_zeros=True)
 
         #  ---  atoms of subsystem are collinear: not yet external_basis implemented...
         subs = load_subs_txt("input/an/fixed.02.txt")
@@ -470,7 +470,7 @@ class NMATestCase(unittest.TestCase):
         self.assert_(len(nma.zeros)==5)
         expected_freqs = numpy.array([ -3.30245504e-01,-2.51869284e-01, -1.16805787e-01,
                1.37273058e-01,1.82394281e-01,1.05116208e+03])
-        self.check_freqs(expected_freqs, nma, 1, check_zeros=True)
+        self.check_freqs(expected_freqs, nma, 0, check_zeros=True)
 
         #  --- atoms of subsystem are not collinear
         subs = load_subs_txt("input/an/fixed.03.txt")  # atom 1 to atom 7
@@ -494,7 +494,7 @@ class NMATestCase(unittest.TestCase):
         nma = NMA(molecule, VSANoMass(subs))
         self.assert_(len(nma.zeros)==3)
         expected_freqs = numpy.array([-0.4205594, 0.03940166, 0.13774798])
-        self.check_freqs(expected_freqs, nma, 4, check_zeros=True)
+        self.check_freqs(expected_freqs, nma, 0, check_zeros=True)
 
         #  ---  atoms of subsystem are collinear
         subs = load_subs_txt("input/an/fixed.02.txt")
@@ -502,7 +502,7 @@ class NMATestCase(unittest.TestCase):
         self.assert_(len(nma.zeros)==5)
         expected_freqs = numpy.array([-6.07975753e-01,-3.47371852e-01,6.34080688e-02,
                 1.05589989e-01,1.68657446e-01,1.21704836e+03])
-        self.check_freqs(expected_freqs, nma, 1,  check_zeros=True)
+        self.check_freqs(expected_freqs, nma, 0,  check_zeros=True)
 
         #  --- atoms of subsystem are not collinear
         subs = load_subs_txt("input/an/fixed.03.txt")  # atom 1 to atom 7
@@ -524,6 +524,13 @@ class NMATestCase(unittest.TestCase):
         nma.write_logfile_gaussian("input/an/ethanol.mbh.molden.log")
         self.check_ortho(nma.modes)   # write_logfile_gaussian should not have changed this
 
+    def test_mbh_ethane(self):
+        molecule = load_molecule_g03fchk("input/ethane/gaussian.fchk")
+        blocks = [[1, 0, 2, 6, 7], [1, 0, 3, 4, 5 ]]
+        nma = NMA(molecule, MBH(blocks))
+        self.assertEqual(len(nma.freqs), 7)
+        non_zero = [i for i in xrange(7) if i not in nma.zeros][0]
+        self.assertAlmostEqual(nma.freqs[non_zero]/lightspeed*cm, 314, 0)
 
     def test_phva_mbh(self):
         molecule = load_molecule_charmm("input/an/ethanol.cor","input/an/ethanol.hess.full")

@@ -61,6 +61,7 @@ from io import *
 from nma import *
 from nmatools import *
 from partf import *
+from rotor import *
 from tools import *
 from tunneling import *
 

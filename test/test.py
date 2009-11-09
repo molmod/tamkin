@@ -73,6 +73,7 @@ from tools import *
 from nma import *
 from nmatools import *
 from tunneling import *
+from rotor import *
 unittest.main()
 
 

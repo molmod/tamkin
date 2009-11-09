@@ -62,14 +62,15 @@ from molmod.io.gaussian03.fchk import FCHKFile
 from molmod.io.xyz import XYZFile
 from molmod.units import amu, calorie, avogadro, angstrom, cm, lightspeed, eV
 from molmod.data.periodic import periodic
+from molmod.molecular_graphs import MolecularGraph
 
 import numpy
 
 
 __all__ = [
-    "load_fixed_g03com", "load_molecule_g03fchk", "load_molecule_cp2k",
-    "load_molecule_cpmd", "load_molecule_charmm", "load_molecule_vasp",
-    "load_fixed_vasp",
+    "load_fixed_g03com", "load_molecule_g03fchk", "load_rotscan_g03",
+    "load_molecule_cp2k", "load_molecule_cpmd", "load_molecule_charmm",
+    "load_molecule_qchem", "load_molecule_vasp", "load_fixed_vasp",
     "load_chk", "dump_chk",
     "load_fixed_txt", "load_subs_txt", "load_envi_txt", "load_blocks_txt",
     "write_modes_for_VMD",
@@ -127,17 +128,70 @@ def load_molecule_g03fchk(filename_freq,filename_ener=None,filename_vdw=None): #
                  break
          f.close()
 
-
     return Molecule(
         fchk_freq.molecule.numbers,
         fchk_freq.molecule.coordinates,
         fchk_freq.fields["Real atomic weights"]*amu,
         fchk_ener.fields["Total Energy"]+vdw,
-        fchk_freq.fields["Cartesian Gradient"],
+        numpy.reshape(numpy.array(fchk_freq.fields["Cartesian Gradient"]), (len(fchk_freq.molecule.numbers),3)),
         fchk_freq.get_hessian(),
         fchk_freq.fields["Multiplicity"],
         None, # gaussian is very poor at computing the rotational symmetry number
         False,
+    )
+
+
+def load_rotscan_g03(fn_com, fn_fchk, top_indexes=None):
+    # find the line that specifies the dihedral angle
+    f = file(fn_com)
+    dihedral = None
+    for line in f:
+        if line.startswith("D"):
+            words = line.split()
+            if len(words) == 8 and words[5] == "S":
+                # gotcha
+                dihedral = tuple(int(word)-1 for word in words[1:5])
+                num_geoms = int(words[6])+1
+                break
+    f.close()
+    if dihedral is None:
+        raise IOError("Could not find the dihedral angle of the rotational scan")
+    # load all the energies and compute the corresponding angles
+    fchk = FCHKFile(fn_fchk, ignore_errors=True, field_labels=[
+        "Opt point     % 3i Results for each geome" % i for i in xrange(1,num_geoms+1)
+    ] + [
+        "Opt point     % 3i Geometries" % i for i in xrange(1,num_geoms+1)
+    ])
+    from molmod.ic import dihed_angle
+    energies = []
+    geometries = []
+    angles = []
+    for i in xrange(1,num_geoms+1):
+        energy = fchk.fields["Opt point     % 3i Results for each geome" % i][-2]
+        energies.append(energy)
+        coordinates = fchk.fields["Opt point     % 3i Geometries" % i][-fchk.molecule.size*3:].reshape((-1,3))
+        geometries.append(coordinates)
+        angles.append(dihed_angle(
+            coordinates[dihedral[0]], coordinates[dihedral[1]],
+            coordinates[dihedral[2]], coordinates[dihedral[3]],
+        )[0])
+    if top_indexes is None:
+        # figure out what the two parts of the molecule are
+        graph = MolecularGraph.from_geometry(fchk.molecule)
+        half1, half2 = graph.get_halfs(dihedral[1], dihedral[2])
+        if len(half2) > len(half1):
+            top_indexes = half1
+            top_indexes.discard(dihedral[1])
+        else:
+            top_indexes = half2
+            top_indexes.discard(dihedral[2])
+        top_indexes = [dihedral[1], dihedral[2]] + list(top_indexes)
+    return (
+        dihedral,
+        numpy.array(angles),
+        numpy.array(energies),
+        numpy.array(geometries),
+        top_indexes,
     )
 
 
@@ -395,6 +449,71 @@ def load_molecule_charmm(charmmfile_cor, charmmfile_hess,
     return Molecule(
         atomicnumbers, positions, masses, energy, gradient,
         hessian, 1, None, is_periodic
+    )
+
+
+def load_molecule_qchem(qchemfile, multiplicity=1, is_periodic = False):
+    """reading molecule from Q-Chem frequency run"""
+    f = file(qchemfile)
+    # get coords
+    for line in f:
+        if line.strip().startswith("Standard Nuclear Orientation (Angstroms)"):
+            break
+    f.next()
+    f.next()
+    positions = []
+    symbols = []
+    for line in f:
+        if line.strip().startswith("----"): break
+        words = line.split()
+        symbols.append(words[1])
+        coor = [float(words[2]),float(words[3]),float(words[4])]
+        positions.append(coor)
+    positions = numpy.array(positions)*angstrom
+    N = len(positions)    #nb of atoms
+
+    numbers = numpy.zeros(N,int)
+    for i, symbol in enumerate(symbols):
+        numbers[i] = periodic[symbol].number
+    masses = numpy.zeros(N,int)
+    for i, symbol in enumerate(symbols):
+        masses[i] = periodic[symbol].mass
+
+    # grep the SCF energy
+    energy = None
+    for line in f:
+        if line.strip().startswith("Cycle       Energy         DIIS Error"):
+            break
+    for line in f:
+        if line.strip().endswith("met"):
+            energy = float(line.split()[1]) # in hartree
+            break
+
+    # get Hessian
+    hessian = numpy.zeros((3*N,3*N),float)
+    for line in f:
+        if line.strip().startswith("Hessian of the SCF Energy"):
+            break
+    nb = int(numpy.ceil(N*3/6))
+    for i in range(nb):
+        f.next()
+        row = 0
+        for line in f:
+            words = line.split()
+            hessian[row, 6*i:6*(i+1)] = numpy.array(sum([[float(word)] for word in words[1:]],[])) #/ angstrom**2
+            row += 1
+            if row >= 3*N : break
+
+    f.close()
+
+    gradient = numpy.zeros((N,3), float)
+
+#        else:
+ #           raise IOError("Expecting seven words at each atom line in %s." % fn_geometry)
+
+    return Molecule(
+        numbers, positions, masses, energy, gradient, hessian, multiplicity,
+        None, is_periodic
     )
 
 

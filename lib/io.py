@@ -70,7 +70,7 @@ import numpy
 __all__ = [
     "load_fixed_g03com", "load_molecule_g03fchk", "load_rotscan_g03",
     "load_molecule_cp2k", "load_molecule_cpmd", "load_molecule_charmm",
-    "load_molecule_qchem", "load_molecule_vasp", "load_fixed_vasp", 
+    "load_molecule_qchem", "load_molecule_vasp", "load_fixed_vasp",
     "load_chk", "dump_chk",
     "load_fixed_txt", "load_subs_txt", "load_envi_txt", "load_blocks_txt",
     "write_modes_for_VMD",

@@ -58,8 +58,8 @@
 
 from tamkin import *
 
-from molmod.units import cm, amu, kjmol
-from molmod.constants import lightspeed
+from molmod.units import cm, amu, kjmol, joule, mol, kelvin
+from molmod.constants import lightspeed, boltzmann
 
 import unittest
 import numpy
@@ -256,6 +256,12 @@ class RotorTestCase(unittest.TestCase):
         # reference data from legacy code (Veronique & co)
         self.assertAlmostEqual(rotor.absolute_moment/amu, 11.092362911176032, 2)
         self.assertAlmostEqual(rotor.relative_moment/amu, 5.5461814555880098, 2)
+        self.assertAlmostEqual(numpy.exp(rotor.log_eval_terms(100.0)[1]), 0.12208E+00, 1)
+        self.assertAlmostEqual(rotor.heat_capacity_terms(100.0)[1]/(joule/mol/kelvin), 2.567, 0)
+        self.assertAlmostEqual(rotor.entropy_terms(100.0)[1]/(joule/mol), 0.766, 0)
+        self.assertAlmostEqual(numpy.exp(rotor.log_eval_terms(800.0)[1]), 0.21108E+01, 1)
+        self.assertAlmostEqual(rotor.heat_capacity_terms(800.0)[1]/(joule/mol/kelvin), 6.346, 1)
+        self.assertAlmostEqual(rotor.entropy_terms(800.0)[1]/(joule/mol), 14.824, 1)
 
         rotor.plot_levels("output/ethane_hindered_levels.png", 300)
         pf.write_to_file("output/ethane_hindered.txt")
@@ -283,6 +289,7 @@ class RotorTestCase(unittest.TestCase):
             pylab.plot(x, f+i)
         pylab.savefig("output/legacy_wavefunctions.png")
 
+        # check energy levels
         expected = numpy.array([
             1.7635118, 1.76361979, 5.11795465, 8.04553104, 8.1095722,
             10.3876796, 11.8999683, 12.9078395, 14.6739639, 16.7836847,
@@ -292,4 +299,5 @@ class RotorTestCase(unittest.TestCase):
         ])
         expected.sort()
         self.assertArraysAlmostEqual(energies[:10]/kjmol, expected[:10], 1e-3)
+        self.assertAlmostEqual(numpy.exp(-energies/(100*boltzmann)).sum()/3.0, 0.12208E+00, 5)
 

@@ -450,7 +450,7 @@ class Rotor(Info, StatFysTerms):
         Z = bfs.sum()
         return numpy.array([
             -log_eval_vibrations(temp, self.cancel_freq, classical=False),
-            numpy.log(Z),
+            numpy.log(Z) - numpy.log(self.rotsym),
         ])
 
     def log_deriv_terms(self, temp):

@@ -96,6 +96,7 @@ class HarmonicBasis(object):
         """Initialize a harmonic basis
 
            Basis functions:
+             1/sqrt(a/2)
              cos(2*pi*x/a)/sqrt(a/2)
              sin(2*pi*x/a)/sqrt(a/2)
              ...
@@ -109,7 +110,7 @@ class HarmonicBasis(object):
         self.nmax = nmax
         self.a = a
 
-    size = property(lambda self: 2*self.nmax)
+    size = property(lambda self: 2*self.nmax+1)
 
     def get_empty_op(self):
         """Returns an empty operator (zero)"""
@@ -132,28 +133,39 @@ class HarmonicBasis(object):
         factor = (0.5/mass*(2*numpy.pi/self.a)**2)
         tmp = factor*numpy.arange(1, self.nmax+1)**2
         diag = op.ravel()[::self.size+1]
-        diag[::2] = tmp
-        diag[1::2] = tmp
+        diag[1::2] += tmp
+        diag[2::2] += tmp
 
     def _add_potential_op(self, op, potential):
         """Add the potential energy to the given operator"""
-        # blocks
-        c = potential[::2]/(numpy.sqrt(2*self.a))
-        s = potential[1::2]/(numpy.sqrt(2*self.a))
-        for i0 in xrange(self.nmax):
-            for i1 in xrange(self.nmax):
-                k = (i0+1)+(i1+1)-1
-                if k < self.nmax:
-                    op[2*i0  ,2*i1  ] += c[k] # cc
-                    op[2*i0+1,2*i1+1] -= c[k] # ss
-                    op[2*i0  ,2*i1+1] += s[k] # cs
-                    op[2*i0+1,2*i1  ] += s[k] # sc
-                k = abs(i0-i1)-1
-                if k>= 0 and k < self.nmax:
-                    op[2*i0  ,2*i1  ] += c[k] # cc
-                    op[2*i0+1,2*i1+1] += c[k] # ss
-                    op[2*i0  ,2*i1+1] -= s[k] # cs
-                    op[2*i0+1,2*i1  ] -= s[k] # sc
+        c = numpy.zeros(self.nmax+1,float)
+        s = numpy.zeros(self.nmax+1,float)
+        c[0] = potential[0]/numpy.sqrt(self.a)
+        c[1:] = potential[1::2]/numpy.sqrt(self.a)
+        s[1:] = potential[2::2]/numpy.sqrt(self.a)
+        op[0,0] += c[0]
+        for i0 in xrange(1,self.nmax+1):
+            op[2*i0-1,0] += c[i0]
+            op[2*i0-0,0] += s[i0]
+            op[0,2*i0-1] += c[i0]
+            op[0,2*i0-0] += s[i0]
+        c[1:] /= numpy.sqrt(2)
+        s[1:] /= numpy.sqrt(2)
+        for i0 in xrange(1,self.nmax+1):
+            for i1 in xrange(1,self.nmax+1):
+                k = i0+i1
+                if k <= self.nmax:
+                    op[2*i0-1,2*i1-1] += c[k] # cc
+                    op[2*i0-0,2*i1-0] -= c[k] # ss
+                    op[2*i0-1,2*i1-0] += s[k] # cs
+                    op[2*i0-0,2*i1-1] += s[k] # sc
+                k = abs(i0-i1)
+                if k <= self.nmax:
+                    sign = 2*(i0>i1)-1
+                    op[2*i0-1,2*i1-1] += c[k] # cc
+                    op[2*i0-0,2*i1-0] += c[k] # ss
+                    op[2*i0-1,2*i1-0] -= sign*s[k] # cs
+                    op[2*i0-0,2*i1-1] += sign*s[k] # sc
 
     def solve(self, mass, potential, evecs=False):
         """Return the energies and wavefunctions for the given mass and potential
@@ -175,11 +187,11 @@ class HarmonicBasis(object):
              grid  --  the values at which the function must be evaluated
              coeffs  --  the expansion coefficients
         """
-        result = numpy.zeros(grid.shape, float)
+        result = numpy.zeros(grid.shape, float) + coeffs[0]/numpy.sqrt(self.a)
         for i in xrange(self.nmax):
             arg = ((i+1)*2*numpy.pi/self.a)*grid
-            result += (coeffs[2*i  ]/numpy.sqrt(self.a/2))*numpy.cos(arg)
-            result += (coeffs[2*i+1]/numpy.sqrt(self.a/2))*numpy.sin(arg)
+            result += (coeffs[2*i+1]/numpy.sqrt(self.a/2))*numpy.cos(arg)
+            result += (coeffs[2*i+2]/numpy.sqrt(self.a/2))*numpy.sin(arg)
         return result
 
     def fit_fn(self, grid, f, dofmax, rotsym=1, even=False, rcond=0.0):
@@ -216,19 +228,18 @@ class HarmonicBasis(object):
                 counter += 1
 
         coeffs, residuals, rank, S = numpy.linalg.lstsq(A, f, rcond)
-        reference = -coeffs[0]/numpy.sqrt(self.a)
-        coeffs = coeffs[1:]
 
         result = numpy.zeros(self.size)
+        result[0] = coeffs[0]
         if even:
-            tmp = result[2*rotsym-2::2*rotsym]
-            tmp[:ncos] = coeffs
+            tmp = result[2*rotsym-1::2*rotsym]
+            tmp[:ncos] = coeffs[1:]
         else:
-            tmp = result[2*rotsym-2::2*rotsym]
-            tmp[:ncos] = coeffs[::2]
             tmp = result[2*rotsym-1::2*rotsym]
             tmp[:ncos] = coeffs[1::2]
-        return reference, result
+            tmp = result[2*rotsym-0::2*rotsym]
+            tmp[:ncos] = coeffs[2::2]
+        return result
 
 
 def compute_cancel_frequency(molecule, top_indexes):
@@ -344,9 +355,9 @@ class Rotor(Info, StatFysTerms):
             angles, energies, dofmax = self.potential
             angles -= numpy.floor(angles/a)*a # apply periodic boundary conditions
             energies -= energies.min() # set reference to zero
-            self.v_ref, self.v_coeffs = self.hb.fit_fn(angles, energies, dofmax, self.rotsym, self.even)
+            self.v_coeffs = self.hb.fit_fn(angles, energies, dofmax, self.rotsym, self.even)
             self.energy_levels = self.hb.solve(self.relative_moment, self.v_coeffs)
-            self.energy_levels = self.energy_levels[:self.num_levels]-self.v_ref
+            self.energy_levels = self.energy_levels[:self.num_levels]
 
     def dump(self, f):
         """Write all the information about the rotor to a file
@@ -411,13 +422,13 @@ class Rotor(Info, StatFysTerms):
             step = 0.001
             x = numpy.arange(0.0, 2*numpy.pi*(1+0.5*step), 2*numpy.pi*step)
             v = self.hb.eval_fn(x, self.v_coeffs)
-            pylab.plot(x/deg, (v-self.v_ref)/kjmol, "k-", linewidth=2)
+            pylab.plot(x/deg, v/kjmol, "k-", linewidth=2)
         # plot the energy levels
         eks = self.energy_levels/(temp*boltzmann)
         bfs = numpy.exp(-eks)
         bfs /= bfs.sum()
         for i in xrange(min(num, self.num_levels)):
-            e = (self.energy_levels[i]-self.v_ref)/kjmol
+            e = (self.energy_levels[i])/kjmol
             pylab.axhline(e, color="b", linewidth=0.5)
             pylab.axhline(e, xmax=bfs[i], color="b", linewidth=2)
         pylab.xlim(0,360)

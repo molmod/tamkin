@@ -58,7 +58,7 @@
 
 from tamkin import *
 
-from molmod.units import cm
+from molmod.units import cm, amu, kjmol
 from molmod.constants import lightspeed
 
 import unittest
@@ -92,10 +92,10 @@ class RotorTestCase(unittest.TestCase):
         a = 10.0
         hb = HarmonicBasis(3, a)
         grid = numpy.arange(0.0, 10.01, 0.1)
-        fn = hb.eval_fn(grid, [0,0,0,0,3,0])
+        fn = hb.eval_fn(grid, [0,0,0,0,0,3,0])
         expected = 3*numpy.cos(grid*6.0*numpy.pi/a)/numpy.sqrt(a/2)
         self.assertArraysAlmostEqual(fn, expected)
-        fn = hb.eval_fn(grid, [0,0,0,2,0,0])
+        fn = hb.eval_fn(grid, [0,0,0,0,2,0,0])
         expected = 2*numpy.sin(grid*4.0*numpy.pi/a)/numpy.sqrt(a/2)
         self.assertArraysAlmostEqual(fn, expected)
 
@@ -104,9 +104,9 @@ class RotorTestCase(unittest.TestCase):
         hb = HarmonicBasis(10, a)
         grid = numpy.arange(0.0, 10.01, 1.0)
         f = numpy.exp(-((grid-5)/2)**2)
-        ref, coeffs = hb.fit_fn(grid, f, 10)
+        coeffs = hb.fit_fn(grid, f, 10)
         g = hb.eval_fn(grid, coeffs)
-        self.assertArraysAlmostEqual(f, g-ref)
+        self.assertArraysAlmostEqual(f, g)
 
     def test_fit_fn_sym(self):
         a = 9.0
@@ -114,30 +114,89 @@ class RotorTestCase(unittest.TestCase):
         grid = numpy.arange(0.0, 1.501, 0.1)
         f = numpy.exp(-(grid/2)**2)
         f -= f.mean()
-        ref, coeffs = hb.fit_fn(grid, f, 30, rotsym=3, even=True)
+        coeffs = hb.fit_fn(grid, f, 30, rotsym=3, even=True)
         g = hb.eval_fn(grid, coeffs)
-        self.assertArraysAlmostEqual(f, g-ref)
+        self.assertArraysAlmostEqual(f, g)
         grid = numpy.arange(0.0, 9.001, 0.1)
         g = hb.eval_fn(grid, coeffs)
-        self.assertArraysAlmostEqual(f, g[0:16]-ref)
-        self.assertArraysAlmostEqual(f, g[30:46]-ref)
-        self.assertArraysAlmostEqual(f, g[60:76]-ref)
-        self.assertArraysAlmostEqual(f[::-1], g[15:31]-ref)
-        self.assertArraysAlmostEqual(f[::-1], g[45:61]-ref)
-        self.assertArraysAlmostEqual(f[::-1], g[75:91]-ref)
+        self.assertArraysAlmostEqual(f, g[0:16])
+        self.assertArraysAlmostEqual(f, g[30:46])
+        self.assertArraysAlmostEqual(f, g[60:76])
+        self.assertArraysAlmostEqual(f[::-1], g[15:31])
+        self.assertArraysAlmostEqual(f[::-1], g[45:61])
+        self.assertArraysAlmostEqual(f[::-1], g[75:91])
 
         import pylab
         pylab.clf()
-        pylab.plot(grid, g-ref, "k-", lw=2)
+        pylab.plot(grid, g, "k-", lw=2)
         pylab.plot(grid[:16], f, "rx", mew=2)
         pylab.savefig("output/test_fit_fn_sym.png")
+
+    def test_potential_op(self):
+        a = 10.0
+        mass = 1.0
+        nmax = 10
+        v_exp = numpy.zeros(nmax+1, complex)
+        v_exp[0] = numpy.random.normal(0,1)
+        v_exp[1:] += numpy.random.normal(0,1,nmax)
+        v_exp[1:] += 1j*numpy.random.normal(0,1,nmax)
+        #v_exp[3] = 1.0
+        def get_v(index):
+            if index>nmax or -index>nmax:
+                return 0
+            elif index>=0:
+                return v_exp[index]
+            else:
+                return numpy.conjugate(v_exp[-index])
+        v_op_exp = numpy.zeros((2*nmax+1,2*nmax+1), complex)
+        for i0 in xrange(2*nmax+1):
+            k0 = ((i0-1)/2+1)*(2*(i0%2)-1)
+            for i1 in xrange(2*nmax+1):
+                k1 = ((i1-1)/2+1)*(2*(i1%2)-1)
+                #print (i0,i1), (k0,k1), k0-k1
+                v_op_exp[i0,i1] = get_v(k0-k1)/numpy.sqrt(a)
+        #for row in v_op_exp:
+        #    print "".join({True: " ", False: "X"}[v==0] for v in row)
+        hb = HarmonicBasis(nmax, a)
+        v_cs = numpy.zeros(2*nmax+1, float)
+        v_cs[0] = v_exp.real[0]
+        v_cs[1::2] = numpy.sqrt(2.0)*v_exp.real[1:]
+        v_cs[2::2] = -numpy.sqrt(2.0)*v_exp.imag[1:]
+        v_op_cs = hb.get_empty_op()
+        hb._add_potential_op(v_op_cs, v_cs)
+
+        lc = numpy.array([
+            [1.0, -1.0j],
+            [1.0, 1.0j],
+        ])/numpy.sqrt(2)
+
+        lc_dagger = lc.transpose().conjugate()
+        for i0 in xrange(nmax):
+            for i1 in xrange(nmax):
+                check = numpy.dot(lc_dagger, numpy.dot(v_op_exp[2*i0+1:2*i0+3,2*i1+1:2*i1+3], lc))
+                self.assert_(abs(check.imag).max() < 1e-3)
+                check = check.real
+                self.assertArraysAlmostEqual(
+                    v_op_cs[2*i0+1:2*i0+3,2*i1+1:2*i1+3],
+                    check,
+                    1e-3
+                )
 
     def test_flat(self):
         a = 10.0
         mass = 1.0
         hb = HarmonicBasis(10, a)
-        energies = hb.solve(mass, numpy.zeros(hb.size))
-        indexes = numpy.array([1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10])
+        energies, orbitals = hb.solve(mass, numpy.zeros(hb.size), evecs=True)
+
+        import pylab
+        x = numpy.arange(0.0, a, 0.001)
+        pylab.clf()
+        for i in xrange(10):
+            f = hb.eval_fn(x, orbitals[:,i])
+            pylab.plot(x, f+i)
+        pylab.savefig("output/flat_wavefunctions.png")
+
+        indexes = numpy.array([0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10])
         expected = 0.5/mass*(2*indexes*numpy.pi/a)**2
         self.assertArraysAlmostEqual(energies, expected, 1e-4)
 
@@ -147,14 +206,16 @@ class RotorTestCase(unittest.TestCase):
         x = numpy.arange(0.0, a, 0.1)
         v = 0.5*(x-a/2)**2
         #v = 5*(1+numpy.cos(2*numpy.pi*x/a))**2
-        v_ref, v_coeffs = hb.fit_fn(x, v, 20, even=True)
-        self.assertAlmostEqual(v_ref, -v.mean())
+        v_coeffs = hb.fit_fn(x, v, 20, even=True)
         energies, orbitals = hb.solve(1, v_coeffs, evecs=True)
         expected = numpy.arange(10) + 0.5
-        self.assertAlmostEqual(energies[0]-v_ref, 1.5, 1)
-        self.assertAlmostEqual(energies[2]-v_ref, 3.5, 1)
-        self.assertAlmostEqual(energies[4]-v_ref, 5.5, 1)
-        self.assertAlmostEqual(energies[6]-v_ref, 7.5, 1)
+        self.assertAlmostEqual(energies[0], 0.5, 1)
+        self.assertAlmostEqual(energies[1], 1.5, 1)
+        self.assertAlmostEqual(energies[2], 2.5, 1)
+        self.assertAlmostEqual(energies[3], 3.5, 1)
+        self.assertAlmostEqual(energies[4], 4.5, 1)
+        self.assertAlmostEqual(energies[5], 5.5, 1)
+        self.assertAlmostEqual(energies[6], 6.5, 1)
 
         import pylab
         x = numpy.arange(0.0, a, 0.001)
@@ -162,14 +223,14 @@ class RotorTestCase(unittest.TestCase):
         for i in xrange(10):
             f = hb.eval_fn(x, orbitals[:,i])
             pylab.plot(x, f)
-        pylab.savefig("output/test_harmonic_wavefunctions.png")
+        pylab.savefig("output/harmonic_wavefunctions.png")
         pylab.clf()
         v = hb.eval_fn(x, v_coeffs)
-        pylab.plot(x, v-v_ref)
+        pylab.plot(x, v)
         for energy in energies[:10]:
-            pylab.axhline(energy-v_ref)
+            pylab.axhline(energy)
         pylab.xlim(0,a)
-        pylab.savefig("output/test_harmonic_levels.png")
+        pylab.savefig("output/harmonic_levels.png")
 
     def test_ethane_hindered(self):
         molecule = load_molecule_g03fchk("input/ethane/gaussian.fchk")
@@ -189,11 +250,46 @@ class RotorTestCase(unittest.TestCase):
             rotor,
         ])
         self.assertArraysAlmostEqual(
-            rotor.hb.eval_fn(angles, rotor.v_coeffs)-rotor.v_ref,
+            rotor.hb.eval_fn(angles, rotor.v_coeffs),
             energies
         )
+        # reference data from legacy code (Veronique & co)
+        self.assertAlmostEqual(rotor.absolute_moment/amu, 11.092362911176032, 2)
+        self.assertAlmostEqual(rotor.relative_moment/amu, 5.5461814555880098, 2)
+
         rotor.plot_levels("output/ethane_hindered_levels.png", 300)
         pf.write_to_file("output/ethane_hindered.txt")
         ta = ThermoAnalysis(pf, [200,300,400,500,600,700,800,900])
         ta.write_to_file("output/ethane_hindered_thermo.csv")
+
+    def test_legacy1(self):
+        a = 2*numpy.pi
+        mass = 5.5*amu
+        hb = HarmonicBasis(100, a)
+        v_coeffs = numpy.zeros(hb.size, float)
+        v_coeffs[0] = 0.5*11.5*kjmol*numpy.sqrt(a)
+        v_coeffs[5] = 0.5*11.5*kjmol*numpy.sqrt(a/2)
+        self.assertArraysAlmostEqual(
+            hb.eval_fn(numpy.array([0, a/6]), v_coeffs),
+            numpy.array([11.5*kjmol, 0.0]),
+        )
+        energies, orbitals = hb.solve(mass, v_coeffs, evecs=True)
+
+        import pylab
+        x = numpy.arange(0.0, a, 0.001)
+        pylab.clf()
+        for i in xrange(10):
+            f = hb.eval_fn(x, orbitals[:,i])
+            pylab.plot(x, f+i)
+        pylab.savefig("output/legacy_wavefunctions.png")
+
+        expected = numpy.array([
+            1.7635118, 1.76361979, 5.11795465, 8.04553104, 8.1095722,
+            10.3876796, 11.8999683, 12.9078395, 14.6739639, 16.7836847,
+            19.1722507,
+            1.76361979,  5.11795465, 5.12218335, 8.1095722, 10.3876796,
+            10.8661504, 12.9078395, 14.6739639, 16.7544718, 19.1722507,
+        ])
+        expected.sort()
+        self.assertArraysAlmostEqual(energies[:10]/kjmol, expected[:10], 1e-3)
 

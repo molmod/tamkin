@@ -200,6 +200,36 @@ class RotorTestCase(unittest.TestCase):
         expected = 0.5/mass*(2*indexes*numpy.pi/a)**2
         self.assertArraysAlmostEqual(energies, expected, 1e-4)
 
+    def test_flat2(self):
+        molecule = load_molecule_g03fchk("input/ethane/gaussian.fchk")
+        nma = NMA(molecule)
+        dihedral, angles, energies, geometries, top_indexes = load_rotscan_g03(
+            "input/rotor/gaussian.com", "input/rotor/gaussian.fchk"
+        )
+        energies[:] = 0.0
+        cancel_freq = compute_cancel_frequency(molecule, top_indexes)
+        self.assertAlmostEqual(cancel_freq/lightspeed*cm, 314, 0)
+        rotor1 = Rotor(
+            top_indexes, cancel_freq, rotsym=3, even=True,
+            potential=(angles, energies, 5), num_levels=50
+        )
+        pf1 = PartFun(nma, [
+            ExternalTranslation(),
+            ExternalRotation(6),
+            rotor1,
+        ])
+        rotor2 = Rotor(
+            top_indexes, cancel_freq, rotsym=3, even=True,
+            potential=None, num_levels=50
+        )
+        pf2 = PartFun(nma, [
+            ExternalTranslation(),
+            ExternalRotation(6),
+            rotor2,
+        ])
+        self.assertArraysAlmostEqual(rotor1.energy_levels, rotor2.energy_levels)
+
+
     def test_harmonic(self):
         a = 20.0
         hb = HarmonicBasis(20, a)

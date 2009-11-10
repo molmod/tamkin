@@ -343,8 +343,9 @@ class Rotor(Info, StatFysTerms):
         if self.potential is None:
             # free rotor
             self.energy_levels = numpy.zeros(self.num_levels, float)
-            self.energy_levels[::2] = numpy.arange(self.num_levels/2)**2/(2*self.relative_moment)
-            self.energy_levels[1::2] = self.energy_levels[::2]
+            for i in xrange(self.num_levels-1):
+                index = i/2+1
+                self.energy_levels[i+1] = index**2/(2*self.relative_moment)
             self.hb = None
             self.v_coeffs = None
             self.v_ref = 0.0

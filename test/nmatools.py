@@ -76,3 +76,9 @@ class NMAToolsTestCase(unittest.TestCase):
     def check_overlap(self):
         pass
 
+    def test_eigenvalue_sensitivity(self):
+        molecule = load_molecule_charmm("input/an/ethanol.cor","input/an/ethanol.hess.full")
+        nma = NMA(molecule)
+        sensit = calculate_sensitivity(nma, 5, filename="output/ethanol.eigvalsensitivity.csv")
+        #for i in range(len(sensit)):
+        #    print max(abs(sensit[:,i]))

@@ -56,6 +56,8 @@
 # --
 
 import numpy
+from molmod.units import cm
+from molmod.constants import lightspeed
 #from molmod.units import kjmol, second, meter, mol, K, J
 #from molmod.constants import boltzmann
 
@@ -64,7 +66,8 @@ import numpy
 
 __all__ = [
            "calculate_overlap_nma", "calculate_overlap",
-           "write_overlap"
+           "write_overlap",
+           "calculate_sensitivity",
           ]
 
 
@@ -196,7 +199,7 @@ def calculate_overlapmatrix(mat1, mat2):
     """Calculate overlap of matrices."""
     # check dimensions
     if mat1.shape[0] != mat2.shape[0] :
-        raise ValueError("Length of columns in mat1 and mat2 should be equal, but found "+str(mat1.shape[0])+" and "+str(mat2.shape[O]) )
+        raise ValueError("Length of columns in mat1 and mat2 should be equal, but found "+str(mat1.shape[0])+" and "+str(mat2.shape[0]) )
     # calculate overlap
     return numpy.dot(numpy.transpose(mat1), mat2)
 
@@ -209,6 +212,9 @@ def write_overlap(freqs1, freqs2, overlap, filename=None):
     freqs1 | mat1^T . mat2
     ------------------------
     """
+    #freqs1 = freqs1 /lightspeed*cm
+    #freqs2 = freqs2 /lightspeed*cm
+
     # write to file
     if filename==None:
         filename="overlap.csv"   # TODO sys.currentdir
@@ -260,5 +266,19 @@ def get_Delta_vector_nma(molecule1, molecule2):
     return Delta
 
 
-def calculate_sensitivity(nma, i):
-    pass
+def calculate_sensitivity(nma, index, filename = None):
+    L = len(nma.modes)
+    mode = nma.modes[:,index]
+    # un-mass-weight the mode   - NO assume wrt to mass weighted Hessian elements
+    #for at,mass in enumerate(nma.masses):
+    #    mode[3*at:3*(at+1)] /= numpy.sqrt(mass)
+    mat = 2*numpy.dot( numpy.reshape(mode,(L,1)), numpy.reshape(mode,(1,L)) )
+    for i in range(L):
+        mat[i,i] = mat[i,i] - mode[i]**2
+    #points = numpy.arange(L)*4000.0 #/(cm/lightspeed)
+    #if filename is not None:
+    #    write_overlap(points, points, numpy.sqrt(abs(mat)), filename = filename)   # reuse this function
+    vals,vecs = numpy.linalg.eigh(mat)
+    #print vals
+    return mat
+

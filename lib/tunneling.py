@@ -201,6 +201,7 @@ class Wigner(TunnelingCorrection):
 
     def __call__(self, temps):
         """Compute the correction for an array of temperatures"""
+        temps = numpy.array(temps)   # assure type array
         h = 2*numpy.pi # the Planck constant in atomic units
         return 1+(h*self.nu/(boltzmann*temps))**2/24
 

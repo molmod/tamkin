@@ -59,5 +59,6 @@
   rm -v arrhenius.png parameters.png reaction.txt
 )
 
-
-
+( cd 008_ethane_rotor/
+  rm -v energy_levels.png partfun.txt thermo.csv
+)

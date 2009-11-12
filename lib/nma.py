@@ -749,10 +749,13 @@ class MBH(Treatment):
 
            Frequencies and modes are calculated with the MBH approach:
            Mobile Block Hessian method
-           -  ... (2007)
-           -  ... (2007)
+           -  J. Chem. Phys. 126 (22): Art. No. 224102, 2007
+           -  J. Chem. Phys. 127 (16), Art. No. 164108, 2007
+           Mobile Block Hessian method with linked blocks
+           -  J. Chem. Theory Comput. 5 (5), 1203-1215, 2009
+           -  J. Chem. Phys. 130 (18), Art. No. 084107, 2009
 
-           MBH is ...
+           MBH is ...  # TODO fill in
 
            One argument:
              blocks  --  a list of blocks, each block is a list of atoms,

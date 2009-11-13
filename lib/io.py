@@ -197,6 +197,7 @@ def load_rotscan_g03(fn_com, fn_fchk, top_indexes=None):
 
 def load_molecule_cp2k(fn_xyz, fn_sp, fn_freq, multiplicity=1, is_periodic=True):
     molecule = XYZFile(fn_xyz).get_molecule()
+    masses = numpy.array([periodic[number].mass for number in molecule.numbers])
 
     # go trhough the single point file: energy and gradient
     energy = None
@@ -224,30 +225,7 @@ def load_molecule_cp2k(fn_xyz, fn_sp, fn_freq, multiplicity=1, is_periodic=True)
         raise IOError("Could not read energy and/or gradient (forces) from single point file.")
     f.close()
 
-    # go through the freq file: masses, hessian
-    f = file(fn_freq)
-    masses = numpy.zeros(molecule.size,float)
-    repeat = True
-    while repeat:
-        line = f.readline()
-        words = line.split()
-        if line == "":    # masses not found
-            repeat = False
-            masses = numpy.array([periodic[number].mass for number in molecule.numbers])
-        else:
-            words = line.split()
-            if len(words) >= 2:
-              if words[0] == "Atom" and words[-1] == "Mass" :
-        #if line.startswith("  Atom  Kind  Element       X           Y           Z          Z(eff)       Mass") or \
-        #   line.startswith("  Atom  Kind  ATM_TYP       X           Y           Z          q(eff)       Mass"):
-                repeat = False
-                line = f.readline()
-                for i in range(molecule.size):
-                    line = f.readline()
-                    words = line.split()
-                    masses[i] = float(words[-1])*amu
-    f.close()
-
+    # go through the freq file: hessian
     f = file(fn_freq)
     hessian = None
     while True:

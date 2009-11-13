@@ -455,6 +455,14 @@ class PartFun(Info, StatFys):
     ])
 
     def __init__(self, nma, terms=None):
+        """Initialize the PartFun object
+
+        Arguments:
+          nma  --  NMA object
+        Optional arguments:
+          terms  --  list to select the contributions to the partition function
+                     e.g. [Vibrations(classical=True), ExternalRotation(1)]
+        """
         if terms is None:
             terms = []
         self.terms = terms

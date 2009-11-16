@@ -171,9 +171,9 @@ class ThermoTable(object):
     def dump(self, f):
         """Dumps the table in csv format"""
         print >> f, '"%s","[%s]"' % (self.label, self.unit_name)
-        print >> f, '"Temperatures",', ",".join("%.1f" % temp for temp in self.temps)
+        print >> f, '"Temperatures",%s' % ",".join("%.1f" % temp for temp in self.temps)
         for key, row in zip(self.keys, self.data):
-            print >> f, '"%s",' % key, ",".join(self.format % (value/self.unit) for value in row)
+            print >> f, '"%s",%s' % (key, ",".join(self.format % (value/self.unit) for value in row))
 
 
 class ReactionAnalysis(object):

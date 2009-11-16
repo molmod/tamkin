@@ -206,7 +206,7 @@ class RotorTestCase(unittest.TestCase):
         dihedral, angles, energies, geometries, top_indexes = load_rotscan_g03(
             "input/rotor/gaussian.log"
         )
-        energies[:] = 0.0
+        energies[:] = nma.energy
         cancel_freq = compute_cancel_frequency(molecule, top_indexes)
         self.assertAlmostEqual(cancel_freq/lightspeed*cm, 314, 0)
         rotor1 = Rotor(

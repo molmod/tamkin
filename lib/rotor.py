@@ -355,7 +355,7 @@ class Rotor(Info, StatFysTerms):
             self.hb = HarmonicBasis(self.num_levels, a)
             angles, energies, dofmax = self.potential
             angles -= numpy.floor(angles/a)*a # apply periodic boundary conditions
-            energies -= energies.min() # set reference to zero
+            energies -= nma.energy # set reference energy
             self.v_coeffs = self.hb.fit_fn(angles, energies, dofmax, self.rotsym, self.even)
             self.energy_levels = self.hb.solve(self.relative_moment, self.v_coeffs)
             self.energy_levels = self.energy_levels[:self.num_levels]

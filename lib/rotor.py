@@ -434,7 +434,7 @@ class Rotor(Info, StatFysTerms):
             pylab.axhline(e, color="b", linewidth=0.5)
             pylab.axhline(e, xmax=bfs[i], color="b", linewidth=2)
         pylab.xlim(0,360)
-        pylab.ylim(0)
+        pylab.ylim(self.potential[1].min()/kjmol)
         pylab.ylabel("Energy [kjmol]")
         pylab.xlabel("Dihedral angle [deg]")
         pylab.savefig(filename)

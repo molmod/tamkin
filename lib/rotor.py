@@ -64,7 +64,8 @@
 """
 
 from tamkin.partf import Info, StatFysTerms, log_eval_vibrations, \
-    log_deriv_vibrations, log_deriv2_vibrations
+    log_deriv_vibrations, log_deriv2_vibrations, log_eval_levels, \
+    log_deriv_levels, log_deriv2_levels
 from tamkin.nma import NMA, MBH
 
 from molmod.units import deg, kjmol, angstrom, cm, amu
@@ -446,12 +447,9 @@ class Rotor(Info, StatFysTerms):
 
            Returns: 1D numpy arrays with contributions
         """
-        eks = self.energy_levels/(temp*boltzmann)
-        bfs = numpy.exp(-eks)
-        Z = bfs.sum()
         return numpy.array([
             -log_eval_vibrations(temp, self.cancel_freq, classical=False),
-            numpy.log(Z) - numpy.log(self.rotsym),
+            log_eval_levels(temp, self.energy_levels) - numpy.log(self.rotsym),
         ])
 
     def log_deriv_terms(self, temp):
@@ -463,12 +461,9 @@ class Rotor(Info, StatFysTerms):
 
            Returns: 1D numpy arrays with contributions
         """
-        eks = self.energy_levels/(temp*boltzmann)
-        bfs = numpy.exp(-eks)
-        Z = bfs.sum()
         return numpy.array([
             -log_deriv_vibrations(temp, self.cancel_freq, classical=False),
-            (bfs*eks).sum()/Z/temp,
+            log_deriv_levels(temp, self.energy_levels),
         ])
 
     def log_deriv2_terms(self, temp):
@@ -480,12 +475,9 @@ class Rotor(Info, StatFysTerms):
 
            Returns: 1D numpy arrays with contributions
         """
-        eks = self.energy_levels/(temp*boltzmann)
-        bfs = numpy.exp(-eks)
-        Z = bfs.sum()
         return numpy.array([
             -log_deriv2_vibrations(temp, self.cancel_freq, classical=False),
-            (bfs*eks*(eks-2)).sum()/Z/temp**2 - ((bfs*eks).sum()/temp/Z)**2
+            log_deriv2_levels(temp, self.energy_levels),
         ])
 
 

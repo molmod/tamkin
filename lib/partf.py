@@ -87,6 +87,7 @@ import numpy
 
 __all__ = [
     "IdealGasVolume", "FixedVolume", "Info", "StatFys", "StatFysTerms",
+    "log_eval_levels", "log_deriv_levels", "log_deriv2_levels",
     "Electronic", "ExternalTranslation", "ExternalRotation", "Vibrations",
     "log_eval_vibrations", "log_deriv_vibrations", "log_deriv2_vibrations",
     "PartFun", "compute_rate_coeff", "compute_equilibrium_constant"
@@ -264,6 +265,31 @@ class StatFysTerms(StatFys):
     def free_energy_terms(self, temp, log_eval=None):
         """Computes the free energy per molecule (separate terms)"""
         return self.free_energy(temp, self.log_eval_terms)
+
+
+def log_eval_levels(temp, energy_levels):
+    """The logarithm of the partition function for a set of energy levels"""
+    # this is defined as a function because multiple classes need it
+    eks = energy_levels/(temp*boltzmann)
+    bfs = numpy.exp(-eks)
+    Z = bfs.sum()
+    return numpy.log(Z)
+
+def log_deriv_levels(temp, energy_levels):
+    """The derivative of the logarithm of the partition function for a set of energy levels"""
+    # this is defined as a function because multiple classes need it
+    eks = energy_levels/(temp*boltzmann)
+    bfs = numpy.exp(-eks)
+    Z = bfs.sum()
+    return (bfs*eks).sum()/Z/temp
+
+def log_deriv2_levels(temp, energy_levels):
+    """The second derivative of the logarithm of the partition function for a set of energy levels"""
+    # this is defined as a function because multiple classes need it
+    eks = energy_levels/(temp*boltzmann)
+    bfs = numpy.exp(-eks)
+    Z = bfs.sum()
+    return (bfs*eks*(eks-2)).sum()/Z/temp**2 - ((bfs*eks).sum()/temp/Z)**2
 
 
 class Electronic(Info, StatFys):
@@ -498,6 +524,10 @@ class PartFun(Info, StatFys):
 
     def log_deriv2(self, temp):
         return sum(term.log_deriv2(temp) for term in self.terms)
+
+    def internal_energy(self, temp):
+        """Computes the internal energy"""
+        return StatFys.internal_energy(self, temp) + self.energy
 
     def entropy(self, temp):
         """Compute the total entropy"""

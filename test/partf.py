@@ -232,7 +232,7 @@ class PartFunTestCase(unittest.TestCase):
         self.assertAlmostEqual(pf.vibrational.heat_capacity(298.15)/(calmolK), 13.264, 2)
         self.assertAlmostEqual(pf.vibrational.entropy(298.15)/(calmolK), 10.710, 2)
         # total
-        self.assertAlmostEqual(pf.internal_energy(298.15)/(kcalmol), 53.121, 2)
+        self.assertAlmostEqual((pf.internal_energy(298.15)-pf.energy)/(kcalmol), 53.121, 2)
         self.assertAlmostEqual(pf.heat_capacity(298.15)/(calmolK), 19.225, 2)
         self.assertAlmostEqual(pf.entropy(298.15)/(calmolK), 74.696, 2)
         # free energy of the molecule:

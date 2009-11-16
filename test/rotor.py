@@ -204,7 +204,7 @@ class RotorTestCase(unittest.TestCase):
         molecule = load_molecule_g03fchk("input/ethane/gaussian.fchk")
         nma = NMA(molecule)
         dihedral, angles, energies, geometries, top_indexes = load_rotscan_g03(
-            "input/rotor/gaussian.com", "input/rotor/gaussian.fchk"
+            "input/rotor/gaussian.log"
         )
         energies[:] = 0.0
         cancel_freq = compute_cancel_frequency(molecule, top_indexes)
@@ -266,7 +266,7 @@ class RotorTestCase(unittest.TestCase):
         molecule = load_molecule_g03fchk("input/ethane/gaussian.fchk")
         nma = NMA(molecule)
         dihedral, angles, energies, geometries, top_indexes = load_rotscan_g03(
-            "input/rotor/gaussian.com", "input/rotor/gaussian.fchk"
+            "input/rotor/gaussian.log"
         )
         cancel_freq = compute_cancel_frequency(molecule, top_indexes)
         self.assertAlmostEqual(cancel_freq/lightspeed*cm, 314, 0)

@@ -65,9 +65,7 @@ molecule = load_molecule_g03fchk("../001_ethane/gaussian.fchk")
 # Perform the normal mode analysis
 nma = NMA(molecule)
 # Treat the hindered rotor
-dihedral, angles, energies, geometries, top_indexes = load_rotscan_g03(
-    "scan/gaussian.com", "scan/gaussian.fchk"
-)
+dihedral, angles, energies, geometries, top_indexes = load_rotscan_g03("scan/gaussian.log")
 cancel_freq = compute_cancel_frequency(molecule, top_indexes)
 rotor = Rotor(
     top_indexes, cancel_freq, rotsym=3, even=True,

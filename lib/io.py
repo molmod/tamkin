@@ -63,6 +63,7 @@ from molmod.io.xyz import XYZFile
 from molmod.units import amu, calorie, avogadro, angstrom, cm, lightspeed, eV
 from molmod.data.periodic import periodic
 from molmod.molecular_graphs import MolecularGraph
+from molmod.ic import dihed_angle
 
 import numpy
 
@@ -141,43 +142,85 @@ def load_molecule_g03fchk(filename_freq,filename_ener=None,filename_vdw=None): #
     )
 
 
-def load_rotscan_g03(fn_com, fn_fchk, top_indexes=None):
+def load_rotscan_g03(fn_log, do_top_indexes=True):
     # find the line that specifies the dihedral angle
-    f = file(fn_com)
+    f = file(fn_log)
+
+    line = " "
+    while len(line) > 0:
+        line = f.readline()
+        if line.startswith(" The following ModRedundant input section has been read:"):
+            break
+    if len(line) == 0:
+        raise IOError("Could not find the ModRedundant section in the log file.")
+
     dihedral = None
-    for line in f:
-        if line.startswith("D"):
+    num_geoms = 0
+    while len(line) > 0:
+        line = f.readline()
+        if len(line) < 2 or line[1] == ' ':
+            break
+        else:
             words = line.split()
-            if len(words) == 8 and words[5] == "S":
-                # gotcha
-                dihedral = tuple(int(word)-1 for word in words[1:5])
-                num_geoms = int(words[6])+1
-                break
-    f.close()
+            if len(words) == 8 and words[0] == "D" and words[5] == "S":
+                if dihedral is None:
+                    dihedral = tuple(int(word)-1 for word in words[1:5])
+                    num_geoms = int(words[6])+1
+                else:
+                    raise IOError("Found multiple dihedral angle scan, which is not supported.")
+
     if dihedral is None:
-        raise IOError("Could not find the dihedral angle of the rotational scan")
+        raise IOError("Could not find the dihedral angle of the rotational scan.")
+
     # load all the energies and compute the corresponding angles
-    fchk = FCHKFile(fn_fchk, ignore_errors=True, field_labels=[
-        "Opt point     % 3i Results for each geome" % i for i in xrange(1,num_geoms+1)
-    ] + [
-        "Opt point     % 3i Geometries" % i for i in xrange(1,num_geoms+1)
-    ])
-    from molmod.ic import dihed_angle
     energies = []
-    geometries = []
     angles = []
-    for i in xrange(1,num_geoms+1):
-        energy = fchk.fields["Opt point     % 3i Results for each geome" % i][-2]
-        energies.append(energy)
-        coordinates = fchk.fields["Opt point     % 3i Geometries" % i][-fchk.molecule.size*3:].reshape((-1,3))
-        geometries.append(coordinates)
-        angles.append(dihed_angle(
-            coordinates[dihedral[0]], coordinates[dihedral[1]],
-            coordinates[dihedral[2]], coordinates[dihedral[3]],
-        )[0])
-    if top_indexes is None:
+    geometries = []
+    while len(line) > 0:
+        line = f.readline()
+        if line.startswith("                          Input orientation:"):
+            # read the molecule
+            numbers = []
+            last_coordinates = []
+            ## skip four lines
+            f.readline()
+            f.readline()
+            f.readline()
+            f.readline()
+            line = f.readline()
+            # read atoms
+            while len(line) > 0 and not line.startswith(" -----"):
+                words =  line.split()
+                numbers.append(int(words[1]))
+                last_coordinates.append((float(words[3]), float(words[4]), float(words[5])))
+                line = f.readline()
+        if line.startswith(" SCF Done:"):
+            # read the energy
+            last_energy = float(line[line.find("=")+1:].split()[0])
+        if line.startswith("    -- Stationary point found."):
+            # store last emergy and geometry in list
+            energies.append(last_energy)
+            last_coordinates = numpy.array(last_coordinates)*angstrom
+            geometries.append(last_coordinates)
+            angles.append(dihed_angle(
+                last_coordinates[dihedral[0]], last_coordinates[dihedral[1]],
+                last_coordinates[dihedral[2]], last_coordinates[dihedral[3]],
+            )[0])
+
+    if len(energies) == 0:
+        raise IOError("Cold not find any stationary point")
+
+    result = (
+        dihedral,
+        numpy.array(angles),
+        numpy.array(energies),
+        numpy.array(geometries),
+    )
+    if do_top_indexes:
         # figure out what the two parts of the molecule are
-        graph = MolecularGraph.from_geometry(fchk.molecule)
+        from molmod.molecules import Molecule as BaseMolecule
+        molecule = BaseMolecule(numbers, geometries[0])
+        graph = MolecularGraph.from_geometry(molecule)
         half1, half2 = graph.get_halfs(dihedral[1], dihedral[2])
         if len(half2) > len(half1):
             top_indexes = half1
@@ -186,14 +229,8 @@ def load_rotscan_g03(fn_com, fn_fchk, top_indexes=None):
             top_indexes = half2
             top_indexes.discard(dihedral[2])
         top_indexes = [dihedral[1], dihedral[2]] + list(top_indexes)
-    return (
-        dihedral,
-        numpy.array(angles),
-        numpy.array(energies),
-        numpy.array(geometries),
-        top_indexes,
-    )
-
+        result = result + (top_indexes,)
+    return result
 
 def load_molecule_cp2k(fn_xyz, fn_sp, fn_freq, multiplicity=1, is_periodic=True):
     molecule = XYZFile(fn_xyz).get_molecule()

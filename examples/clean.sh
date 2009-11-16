@@ -62,3 +62,7 @@
 ( cd 008_ethane_rotor/
   rm -v energy_levels.png partfun.txt thermo.csv
 )
+
+( cd 009_ethyl_ethene/
+  rm -v *.png *.csv *.txt
+)

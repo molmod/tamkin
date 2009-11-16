@@ -165,7 +165,6 @@ def load_rotscan_g03(fn_log, do_top_indexes=True):
             if len(words) == 8 and words[0] == "D" and words[5] == "S":
                 if dihedral is None:
                     dihedral = tuple(int(word)-1 for word in words[1:5])
-                    num_geoms = int(words[6])+1
                 else:
                     raise IOError("Found multiple dihedral angle scan, which is not supported.")
 
@@ -221,7 +220,11 @@ def load_rotscan_g03(fn_log, do_top_indexes=True):
         from molmod.molecules import Molecule as BaseMolecule
         molecule = BaseMolecule(numbers, geometries[0])
         graph = MolecularGraph.from_geometry(molecule)
-        half1, half2 = graph.get_halfs(dihedral[1], dihedral[2])
+        if dihedral[1] in graph.neighbors[dihedral[2]]:
+            half1, half2 = graph.get_halfs(dihedral[1], dihedral[2])
+        else:
+            half1 = graph.get_part(dihedral[1], [])
+            half2 = graph.get_part(dihedral[2], [])
         if len(half2) > len(half1):
             top_indexes = half1
             top_indexes.discard(dihedral[1])

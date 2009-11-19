@@ -598,6 +598,10 @@ class PartFun(Info, StatFys):
         return StatFys.free_energy(self, temp) + self.energy
 
     def dump(self, f):
+        print >> f, "Energy [au]: %.5f" % self.energy
+        # TODO
+        #temp_small = 1e-5
+        #print >> f, "Free energy at T=0K [au]: %.5f" % self.free_energy(temp_small)
         print >> f, "Contributions to the partition function:"
         for term in self.terms:
             term.dump(f)

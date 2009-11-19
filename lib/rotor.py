@@ -396,9 +396,7 @@ class Rotor(Info, StatFysTerms):
         print >> f, "    Absolute moment [amu*bohr**2]: %f" % (self.absolute_moment/amu)
         print >> f, "    Relative moment [amu*bohr**2]: %f" % (self.relative_moment/amu)
         print >> f, "    Cancel wavenumber [1/cm]: %.1f" % (self.cancel_freq/(lightspeed/cm))
-        print >> f, "    Energy levels [kJ/mol]"
-        for e in self.energy_levels:
-            print >> f, "        %9.2f" % (e/kjmol)
+        self.dump_values(f, "Energy levels [kJ/mol]", self.energy_levels/kjmol, "% 8.2f", 8)
         if self.hb is not None:
             print >> f, "    Number of basis functions: %i" % (self.hb.size)
 
@@ -438,7 +436,7 @@ class Rotor(Info, StatFysTerms):
             pylab.axhline(e, color="b", linewidth=0.5)
             pylab.axhline(e, xmax=bfs[i], color="b", linewidth=2)
         pylab.xlim(0,360)
-        pylab.ylim(self.potential[1].min()/kjmol)
+        pylab.ylim(self.potential[1].min()/kjmol, 1.5*self.potential[1].max()/kjmol)
         pylab.ylabel("Energy [kjmol]")
         pylab.xlabel("Dihedral angle [deg]")
         pylab.savefig(filename)

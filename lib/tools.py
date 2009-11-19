@@ -280,10 +280,11 @@ class ReactionAnalysis(object):
         delta_E = self.pf_trans.energy - \
                   sum(pf_react.energy for pf_react in self.pfs_react)
         print >> f, "Delta E [kJ/mol] = %.1f" % (delta_E/kjmol)
-        temp_small = 1e-10
-        delta_Gzp = self.pf_trans.free_energy(temp_small) - \
-                    sum(pf_react.free_energy(temp_small) for pf_react in self.pfs_react)
-        print >> f, "Delta G at T=0 [kJ/mol] = %.1f" % (delta_Gzp/kjmol)
+        # TODO
+        #temp_small = 1e-5
+        #delta_Gzp = self.pf_trans.free_energy(temp_small) - \
+        #            sum(pf_react.free_energy(temp_small) for pf_react in self.pfs_react)
+        #print >> f, "Delta G at T=0 [kJ/mol] = %.1f" % (delta_Gzp/kjmol)
         print >> f, "R2 (Pearson) = %.2f%%" % (self.R2*100)
         print >> f
         if self.covariance is not None:

@@ -314,7 +314,7 @@ class Rotor(Info, StatFysTerms):
             Info.__init__(self, "hindered_rotor_%s" % self.suffix)
         StatFysTerms.__init__(self, 2) # two terms
 
-    def init_part_fun(self, nma):
+    def init_part_fun(self, nma, partf):
         """Compute all the partition function parameters based on the nma
 
            This method is part of the PartFun API. It should never be called
@@ -360,6 +360,10 @@ class Rotor(Info, StatFysTerms):
             self.v_coeffs = self.hb.fit_fn(angles, energies, dofmax, self.rotsym, self.even)
             self.energy_levels = self.hb.solve(self.relative_moment, self.v_coeffs)
             self.energy_levels = self.energy_levels[:self.num_levels]
+        # scaling factors
+        self.freq_scaling = partf.vibrational.freq_scaling
+        self.zp_scaling = partf.vibrational.zp_scaling
+        self.classical = partf.vibrational.classical
 
     def dump(self, f):
         """Write all the information about the rotor to a file
@@ -448,7 +452,8 @@ class Rotor(Info, StatFysTerms):
            Returns: 1D numpy arrays with contributions
         """
         return numpy.array([
-            -log_eval_vibrations(temp, self.cancel_freq, classical=False),
+            -log_eval_vibrations(temp, self.cancel_freq, self.classical,
+                                 self.freq_scaling, self.zp_scaling),
             log_eval_levels(temp, self.energy_levels) - numpy.log(self.rotsym),
         ])
 
@@ -462,7 +467,8 @@ class Rotor(Info, StatFysTerms):
            Returns: 1D numpy arrays with contributions
         """
         return numpy.array([
-            -log_deriv_vibrations(temp, self.cancel_freq, classical=False),
+            -log_deriv_vibrations(temp, self.cancel_freq, self.classical,
+                                  self.freq_scaling, self.zp_scaling),
             log_deriv_levels(temp, self.energy_levels),
         ])
 
@@ -476,7 +482,8 @@ class Rotor(Info, StatFysTerms):
            Returns: 1D numpy arrays with contributions
         """
         return numpy.array([
-            -log_deriv2_vibrations(temp, self.cancel_freq, classical=False),
+            -log_deriv2_vibrations(temp, self.cancel_freq, self.classical,
+                                   self.freq_scaling, self.zp_scaling),
             log_deriv2_levels(temp, self.energy_levels),
         ])
 

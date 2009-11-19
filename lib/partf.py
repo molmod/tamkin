@@ -176,7 +176,8 @@ class StatFys(object):
        log_eval, log_deriv and log_deriv2) must be implemented in derived
        classes.
     """
-    def init_part_fun(self, nma):
+    def init_part_fun(self, nma, partf):
+        """Compute variables that depend on nma and other parts of the partf"""
         pass
 
     def log_eval(self, temp):
@@ -303,7 +304,7 @@ class Electronic(Info, StatFys):
         self.multiplicity = multiplicity
         Info.__init__(self, "electronic")
 
-    def init_part_fun(self, nma):
+    def init_part_fun(self, nma, partf):
         if self.multiplicity is None:
             self.multiplicity = nma.multiplicity
             if self.multiplicity is None:
@@ -332,7 +333,7 @@ class ExternalTranslation(Info, StatFys):
             self.mol_volume = mol_volume
         Info.__init__(self, "translational")
 
-    def init_part_fun(self, nma):
+    def init_part_fun(self, nma, partf):
         self.mass = nma.mass
 
     def dump(self, f):
@@ -363,7 +364,7 @@ class ExternalRotation(Info, StatFys):
         self.im_threshold = im_threshold
         Info.__init__(self, "rotational")
 
-    def init_part_fun(self, nma):
+    def init_part_fun(self, nma, partf):
         if nma.periodic:
             raise ValueError("There is no external rotation in periodic systems.")
         self.inertia_tensor = nma.inertia_tensor
@@ -440,21 +441,21 @@ class PCMCorrection(Info, StatFys):
         return (-Fpp+2*(Fp-F/temp)/temp)/(boltzmann*temp)
 
 
-def log_eval_vibrations(temp, freqs, classical=False):
+def log_eval_vibrations(temp, freqs, classical=False, freq_scaling=1, zp_scaling=1):
     """The logarithm of the partition function for a harmonic vibration"""
     # this is defined as a function because multiple classes need it
     if classical:
-        return numpy.log(0.5*boltzmann*temp/numpy.pi/freqs)
+        return numpy.log(0.5*boltzmann*temp/numpy.pi/freqs*freq_scaling)
     else:
         # The zero point correction is included in the partition function and
         # should not be taken into account when computing the reaction barrier.
         exp_arg = -2*numpy.pi*freqs/boltzmann/temp
-        return (exp_arg/2 - numpy.log(1-numpy.exp(exp_arg)))
+        return (zp_scaling*exp_arg/2 - numpy.log(1-numpy.exp(exp_arg*freq_scaling)))
         # This would be the version when the zero point energy corrections are
         # included in the energy difference when computing the reaction rate:
-        #return -numpy.log(1-numpy.exp(exp_arg))
+        #return -numpy.log(1-numpy.exp(exp_arg*freq_scaling))
 
-def log_deriv_vibrations(temp, freqs, classical=False):
+def log_deriv_vibrations(temp, freqs, classical=False, freq_scaling=1, zp_scaling=1):
     """The derivative of the logarithm of the partition function for a harmonic vibration"""
     # this is defined as a function because multiple classes need it
     if classical:
@@ -462,9 +463,9 @@ def log_deriv_vibrations(temp, freqs, classical=False):
     else:
         exp_arg = -2*numpy.pi*freqs/boltzmann/temp
         exp_arg_deriv = -exp_arg/temp
-        return exp_arg_deriv*(0.5-1/(1-numpy.exp(-exp_arg)))
+        return exp_arg_deriv*(zp_scaling*0.5 - freq_scaling/(1 - numpy.exp(-exp_arg*freq_scaling)))
 
-def log_deriv2_vibrations(temp, freqs, classical=False):
+def log_deriv2_vibrations(temp, freqs, classical=False, freq_scaling=1, zp_scaling=1):
     """The second derivative of the logarithm of the partition function for a harmonic vibration"""
     # this is defined as a function because multiple classes need it
     if classical:
@@ -473,18 +474,19 @@ def log_deriv2_vibrations(temp, freqs, classical=False):
         exp_arg = -2*numpy.pi*freqs/boltzmann/temp
         exp_arg_deriv = -exp_arg/temp
         exp_arg_deriv2 = -2*exp_arg_deriv/temp
-        e = numpy.exp(-exp_arg)
-        x = 1/(1-e)
-        return exp_arg_deriv2*(0.5-x) + (exp_arg_deriv*x)**2*e
+        return exp_arg_deriv2*(zp_scaling*0.5 - freq_scaling/(1 - numpy.exp(-exp_arg*freq_scaling))) + \
+               (exp_arg_deriv*0.5*freq_scaling/numpy.sinh(0.5*exp_arg*freq_scaling))**2
 
 
 class Vibrations(Info, StatFysTerms):
     """The vibrational contribution to the partition function"""
-    def __init__(self, classical=False):
+    def __init__(self, classical=False, freq_scaling=1, zp_scaling=1):
         self.classical = classical
+        self.freq_scaling = freq_scaling
+        self.zp_scaling = zp_scaling
         Info.__init__(self, "vibrational")
 
-    def init_part_fun(self, nma):
+    def init_part_fun(self, nma, partf):
         zero_indexes = nma.zeros
         nonzero_mask = numpy.ones(len(nma.freqs), dtype=bool)
         nonzero_mask[zero_indexes] = False
@@ -501,18 +503,29 @@ class Vibrations(Info, StatFysTerms):
         print >> f, "    Number of zero wavenumbers: %i " % (len(self.zero_freqs))
         print >> f, "    Number of real wavenumbers: %i " % (len(self.positive_freqs))
         print >> f, "    Number of imaginary wavenumbers: %i" % (len(self.negative_freqs))
+        print >> f, "    Frequency scaling factor: %.4f" % self.freq_scaling
+        print >> f, "    Zero-Point scaling factor: %.4f" % self.zp_scaling
         self.dump_values(f, "Zero Wavenumbers [1/cm]", self.zero_freqs/(lightspeed/cm), "% 8.1f", 8)
         self.dump_values(f, "Real Wavenumbers [1/cm]", self.positive_freqs/(lightspeed/cm), "% 8.1f", 8)
         self.dump_values(f, "Imaginary Wavenumbers [1/cm]", self.negative_freqs/(lightspeed/cm), "% 8.1f", 8)
 
     def log_eval_terms(self, temp):
-        return log_eval_vibrations(temp, self.positive_freqs, self.classical)
+        return log_eval_vibrations(
+            temp, self.positive_freqs, self.classical, self.freq_scaling,
+            self.zp_scaling
+        )
 
     def log_deriv_terms(self, temp):
-        return log_deriv_vibrations(temp, self.positive_freqs, self.classical)
+        return log_deriv_vibrations(
+            temp, self.positive_freqs, self.classical, self.freq_scaling,
+            self.zp_scaling
+        )
 
     def log_deriv2_terms(self, temp):
-        return log_deriv2_vibrations(temp, self.positive_freqs, self.classical)
+        return log_deriv2_vibrations(
+            temp, self.positive_freqs, self.classical, self.freq_scaling,
+            self.zp_scaling
+        )
 
 
 class PartFun(Info, StatFys):
@@ -558,7 +571,7 @@ class PartFun(Info, StatFys):
             self.terms.append(self.electronic)
 
         for term in self.terms:
-            term.init_part_fun(nma)
+            term.init_part_fun(nma, self)
 
         self.energy = nma.energy
         Info.__init__(self, "total")

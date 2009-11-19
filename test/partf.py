@@ -184,7 +184,10 @@ class PartFunTestCase(unittest.TestCase):
     def test_derivatives(self):
         molecule = load_molecule_g03fchk("input/sterck/aa.fchk")
         nma = NMA(molecule)
-        pf = PartFun(nma, [ExternalTranslation(), ExternalRotation(1)])
+        pf = PartFun(nma, [
+            ExternalTranslation(), ExternalRotation(1),
+            Vibrations(zp_scaling=0.5, freq_scaling=0.3),
+        ])
 
         # check the first derivative with finite differences
         eps = 0.0001

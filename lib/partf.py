@@ -80,7 +80,7 @@
 
 
 from molmod.constants import boltzmann, lightspeed
-from molmod.units import atm, bar, amu, cm
+from molmod.units import atm, bar, amu, cm, kjmol
 
 import numpy
 
@@ -88,7 +88,8 @@ import numpy
 __all__ = [
     "IdealGasVolume", "FixedVolume", "Info", "StatFys", "StatFysTerms",
     "log_eval_levels", "log_deriv_levels", "log_deriv2_levels",
-    "Electronic", "ExternalTranslation", "ExternalRotation", "Vibrations",
+    "Electronic", "ExternalTranslation", "ExternalRotation", "PCMCorrection",
+    "Vibrations",
     "log_eval_vibrations", "log_deriv_vibrations", "log_deriv2_vibrations",
     "PartFun", "compute_rate_coeff", "compute_equilibrium_constant"
 ]
@@ -391,6 +392,52 @@ class ExternalRotation(Info, StatFys):
 
     def log_deriv2(self, temp):
         return -0.5*self.count/temp**2
+
+
+class PCMCorrection(Info, StatFys):
+    def __init__(self, point1, point2=None):
+        if (not hasattr(point1, "__len__")) or len(point1) != 2:
+            raise ValueError("The first argument must be a (delta_G, temp) pair.")
+        if point2 is not None and ((not hasattr(point2, "__len__")) or len(point2)) != 2:
+            raise ValueError("The second argument must be None or a (delta_G, temp) pair.")
+        self.point1 = point1
+        self.point2 = point2
+        Info.__init__(self, "pcm_correction")
+
+    def dump(self, f):
+        Info.dump(self, f)
+        print >> f, "    Point 1:"
+        print >> f, "       Delta G [kJ/mol]: %.2f" % (self.point1[0]/kjmol)
+        print >> f, "       Temperature [K]: %.2f" % (self.point1[1])
+        print >> f, "    Point 2:"
+        if self.point2 is not None:
+            print >> f, "       Delta G [kJ/mol]: %.2f" % (self.point2[0]/kjmol)
+            print >> f, "       Temperature [K]: %.2f" % (self.point2[1])
+        else:
+            print >> f, "       Not Defined!! Only rely on computations on temperature of point 1!!"
+
+    def _eval_free(self, temp):
+        if self.point2 is None:
+            return self.point1[0], 0.0, 0.0
+        else:
+            slope = (self.point2[0]-self.point1[0])/(self.point2[1]-self.point1[1])
+            return (
+                self.point1[0] + slope*(temp-self.point1[1]),
+                slope,
+                0.0
+            )
+
+    def log_eval(self, temp):
+        F, Fp, Fpp = self._eval_free(temp)
+        return -F/(boltzmann*temp)
+
+    def log_deriv(self, temp):
+        F, Fp, Fpp = self._eval_free(temp)
+        return (-Fp+F/temp)/(boltzmann*temp)
+
+    def log_deriv2(self, temp):
+        F, Fp, Fpp = self._eval_free(temp)
+        return (-Fpp+2*(Fp-F/temp)/temp)/(boltzmann*temp)
 
 
 def log_eval_vibrations(temp, freqs, classical=False):

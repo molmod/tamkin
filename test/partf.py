@@ -59,7 +59,7 @@
 from tamkin import *
 
 from molmod.constants import lightspeed, boltzmann
-from molmod.units import cm, s, atm, amu, meter, mol, kcalmol, cal, K
+from molmod.units import cm, s, atm, amu, meter, mol, kcalmol, cal, K, kjmol
 
 import unittest, numpy
 
@@ -321,5 +321,32 @@ class PartFunTestCase(unittest.TestCase):
             pf.entropy(temp),
             boltzmann*(numpy.log(qt) + 1.5 + 1)
         )
+
+    def test_pcm_correction(self):
+        mol = load_molecule_g03fchk("input/sterck/aa_1h2o_a.fchk")
+        pf0 = PartFun(NMA(mol), [
+            ExternalTranslation(),
+            ExternalRotation(1),
+        ])
+        pf1 = PartFun(NMA(mol), [
+            ExternalTranslation(),
+            ExternalRotation(1),
+            PCMCorrection((-5*kjmol,300)),
+        ])
+        pf2 = PartFun(NMA(mol), [
+            ExternalTranslation(),
+            ExternalRotation(1),
+            PCMCorrection((-5*kjmol,300), (-10*kjmol,600)),
+        ])
+        # real tests
+        self.assertAlmostEqual(pf0.free_energy(300)-5*kjmol, pf1.free_energy(300))
+        self.assertAlmostEqual(pf0.free_energy(300)-5*kjmol, pf2.free_energy(300))
+        self.assertAlmostEqual(pf0.free_energy(600)-5*kjmol, pf1.free_energy(600))
+        self.assertAlmostEqual(pf0.free_energy(600)-10*kjmol, pf2.free_energy(600))
+        # blind tests
+        pf1.heat_capacity(300)
+        pf2.heat_capacity(300)
+        pf1.write_to_file("output/pcm_partf1.txt")
+        pf2.write_to_file("output/pcm_partf2.txt")
 
 

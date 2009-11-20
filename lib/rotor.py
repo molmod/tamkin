@@ -67,6 +67,7 @@ from tamkin.partf import Info, StatFysTerms, log_eval_vibrations, \
     log_deriv_vibrations, log_deriv2_vibrations, log_eval_levels, \
     log_deriv_levels, log_deriv2_levels
 from tamkin.nma import NMA, MBH
+from tamkin.geom import transrot_basis
 
 from molmod.units import deg, kjmol, angstrom, cm, amu
 from molmod.constants import boltzmann, lightspeed
@@ -74,8 +75,9 @@ from molmod.constants import boltzmann, lightspeed
 import numpy
 
 
-
-__all__ = ["HarmonicBasis", "compute_cancel_frequency", "Rotor"]
+__all__ = [
+    "HarmonicBasis", "compute_cancel_frequency", "compute_moments", "Rotor"
+]
 
 
 class HarmonicBasis(object):
@@ -265,6 +267,27 @@ def compute_cancel_frequency(molecule, top_indexes):
     return nma.freqs[non_zero]
 
 
+def compute_moments(coordinates, masses3, center, axis, indexes):
+    # the derivative of the cartesian coordinates towards the rotation
+    # angle of the top:
+    rot_tangent = numpy.zeros((len(coordinates)*3), float)
+    for i in indexes:
+        rot_tangent[3*i:3*i+3] = numpy.cross(coordinates[i]-center, axis)
+    # transform this to a derivative without global linear or angular
+    # momentum. This is done by projecting on the basis of external degrees
+    # of freedom in mass-weighted coordinates, and subsequently subtracting
+    # that projection from the original tangent
+    basis = transrot_basis(coordinates)
+    A = numpy.dot(basis*masses3, basis.transpose())
+    B = numpy.dot(basis*masses3, rot_tangent)
+    alphas = numpy.linalg.solve(A,B)
+    rot_tangent_relative = rot_tangent - numpy.dot(alphas, basis)
+    return (
+        (rot_tangent**2*masses3).sum(),
+        (rot_tangent_relative**2*masses3).sum()
+    )
+
+
 class Rotor(Info, StatFysTerms):
     """Partition function term for a one-dimensional rotor
 
@@ -328,25 +351,16 @@ class Rotor(Info, StatFysTerms):
         self.center = nma.coordinates[self.indexes[0]]
         self.axis = nma.coordinates[self.indexes[1]] - self.center
         self.axis /= numpy.linalg.norm(self.axis)
-        # the absolute inertia moment of the group about the axis
-        self.absolute_moment = 0.0
-        for i in self.indexes[2:]:
-            delta = nma.coordinates[i] - self.center
-            delta -= self.axis*numpy.dot(self.axis, delta)
-            self.absolute_moment += nma.masses[i]*numpy.linalg.norm(delta)**2
-        # the relative inertia moment of the group about the axis
-        evals, evecs = numpy.linalg.eigh(nma.inertia_tensor)
-        correction = 1.0
-        for i in xrange(3):
-            correction -= numpy.dot(evecs[:,i], self.axis)**2*self.absolute_moment/evals[i]
-        self.relative_moment = self.absolute_moment*correction
+        self.moment, self.reduced_moment = compute_moments(
+            nma.coordinates, nma.masses3, self.center, self.axis, self.indexes
+        )
         # the energy levels
         if self.potential is None:
             # free rotor
             self.energy_levels = numpy.zeros(self.num_levels, float)
             for i in xrange(self.num_levels-1):
                 index = i/2+1
-                self.energy_levels[i+1] = index**2/(2*self.relative_moment)
+                self.energy_levels[i+1] = index**2/(2*self.reduced_moment)
             self.hb = None
             self.v_coeffs = None
             self.v_ref = 0.0
@@ -358,7 +372,7 @@ class Rotor(Info, StatFysTerms):
             angles -= numpy.floor(angles/a)*a # apply periodic boundary conditions
             energies -= nma.energy # set reference energy
             self.v_coeffs = self.hb.fit_fn(angles, energies, dofmax, self.rotsym, self.even)
-            self.energy_levels = self.hb.solve(self.relative_moment, self.v_coeffs)
+            self.energy_levels = self.hb.solve(self.reduced_moment, self.v_coeffs)
             self.energy_levels = self.energy_levels[:self.num_levels]
         # scaling factors
         self.freq_scaling = partf.vibrational.freq_scaling
@@ -393,8 +407,8 @@ class Rotor(Info, StatFysTerms):
         # derived quantities
         print >> f, "    Center [A]: % 8.2f % 8.2f % 8.2f" % tuple(self.center/angstrom)
         print >> f, "    Axis [1]: % 8.2f % 8.2f % 8.2f" % tuple(self.axis)
-        print >> f, "    Absolute moment [amu*bohr**2]: %f" % (self.absolute_moment/amu)
-        print >> f, "    Relative moment [amu*bohr**2]: %f" % (self.relative_moment/amu)
+        print >> f, "    Loment [amu*bohr**2]: %f" % (self.moment/amu)
+        print >> f, "    Reduced moment [amu*bohr**2]: %f" % (self.reduced_moment/amu)
         print >> f, "    Cancel wavenumber [1/cm]: %.1f" % (self.cancel_freq/(lightspeed/cm))
         self.dump_values(f, "Energy levels [kJ/mol]", self.energy_levels/kjmol, "% 8.2f", 8)
         if self.hb is not None:
@@ -436,7 +450,8 @@ class Rotor(Info, StatFysTerms):
             pylab.axhline(e, color="b", linewidth=0.5)
             pylab.axhline(e, xmax=bfs[i], color="b", linewidth=2)
         pylab.xlim(0,360)
-        pylab.ylim(self.potential[1].min()/kjmol, 1.5*self.potential[1].max()/kjmol)
+        if self.potential is not None:
+            pylab.ylim(self.potential[1].min()/kjmol, 1.5*self.potential[1].max()/kjmol)
         pylab.ylabel("Energy [kjmol]")
         pylab.xlabel("Dihedral angle [deg]")
         pylab.savefig(filename)

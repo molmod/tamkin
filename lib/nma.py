@@ -166,6 +166,7 @@ class NMA(object):
         # a few more attributes that are worth keeping
         self.mass = molecule.mass
         self.masses = molecule.masses
+        self.masses3 = molecule.masses3
         self.numbers = molecule.numbers
         self.coordinates = molecule.coordinates
         self.inertia_tensor = molecule.inertia_tensor
@@ -181,7 +182,10 @@ class NMA(object):
             keys = ["freqs", "modes", "masses", "numbers", "coordinates", "zeros"]
             data = dict((key, self.__dict__[key]) for key in keys)
         elif fields == 'partf':
-            keys = ["freqs", "mass", "inertia_tensor", "multiplicity", "symmetry_number", "periodic", "energy", "zeros"]
+            keys = [
+                "freqs", "mass", "masses3", "inertia_tensor", "multiplicity",
+                "symmetry_number", "periodic", "energy", "zeros"
+            ]
             data = dict((key, self.__dict__[key]) for key in keys)
         dump_chk(filename, data)
 
@@ -205,9 +209,9 @@ class NMA(object):
         data = load_chk(filename)
         # check the names of the fields:
         possible_fields = set([
-            "freqs", "modes", "mass", "masses", "numbers", "coordinates",
-            "inertia_tensor", "multiplicity", "symmetry_number", "periodic",
-            "energy", "zeros",
+            "freqs", "modes", "mass", "masses", "masses3", "numbers",
+            "coordinates", "inertia_tensor", "multiplicity", "symmetry_number",
+            "periodic", "energy", "zeros",
         ])
         if not set(data.iterkeys()).issubset(possible_fields):
             raise IOError("The Checkpoint file does not contain the correct fields.")

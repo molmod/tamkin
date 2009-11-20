@@ -60,9 +60,10 @@ from tamkin import *
 
 from molmod.units import cm, amu, kjmol, joule, mol, kelvin
 from molmod.constants import lightspeed, boltzmann
+from molmod.data.periodic import periodic
+from molmod.io.xyz import XYZFile
 
-import unittest
-import numpy
+import unittest, os, numpy
 
 
 __all__ = ["RotorTestCase"]
@@ -284,8 +285,8 @@ class RotorTestCase(unittest.TestCase):
             energies
         )
         # reference data from legacy code (Veronique & co)
-        self.assertAlmostEqual(rotor.absolute_moment/amu, 11.092362911176032, 2)
-        self.assertAlmostEqual(rotor.relative_moment/amu, 5.5461814555880098, 2)
+        self.assertAlmostEqual(rotor.moment/amu, 11.092362911176032, 2)
+        self.assertAlmostEqual(rotor.reduced_moment/amu, 5.5461814555880098, 2)
         self.assertAlmostEqual(numpy.exp(rotor.log_eval_terms(100.0)[1]), 0.12208E+00, 1)
         self.assertAlmostEqual(rotor.heat_capacity_terms(100.0)[1]/(joule/mol/kelvin), 2.567, 0)
         self.assertAlmostEqual(rotor.entropy_terms(100.0)[1]/(joule/mol), 0.766, 0)
@@ -297,6 +298,81 @@ class RotorTestCase(unittest.TestCase):
         pf.write_to_file("output/ethane_hindered.txt")
         ta = ThermoAnalysis(pf, [200,300,400,500,600,700,800,900])
         ta.write_to_file("output/ethane_hindered_thermo.csv")
+
+    def test_ethyl_free(self):
+        molecule = load_molecule_g03fchk("input/ethyl/gaussian.fchk")
+        nma = NMA(molecule)
+        top_indexes = [1, 0, 2, 3, 4]
+        cancel_freq = compute_cancel_frequency(molecule, top_indexes)
+        self.assertAlmostEqual(cancel_freq/lightspeed*cm, 141.2, 0)
+        rotor = Rotor(
+            top_indexes, cancel_freq, rotsym=6, even=True,
+            potential=None, num_levels=50
+        )
+        pf = PartFun(nma, [
+            ExternalTranslation(),
+            ExternalRotation(1),
+            rotor,
+        ])
+        # reference data from legacy code (Veronique & co)
+        self.assertAlmostEqual(rotor.reduced_moment/amu, 4.007, 1)
+        self.assertAlmostEqual(numpy.exp(rotor.log_eval_terms(100.0)[1]), 0.6386, 1)
+        self.assertAlmostEqual(numpy.exp(-rotor.log_eval_terms(100.0)[0]), 0.4168, 1)
+        self.assertAlmostEqual(numpy.exp(rotor.log_eval_terms(800.0)[1]), 1.8062, 1)
+        self.assertAlmostEqual(numpy.exp(-rotor.log_eval_terms(800.0)[0]), 3.9273, 1)
+
+        rotor.plot_levels("output/ethyl_free_levels.png", 300)
+        pf.write_to_file("output/ethyl_free.txt")
+        ta = ThermoAnalysis(pf, [200,300,400,500,600,700,800,900])
+        ta.write_to_file("output/ethyl_free_thermo.csv")
+
+    def test_imoms(self):
+        cases = [
+            ("caffeine.xyz", 2, 11, [0, 1, 3, 4, 5, 6, 7, 8, 9, 10, 12, 13, 14, 18, 19, 20, 21, 22, 23], (2598.9923066760343, 11.373318286792710)),
+            ("caffeine.xyz", 2, 11, [16, 17, 15], (11.427609412414192, 11.373318286796099)),
+            ("caffeine.xyz", 3, 12, [0, 1, 2, 4, 5, 6, 7, 8, 9, 10, 11, 13, 14, 15, 16, 17, 21, 22, 23], (3874.9262249281255, 11.489403874005802)),
+            ("caffeine.xyz", 3, 12, [20, 18, 19], (11.554047706686680, 11.489402424437612)),
+            ("caffeine.xyz", 4, 13, [0, 1, 2, 3, 5, 6, 7, 8, 9, 10, 11, 12, 14, 15, 16, 17, 18, 19, 20], (2298.5324430380965, 11.334929532798469)),
+            ("caffeine.xyz", 4, 13, [23, 22, 21], (11.394908129049933, 11.334928102722181)),
+            ("ethane.xyz", 0, 1, [2, 3, 4], (11.330123438245337, 5.6648361869614678)),
+            ("ethane.xyz", 0, 1, [5, 6, 7], (11.330123438245337, 5.6648361869614661)),
+            ("glycerol.xyz", 0, 3, [11], (3.0794510843017311, 3.0113070937447430)),
+            ("glycerol.xyz", 0, 3, [1, 2, 4, 5, 6, 7, 8, 9, 10, 12, 13], (951.85671473731713, 3.0113074736677845)),
+            ("glycerol.xyz", 1, 4, [0, 2, 3, 5, 6, 7, 8, 9, 10, 11, 13], (1072.5177006846639, 2.9828627310014326)),
+            ("glycerol.xyz", 1, 4, [12], (3.0988467514954592, 2.9828627310015023)),
+            ("glycerol.xyz", 2, 5, [0, 1, 3, 4, 6, 7, 8, 9, 10, 11, 12], (1071.1143603815583, 2.9517497493009159)),
+            ("glycerol.xyz", 2, 5, [13], (3.1115917762553726, 2.9517493768918146)),
+            ("glycerol.xyz", 3, 4, [0, 2, 5, 6, 9, 10, 11, 13], (370.75539459124985, 61.588976994367783)),
+            ("glycerol.xyz", 3, 4, [8, 1, 12, 7], (124.71612061985820, 61.588969223953136)),
+            ("glycerol.xyz", 3, 5, [0, 1, 4, 6, 7, 8, 11, 12], (352.35483251604194, 55.690249341790206)),
+            ("glycerol.xyz", 3, 5, [9, 2, 10, 13], (116.03080804859955, 55.690242315592506)),
+            ("nicotine.xyz", 0, 7, [1, 2, 3, 4, 5, 6, 8, 9, 10, 11, 12, 13, 14, 15, 16, 17, 18, 22, 23, 24, 25], (4653.1199884792477, 11.230510638276883)),
+            ("nicotine.xyz", 0, 7, [19, 20, 21], (11.272810801992463, 11.230510638275103)),
+            ("nicotine.xyz", 2, 6, [0, 3, 4, 5, 7, 12, 13, 14, 15, 16, 17, 18, 19, 20, 21], (846.76088427036848, 208.26235559926022)),
+            ("nicotine.xyz", 2, 6, [1, 8, 9, 10, 11, 22, 23, 24, 25], (307.24370887361914, 208.26235559925976)),
+            ("peroxide.xyz", 0, 1, [2], (3.3679370303334704, 1.5747785415198767)),
+            ("peroxide.xyz", 0, 1, [3], (3.3679004879866139, 1.5747785415198774)),
+        ]
+        from molmod.io.xyz import XYZFile
+        for fn_xyz, i0, i1, top, expected in cases:
+            # preparation
+            mol = XYZFile(os.path.join("input/imom", fn_xyz)).get_molecule()
+            masses = numpy.array([periodic[n].mass for n in mol.numbers])
+            masses3 = numpy.array([masses, masses, masses]).transpose().ravel()
+            center = mol.coordinates[i0]
+            axis = mol.coordinates[i1] - mol.coordinates[i0]
+            axis /= numpy.linalg.norm(axis)
+            # trivial computation of absolute moment
+            mom = 0.0
+            for i in top:
+                delta = mol.coordinates[i] - center
+                delta -= axis*numpy.dot(axis, delta)
+                mom += masses[i]*numpy.linalg.norm(delta)**2
+            self.assertAlmostEqual(mom/amu, expected[0], 2)
+            # check tamkin routine
+            mom, redmom = compute_moments(mol.coordinates, masses3, center, axis, top)
+            self.assertAlmostEqual(mom/amu, expected[0], 2)
+            self.assertAlmostEqual(redmom/amu, expected[1], 2)
 
     def test_legacy1(self):
         a = 2*numpy.pi

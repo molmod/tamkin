@@ -407,7 +407,7 @@ class Rotor(Info, StatFysTerms):
         # derived quantities
         print >> f, "    Center [A]: % 8.2f % 8.2f % 8.2f" % tuple(self.center/angstrom)
         print >> f, "    Axis [1]: % 8.2f % 8.2f % 8.2f" % tuple(self.axis)
-        print >> f, "    Loment [amu*bohr**2]: %f" % (self.moment/amu)
+        print >> f, "    Moment [amu*bohr**2]: %f" % (self.moment/amu)
         print >> f, "    Reduced moment [amu*bohr**2]: %f" % (self.reduced_moment/amu)
         print >> f, "    Cancel wavenumber [1/cm]: %.1f" % (self.cancel_freq/(lightspeed/cm))
         self.dump_values(f, "Energy levels [kJ/mol]", self.energy_levels/kjmol, "% 8.2f", 8)

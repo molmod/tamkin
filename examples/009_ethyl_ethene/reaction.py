@@ -61,24 +61,48 @@
 from tamkin import *
 
 
-# Perform normal mode analysis on the three molecules
-nma_ethyl = NMA(load_molecule_g03fchk("ethyl/freq/gaussian.fchk"), ConstrainExt())
-nma_ethene = NMA(load_molecule_g03fchk("ethene/freq/gaussian.fchk"), ConstrainExt())
-mol_trans = load_molecule_g03fchk("trans/freq1/gaussian.fchk")
-nma_trans = NMA(mol_trans, ConstrainExt())
-# Construct the rotor about the forming bond in the transition state
-dihedral, angles, energies, geometries, top_indexes = load_rotscan_g03("trans/scan/gaussian.log")
-cancel_freq = compute_cancel_frequency(mol_trans, top_indexes)
-rotor = Rotor(
-    top_indexes, cancel_freq, rotsym=1, even=True,
-    potential=(angles, energies, 5), num_levels=50
-)
-# Construct the three partition functions.
-pf_ethyl = PartFun(nma_ethyl, [ExternalTranslation(), ExternalRotation(1)])
-pf_ethene = PartFun(nma_ethene, [ExternalTranslation(), ExternalRotation(4)])
-pf_trans = PartFun(nma_trans, [ExternalTranslation(), ExternalRotation(1), rotor])
+# Define an auxiliary function
+def load_rotor(mol, filename, rotsym, even):
+    dihedral, angles, energies, geometries, top_indexes = load_rotscan_g03(filename)
+    cancel_freq = compute_cancel_frequency(mol, top_indexes)
+    rotor = Rotor(
+        top_indexes, cancel_freq, rotsym=rotsym, even=even,
+        potential=(angles, energies, 5), num_levels=50
+    )
+    return rotor
 
-# Analyse the transition state in detail
+mol_ethyl = load_molecule_g03fchk("ethyl/freq/gaussian.fchk")
+mol_ethene = load_molecule_g03fchk("ethene/freq/gaussian.fchk")
+mol_trans = load_molecule_g03fchk("trans/freq2/gaussian.fchk")
+# Perform normal mode analysis on the three molecules
+nma_ethyl = NMA(mol_ethyl)
+nma_ethene = NMA(mol_ethene)
+nma_trans = NMA(mol_trans)
+# Construct the rotor about the forming bond in the transition state
+rotor_ethyl = load_rotor(mol_ethyl, "ethyl/scan/gaussian.log", 6, True)
+rotor_trans1 = load_rotor(mol_trans, "trans/scan1/gaussian.log", 3, False)
+rotor_trans2 = load_rotor(mol_trans, "trans/scan2/gaussian.log", 1, True)
+# Construct the three partition functions.
+pf_ethyl = PartFun(nma_ethyl, [
+    ExternalTranslation(), ExternalRotation(1), Electronic(2),
+    Vibrations(freq_scaling=0.9614, zp_scaling=0.9806),
+    rotor_ethyl
+])
+pf_ethene = PartFun(nma_ethene, [
+    ExternalTranslation(), ExternalRotation(4),
+    Vibrations(freq_scaling=0.9614, zp_scaling=0.9806),
+])
+pf_trans = PartFun(nma_trans, [
+    ExternalTranslation(), ExternalRotation(1), Electronic(2),
+    Vibrations(freq_scaling=0.9614, zp_scaling=0.9806),
+    rotor_trans1, rotor_trans2
+])
+
+# Analyse the partition functions in detail
+ta_ethyl = ThermoAnalysis(pf_ethyl, [300,400,500,600])
+ta_ethyl.write_to_file("thermo_ethyl.csv")
+ta_ethene = ThermoAnalysis(pf_ethene, [300,400,500,600])
+ta_ethene.write_to_file("thermo_ethene.csv")
 ta_trans = ThermoAnalysis(pf_trans, [300,400,500,600])
 ta_trans.write_to_file("thermo_trans.csv")
 
@@ -94,7 +118,7 @@ ta_trans.write_to_file("thermo_trans.csv")
 #     concentration) for a given temperature. If not given, it assumes that
 #     this is given: FixedVolume(temp=298.15*K, pressure=1*atm)
 #  7) tunneling: a tunneling correction object
-ra = ReactionAnalysis([pf_ethyl, pf_ethene], pf_trans, 280, 360, 10)
+ra = ReactionAnalysis([pf_ethyl, pf_ethene], pf_trans, 300, 600, 10)
 ra.plot("arrhenius.png") # make the Arrhenius plot
 
 # Estimate the error on the kinetic parameters due to level of theory artifacts
@@ -111,7 +135,9 @@ ra.write_to_file("reaction.txt") # summary of the analysis
 # Plot the energy levels and the potential of the hindered rotor. The
 # temperature argument is used to indicate the population of each level in the
 # plot.
-rotor.plot_levels("rotor_energy_levels.png", 300)
+rotor_ethyl.plot_levels("rotor_ethyl_energy_levels.png", 300)
+rotor_trans1.plot_levels("rotor_trans1_energy_levels.png", 300)
+rotor_trans2.plot_levels("rotor_trans2_energy_levels.png", 300)
 
 
 

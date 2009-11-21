@@ -470,7 +470,7 @@ def load_molecule_charmm(charmmfile_cor, charmmfile_hess,
     )
 
 
-def load_molecule_qchem(qchemfile, multiplicity=1, is_periodic = False):
+def load_molecule_qchem(qchemfile, hessfile = None, multiplicity=1, is_periodic = False):
     """reading molecule from Q-Chem frequency run"""
     f = file(qchemfile)
     # get coords
@@ -493,9 +493,9 @@ def load_molecule_qchem(qchemfile, multiplicity=1, is_periodic = False):
     numbers = numpy.zeros(N,int)
     for i, symbol in enumerate(symbols):
         numbers[i] = periodic[symbol].number
-    masses = numpy.zeros(N,int)
-    for i, symbol in enumerate(symbols):
-        masses[i] = periodic[symbol].mass
+    #masses = numpy.zeros(N,float)
+    #for i, symbol in enumerate(symbols):
+    #    masses[i] = periodic[symbol].mass
 
     # grep the SCF energy
     energy = None
@@ -509,25 +509,51 @@ def load_molecule_qchem(qchemfile, multiplicity=1, is_periodic = False):
 
     # get Hessian
     hessian = numpy.zeros((3*N,3*N),float)
-    for line in f:
-        if line.strip().startswith("Hessian of the SCF Energy"):
-            break
-    nb = int(numpy.ceil(N*3/6))
-    for i in range(nb):
-        f.next()
-        row = 0
-        for line in f:
-            words = line.split()
-            hessian[row, 6*i:6*(i+1)] = numpy.array(sum([[float(word)] for word in words[1:]],[])) #/ angstrom**2
-            row += 1
-            if row >= 3*N : break
+    if hessfile is None:
+      for line in f:
+          if line.strip().startswith("Hessian of the SCF Energy"):
+              break
+      nb = int(numpy.ceil(N*3/6))
+      for i in range(nb):
+          f.next()
+          row = 0
+          for line in f:
+              words = line.split()
+              hessian[row, 6*i:6*(i+1)] = numpy.array(sum([[float(word)] for word in words[1:]],[])) #/ angstrom**2
+              row += 1
+              if row >= 3*N : break
 
+    # get masses
+    masses = numpy.zeros(N,float)
+    for line in f:
+        if line.strip().startswith("Zero point vibrational"):
+            break
+    f.next()
+    count=0
+    for line in f:
+        masses[count] = float(line.split()[-1])*amu
+        count += 1
+        if count >= N : break
     f.close()
 
-    gradient = numpy.zeros((N,3), float)
+    # or get Hessian from other file
+    if hessfile is not None:
+      f = file(hessfile)
+      row = 0
+      col = 0
+      for line in f:
+          hessian[row,col] = float(line.split()[0]) *1000*calorie/avogadro /angstrom**2
+          col += 1
+          if col >= 3*N:
+              row += 1
+              col = row
+      f.close()
+      for i in range(len(hessian)):
+          for j in range(0,i):
+              hessian[i,j] = hessian[j,i]
 
-#        else:
- #           raise IOError("Expecting seven words at each atom line in %s." % fn_geometry)
+    # get gradient   TODO
+    gradient = numpy.zeros((N,3), float)
 
     return Molecule(
         numbers, positions, masses, energy, gradient, hessian, multiplicity,

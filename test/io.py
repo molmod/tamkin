@@ -211,7 +211,7 @@ class IOTestCase(unittest.TestCase):
     def test_write_modes_for_VMD(self):
         molecule = load_molecule_charmm("input/an/ethanol.cor","input/an/ethanol.hess.full")
         nma = NMA(molecule)
-        write_modes_for_VMD(molecule, nma, 6, filename="output/mode6.xyz")
+        write_modes_for_VMD(nma, 6, filename="output/mode6.xyz")
         f = file("output/mode6.xyz")
         line = f.readline()    # first line
         words = line.split()

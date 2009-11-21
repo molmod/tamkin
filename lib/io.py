@@ -1087,22 +1087,20 @@ def make_moldenfile(filename, masses, atomicnumbers, positions, modes, ev):
 #    (END) write logfile as Gaussian03 does
 #======================================
 
-def write_modes_for_VMD(molecule, nma, index, filename=None,
+def write_modes_for_VMD(nma, index, filename=None,
                         A = 50.0, frames = 36):
     """This function selects calls the function write_modes_for_VMD_2,
     where the mode trajectory is actually written.
     The function selects the relevant attributes."""
 
-    import math
-
     if filename is None: filename = "mode"+str(index)+".txt"
 
     # Select mode from the nma.modes and undo mass-weighting
     mode = nma.modes[:,index]
-    for at in range(len(mode)/3):
-        mode[3*at:3*at+3] /=math.sqrt(molecule.masses[at])
+    for i in range(len(mode)):
+        mode[i] /= numpy.sqrt(nma.masses3[i])
 
-    write_modes_for_VMD_2(molecule.numbers, molecule.coordinates, mode, filename=filename, A=A, frames=frames)
+    write_modes_for_VMD_2(nma.numbers, nma.coordinates, mode, filename=filename, A=A, frames=frames)
 
 
 

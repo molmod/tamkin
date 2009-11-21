@@ -278,7 +278,7 @@ def calculate_sensitivity(nma, index, filename = None):
     #points = numpy.arange(L)*4000.0 #/(cm/lightspeed)
     #if filename is not None:
     #    write_overlap(points, points, numpy.sqrt(abs(mat)), filename = filename)   # reuse this function
-    vals,vecs = numpy.linalg.eigh(mat)
+    #vals,vecs = numpy.linalg.eigh(mat)
     #print vals
     return mat
 

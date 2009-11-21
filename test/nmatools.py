@@ -59,7 +59,7 @@
 from tamkin import *
 
 import unittest, numpy
-
+import pylab
 
 __all__ = ["NMAToolsTestCase"]
 
@@ -79,6 +79,46 @@ class NMAToolsTestCase(unittest.TestCase):
     def test_eigenvalue_sensitivity(self):
         molecule = load_molecule_charmm("input/an/ethanol.cor","input/an/ethanol.hess.full")
         nma = NMA(molecule)
-        sensit = calculate_sensitivity(nma, 5, filename="output/ethanol.eigvalsensitivity.csv")
-        #for i in range(len(sensit)):
-        #    print max(abs(sensit[:,i]))
+        pylab.figure(1)
+        pylab.hold(True)
+        pylab.figure(3)
+        pylab.hold(True)
+        eigenvalues = range(len(nma.modes))
+
+        dist = numpy.zeros((len(nma.modes),len(nma.modes)),float)
+        for k in range(len(nma.modes)):
+            for l in range(len(nma.modes)):
+                dist[k,l] = numpy.sqrt(numpy.sum((molecule.coordinates[k/3,:] - molecule.coordinates[l/3,:])**2))
+
+        for index in eigenvalues:
+            sensit = calculate_sensitivity(nma, index, filename="output/ethanol.eigvalsensitivity.csv")
+            color = float(index)/len(eigenvalues)
+
+            pylab.figure(1)
+            pylab.plot(dist, sensit,'o',markerfacecolor=str(color),
+                                  markeredgewidth=0.5,)
+            pylab.figure(3)
+            if index not in nma.zeros:
+                pylab.plot(dist, sensit/nma.freqs[index]**2,'o',markerfacecolor=str(color),
+                                  markeredgewidth=0.5,)
+
+            #pylab.figure(2)
+            #pylab.hold(True)
+            #pylab.plot(dist[k,l],sensit[k,l],'bo')
+            #pylab.xlabel("distance atom i to atom j (a.u.)")
+            #pylab.title("sensitivity of eigenvalue "+str(index)+" (numbering starts at 0)")
+            #pylab.savefig("output/sensitivity.eigv"+str(index)+".png")
+            #pylab.close()
+
+        pylab.figure(1)
+        pylab.xlabel("distance atom i to atom j (a.u.)")
+        pylab.title("sensitivity matrix elements")
+        pylab.savefig("output/sensitivity.png")
+        pylab.close()
+
+        pylab.figure(3)
+        pylab.xlabel("distance atom i to atom j (a.u.)")
+        pylab.title("sensitivity matrix elements, normalized by eigenvalue")
+        pylab.savefig("output/sensitivity.normalized.png")
+        pylab.close()
+

@@ -87,10 +87,10 @@ import numpy
 
 __all__ = [
     "IdealGasVolume", "FixedVolume", "Info", "StatFys", "StatFysTerms",
-    "log_eval_levels", "log_deriv_levels", "log_deriv2_levels",
+    "helper0_levels", "helper1_levels", "helper2_levels",
     "Electronic", "ExternalTranslation", "ExternalRotation", "PCMCorrection",
     "Vibrations",
-    "log_eval_vibrations", "log_deriv_vibrations", "log_deriv2_vibrations",
+    "helper0_vibrations", "helper1_vibrations", "helper2_vibrations",
     "PartFun", "compute_rate_coeff", "compute_equilibrium_constant"
 ]
 
@@ -107,14 +107,26 @@ class IdealGasVolume(object):
     def __init__(self, pressure=1*atm):
         self.pressure = pressure
 
-    def __call__(self, temp):
-        return boltzmann*temp/self.pressure
+    def helper0(self, temp, n):
+        if temp == 0:
+            if n > 0:
+                return 0.0
+            else:
+                raise NotImplementedError
+        else:
+            return temp**n*numpy.log(boltzmann*temp/self.pressure)
 
-    def deriv(self, temp):
-        return -self(temp)/temp
+    def helper1(self, temp, n):
+        if temp == 0:
+            raise NotImplementedError
+        else:
+            return temp**(n-1)
 
-    def deriv2(self, temp):
-        return -2*self.deriv(temp)/temp
+    def helper2(self, temp, n):
+        if temp == 0:
+            raise NotImplementedError
+        else:
+            return -temp**(n-2)
 
     def get_description(self):
         return "Molecular volume: ideal gas law, reference pressure [bar] = %.5f" % (self.pressure/bar)
@@ -132,14 +144,15 @@ class FixedVolume(object):
     def __init__(self, temp=298.15, pressure=1*atm):
         self.temp = temp
         self.pressure = pressure
+        self.volume = boltzmann*self.temp/self.pressure
 
-    def __call__(self, temp):
-        return boltzmann*self.temp/self.pressure
+    def helper0(self, temp, n):
+        return temp**n*numpy.log(self.volume)
 
-    def deriv(self, temp):
+    def helper1(self, temp, n):
         return 0.0
 
-    def deriv2(self, temp):
+    def helper2(self, temp, n):
         return 0.0
 
     def get_description(self):
@@ -180,45 +193,69 @@ class StatFys(object):
         """Compute variables that depend on nma and other parts of the partf"""
         pass
 
-    def log_eval(self, temp):
-        """The logarithm of the partition function"""
+    def helper0(self, temp, n):
+        """Helper function zero
+
+           Returns T^n ln(Z)
+        """
         raise NotImplementedError
 
-    def log_deriv(self, temp):
-        """The derivative of the logarithm of the partition function"""
+    def helper1(self, temp, n):
+        """Helper function one
+
+           Returns T^n (d ln(Z) / dT)
+        """
         raise NotImplementedError
 
-    def log_deriv2(self, temp):
-        """The second derivative of the logarithm of the partition function"""
+    def helper2(self, temp, n):
+        """Helper function two
+
+           Returns T^n (d^2 ln(Z) / dT^2)
+        """
         raise NotImplementedError
 
-    def internal_energy(self, temp, log_deriv=None):
+    def log_eval(self, temp, helper0=None):
+        if helper0 is None:
+            helper0 = self.helper0
+        return helper0(temp, 0)
+
+    def log_deriv(self, temp, helper1=None):
+        if helper1 is None:
+            helper1 = self.helper1
+        return helper1(temp, 0)
+
+    def log_deriv2(self, temp, helper2=None):
+        if helper2 is None:
+            helper2 = self.helper2
+        return helper2(temp, 0)
+
+    def internal_energy(self, temp, helper1=None):
         """Computes the internal energy per molecule"""
-        if log_deriv is None:
-            log_deriv = self.log_deriv
-        return boltzmann*temp**2*log_deriv(temp)
+        if helper1 is None:
+            helper1 = self.helper1
+        return boltzmann*helper1(temp, 2)
 
-    def heat_capacity(self, temp, log_deriv=None, log_deriv2=None):
+    def heat_capacity(self, temp, helper1=None, helper2=None):
         """Computes the heat capacity per molecule"""
-        if log_deriv is None:
-            log_deriv = self.log_deriv
-        if log_deriv2 is None:
-            log_deriv2 = self.log_deriv2
-        return boltzmann*temp*(2*log_deriv(temp) + temp*log_deriv2(temp))
+        if helper1 is None:
+            helper1 = self.helper1
+        if helper2 is None:
+            helper2 = self.helper2
+        return boltzmann*(2*helper1(temp, 1) + helper2(temp, 2))
 
-    def entropy(self, temp, log_eval=None, log_deriv=None):
+    def entropy(self, temp, helper0=None, helper1=None):
         """Computes the entropy contribution per molecule"""
-        if log_eval is None:
-            log_eval = self.log_eval
-        if log_deriv is None:
-            log_deriv = self.log_deriv
-        return boltzmann*(log_eval(temp) + temp*log_deriv(temp))
+        if helper0 is None:
+            helper0 = self.helper0
+        if helper1 is None:
+            helper1 = self.helper1
+        return boltzmann*(helper0(temp, 0) + helper1(temp, 1))
 
-    def free_energy(self, temp, log_eval=None):
+    def free_energy(self, temp, helper0=None):
         """Computes the free energy per molecule"""
-        if log_eval is None:
-            log_eval = self.log_eval
-        return -boltzmann*temp*log_eval(temp)
+        if helper0 is None:
+            helper0 = self.helper0
+        return -boltzmann*helper0(temp, 1)
 
 
 class StatFysTerms(StatFys):
@@ -231,67 +268,83 @@ class StatFysTerms(StatFys):
     def __init__(self, num_terms):
         self.num_terms = num_terms
 
-    def log_eval(self, temp):
-        return self.log_eval_terms(temp).sum()
+    def helper0(self, temp, n):
+        return self.helper0_terms(temp, n).sum()
 
-    def log_deriv(self, temp):
-        return self.log_deriv_terms(temp).sum()
+    def helper1(self, temp, n):
+        return self.helper1_terms(temp, n).sum()
 
-    def log_deriv2(self, temp):
-        return self.log_deriv2_terms(temp).sum()
+    def helper2(self, temp, n):
+        return self.helper2_terms(temp, n).sum()
+
+    def helper1_terms(self, temp, n):
+        raise NotImplementedError
+
+    def helper1_terms(self, temp, n):
+        raise NotImplementedError
+
+    def helper2_terms(self, temp, n):
+        raise NotImplementedError
 
     def log_eval_terms(self, temp):
-        """The logarithm of the partition function (separate terms)"""
-        raise NotImplementedError
+        return self.log_eval(temp, self.helper0_terms)
 
     def log_deriv_terms(self, temp):
-        """The derivative of the logarithm of the partition function (separate terms)"""
-        raise NotImplementedError
+        return self.log_deriv(temp, self.helper1_terms)
 
     def log_deriv2_terms(self, temp):
-        """The second derivative of the logarithm of the partition function (separate terms)"""
-        raise NotImplementedError
+        return self.log_deriv2(temp, self.helper2_terms)
 
     def internal_energy_terms(self, temp):
         """Computes the internal energy per molecule (separate terms)"""
-        return self.internal_energy(temp, self.log_deriv_terms)
+        return self.internal_energy(temp, self.helper1_terms)
 
     def heat_capacity_terms(self, temp):
         """Computes the heat capacity per molecule (separate terms)"""
-        return self.heat_capacity(temp, self.log_deriv_terms, self.log_deriv2_terms)
+        return self.heat_capacity(temp, self.helper1_terms, self.helper2_terms)
 
     def entropy_terms(self, temp):
         """Computes the entropy contribution per molecule (separate terms)"""
-        return self.entropy(temp, self.log_eval_terms, self.log_deriv_terms)
+        return self.entropy(temp, self.helper0_terms, self.helper1_terms)
 
-    def free_energy_terms(self, temp, log_eval=None):
+    def free_energy_terms(self, temp):
         """Computes the free energy per molecule (separate terms)"""
-        return self.free_energy(temp, self.log_eval_terms)
+        return self.free_energy(temp, self.helper0_terms)
 
 
-def log_eval_levels(temp, energy_levels):
-    """The logarithm of the partition function for a set of energy levels"""
+def helper0_levels(temp, n, energy_levels):
     # this is defined as a function because multiple classes need it
-    eks = energy_levels/(temp*boltzmann)
-    bfs = numpy.exp(-eks)
-    Z = bfs.sum()
-    return numpy.log(Z)
+    if temp == 0:
+        energy = energy_levels[0]
+        degeneracy = 1
+        while (degeneracy<len(energy_levels) and energy_levels[0]==energy_levels[degeneracy]):
+            degeneracy += 1
+        return temp**n*numpy.log(degeneracy) - temp**(n-1)*energy
+    else:
+        Z = numpy.exp(-energy_levels/(boltzmann*temp)).sum()
+        return temp**n*numpy.log(Z)
 
-def log_deriv_levels(temp, energy_levels):
-    """The derivative of the logarithm of the partition function for a set of energy levels"""
+def helper1_levels(temp, n, energy_levels):
     # this is defined as a function because multiple classes need it
-    eks = energy_levels/(temp*boltzmann)
-    bfs = numpy.exp(-eks)
-    Z = bfs.sum()
-    return (bfs*eks).sum()/Z/temp
+    if temp == 0:
+        raise NotImplementedError
+    else:
+        es = energy_levels
+        bfs = numpy.exp(-es/(boltzmann*temp))
+        Z = bfs.sum()
+        return temp**(n-2)*(bfs*es).sum()/Z/boltzmann
 
-def log_deriv2_levels(temp, energy_levels):
-    """The second derivative of the logarithm of the partition function for a set of energy levels"""
+def helper2_levels(temp, n, energy_levels):
     # this is defined as a function because multiple classes need it
-    eks = energy_levels/(temp*boltzmann)
-    bfs = numpy.exp(-eks)
-    Z = bfs.sum()
-    return (bfs*eks*(eks-2)).sum()/Z/temp**2 - ((bfs*eks).sum()/temp/Z)**2
+    if temp == 0:
+        raise NotImplementedError
+    else:
+        es = energy_levels
+        bfs = numpy.exp(-es/(boltzmann*temp))
+        Z = bfs.sum()
+        return temp**(n-4)/boltzmann**2*((bfs*es**2).sum()/Z) \
+               -2*temp**(n-3)/boltzmann*((bfs*es).sum()/Z) \
+               -temp**(n-4)/boltzmann**2*((bfs*es).sum()/Z)**2
 
 
 class Electronic(Info, StatFys):
@@ -314,21 +367,24 @@ class Electronic(Info, StatFys):
         Info.dump(self, f)
         print >> f, "    Multiplicity: %i" % self.multiplicity
 
-    def log_eval(self, temp):
-        return numpy.log(self.multiplicity)
+    def helper0(self, temp, n):
+        return temp**n*numpy.log(self.multiplicity)
 
-    def log_deriv(self, temp):
+    def helper1(self, temp, n):
         return 0.0
 
-    def log_deriv2(self, temp):
+    def helper2(self, temp, n):
         return 0.0
 
 
 class ExternalTranslation(Info, StatFys):
     """The contribution from the external translation"""
+
+    default_volume = FixedVolume()
+
     def __init__(self, mol_volume=None):
         if mol_volume is None:
-            self.mol_volume = FixedVolume()
+            self.mol_volume = self.default_volume
         else:
             self.mol_volume = mol_volume
         Info.__init__(self, "translational")
@@ -341,20 +397,36 @@ class ExternalTranslation(Info, StatFys):
         print >> f, "    %s" % self.mol_volume.description
         print >> f, "    Mass [amu]: %f" % (self.mass/amu)
 
-    def log_eval(self, temp):
-        return (
-            1.5*numpy.log(0.5*self.mass*boltzmann*temp/numpy.pi)+
-            numpy.log(self.mol_volume(temp))
-        )
+    def helper0(self, temp, n):
+        if temp == 0:
+            if n > 0:
+                return 0.0
+            else:
+                raise NotImplementedError
+        else:
+            return (
+                temp**n*1.5*numpy.log(0.5*self.mass*boltzmann*temp/numpy.pi) +
+                self.mol_volume.helper0(temp, n)
+            )
 
-    def log_deriv(self, temp):
-        return 1.5/temp + self.mol_volume.deriv(temp)/self.mol_volume(temp)
+    def helper1(self, temp, n):
+        if temp == 0:
+            raise NotImplementedError
+        else:
+            return (
+                1.5*temp**(n-1) +
+                self.mol_volume.helper1(temp, n)
+            )
 
-    def log_deriv2(self, temp):
-        V = self.mol_volume(temp)
-        V_deriv = self.mol_volume.deriv(temp)
-        V_deriv2 = self.mol_volume.deriv2(temp)
-        return -1.5/temp**2 + (V_deriv2 - V_deriv**2/V)/V
+    def helper2(self, temp, n):
+        if temp == 0:
+            raise NotImplementedError
+        else:
+            return (
+                -1.5*temp**(n-2) +
+                self.mol_volume.helper2(temp, n)
+            )
+
 
 
 class ExternalRotation(Info, StatFys):
@@ -385,14 +457,20 @@ class ExternalRotation(Info, StatFys):
         print >> f, "    Threshold for non-zero moments of inertia [amu*bohr**2]: %e" % (self.im_threshold/amu)
         print >> f, "    Non-zero moments of inertia: %i" % self.count
 
-    def log_eval(self, temp):
-        return numpy.log(temp)*0.5*self.count + numpy.log(self.factor)
+    def helper0(self, temp, n):
+        if temp == 0:
+            if n > 0:
+                return 0.0
+            else:
+                raise NotImplementedError
+        else:
+            return temp**n*(numpy.log(temp)*0.5*self.count + numpy.log(self.factor))
 
-    def log_deriv(self, temp):
-        return 0.5*self.count/temp
+    def helper1(self, temp, n):
+        return temp**(n-1)*0.5*self.count
 
-    def log_deriv2(self, temp):
-        return -0.5*self.count/temp**2
+    def helper2(self, temp, n):
+        return -temp**(n-2)*0.5*self.count
 
 
 class PCMCorrection(Info, StatFys):
@@ -428,54 +506,69 @@ class PCMCorrection(Info, StatFys):
                 0.0
             )
 
-    def log_eval(self, temp):
+    def helper0(self, temp, n):
         F, Fp, Fpp = self._eval_free(temp)
-        return -F/(boltzmann*temp)
+        return -F*temp**(n-1)/boltzmann
 
-    def log_deriv(self, temp):
+    def helper1(self, temp, n):
         F, Fp, Fpp = self._eval_free(temp)
-        return (-Fp+F/temp)/(boltzmann*temp)
+        return (F*temp**(n-2) - Fp*temp**(n-1))/boltzmann
 
-    def log_deriv2(self, temp):
+    def helper2(self, temp, n):
         F, Fp, Fpp = self._eval_free(temp)
-        return (-Fpp+2*(Fp-F/temp)/temp)/(boltzmann*temp)
+        return (-Fpp*temp**(n-1) + 2*(Fp*temp**(n-2) - F*temp**(n-3)))/boltzmann
 
 
-def log_eval_vibrations(temp, freqs, classical=False, freq_scaling=1, zp_scaling=1):
-    """The logarithm of the partition function for a harmonic vibration"""
+def helper0_vibrations(temp, n, freqs, classical=False, freq_scaling=1, zp_scaling=1):
     # this is defined as a function because multiple classes need it
     if classical:
-        return numpy.log(0.5*boltzmann*temp/numpy.pi/freqs*freq_scaling)
+        if temp == 0:
+            if n > 0:
+                return numpy.zeros(len(freqs))
+            else:
+                raise NotImplementedError
+        else:
+            return temp**n*numpy.log(0.5*boltzmann*temp/numpy.pi/freqs*freq_scaling)
     else:
         # The zero point correction is included in the partition function and
         # should not be taken into account when computing the reaction barrier.
-        exp_arg = -2*numpy.pi*freqs/boltzmann/temp
-        return (zp_scaling*exp_arg/2 - numpy.log(1-numpy.exp(exp_arg*freq_scaling)))
+        pfb = numpy.pi*freqs/boltzmann
+        if temp == 0:
+            return -zp_scaling*pfb*temp**(n-1)
+        else:
+            return -zp_scaling*pfb*temp**(n-1) - numpy.log(1-numpy.exp(-2*freq_scaling*pfb/temp))*temp**n
         # This would be the version when the zero point energy corrections are
         # included in the energy difference when computing the reaction rate:
         #return -numpy.log(1-numpy.exp(exp_arg*freq_scaling))
 
-def log_deriv_vibrations(temp, freqs, classical=False, freq_scaling=1, zp_scaling=1):
-    """The derivative of the logarithm of the partition function for a harmonic vibration"""
+def  helper1_vibrations(temp, n, freqs, classical=False, freq_scaling=1, zp_scaling=1):
     # this is defined as a function because multiple classes need it
     if classical:
-        return numpy.ones(len(freqs))/temp
+        if temp == 0:
+            raise NotImplementedError
+        else:
+            return temp**(n-1)*numpy.ones(len(freqs))
     else:
-        exp_arg = -2*numpy.pi*freqs/boltzmann/temp
-        exp_arg_deriv = -exp_arg/temp
-        return exp_arg_deriv*(zp_scaling*0.5 - freq_scaling/(1 - numpy.exp(-exp_arg*freq_scaling)))
+        if temp == 0:
+            raise NotImplementedError
+        else:
+            pfb = numpy.pi*freqs/boltzmann
+            return pfb*temp**(n-2)*(zp_scaling - 2*freq_scaling/(1 - numpy.exp(2*freq_scaling*pfb/temp)))
 
-def log_deriv2_vibrations(temp, freqs, classical=False, freq_scaling=1, zp_scaling=1):
-    """The second derivative of the logarithm of the partition function for a harmonic vibration"""
+def  helper2_vibrations(temp, n, freqs, classical=False, freq_scaling=1, zp_scaling=1):
     # this is defined as a function because multiple classes need it
     if classical:
-        return -numpy.ones(len(freqs))/temp**2
+        if temp == 0:
+            raise NotImplementedError
+        else:
+            return -temp**(n-2)*numpy.ones(len(freqs))
     else:
-        exp_arg = -2*numpy.pi*freqs/boltzmann/temp
-        exp_arg_deriv = -exp_arg/temp
-        exp_arg_deriv2 = -2*exp_arg_deriv/temp
-        return exp_arg_deriv2*(zp_scaling*0.5 - freq_scaling/(1 - numpy.exp(-exp_arg*freq_scaling))) + \
-               (exp_arg_deriv*0.5*freq_scaling/numpy.sinh(0.5*exp_arg*freq_scaling))**2
+        if temp == 0:
+            raise NotImplementedError
+        else:
+            pfb = numpy.pi*freqs/boltzmann
+            return -2*pfb*temp**(n-3)*(zp_scaling - 2*freq_scaling/(1 - numpy.exp(2*freq_scaling*pfb/temp))) + \
+                   +temp**(n-4)*(freq_scaling*pfb/numpy.sinh(freq_scaling*pfb/temp))**2
 
 
 class Vibrations(Info, StatFysTerms):
@@ -509,21 +602,21 @@ class Vibrations(Info, StatFysTerms):
         self.dump_values(f, "Real Wavenumbers [1/cm]", self.positive_freqs/(lightspeed/cm), "% 8.1f", 8)
         self.dump_values(f, "Imaginary Wavenumbers [1/cm]", self.negative_freqs/(lightspeed/cm), "% 8.1f", 8)
 
-    def log_eval_terms(self, temp):
-        return log_eval_vibrations(
-            temp, self.positive_freqs, self.classical, self.freq_scaling,
+    def helper0_terms(self, temp, n):
+        return helper0_vibrations(
+            temp, n, self.positive_freqs, self.classical, self.freq_scaling,
             self.zp_scaling
         )
 
-    def log_deriv_terms(self, temp):
-        return log_deriv_vibrations(
-            temp, self.positive_freqs, self.classical, self.freq_scaling,
+    def helper1_terms(self, temp, n):
+        return helper1_vibrations(
+            temp, n, self.positive_freqs, self.classical, self.freq_scaling,
             self.zp_scaling
         )
 
-    def log_deriv2_terms(self, temp):
-        return log_deriv2_vibrations(
-            temp, self.positive_freqs, self.classical, self.freq_scaling,
+    def helper2_terms(self, temp, n):
+        return helper2_vibrations(
+            temp, n, self.positive_freqs, self.classical, self.freq_scaling,
             self.zp_scaling
         )
 
@@ -576,14 +669,14 @@ class PartFun(Info, StatFys):
         self.energy = nma.energy
         Info.__init__(self, "total")
 
-    def log_eval(self, temp):
-        return sum(term.log_eval(temp) for term in self.terms)
+    def helper0(self, temp, n):
+        return sum(term.helper0(temp, n) for term in self.terms)
 
-    def log_deriv(self, temp):
-        return sum(term.log_deriv(temp) for term in self.terms)
+    def helper1(self, temp, n):
+        return sum(term.helper1(temp, n) for term in self.terms)
 
-    def log_deriv2(self, temp):
-        return sum(term.log_deriv2(temp) for term in self.terms)
+    def helper2(self, temp, n):
+        return sum(term.helper2(temp, n) for term in self.terms)
 
     def internal_energy(self, temp):
         """Computes the internal energy"""
@@ -599,9 +692,7 @@ class PartFun(Info, StatFys):
 
     def dump(self, f):
         print >> f, "Energy [au]: %.5f" % self.energy
-        # TODO
-        #temp_small = 1e-5
-        #print >> f, "Free energy at T=0K [au]: %.5f" % self.free_energy(temp_small)
+        print >> f, "Free energy at T=0K [au]: %.5f" % self.free_energy(0.0)
         print >> f, "Contributions to the partition function:"
         for term in self.terms:
             term.dump(f)
@@ -633,8 +724,8 @@ def compute_rate_coeff(pfs_react, pf_trans, temp, mol_volume=None):
     log_result = -delta_G/(boltzmann*temp)
     if len(pfs_react) > 1:
         if mol_volume is None:
-            mol_volume = FixedVolume()
-        log_result += numpy.log(mol_volume(temp))*(len(pfs_react)-1)
+            mol_volume = ExternalTranslation.default_volume
+        log_result += mol_volume.helper0(temp,0)*(len(pfs_react)-1)
     return boltzmann*temp/(2*numpy.pi)*numpy.exp(log_result)
 
 
@@ -658,8 +749,8 @@ def compute_equilibrium_constant(pfs_A, pfs_B, temp, mol_volume=None):
     log_K = -delta_G/(boltzmann*temp)
     if len(pfs_A) != len(pfs_B):
         if mol_volume is None:
-            mol_volume = FixedVolume()
-        log_K += (len(pfs_B)-len(pfs_A))*numpy.log(mol_volume(temp))
+            mol_volume = ExternalTranslation.default_volume
+        log_K += (len(pfs_B)-len(pfs_A))*mol_volume.helper0(temp,0)
     return log_K
 
 

@@ -182,30 +182,49 @@ class PartFunTestCase(unittest.TestCase):
             self.assertAlmostEqual(numpy.log(k/unit), numpy.log(expected_ks[i]),2)
 
     def test_derivatives(self):
-        molecule = load_molecule_g03fchk("input/sterck/aa.fchk")
+        molecule = load_molecule_g03fchk("input/ethane/gaussian.fchk")
         nma = NMA(molecule)
+        dihedral, angles, energies, geometries, top_indexes = load_rotscan_g03(
+            "input/rotor/gaussian.log"
+        )
+        cancel_freq = compute_cancel_frequency(molecule, top_indexes)
+        rotor = Rotor(
+            top_indexes, cancel_freq, rotsym=3, even=True,
+            potential=(angles, energies, 5), num_levels=50
+        )
         pf = PartFun(nma, [
-            ExternalTranslation(), ExternalRotation(1),
-            Vibrations(zp_scaling=0.5, freq_scaling=0.3),
+            ExternalTranslation(),
+            ExternalRotation(6),
+            rotor,
         ])
 
-        # check the first derivative with finite differences
         eps = 0.0001
         temps = numpy.array([300.0,400.0,500.0,600.0,700.0])
-        for stat_fys in [pf.electronic, pf.translational, pf.rotational, pf.vibrational, pf]:
+        sfs = [
+            pf.electronic, pf.translational, pf.rotational, pf.vibrational,
+            pf.hindered_rotor_0_1_3_4_5, pf
+        ]
+        for stat_fys in sfs:
             for temp in temps:
+                # check the first derivative with finite differences
                 a = stat_fys.log_deriv(temp)
                 b = (stat_fys.log_eval(temp+eps) - stat_fys.log_eval(temp-eps))/(2*eps)
                 self.assertAlmostEqual(
                     a, b, 8,
                     "error in partial derivative (%s): %s!=%s" % (stat_fys.name, a, b)
                 )
+                # check the second derivative with finite differences
                 a = stat_fys.log_deriv2(temp)
                 b = (stat_fys.log_deriv(temp+eps) - stat_fys.log_deriv(temp-eps))/(2*eps)
                 self.assertAlmostEqual(
                     a, b, 8,
                     "error in second partial derivative (%s): %s!=%s" % (stat_fys.name, a, b)
                 )
+                # check the helper functions temperature argument
+                self.assertAlmostEqual(stat_fys.helper0(temp,1), stat_fys.helper0(temp,0)*temp)
+                self.assertAlmostEqual(stat_fys.helper1(temp,1), stat_fys.helper1(temp,0)*temp)
+                self.assertAlmostEqual(stat_fys.helper2(temp,1), stat_fys.helper2(temp,0)*temp)
+
 
     def test_derived_quantities(self):
         # internal energy, heat capacity and entropy
@@ -320,9 +339,19 @@ class PartFunTestCase(unittest.TestCase):
         self.assertAlmostEqual(pf.heat_capacity(temp), 1.5*boltzmann)
         self.assertAlmostEqual(pf.internal_energy(temp), 1.5*boltzmann*temp)
         qt = (mol.masses[0]*boltzmann*temp/(2*numpy.pi))**1.5 * boltzmann*temp/(1*atm)
+        self.assertAlmostEqual(pf.translational.helper1(temp, 1), 1.5)
         self.assertAlmostEqual(
-            pf.entropy(temp),
-            boltzmann*(numpy.log(qt) + 1.5 + 1)
+            pf.translational.mol_volume.helper0(temp, 0),
+            numpy.log(boltzmann*temp/(1*atm))
+        )
+        self.assertAlmostEqual(
+            pf.translational.helper0(temp, 0),
+            1.5*numpy.log(mol.masses[0]*boltzmann*temp/(2*numpy.pi)) +
+            numpy.log(boltzmann*temp/(1*atm))
+        )
+        self.assertAlmostEqual(
+            pf.entropy(temp)/boltzmann,
+            (numpy.log(qt) + 1.5 + 1)
         )
 
     def test_pcm_correction(self):

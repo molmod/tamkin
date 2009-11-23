@@ -63,9 +63,9 @@
    [1] Chemical Physics, Vol. 328 (1-3) 251 - 258, 2006
 """
 
-from tamkin.partf import Info, StatFysTerms, log_eval_vibrations, \
-    log_deriv_vibrations, log_deriv2_vibrations, log_eval_levels, \
-    log_deriv_levels, log_deriv2_levels
+from tamkin.partf import Info, StatFysTerms, helper0_vibrations, \
+    helper1_vibrations, helper2_vibrations, helper0_levels, helper1_levels, \
+    helper2_levels
 from tamkin.nma import NMA, MBH
 from tamkin.geom import transrot_basis
 
@@ -324,7 +324,7 @@ class Rotor(Info, StatFysTerms):
         self.indexes = indexes
         self.cancel_freq = cancel_freq
         if suffix is None:
-            self.suffix = "-".join(str(i) for i in indexes)
+            self.suffix = "_".join(str(i) for i in indexes)
         else:
             self.suffix = suffix
         self.rotsym = rotsym
@@ -456,7 +456,7 @@ class Rotor(Info, StatFysTerms):
         pylab.xlabel("Dihedral angle [deg]")
         pylab.savefig(filename)
 
-    def log_eval_terms(self, temp):
+    def helper0_terms(self, temp, n):
         """Compute the conbtributions to the logarithm of the partition function
 
            Argument:
@@ -465,12 +465,12 @@ class Rotor(Info, StatFysTerms):
            Returns: 1D numpy arrays with contributions
         """
         return numpy.array([
-            -log_eval_vibrations(temp, self.cancel_freq, self.classical,
+            -helper0_vibrations(temp, n, self.cancel_freq, self.classical,
                                  self.freq_scaling, self.zp_scaling),
-            log_eval_levels(temp, self.energy_levels) - numpy.log(self.rotsym),
+            helper0_levels(temp, n, self.energy_levels) - temp**n*numpy.log(self.rotsym),
         ])
 
-    def log_deriv_terms(self, temp):
+    def helper1_terms(self, temp, n):
         """Compute the conbtributions to the derivative of the logarithm of the
            partition function
 
@@ -480,12 +480,12 @@ class Rotor(Info, StatFysTerms):
            Returns: 1D numpy arrays with contributions
         """
         return numpy.array([
-            -log_deriv_vibrations(temp, self.cancel_freq, self.classical,
+            -helper1_vibrations(temp, n, self.cancel_freq, self.classical,
                                   self.freq_scaling, self.zp_scaling),
-            log_deriv_levels(temp, self.energy_levels),
+            helper1_levels(temp, n, self.energy_levels),
         ])
 
-    def log_deriv2_terms(self, temp):
+    def helper2_terms(self, temp, n):
         """Compute the conbtributions to the second derivative of the logarithm
            of the partition function
 
@@ -495,9 +495,9 @@ class Rotor(Info, StatFysTerms):
            Returns: 1D numpy arrays with contributions
         """
         return numpy.array([
-            -log_deriv2_vibrations(temp, self.cancel_freq, self.classical,
+            -helper2_vibrations(temp, n, self.cancel_freq, self.classical,
                                    self.freq_scaling, self.zp_scaling),
-            log_deriv2_levels(temp, self.energy_levels),
+            helper2_levels(temp, n, self.energy_levels),
         ])
 
 

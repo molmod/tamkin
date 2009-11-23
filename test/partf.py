@@ -230,7 +230,7 @@ class PartFunTestCase(unittest.TestCase):
         # internal energy, heat capacity and entropy
         molecule = load_molecule_g03fchk("input/sterck/aa.fchk")
         nma = NMA(molecule, ConstrainExt())
-        pf = PartFun(nma, [ExternalTranslation(), ExternalRotation(1)])
+        pf = PartFun(nma, [ExternalTranslation(FixedVolume()), ExternalRotation(1)])
 
         # values taken from aa.log
         calmolK = cal/mol/K
@@ -277,7 +277,7 @@ class PartFunTestCase(unittest.TestCase):
 
         # values taken from aa.log
         molecule = load_molecule_g03fchk("input/sterck/aa.fchk")
-        pf = PartFun(NMA(molecule, ConstrainExt()), [ExternalTranslation()])
+        pf = PartFun(NMA(molecule, ConstrainExt()), [ExternalTranslation(FixedVolume())])
         # translational
         self.assertAlmostEqual(pf.translational.internal_energy(298.15)/(kcalmol), 0.889, 2)
         self.assertAlmostEqual(pf.translational.heat_capacity(298.15)/(calmolK), 2.981, 2)
@@ -334,7 +334,7 @@ class PartFunTestCase(unittest.TestCase):
 
     def test_proton(self):
         mol = Proton()
-        pf = PartFun(NMA(mol), [ExternalTranslation()])
+        pf = PartFun(NMA(mol), [ExternalTranslation(FixedVolume())])
         temp = 298.15
         self.assertAlmostEqual(pf.heat_capacity(temp), 1.5*boltzmann)
         self.assertAlmostEqual(pf.internal_energy(temp), 1.5*boltzmann*temp)

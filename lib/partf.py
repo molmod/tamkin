@@ -380,7 +380,7 @@ class Electronic(Info, StatFys):
 class ExternalTranslation(Info, StatFys):
     """The contribution from the external translation"""
 
-    default_volume = FixedVolume()
+    default_volume = IdealGasVolume()
 
     def __init__(self, mol_volume=None):
         if mol_volume is None:

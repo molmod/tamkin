@@ -75,9 +75,9 @@ mol_ethyl = load_molecule_g03fchk("ethyl/freq/gaussian.fchk")
 mol_ethene = load_molecule_g03fchk("ethene/freq/gaussian.fchk")
 mol_trans = load_molecule_g03fchk("trans/freq2/gaussian.fchk")
 # Perform normal mode analysis on the three molecules
-nma_ethyl = NMA(mol_ethyl)
-nma_ethene = NMA(mol_ethene)
-nma_trans = NMA(mol_trans)
+nma_ethyl = NMA(mol_ethyl, ConstrainExt())
+nma_ethene = NMA(mol_ethene, ConstrainExt())
+nma_trans = NMA(mol_trans, ConstrainExt())
 # Construct the rotor about the forming bond in the transition state
 rotor_ethyl = load_rotor(mol_ethyl, "ethyl/scan/gaussian.log", 6, True)
 rotor_trans1 = load_rotor(mol_trans, "trans/scan1/gaussian.log", 3, False)

@@ -494,6 +494,7 @@ class PCMCorrection(Info, StatFys):
             print >> f, "       Temperature [K]: %.2f" % (self.point2[1])
         else:
             print >> f, "       Not Defined!! Only rely on computations on temperature of point 1!!"
+        print >> f, "    Free energy contribution at T=0K [au]: %.7f" % self.free_energy(0.0)
 
     def _eval_free(self, temp):
         if self.point2 is None:
@@ -598,9 +599,10 @@ class Vibrations(Info, StatFysTerms):
         print >> f, "    Number of imaginary wavenumbers: %i" % (len(self.negative_freqs))
         print >> f, "    Frequency scaling factor: %.4f" % self.freq_scaling
         print >> f, "    Zero-Point scaling factor: %.4f" % self.zp_scaling
-        self.dump_values(f, "Zero Wavenumbers [1/cm]", self.zero_freqs/(lightspeed/cm), "% 8.1f", 8)
-        self.dump_values(f, "Real Wavenumbers [1/cm]", self.positive_freqs/(lightspeed/cm), "% 8.1f", 8)
-        self.dump_values(f, "Imaginary Wavenumbers [1/cm]", self.negative_freqs/(lightspeed/cm), "% 8.1f", 8)
+        self.dump_values(f, "Zero Wavenumbers [1/cm]", self.zero_freqs/(lightspeed/cm), "% 10.3f", 7)
+        self.dump_values(f, "Real Wavenumbers [1/cm]", self.positive_freqs/(lightspeed/cm), "% 10.3f", 7)
+        self.dump_values(f, "Imaginary Wavenumbers [1/cm]", self.negative_freqs/(lightspeed/cm), "% 10.3f", 7)
+        print >> f, "    Free energy contribution at T=0K [au]: %.7f" % self.free_energy(0.0)
 
     def helper0_terms(self, temp, n):
         return helper0_vibrations(
@@ -663,6 +665,8 @@ class PartFun(Info, StatFys):
             self.electronic = Electronic()
             self.terms.append(self.electronic)
 
+        self.terms.sort(key=(lambda t: t.name))
+
         for term in self.terms:
             term.init_part_fun(nma, self)
 
@@ -691,8 +695,8 @@ class PartFun(Info, StatFys):
         return StatFys.free_energy(self, temp) + self.energy
 
     def dump(self, f):
-        print >> f, "Energy [au]: %.5f" % self.energy
-        print >> f, "Free energy at T=0K [au]: %.5f" % self.free_energy(0.0)
+        print >> f, "Energy at T=0K (classical nuclei) [au]: %.5f" % self.energy
+        print >> f, "Energy at T=0K (parition function) [au]: %.5f" % self.free_energy(0.0)
         print >> f, "Contributions to the partition function:"
         for term in self.terms:
             term.dump(f)

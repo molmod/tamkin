@@ -69,9 +69,10 @@ import numpy
 
 
 __all__ = [
-    "load_fixed_g03com", "load_molecule_g03fchk", "load_rotscan_g03",
-    "load_molecule_cp2k", "load_molecule_cpmd", "load_molecule_charmm",
-    "load_molecule_qchem", "load_molecule_vasp", "load_fixed_vasp",
+    "load_fixed_g03com", "load_molecule_g03fchk", "load_molecule_g98fchk",
+    "load_rotscan_g03", "load_molecule_cp2k", "load_molecule_cpmd",
+    "load_molecule_charmm","load_molecule_qchem", "load_molecule_vasp",
+    "load_fixed_vasp",
     "load_chk", "dump_chk",
     "load_fixed_txt", "load_subs_txt", "load_envi_txt", "load_blocks_txt",
     "write_modes_for_VMD",
@@ -108,7 +109,7 @@ def load_fixed_g03com(filename):
     return fixed_atoms
 
 
-def load_molecule_g03fchk(filename_freq,filename_ener=None,filename_vdw=None): # if one file contains every information, give the name twice
+def load_molecule_g03fchk(filename_freq, filename_ener=None, filename_vdw=None):
     fchk_freq = FCHKFile(filename_freq, ignore_errors=True, field_labels=[
         "Cartesian Force Constants", "Real atomic weights", "Total Energy",
         "Multiplicity", "Cartesian Gradient"
@@ -134,6 +135,47 @@ def load_molecule_g03fchk(filename_freq,filename_ener=None,filename_vdw=None): #
         fchk_freq.molecule.coordinates,
         fchk_freq.fields["Real atomic weights"]*amu,
         fchk_ener.fields["Total Energy"]+vdw,
+        numpy.reshape(numpy.array(fchk_freq.fields["Cartesian Gradient"]), (len(fchk_freq.molecule.numbers),3)),
+        fchk_freq.get_hessian(),
+        fchk_freq.fields["Multiplicity"],
+        None, # gaussian is very poor at computing the rotational symmetry number
+        False,
+    )
+
+
+g98_masses = numpy.array([
+    1.0079, 4.0026, 6.94, 9.01218, 10.81, 12.011, 14.0067, 15.9994, 18.9984,
+    20.179, 22.98977, 24.305, 26.98154, 28.0855, 30.97376, 32.06, 35.453,
+    39.948, 39.0983, 40.08, 44.9559, 47.9, 50.9415, 51.996, 54.938, 55.847,
+    58.9332, 58.71, 63.546, 65.38, 69.735, 72.59, 74.9216, 78.96, 79.904, 83.8,
+    85.4678, 87.62, 88.9059, 91.22, 92.9064, 95.94, 98.9062, 101.07, 102.9055,
+    106.4, 107.868, 112.41, 114.82, 118.69, 121.75, 127.6, 126.9045, 131.3,
+    132.9054, 137.33, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+    0.0, 0.0, 0.0, 0.0, 178.49, 180.9479, 183.85, 186.207, 190.2, 192.22,
+    195.09, 196.9665, 200.59, 204.37, 207.2, 208.9804, 0.0, 0.0, 0.0, 0.0, 0.0,
+    0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0, 0.0,
+    0.0, 0.0, 0.0, 0.0,
+])*amu
+
+
+def load_molecule_g98fchk(filename_freq, filename_ener=None):
+    fchk_freq = FCHKFile(filename_freq, ignore_errors=True, field_labels=[
+        "Cartesian Force Constants", "Total Energy",
+        "Multiplicity", "Cartesian Gradient"
+    ])
+    if filename_ener is None:
+        fchk_ener = fchk_freq
+    else:
+        fchk_ener = FCHKFile(filename_ener, ignore_errors=True, field_labels=[
+            "Total Energy"
+        ])
+    masses = numpy.array([g98_masses[n-1] for n in fchk_freq.molecule.numbers])
+
+    return Molecule(
+        fchk_freq.molecule.numbers,
+        fchk_freq.molecule.coordinates,
+        masses,
+        fchk_ener.fields["Total Energy"],
         numpy.reshape(numpy.array(fchk_freq.fields["Cartesian Gradient"]), (len(fchk_freq.molecule.numbers),3)),
         fchk_freq.get_hessian(),
         fchk_freq.fields["Multiplicity"],

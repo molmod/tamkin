@@ -59,6 +59,8 @@
 
 # Import the tamkin library.
 from tamkin import *
+# Import pylab for plotting
+import pylab
 
 
 # Define an auxiliary function
@@ -73,29 +75,38 @@ def load_rotor(mol, filename, rotsym, even):
 
 mol_ethyl = load_molecule_g03fchk("ethyl/freq/gaussian.fchk")
 mol_ethene = load_molecule_g03fchk("ethene/freq/gaussian.fchk")
-mol_trans = load_molecule_g03fchk("trans/freq2/gaussian.fchk")
-# Perform normal mode analysis on the three molecules
+mol_ts_gauche = load_molecule_g03fchk("ts_ad1/freq_gauche/gaussian.fchk")
+mol_ts_trans = load_molecule_g03fchk("ts_ad1/freq_trans/gaussian.fchk")
+# Perform normal mode analysis on the molecules
 nma_ethyl = NMA(mol_ethyl, ConstrainExt())
 nma_ethene = NMA(mol_ethene, ConstrainExt())
-nma_trans = NMA(mol_trans, ConstrainExt())
-# Construct the rotor about the forming bond in the transition state
+nma_ts_gauche = NMA(mol_ts_gauche, ConstrainExt())
+nma_ts_trans = NMA(mol_ts_trans, ConstrainExt())
+# Construct the rotors
 rotor_ethyl = load_rotor(mol_ethyl, "ethyl/scan/gaussian.log", 6, True)
-rotor_trans1 = load_rotor(mol_trans, "trans/scan1/gaussian.log", 3, False)
-rotor_trans2 = load_rotor(mol_trans, "trans/scan2/gaussian.log", 1, True)
-# Construct the three partition functions.
+rotor1_ts_gauche = load_rotor(mol_ts_gauche, "ts_ad1/scan1/gaussian.log", 3, False)
+rotor2_ts_gauche = load_rotor(mol_ts_gauche, "ts_ad1/scan2/gaussian.log", 1, True)
+rotor1_ts_trans = load_rotor(mol_ts_trans, "ts_ad1/scan1/gaussian.log", 3, False)
+rotor2_ts_trans = load_rotor(mol_ts_trans, "ts_ad1/scan2/gaussian.log", 1, True)
+# Construct the partition functions.
 pf_ethyl = PartFun(nma_ethyl, [
     ExternalTranslation(), ExternalRotation(1), Electronic(2),
     Vibrations(freq_scaling=0.9614, zp_scaling=0.9806),
-    rotor_ethyl
+    rotor_ethyl,
 ])
 pf_ethene = PartFun(nma_ethene, [
     ExternalTranslation(), ExternalRotation(4),
     Vibrations(freq_scaling=0.9614, zp_scaling=0.9806),
 ])
-pf_trans = PartFun(nma_trans, [
+pf_ts_gauche = PartFun(nma_ts_gauche, [
     ExternalTranslation(), ExternalRotation(1), Electronic(2),
     Vibrations(freq_scaling=0.9614, zp_scaling=0.9806),
-    rotor_trans1, rotor_trans2
+    rotor1_ts_gauche, rotor2_ts_gauche,
+])
+pf_ts_trans = PartFun(nma_ts_trans, [
+    ExternalTranslation(), ExternalRotation(1), Electronic(2),
+    Vibrations(freq_scaling=0.9614, zp_scaling=0.9806),
+    rotor1_ts_trans, rotor2_ts_trans,
 ])
 
 # Analyse the partition functions in detail
@@ -103,8 +114,10 @@ ta_ethyl = ThermoAnalysis(pf_ethyl, [300,400,500,600])
 ta_ethyl.write_to_file("thermo_ethyl.csv")
 ta_ethene = ThermoAnalysis(pf_ethene, [300,400,500,600])
 ta_ethene.write_to_file("thermo_ethene.csv")
-ta_trans = ThermoAnalysis(pf_trans, [300,400,500,600])
-ta_trans.write_to_file("thermo_trans.csv")
+ta_ts_gauche = ThermoAnalysis(pf_ts_gauche, [300,400,500,600])
+ta_ts_gauche.write_to_file("thermo_ts_gauche.csv")
+ta_ts_trans = ThermoAnalysis(pf_ts_trans, [300,400,500,600])
+ta_ts_trans.write_to_file("thermo_ts_trans.csv")
 
 # Analyze the chemical reaction. These are the arguments:
 #  1) a list of reactant partition functions
@@ -118,8 +131,15 @@ ta_trans.write_to_file("thermo_trans.csv")
 #     concentration) for a given temperature. If not given, it assumes that
 #     this is given: FixedVolume(temp=298.15*K, pressure=1*atm)
 #  7) tunneling: a tunneling correction object
-ra = ReactionAnalysis([pf_ethyl, pf_ethene], pf_trans, 300, 600, 10)
-ra.plot("arrhenius.png") # make the Arrhenius plot
+ra_gauche = ReactionAnalysis([pf_ethyl, pf_ethene], pf_ts_gauche, 300, 600, 10)
+ra_trans = ReactionAnalysis([pf_ethyl, pf_ethene], pf_ts_trans, 300, 600, 10)
+
+# make the Arrhenius plots
+pylab.clf()
+ra_gauche.plot(label="gauche", color="red")
+ra_trans.plot(label="trans", color="blue")
+pylab.legend(loc=0)
+pylab.savefig("arrhenius.png")
 
 # Estimate the error on the kinetic parameters due to level of theory artifacts
 # with Monte Carlo sampling. The monte_carlo method takes three optional
@@ -127,17 +147,25 @@ ra.plot("arrhenius.png") # make the Arrhenius plot
 #  1) freq_error: the relative systematic error on the frequencies
 #  2) freq_energy: the relative error on the energy
 #  4) num_iter: the number of monte carlo samples
-ra.monte_carlo(0.05, 0.00, 100)
+ra_gauche.monte_carlo(0.05, 0.05, 100)
+ra_trans.monte_carlo(0.05, 0.05, 100)
 # plot the parameters, this includes the monte carlo results
-ra.plot_parameters("parameters.png")
+pylab.clf()
+ra_gauche.plot_parameters(label="gauche", color="red")
+ra_trans.plot_parameters(label="trans", color="blue")
+pylab.legend(loc=0)
+pylab.savefig("parameters.png")
 # write all results to a file.
-ra.write_to_file("reaction.txt") # summary of the analysis
+ra_gauche.write_to_file("reaction_gauche.txt")
+ra_trans.write_to_file("reaction_trans.txt")
 # Plot the energy levels and the potential of the hindered rotor. The
 # temperature argument is used to indicate the population of each level in the
 # plot.
 rotor_ethyl.plot_levels("rotor_ethyl_energy_levels.png", 300)
-rotor_trans1.plot_levels("rotor_trans1_energy_levels.png", 300)
-rotor_trans2.plot_levels("rotor_trans2_energy_levels.png", 300)
+rotor1_ts_gauche.plot_levels("rotor1_ts_gauche_energy_levels.png", 300)
+rotor2_ts_gauche.plot_levels("rotor2_ts_gauche_energy_levels.png", 300)
+rotor1_ts_trans.plot_levels("rotor1_ts_trans_energy_levels.png", 300)
+rotor2_ts_trans.plot_levels("rotor2_ts_trans_energy_levels.png", 300)
 
 
 

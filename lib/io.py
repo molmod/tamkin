@@ -576,6 +576,12 @@ def load_molecule_qchem(qchemfile, hessfile = None, multiplicity=1, is_periodic 
         masses[count] = float(line.split()[-1])*amu
         count += 1
         if count >= N : break
+
+    # get Symm Nb
+    for line in f:
+        if line.strip().startswith("Rotational Symmetry Number is"):
+            break
+    symmetry_number = float(line.split()[-1])
     f.close()
 
     # or get Hessian from other file
@@ -599,7 +605,7 @@ def load_molecule_qchem(qchemfile, hessfile = None, multiplicity=1, is_periodic 
 
     return Molecule(
         numbers, positions, masses, energy, gradient, hessian, multiplicity,
-        None, is_periodic
+        symmetry_number, is_periodic
     )
 
 

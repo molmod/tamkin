@@ -478,8 +478,8 @@ class ReactionAnalysis(object):
             label_error = "Relative uncertainty"
             label_scatter = "Monte Carlo samples"
         else:
-            label_fit = label
-            label_data = "_nolegend_"
+            label_point = label
+            label_error = "_nolegend_"
             label_scatter = "_nolegend_"
 
         if self.covariance is not None and error:

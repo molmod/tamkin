@@ -273,7 +273,7 @@ def load_rotscan_g03(fn_log, do_top_indexes=True):
         else:
             top_indexes = half2
             top_indexes.discard(dihedral[2])
-        top_indexes = [dihedral[1], dihedral[2]] + list(top_indexes)
+        top_indexes = list(top_indexes)
         result = result + (top_indexes,)
     return result
 

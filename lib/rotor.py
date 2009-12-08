@@ -245,7 +245,7 @@ class HarmonicBasis(object):
         return result
 
 
-def compute_cancel_frequency(molecule, top_indexes):
+def compute_cancel_frequency(molecule, dihedral, top_indexes):
     """Compute the frequency of the rotor in the HO approximation
 
        This function is based on the MNH method and returns the frequency that
@@ -256,9 +256,11 @@ def compute_cancel_frequency(molecule, top_indexes):
          molecule  --  A Molecule object (see data.py)
          top_indexes  --  the indexes of the rotor atoms
     """
+    axis = list(dihedral[1:3])
+    other_top_indexes = list(set(xrange(molecule.size)) - set(top_indexes) - set(axis))
     blocks = [
-        top_indexes,
-        top_indexes[:2] + list(set(xrange(molecule.size))-set(top_indexes)),
+        axis + top_indexes,
+        axis + other_top_indexes,
     ]
     nma = NMA(molecule, MBH(blocks))
     if len(nma.freqs) != 7:
@@ -298,12 +300,12 @@ class Rotor(Info, StatFysTerms):
        The corresponding contribution to the partition function is subtracted.
        (Use compute_cancel_frequency to obtain this frequency.)
     """
-    def __init__(self, indexes, cancel_freq, suffix=None, rotsym=1, even=False, potential=None, num_levels=50):
+    def __init__(self, dihedral, indexes, cancel_freq, suffix=None, rotsym=1, even=False, potential=None, num_levels=50):
         """Initialize a Rotor term for the partition function
 
            Arguments:
-             indexes  --  a list of atom indexes involved in the rotor. the
-                          first two indexes define the rotation axis
+             dihedral  --  the index of the atoms that define the dihedral angle
+             indexes  --  a list of atom indexes involved in the rotor.
              cancel_freq  --  the frequency to cancel in the vibrational
                               partition function
 
@@ -319,8 +321,11 @@ class Rotor(Info, StatFysTerms):
              num_levels  --  the number of energy levels considered in the
                              QM treatment of the rotor (default=50)
         """
-        if len(indexes) < 3:
-            raise ValueError("A rotor must have at least three atoms")
+        if len(dihedral) != 4:
+            raise ValueError("The first argument must be a list of 4 integers")
+        if len(indexes) < 1:
+            raise ValueError("A rotor must have at least one atoms")
+        self.dihedral = dihedral
         self.indexes = indexes
         self.cancel_freq = cancel_freq
         if suffix is None:
@@ -348,8 +353,8 @@ class Rotor(Info, StatFysTerms):
         """
         if nma.periodic:
             raise NotImplementedError("Rotors in periodic systems are not supported yet")
-        self.center = nma.coordinates[self.indexes[0]]
-        self.axis = nma.coordinates[self.indexes[1]] - self.center
+        self.center = nma.coordinates[self.dihedral[1]]
+        self.axis = nma.coordinates[self.dihedral[2]] - self.center
         self.axis /= numpy.linalg.norm(self.axis)
         self.moment, self.reduced_moment = compute_moments(
             nma.coordinates, nma.masses3, self.center, self.axis, self.indexes
@@ -369,8 +374,24 @@ class Rotor(Info, StatFysTerms):
             a = 2*numpy.pi
             self.hb = HarmonicBasis(self.num_levels, a)
             angles, energies, dofmax = self.potential
-            angles -= numpy.floor(angles/a)*a # apply periodic boundary conditions
-            energies -= nma.energy # set reference energy
+            # apply periodic boundary conditions
+            angles -= numpy.floor(angles/a)*a
+            # set reference energy, which is take to be the energy of the geometry
+            # with a dihedral angle closest to the dihedral angle of the refrence
+            # geometry in the nma object. We can not take the nma energy because
+            # the rotational energy barriers may be computed at another level
+            # that the nma energy.
+            from molmod.ic import dihed_angle
+            nma_angle = dihed_angle(
+                nma.coordinates[self.dihedral[0]], nma.coordinates[self.dihedral[1]],
+                nma.coordinates[self.dihedral[2]], nma.coordinates[self.dihedral[3]],
+            )[0]
+            deltas = angles - nma_angle
+            # apply periodic boundary conditions
+            deltas -= numpy.floor(deltas/a)*a
+            # get the right energy
+            energies -= energies[deltas.argmin()]
+
             self.v_coeffs = self.hb.fit_fn(angles, energies, dofmax, self.rotsym, self.even)
             self.energy_levels = self.hb.solve(self.reduced_moment, self.v_coeffs)
             self.energy_levels = self.energy_levels[:self.num_levels]

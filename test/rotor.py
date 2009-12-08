@@ -208,10 +208,10 @@ class RotorTestCase(unittest.TestCase):
             "input/rotor/gaussian.log"
         )
         energies[:] = nma.energy
-        cancel_freq = compute_cancel_frequency(molecule, top_indexes)
+        cancel_freq = compute_cancel_frequency(molecule, dihedral, top_indexes)
         self.assertAlmostEqual(cancel_freq/lightspeed*cm, 314, 0)
         rotor1 = Rotor(
-            top_indexes, cancel_freq, rotsym=3, even=True,
+            dihedral, top_indexes, cancel_freq, rotsym=3, even=True,
             potential=(angles, energies, 5), num_levels=50
         )
         pf1 = PartFun(nma, [
@@ -220,7 +220,7 @@ class RotorTestCase(unittest.TestCase):
             rotor1,
         ])
         rotor2 = Rotor(
-            top_indexes, cancel_freq, rotsym=3, even=True,
+            dihedral, top_indexes, cancel_freq, rotsym=3, even=True,
             potential=None, num_levels=50
         )
         pf2 = PartFun(nma, [
@@ -269,10 +269,10 @@ class RotorTestCase(unittest.TestCase):
         dihedral, angles, energies, geometries, top_indexes = load_rotscan_g03(
             "input/rotor/gaussian.log"
         )
-        cancel_freq = compute_cancel_frequency(molecule, top_indexes)
+        cancel_freq = compute_cancel_frequency(molecule, dihedral, top_indexes)
         self.assertAlmostEqual(cancel_freq/lightspeed*cm, 314, 0)
         rotor = Rotor(
-            top_indexes, cancel_freq, rotsym=3, even=True,
+            dihedral, top_indexes, cancel_freq, rotsym=3, even=True,
             potential=(angles, energies, 5), num_levels=50
         )
         pf = PartFun(nma, [
@@ -302,11 +302,12 @@ class RotorTestCase(unittest.TestCase):
     def test_ethyl_free(self):
         molecule = load_molecule_g03fchk("input/ethyl/gaussian.fchk")
         nma = NMA(molecule)
-        top_indexes = [1, 0, 2, 3, 4]
-        cancel_freq = compute_cancel_frequency(molecule, top_indexes)
+        dihedral = [5, 1, 0, 2]
+        top_indexes = [2, 3, 4]
+        cancel_freq = compute_cancel_frequency(molecule, dihedral, top_indexes)
         self.assertAlmostEqual(cancel_freq/lightspeed*cm, 141.2, 0)
         rotor = Rotor(
-            top_indexes, cancel_freq, rotsym=6, even=True,
+            dihedral, top_indexes, cancel_freq, rotsym=6, even=True,
             potential=None, num_levels=50
         )
         pf = PartFun(nma, [

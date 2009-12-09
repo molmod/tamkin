@@ -82,19 +82,21 @@ molecule = load_molecule_cp2k(
     os.path.join(args[0], "opt.xyz"),
     os.path.join(args[0], "sp/sp.out"),
     os.path.join(args[0], "freq/freq.out"),
+    is_periodic=False,
 )
 nma = NMA(molecule, ConstrainExt())
 pf = PartFun(nma, [
-    ExternalTranslation(FixedVolume(temp,pressure)),
+    ExternalTranslation(IdealGasVolume(pressure)),
     ExternalRotation(symmetry_number),
-], Vibrations(classical=False)) # change this boolean to get classical vibrations
+    Vibrations(classical=False), # change this boolean to get classical vibrations
+])
 
 
 # Write the frequencies to a csv file
 f = file(os.path.join(args[0], "freqs.csv"), "w")
 print >> f, '"Frequency","Wavenumber","Vibrational temperature"'
 print >> f, '"Atomic units","1/cm","K"'
-for i in xrange(pf.vibrational.num_free):
+for i in xrange(len(pf.vibrational.freqs)):
     freq = pf.vibrational.freqs[i]
     print >> f, '%e,%f,%f' % (freq, freq/lightspeed*cm, 2*numpy.pi*freq/boltzmann)
 f.close()

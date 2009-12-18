@@ -553,7 +553,7 @@ def load_molecule_qchem(qchemfile, hessfile = None, multiplicity=1, is_periodic 
     hessian = numpy.zeros((3*N,3*N),float)
     if hessfile is None:
       for line in f:
-          if line.strip().startswith("Hessian of the SCF Energy"):
+          if line.strip().startswith("Hessian of the SCF Energy") or line.strip().startswith("Final Hessian"):
               break
       nb = int(numpy.ceil(N*3/6))
       for i in range(nb):

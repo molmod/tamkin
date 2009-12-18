@@ -12,7 +12,7 @@ from molmod.units import angstrom
 def make_input(fn_com_template, dirname, lot_basis, mol, random=False):
     t = string.Template("".join(file(fn_com_template)))
 
-    atom_lines = []    
+    atom_lines = []
     for i in xrange(mol.size):
         if random:
             x, y, z = mol.coordinates[i]/angstrom + numpy.random.uniform(-0.1,0.1,3)
@@ -22,7 +22,7 @@ def make_input(fn_com_template, dirname, lot_basis, mol, random=False):
             periodic[mol.numbers[i]].symbol, x, y, z,
         ))
     atom_str = "\n".join(atom_lines)
-    
+
     fn_com = fn_com_template.replace("templates", dirname)
     dir_com = os.path.dirname(fn_com)
     if not os.path.isdir(dir_com):
@@ -69,9 +69,9 @@ and rotational scan computations are prepared. As soon as all these are
 completed, one can use TAMkin to compute the kinetic parameters.
 
 Each combination of LOT and basis is stored in its proper directory. The slash
-is replaced by a double underscore, brackets are removed and the directory is 
+is replaced by a double underscore, brackets are removed and the directory is
 put in lower case, e.g. HF/STO-3G becomes hf__sto-3g and B3LYP/6-31G(D) becomes
-b3lyp__6-31gd. 
+b3lyp__6-31gd.
 """
 
 
@@ -89,7 +89,7 @@ def main():
         help="Append __SUFFIX to the directory name"
     )
     options, args = parser.parse_args()
-    
+
     if len(args) != 1:
         parser.error("Expecting exactly on argument")
 

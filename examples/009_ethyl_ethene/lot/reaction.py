@@ -182,7 +182,7 @@ def run(do_rotor):
     # write all results to a file.
     ra_gauche.write_to_file("%s_reaction_gauche.txt" % prefix)
     ra_trans.write_to_file("%s_reaction_trans.txt" % prefix)
-    
+
     if do_rotor:
         # Plot the energy levels and the potential of the hindered rotor. The
         # temperature argument is used to indicate the population of each level in the
@@ -205,12 +205,12 @@ def main():
     from optparse import OptionParser
     parser = OptionParser(usage)
     options, args = parser.parse_args()
-    
+
     if len(args) != 1:
         parser.error("Expecting exactly on argument")
 
     dirname = args[0].lower()
-    
+
     os.chdir(dirname)
     run(False)
     #run(True)

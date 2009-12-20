@@ -66,20 +66,20 @@ __all__ = ["NMAToolsTestCase"]
 
 class NMAToolsTestCase(unittest.TestCase):
 
-    def test_read_coordinates_charmm(self):
+    def test_load_coordinates_charmm(self):
         molecule = load_molecule_charmm("input/an/ethanol.cor", "input/an/ethanol.hess.full")
-        symbols, coordinates, masses = read_coordinates_charmm("input/an/ethanol.cor")
+        symbols, coordinates, masses = load_coordinates_charmm("input/an/ethanol.cor")
         for at in range(9):
             self.assertAlmostEqual(molecule.masses[at], masses[at], 3)
             for j in range(3):
                 self.assertAlmostEqual(molecule.coordinates[at,j], coordinates[at,j], 3)
 
-    def test_read_modes_charmm(self):
+    def test_load_modes_charmm(self):
         molecule = load_molecule_charmm("input/an/ethanol.cor", "input/an/ethanol.hess.full")
 
         # full Hessian
         nma = NMA(molecule)
-        freqs2, modes2 = read_modes_charmm("input/an/ethanol.modes.full")
+        freqs2, modes2 = load_modes_charmm("input/an/ethanol.modes.full")
         for index in range(6,27):
             for j in range(27):
                 self.assertAlmostEqual(abs(nma.modes[j,index]), abs(modes2[j,index]), 7)
@@ -88,7 +88,7 @@ class NMAToolsTestCase(unittest.TestCase):
 
         # MBH
         nma = NMA(molecule, MBH([[5,6,7,8]]))
-        freqs2, modes2 = read_modes_charmm("input/an/ethanol.modes.mbh")
+        freqs2, modes2 = load_modes_charmm("input/an/ethanol.modes.mbh")
         for index in range(6,21):
             for j in range(27):
                 self.assertAlmostEqual(abs(nma.modes[j,index]), abs(modes2[j,index]), 7)
@@ -106,6 +106,17 @@ class NMAToolsTestCase(unittest.TestCase):
     def check_overlap(self):
         pass
 
+
+    def test_Delta_vector(self):
+        # from charmmcor
+        symb1,coor1,masses1 = load_coordinates_charmm("input/an/ethanol.cor")
+        symb2,coor2,masses2 = load_coordinates_charmm("input/an/ethanol.2.cor")
+        Delta = get_Delta_vector(coor1, coor2)
+        # TODO
+        #self.assertAlmostEqual()
+        Delta = get_Delta_vector(coor1, coor2, masses = masses1, normalize = True)
+        # self.assertAlmostEqual()
+
     def test_eigenvalue_sensitivity(self):
         molecule = load_molecule_charmm("input/an/ethanol.cor","input/an/ethanol.hess.full")
         nma = NMA(molecule)
@@ -121,7 +132,7 @@ class NMAToolsTestCase(unittest.TestCase):
                 dist[k,l] = numpy.sqrt(numpy.sum((molecule.coordinates[k/3,:] - molecule.coordinates[l/3,:])**2))
 
         for index in eigenvalues:
-            sensit = calculate_sensitivity(nma, index, filename="output/ethanol.eigvalsensitivity.csv")
+            sensit = calculate_sensitivity_freq(nma, index, filename="output/ethanol.eigvalsensitivity.csv")
             color = float(index)/len(eigenvalues)
 
             pylab.figure(1)

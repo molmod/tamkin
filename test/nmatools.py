@@ -66,6 +66,17 @@ __all__ = ["NMAToolsTestCase"]
 
 class NMAToolsTestCase(unittest.TestCase):
 
+    def test_read_coordinates_charmm(self):
+        molecule = load_molecule_charmm("input/an/ethanol.cor", "input/an/ethanol.hess.full")
+        symbols, coordinates, masses = read_coordinates_charmm("input/an/ethanol.cor")
+        for at in range(9):
+            self.assertAlmostEqual(molecule.masses[at], masses[at], 3)
+            for j in range(3):
+                self.assertAlmostEqual(molecule.coordinates[at,j], coordinates[at,j], 3)
+
+    def test_read_modes_charmm(self):
+        pass
+
     def test_overlap(self):
         molecule = load_molecule_charmm("input/an/ethanol.cor","input/an/ethanol.hess.full")
         nma1 = NMA(molecule)

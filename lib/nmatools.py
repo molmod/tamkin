@@ -58,7 +58,7 @@
 import numpy
 from molmod.units import cm
 from molmod.constants import lightspeed
-from molmod.units import angstrom, amu #kjmol, second, meter, mol, K, J
+from molmod.units import angstrom, amu, cm #kjmol, second, meter, mol, K, J
 #from molmod.constants import boltzmann
 
 ###import sys, numpy, pylab, types
@@ -93,7 +93,7 @@ def read_coordinates_charmm(filename):
         coordinates[count,:] = numpy.array([float(word) for word in words[4:7]])*angstrom
         masses[count]        = float(words[9])*amu
         count += 1
-        if count == N: break
+        if count >= N: break
     f.close()
     return symbols, coordinates, masses
 
@@ -114,41 +114,59 @@ def read_modes_charmm(filename, nbfreqs = 0):
 
     # read nb of atoms
     words = line.split()   # the current line is not starting with a *
-    N = int(words[1])   # nb of atoms
+    nbfreqs = int(words[0])
+    N       = int(words[1])/3   # nb of atoms
 
     # skip lines with masses, 6 masses on each line
     nblines = int(numpy.ceil(N/6.0))
-    for i in xrange(nblines):
-        f.next()
+    masses = numpy.zeros(N,float)
+    count = 0
+    for line in f:
+        words = line.split()
+        n = len(words)
+        masses[count:count+n] = numpy.array([float(word) for word in words])
+        count += n
+        if count >= N: break
+#    for i in xrange(nblines):
+#        f.next()
 
     # read nbfreqs freqs
-    if nbfreqs == 0:
-         nbfreqs = 3*N  # assume a full Hessian calculation
-    CNVFRQ=2045.5/(2.99793*6.28319)  # conversion factor, see c36a0/source/fcm/consta.fcm in charmm code
+    CNVFRQ = 2045.5/(2.99793*6.28319)  # conversion factor, see c36a0/source/fcm/consta.fcm in charmm code
+
+    #if nbfreqs == 0:
+    #     nbfreqs = 3*N  # assume a full Hessian calculation
     nblines = int(numpy.ceil(nbfreqs/6.0))
-    count = 0
-    freqs = []
+    freqs = numpy.zeros(nbfreqs, float)
+    countline = 0
+    countfreq = 0
     for line in f:
-        count+=1
         words = line.split()
         for word in words:
             # do conversion
-            freqsq = float(word) #squared value
-            if freqsq > 0.0:  freq = numpy.sqrt( freqsq)
-            else:             freq =-numpy.sqrt(-freqsq) #actually imaginary
-            freqs.append(freq*CNVFRQ) # conversion factor CHARMM
-        if count >= nblines: break
+            freq_sq = float(word) #squared value
+            if freq_sq > 0.0:  freq =  numpy.sqrt( freq_sq)
+            else:              freq = -numpy.sqrt(-freq_sq) #actually imaginary
+            freqs[countfreq] = freq * CNVFRQ * lightspeed/cm # conversion factor CHARMM, put into Tamkin internal units
+            countfreq += 1
+        countline += 1
+        if countline >= nblines: break
+    if countfreq != nbfreqs: print "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaa"*20
 
     # read the nbfreqs modes
-    mat = []
+    mat = numpy.zeros((3*N,nbfreqs),float)
+    row = 0
+    col = 0
     for line in f:
         words = line.split()
-        for word in words:
-            mat.append(float(word))
-    mat = numpy.transpose(numpy.reshape(numpy.array(mat),(-1,3*N)))
+        n = len(words)
+        mat[row:row+n,col] = numpy.array([float(word) for word in words])
+        row += n
+        if row == 3*N:
+            col += 1
+            row = 0
 
     f.close()
-    return mat,freqs
+    return freqs, mat
 
 
 def calculate_overlap_nma(nma1, nma2, filename=None):

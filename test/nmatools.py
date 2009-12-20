@@ -75,7 +75,26 @@ class NMAToolsTestCase(unittest.TestCase):
                 self.assertAlmostEqual(molecule.coordinates[at,j], coordinates[at,j], 3)
 
     def test_read_modes_charmm(self):
-        pass
+        molecule = load_molecule_charmm("input/an/ethanol.cor", "input/an/ethanol.hess.full")
+
+        # full Hessian
+        nma = NMA(molecule)
+        freqs2, modes2 = read_modes_charmm("input/an/ethanol.modes.full")
+        for index in range(6,27):
+            for j in range(27):
+                self.assertAlmostEqual(abs(nma.modes[j,index]), abs(modes2[j,index]), 7)
+        for at in range(27):
+            self.assertAlmostEqual(nma.freqs[at], freqs2[at], 7)
+
+        # MBH
+        nma = NMA(molecule, MBH([[5,6,7,8]]))
+        freqs2, modes2 = read_modes_charmm("input/an/ethanol.modes.mbh")
+        for index in range(6,21):
+            for j in range(27):
+                self.assertAlmostEqual(abs(nma.modes[j,index]), abs(modes2[j,index]), 7)
+        for at in range(21):
+            self.assertAlmostEqual(nma.freqs[at], freqs2[at], 7)
+
 
     def test_overlap(self):
         molecule = load_molecule_charmm("input/an/ethanol.cor","input/an/ethanol.hess.full")

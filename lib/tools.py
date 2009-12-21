@@ -265,6 +265,9 @@ class ReactionAnalysis(object):
 
         self.covariance = None # see monte_carlo method
 
+    def compute_rate_coeff(self, temp):
+        return compute_rate_coeff(self.pfs_react, self.pf_trans, temp, self.mol_volume)
+
     def dump(self, f=sys.stdout):
         """Write the results in text format on screen or to another stream.
 

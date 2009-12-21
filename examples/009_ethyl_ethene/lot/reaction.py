@@ -59,17 +59,42 @@
 
 # Import the tamkin library.
 from tamkin import *
+# Import units
+from molmod.units import kjmol
 # Import pylab for plotting
 import pylab
 # Import standard python libraries
 import os, sys
 
 
+def my_load_molecule(dir_freq, dir_sp):
+    if os.path.isdir(dir_sp):
+        return load_molecule_g03fchk("%s/gaussian.fchk" % dir_freq, "%s/gaussian.fchk" % dir_sp)
+    else:
+        return load_molecule_g03fchk("%s/gaussian.fchk" % dir_freq)
+
+
+def outlier_mask(x):
+    """Returns an array of booleans: False = outlier"""
+    # a robust estimate of the width
+    y = x.copy()
+    y.sort()
+    width = y[int(len(y)*0.8)] - y[int(len(y)*0.2)]
+    median = y[int(len(y)*0.5)]
+    mask = x < (median+2*width)
+    mask &= x > (median-2*width)
+    return mask
+
+
 def load_rotor(mol, filename, rotsym, even, expansion=5):
     dihedral, angles, energies, geometries, top_indexes = load_rotscan_g03(filename)
-    cancel_freq = compute_cancel_frequency(mol, top_indexes)
+    mask = outlier_mask(energies)
+    angles = angles[mask]
+    energies = energies[mask]
+    geometries = geometries[mask]
+    cancel_freq = compute_cancel_frequency(mol, dihedral, top_indexes)
     rotor = Rotor(
-        top_indexes, cancel_freq, rotsym=rotsym, even=even,
+        dihedral, top_indexes, cancel_freq, rotsym=rotsym, even=even,
         potential=(angles, energies, expansion), num_levels=50
     )
     return rotor
@@ -78,10 +103,10 @@ def load_rotor(mol, filename, rotsym, even, expansion=5):
 def run(do_rotor):
     prefix = {True: "ir", False: "ho"}[do_rotor]
 
-    mol_ethyl = load_molecule_g03fchk("ethyl_freq/gaussian.fchk")
-    mol_ethene = load_molecule_g03fchk("ethene_freq/gaussian.fchk")
-    mol_ts_gauche = load_molecule_g03fchk("ts_ad1_gauche_freq/gaussian.fchk")
-    mol_ts_trans = load_molecule_g03fchk("ts_ad1_trans_freq/gaussian.fchk")
+    mol_ethyl = my_load_molecule("ethyl__freq", "ethyl__sp")
+    mol_ethene = my_load_molecule("ethene__freq", "ethene__sp")
+    mol_ts_gauche = my_load_molecule("ts_ad1_gauche__freq", "ts_ad1_gauche__sp")
+    mol_ts_trans = my_load_molecule("ts_ad1_trans__freq", "ts_ad1_trans__sp")
     # Perform normal mode analysis on the molecules
     nma_ethyl = NMA(mol_ethyl, ConstrainExt(gradient_threshold=1e-3))
     nma_ethene = NMA(mol_ethene, ConstrainExt(gradient_threshold=1e-3))
@@ -89,11 +114,11 @@ def run(do_rotor):
     nma_ts_trans = NMA(mol_ts_trans, ConstrainExt(gradient_threshold=1e-3))
     if do_rotor:
         # Construct the rotors
-        rotor_ethyl = load_rotor(mol_ethyl, "ethyl_scan_methyl/gaussian.log", 6, True, 1)
-        rotor1_ts_gauche = load_rotor(mol_ts_gauche, "ts_ad1_gauche_scan_methyl/gaussian.log", 3, False)
-        rotor2_ts_gauche = load_rotor(mol_ts_gauche, "ts_ad1_trans_scan_forming_bond/gaussian.log", 1, True)
-        rotor1_ts_trans = load_rotor(mol_ts_trans, "ts_ad1_trans_scan_methyl/gaussian.log", 3, False)
-        rotor2_ts_trans = load_rotor(mol_ts_trans, "ts_ad1_trans_scan_forming_bond/gaussian.log", 1, True)
+        rotor_ethyl = load_rotor(mol_ethyl, "ethyl__scan_methyl/gaussian.log", 6, True, 1)
+        rotor1_ts_gauche = load_rotor(mol_ts_gauche, "ts_ad1_gauche__scan_methyl/gaussian.log", 3, False)
+        rotor2_ts_gauche = load_rotor(mol_ts_gauche, "ts_ad1_trans__scan_forming_bond/gaussian.log", 1, True)
+        rotor1_ts_trans = load_rotor(mol_ts_trans, "ts_ad1_trans__scan_methyl/gaussian.log", 3, False)
+        rotor2_ts_trans = load_rotor(mol_ts_trans, "ts_ad1_trans__scan_forming_bond/gaussian.log", 1, True)
         # Construct the partition functions.
         pf_ethyl = PartFun(nma_ethyl, [
             ExternalTranslation(), ExternalRotation(1), Electronic(2),
@@ -193,6 +218,21 @@ def run(do_rotor):
         rotor1_ts_trans.plot_levels("rotor1_ts_trans_energy_levels.png", 300)
         rotor2_ts_trans.plot_levels("rotor2_ts_trans_energy_levels.png", 300)
 
+    def write_ra_summary(fn, ra):
+        f = file(fn, "w")
+        print >> f, "% 10.5e % 10.5e % 10.5e % 10.5e    %10.5e %10.2e" % (
+            ra.compute_rate_coeff(300)/ra.unit,
+            ra.compute_rate_coeff(400)/ra.unit,
+            ra.compute_rate_coeff(500)/ra.unit,
+            ra.compute_rate_coeff(600)/ra.unit,
+            ra.A/ra.unit,
+            ra.Ea/kjmol,
+        )
+        f.close()
+
+    write_ra_summary("%s_summary_gauche.txt" % prefix, ra_gauche)
+    write_ra_summary("%s_summary_trans.txt" % prefix, ra_trans)
+
 
 usage = """USAGE: ./reaction.py dirname
 
@@ -209,11 +249,9 @@ def main():
     if len(args) != 1:
         parser.error("Expecting exactly on argument")
 
-    dirname = args[0].lower()
-
-    os.chdir(dirname)
+    os.chdir(args[0])
     run(False)
-    #run(True)
+    run(True)
 
 
 if __name__ == "__main__":

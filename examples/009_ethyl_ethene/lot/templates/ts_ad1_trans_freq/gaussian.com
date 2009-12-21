@@ -1,1 +1,0 @@
-../ethyl_freq/gaussian.com

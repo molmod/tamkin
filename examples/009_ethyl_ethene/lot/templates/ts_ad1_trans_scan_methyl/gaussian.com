@@ -1,1 +1,0 @@
-../ts_ad1_gauche_scan_methyl/gaussian.com

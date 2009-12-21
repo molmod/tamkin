@@ -1,1 +1,0 @@
-../ts_ad1_trans_opt/gaussian.com

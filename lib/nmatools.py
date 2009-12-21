@@ -278,22 +278,24 @@ def get_Delta_vector(coor1, coor2, masses = None, normalize = False, normthresho
 
 
 
-def calculate_sensitivity_freq(nma, index, filename = None, symmetric = False, massweight = True):
+def calculate_sensitivity_freq(nma, index, symmetric = False, massweight = True):
     """Calculate the sensity of the index-th frequency to changes of
     the mass-weighted Hessian elements.
     Optional:
-    symmetric  --  Slightly different formula if symmetry of matrix is taken into account. Default False."""
-    L = nma.size
+    symmetric  --  Slightly different formula if symmetry of matrix is taken into account. Default False.
+    massweight  --  Whether mass-weighted or un-mass-weighted Hessian is considered."""
+    L = 3*len(nma.masses)
     mode = nma.modes[:,index]
     if not massweight: # un-mass-weight the mode
         for at,mass in enumerate(nma.masses):
             mode[3*at:3*(at+1)] /= numpy.sqrt(mass)
+        mode = mode / numpy.sqrt(numpy.sum(mode**2))  # renormalization necessary
 
     mat = numpy.dot( numpy.reshape(mode,(L,1)), numpy.reshape(mode,(1,L)) )
     if symmetric:
         mat *= 2
         for i in range(L):
-             mat[i,i] = mat[i,i] - mode[i]**2
+             mat[i,i] -= mode[i]**2
 
     return mat
 

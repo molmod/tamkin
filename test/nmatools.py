@@ -125,4 +125,21 @@ class NMAToolsTestCase(unittest.TestCase):
 
 
 
+    def test_create_blocks_peptide_charmm(self):
+        blocks1 = create_blocks_peptide_charmm("input/charmm/crambin.crd", BlocksPeptideMBH("RTB",blocksize=1))
+        blocks2 = create_blocks_peptide_charmm("input/charmm/crambin.crd", BlocksPeptideMBH("RTB",blocksize=2))
+        self.assertEqual(len(blocks1)/2+1, len(blocks2))
+        subs1 = create_subs_peptide_charmm("input/charmm/crambin.crd", SubsPeptideVSA(frequency=1))
+        subs2 = create_subs_peptide_charmm("input/charmm/crambin.crd", SubsPeptideVSA(frequency=2))
+        self.assertEqual(len(subs1)/2, len(subs2))
+
+        blocks = create_blocks_peptide_charmm("input/charmm/crambin.crd", BlocksPeptideMBH())
+        self.assertEqual(len(blocks), 91)
+        blocks = create_blocks_peptide_charmm("input/charmm/crambin.crd", BlocksPeptideMBH("dihedral"))
+        self.assertEqual(len(blocks), 91)
+        blocks = create_blocks_peptide_charmm("input/charmm/crambin.crd", BlocksPeptideMBH("RHbending"))
+        self.assertEqual(len(blocks),136)
+        blocks = create_blocks_peptide_charmm("input/charmm/crambin.crd", BlocksPeptideMBH("normal"))
+        self.assertEqual(len(blocks), 91)
+
 

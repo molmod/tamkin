@@ -66,10 +66,11 @@ from molmod.units import angstrom, amu, cm #kjmol, second, meter, mol, K, J
 
 __all__ = [
            "load_coordinates_charmm", "load_modes_charmm",
-           "calculate_overlap_nma", "calculate_overlap",
-           "write_overlap",
+           "calculate_overlap_nma", "calculate_overlap", "write_overlap",
            "get_Delta_vector",
            "calculate_sensitivity_freq",
+           "create_blocks_peptide_charmm", "create_subs_peptide_charmm",
+           "BlocksPeptideMBH", "SubsPeptideVSA",
           ]
 
 
@@ -296,6 +297,258 @@ def calculate_sensitivity_freq(nma, index, symmetric = False, massweight = True)
         mat *= 2
         for i in range(L):
              mat[i,i] -= mode[i]**2
-
     return mat
+
+
+#############################################################################
+# In the following part: create atoms in blocks or atoms in subsystem for a
+# standard peptide chain created in CHARMM
+#
+# Warning: first and last blocks are to be checked, because the atom order
+# of the first and last residue are less predictable.
+
+
+class PeptideBlockChoice(object):
+    def __init__(self, label):
+          self.label = label
+    def calc_blocks(self):
+    raise NotImplementedError
+    def calc_subs(self):
+    raise NotImplementedError
+
+
+class BlocksPeptideMBH(PeptideBlockChoice):
+    # TODO add references
+
+    def __init__(self, label=None, blocksize=1):
+        self.label = label
+        self.blocksize = blocksize    # the nb of residues per block, in RTB
+
+    def calc_blocks(self, N, CA, PRO, Carbon, Oxigen, Nitrogen):
+        if self.label is "RTB":
+        return self.calc_blocks_RTB(N, CA, PRO, Carbon, Oxigen, Nitrogen)
+        elif self.label is "dihedral":
+            return self.calc_blocks_dihedral(N, CA, PRO, Carbon, Oxigen, Nitrogen)
+        elif self.label is "RHbending":
+            return self.calc_blocks_RHbending(N, CA, PRO, Carbon, Oxigen, Nitrogen)
+        elif self.label is "normal" or self.label is None:
+            return self.calc_blocks_normal(N, CA, PRO, Carbon, Oxigen, Nitrogen)
+
+    def calc_blocks_RTB(self, N, CA, PRO, Carbon, Oxigen, Nitrogen):
+        """Rotation-Translation Blocks scheme of Tama et al.
+        This amounts to applying the Mobile Block Hessian with
+        one or more residues per block."""
+        pept = []
+        k = self.blocksize           # number of residues per block
+        n = len(CA)/self.blocksize   # number of complete RTB-blocks
+
+        # do for first block : ... (CA,R) x self.size - CO
+        if CA[k-1] > 1:
+            if CA[k-1] in PRO:
+                pept.append(range(1,CA[k-1]-4))
+            else:
+                pept.append(range(1,CA[k-1]-2))
+
+        # for next blocks :  (N - CA,R - CO) x self.size
+        for i in xrange(1,n):   # do n-1 times
+            # from first N till next N
+            if CA[i*k-1] in PRO:
+                if CA[(i+1)*k-1] in PRO:
+                    pept.append(range(CA[i*k-1]-4,CA[(i+1)*k-1]-4))
+                    #print "(side chain) proline found! (1,2)", CA[i*k-1],CA[(i+1)*k-1]
+                else:
+                    pept.append(range(CA[i*k-1]-4,CA[(i+1)*k-1]-2))
+                    #print "(side chain) proline found! (1)", CA[i*k-1]
+            else:
+                if CA[(i+1)*k-1] in PRO:
+                    pept.append(range(CA[i*k-1]-2,CA[(i+1)*k-1]-4))
+                    #print "(side chain) proline found! (2)", CA[(i+1)*k-1]
+                else:
+                    pept.append(range(CA[i*k-1]-2,CA[(i+1)*k-1]-2))
+
+        # for last block : N - CA,R
+        if n*k-1 < len(CA):
+            if CA[n*k-1] in PRO:
+                pept.append(range(CA[n*k-1]-4,N+1))
+                #print "(side chain) proline found! (1)", CA[n*k-1]
+            else:
+                pept.append(range(CA[n*k-1]-2,N+1))
+        return pept
+
+
+    def calc_blocks_dihedral(self, N, CA, PRO, Carbon, Oxigen, Nitrogen):
+        """MBH scheme with linked blocks that selects the characteristic Phi and Psi
+        dihedral angles of the protein backbone as variables, while other
+        degrees of freedom are fixed. """
+        pept = get_pept_linked(N, CA, PRO)
+        res  = []
+
+        # start with an ending :   ... CA_0,R - C
+        if CA[1] in PRO:
+            res.append( range(1,CA[1]-5) )
+            #print "proline found!", CA[1]
+        else:
+            res.append( range(1,CA[1]-3) )
+        # continue with normal residues : N - CA,R - C
+        for i in xrange(1,len(CA)-1):
+            if CA[i] in PRO:
+                if CA[i+1] in PRO:
+                    res.append( [CA[i]-4]+range(CA[i],CA[i+1]-5) )
+                    #print "(side chain) proline found! (1,2)", CA[i],CA[i+1]
+                else:
+                    res.append( [CA[i]-4]+range(CA[i],CA[i+1]-3) )
+                    #print "(side chain) proline found! (1)", CA[i]
+            else:
+                if CA[i+1] in PRO:
+                    res.append( [CA[i]-2]+range(CA[i],CA[i+1]-5) )
+                    #print "(side chain) proline found! (2)", CA[i+1]
+                else:
+                    res.append( [CA[i]-2]+range(CA[i],CA[i+1]-3) )
+        # finish with another ending : N - CA,R
+        if CA[-1] in PRO:
+            res.append([CA[-1]-4]+range(CA[-1],N+1))
+            #print "(side chain) proline found!", CA[-1]
+        else:
+            res.append([CA[-1]-2]+range(CA[-1],N+1))
+        return res + pept
+
+
+    def calc_blocks_RHbending(self, N, CA, PRO, Carbon, Oxigen, Nitrogen):
+        """MBH scheme in which the CA-H bond is considered as a seperate block."""
+        pept = get_pept_linked(N, CA, PRO)
+        res  = []
+        CH   = []
+
+        # start with an ending
+        if CA[1] in PRO:
+           res.append( range(1,CA[1]-6) )
+           #print "(side chain) proline found!", CA[1]
+        else:
+           res.append( range(1,CA[1]-4) )
+        # continue with normal residues
+        for i in xrange(1,len(CA)-1):  # CA and HA
+            CH.append( [CA[i],CA[i]+1] )
+        for i in xrange(1,len(CA)-1):  # CA and rest of residue
+            if CA[i+1] in PRO:
+                res.append( [CA[i]]+range(CA[i]+2,CA[i+1]-6) )
+                #print "(side chain) proline found!", CA[i+1]
+            else:
+                res.append( [CA[i]]+range(CA[i]+2,CA[i+1]-4) )
+        # finish with another ending
+        CH.append([CA[-1],CA[-1]+1]) # CA and HA
+        res.append([CA[-1]]+range(CA[-1]+2,N+1)) # CA and rest of residue
+
+        return res + pept + CH
+
+    def calc_blocks_normal(self, N, CA, PRO, Carbon, Oxigen, Nitrogen):
+        """MBH scheme with linked blocks where each side chain is
+        considered as a block attached to the CA atom."""
+    pept = get_pept_linked(N, CA, PRO)
+        res  = []
+
+        # start with an ending
+        if CA[1] in PRO:
+           res.append( range(1,CA[1]-6) )
+           #print "(side chain) proline found!", CA[1]
+        else:
+           res.append( range(1,CA[1]-4) )
+        # continue with normal residues
+        for i in xrange(1,len(CA)-1):
+            if CA[i+1] in PRO:
+                res.append( range(CA[i],CA[i+1]-6) )
+                #print "(side chain) proline found!", CA[i+1]
+            else:
+                res.append( range(CA[i],CA[i+1]-4) )
+        # finish with another ending
+        res.append(range(CA[-1],N+1))
+
+        return res + pept
+
+
+def get_pept_linked(N, CA, PRO):
+        # PEPT bonds = CA + CONH + CA
+        pept = []
+        for i in xrange(1,len(CA)):
+            if CA[i] in PRO:
+                pept.append( [CA[i-1]] + range(CA[i]-6,CA[i]+1) )
+                #print "proline found!", CA[i]
+            else:
+                pept.append( [CA[i-1]] + range(CA[i]-4,CA[i]+1) )
+        return pept
+
+
+
+class SubsPeptideVSA(PeptideBlockChoice):
+
+    def __init__(self, atomtype=["CA"], frequency=1):
+        """VSA subsystem/environment for peptides.
+        Optional:
+        atomtype  --  list of strings. Let only these atom types be part of the subsystem.
+        frequency  --  let only one out of every *frequency* residues participate"""
+        self.atomtype = atomtype
+        self.frequency = frequency
+
+    def calc_subs(self, N, CA, PRO, Carbon, Oxigen, Nitrogen):
+        subs = []
+        if "C" in self.atomtype:
+            subs.extend(Carbon)
+        if "O" in self.atomtype:
+            subs.extend(Oxigen)
+        if "N" in self.atomtype:
+            subs.extend(Nitrogen)
+        if "CA" in self.atomtype:
+            subs.extend( numpy.take(CA, range(0,len(CA),self.frequency)).tolist() )
+        return subs
+
+
+def create_subs_peptide_charmm(charmmfile_crd, blockchoice):
+    N, CA, PRO, Carbon, Oxigen, Nitrogen = select_info_peptide_charmm(charmmfile_crd)
+    return blockchoice.calc_subs(N, CA, PRO, Carbon, Oxigen, Nitrogen)
+
+
+def create_blocks_peptide_charmm(charmmfile_crd, blockchoice):
+    N, CA, PRO, Carbon, Oxigen, Nitrogen = select_info_peptide_charmm(charmmfile_crd)
+    return blockchoice.calc_blocks(N, CA, PRO, Carbon, Oxigen, Nitrogen)
+
+
+def select_info_peptide_charmm(charmmfile_crd):
+    # Reading from charmmfile
+    f = file(charmmfile_crd)
+    # nb of atoms
+    for i,line in enumerate(f):
+        words = line.split()
+        if words[0]!="*":
+            N = int(words[0])
+            break
+    # find CA atoms, PRO residues, Carbons, Oxigens, Nitrogens
+    PRO = []
+    CA = []
+    Carbon = []
+    Oxigen = []
+    Nitrogen = []
+    for i,line in enumerate(f):
+        words = line.split()
+        if words[3].startswith("CA"):
+            CA.append(int(words[0]))
+            if words[2]=="PRO":
+                PRO.append(int(words[0]))
+    if words[3]=="C":
+            Carbon.append(int(words[0]))
+        if words[3]=="O":
+            Oxigen.append(int(words[0]))
+        if words[3]=="N":
+            Nitrogen.append(int(words[0]))
+    f.close()
+    return N, CA, PRO, Carbon, Oxigen, Nitrogen
+
+
+def print_blocks_totxtfile(fixedfile, blocks):
+    g = file(fixedfile,"w")
+    for b in blocks:
+        for at in b:
+            print >> g, at
+        print >> g, ""
+    g.close()
+    print "file written", fixedfile
+    return blocks
 

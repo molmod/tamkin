@@ -443,7 +443,7 @@ class BlocksPeptideMBH(PeptideBlockChoice):
     def calc_blocks_normal(self, N, CA, PRO, Carbon, Oxigen, Nitrogen):
         """MBH scheme with linked blocks where each side chain is
         considered as a block attached to the CA atom."""
-    pept = get_pept_linked(N, CA, PRO)
+        pept = get_pept_linked(N, CA, PRO)
         res  = []
 
         # start with an ending
@@ -466,7 +466,7 @@ class BlocksPeptideMBH(PeptideBlockChoice):
 
 
 def get_pept_linked(N, CA, PRO):
-        # PEPT bonds = CA + CONH + CA
+        # PEPT bonds = CA + CONH + CA = 6 atoms
         pept = []
         for i in xrange(1,len(CA)):
             if CA[i] in PRO:

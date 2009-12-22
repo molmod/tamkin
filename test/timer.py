@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # TAMkin is a post-processing toolkit for thermochemistry and kinetics analysis.
 # Copyright (C) 2008-2009 Toon Verstraelen <Toon.Verstraelen@UGent.be>,
 # Matthias Vandichel <Matthias.Vandichel@UGent.be> and
@@ -57,24 +56,22 @@
 # --
 
 
-import sys, os, unittest, glob
+from tamkin import *
 
-retcode = os.system("(cd ..; python setup.py build)")
-if retcode != 0: sys.exit(retcode)
-lib_dir = glob.glob(os.path.join("../build/lib*"))[0]
-sys.path.insert(0, lib_dir)
-
-if not os.path.isdir("output"):
-    os.mkdir("output")
-
-from io import *
-from partf import *
-from tools import *
-from nma import *
-from nmatools import *
-from tunneling import *
-from rotor import *
-from timer import *
-unittest.main()
+import unittest
 
 
+__all__ = ["TimerTestCase"]
+
+
+class TimerTestCase(unittest.TestCase):
+    def test_timer(self):
+        timer = Timer()
+        timer.sample("start")
+        for i in range(100000):
+            j = i**2
+        timer.sample("done")
+        self.assertEqual(timer.labels[0], "start")
+        self.assertEqual(timer.labels[1], "done")
+        #timer.dump()  # to write logfile to screen
+        timer.write_to_file("output/logfile-timings.txt")  # just testing whether writing to file works

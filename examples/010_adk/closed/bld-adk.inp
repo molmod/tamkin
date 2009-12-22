@@ -1,0 +1,51 @@
+* import adk.closed (Adenylate Kinase) and build CHARMM model
+* AG, 14 October 2009
+*
+
+bomlev -2
+
+read rtf card name "top_all27_prot_na.rtf"
+read param card name "par_all27_prot_na.prm"
+
+read sequ pdb  name adk.closed.pdb
+gener A   setup warn 
+
+!read coor pdb offset -4  name "KetenA.pdb"
+read coor pdb name adk.closed.pdb  ! no offset needed
+
+ic purge 
+ic fill preserve
+ic param
+ic build
+hbuild sele hydrogen end
+
+
+! everything should be defined now
+define tmp sele .not. init show end
+energy
+
+!----- Add extra patches -----
+!patch disu segH  47   segH 278  warn !setup sort warn
+! no, not needed here
+
+!----- Write some files -----
+write psf card name "adk.closed.psf"
+* PSF for seg A of adk.closed (Adenylate Kinase)
+* AG, 14 October 2009
+*
+
+! get masses into .cor file
+   scalar wmain copy mass
+!   scalar mass show
+
+write coor card name "adk.closed.cor"
+* initial coords for adk.closed (Adenylate Kinase)
+* AG, 14 October 2009
+*
+
+write coor card name "adk.closed.new.cor"
+* initial coords for adk.closed (Adenylate Kinase), to be optimized
+* AG, 14 October 2009
+*
+
+stop

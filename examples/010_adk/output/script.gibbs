@@ -1,0 +1,11 @@
+#!/bin/bash
+
+
+for mol in open closed ; do
+for x in `seq 1 1 6` full 11 12 13 ; do
+python ../analyse-adk.py --job gibbs --filechk ../chkfiles/adk.$mol.$x.chk  \
+                      --filethermo adk.$mol.$x.thermo.csv
+
+done
+done
+

@@ -1,0 +1,9 @@
+#!/bin/bash
+
+
+for x in 6 7 8 9 10 ; do
+python analyse-adk.py --job vsa --filecor open/adk.open.new.cor  --filehess open/adk.open.hess.full \
+                      --filechk chkfiles/adk.open.vsa.$x.chk  \
+                      --filefixed fixed_files/fixed.$x.txt
+
+done

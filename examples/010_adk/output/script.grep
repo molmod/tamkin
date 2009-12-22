@@ -1,0 +1,54 @@
+#!/bin/bash
+
+# 1. GREP relevant information from *.thermo.csv files: write thermo.*.csv files
+#-------------------------------------------------------------------------------
+for mol in open closed ; do
+for x in 1 2 3 4 5 full 6 11 12 13 ; do 
+
+grep -e '\[' -e 'vibrational\"' -e 'total' -e 'rotational' -e 'translational' adk.$mol.$x.thermo.csv > thermo.$mol.$x.csv
+# -e 'electronic'
+
+# only upper 20 line
+head -20 thermo.$mol.$x.csv > thermo.$mol.$x.csv.h
+mv thermo.$mol.$x.csv.h thermo.$mol.$x.csv
+
+
+done
+done
+
+
+# 2. GATHER all relevant information into one file: thermo.all.csv
+#-----------------------------------------------------------------
+
+# paste 
+for x in full 6 1 2 3 4 5 11 12 13 ; do
+
+paste thermo.closed.$x.csv thermo.open.$x.csv -d "," > temp.$x
+
+done
+
+
+# cat
+
+if [ -e temp ] ; then rm temp ; fi
+touch temp
+
+for x in full 6 1 2 3 4 5 11 12 13 ; do
+
+  echo $x > temp.empty
+  cat temp temp.empty temp.$x  > tempnew
+  mv tempnew temp
+  rm temp.$x
+
+done
+
+rm temp.empty
+mv temp thermo.all.csv
+
+
+# and substitute all "," in thermo.all.csv by ";"
+
+sed 's/,/;/g' thermo.all.csv > temp
+mv temp thermo.all.csv
+#sed 's/^\(.\{20\}\)00\(.*\)/\1TS\2/' myFile.txt
+

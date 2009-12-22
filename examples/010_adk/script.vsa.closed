@@ -1,0 +1,9 @@
+#!/bin/bash
+
+
+for x in 13 ; do
+python analyse-adk.py --job vsa --filecor closed/adk.closed.new.cor  --filehess closed/adk.closed.hess.full \
+                      --filechk chkfiles/adk.closed.vsa.chk  \
+                      --filefixed fixed_files/fixed.$x.txt
+
+done

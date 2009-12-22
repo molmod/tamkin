@@ -323,7 +323,7 @@ class BlocksPeptideMBH(object):
             return self.calc_blocks_RHbending(N, CA, PRO, Carbon, Oxigen, Nitrogen)
         elif self.label is "normal" or self.label is None:
             return self.calc_blocks_normal(N, CA, PRO, Carbon, Oxigen, Nitrogen)
-        elif:
+        else:
             raise NotImplementedError
 
     def calc_blocks_RTB(self, N, CA, PRO, Carbon, Oxigen, Nitrogen):
@@ -490,7 +490,7 @@ class SubsPeptideVSA(object):
             subs.extend(Nitrogen)
         if "CA" in self.atomtype:
             subs.extend( numpy.take(CA, range(0,len(CA),self.frequency)).tolist() )
-        elif:
+        else:
             raise NotImplementedError
         return subs
 

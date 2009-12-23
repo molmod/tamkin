@@ -87,10 +87,10 @@ class ThermoAnalysis(object):
         self.pf = pf
         self.temps = temps
         self.tables = [
-            ThermoTable("Energy", "%.1f", kjmol, "kJ/mol", "internal_energy", pf, temps),
-            ThermoTable("Free energy", "%.1f", kjmol, "kJ/mol", "free_energy", pf, temps),
-            ThermoTable("Heat capacity", "%.3f", J/mol/K, "J/(mol*K)", "heat_capacity", pf, temps),
-            ThermoTable("Entropy", "%.1f",  J/mol/K, "J/(mol*K)", "entropy", pf, temps),
+            ThermoTable("Energy", "%.5f", kjmol, "kJ/mol", "internal_energy", pf, temps),
+            ThermoTable("Free energy", "%.5f", kjmol, "kJ/mol", "free_energy", pf, temps),
+            ThermoTable("Heat capacity", "%.5f", J/mol/K, "J/(mol*K)", "heat_capacity", pf, temps),
+            ThermoTable("Entropy", "%.5f",  J/mol/K, "J/(mol*K)", "entropy", pf, temps),
             ThermoTable("log(q)", "%.1f", 1, "1", "log_eval", pf, temps),
             ThermoTable("d log(q) / dT", "%.3e", 1/K, "1/K", "log_deriv", pf, temps),
             ThermoTable("d^2 log(q) / dT^2", "%.1e", 1/K, "1//K", "log_deriv2", pf, temps)

@@ -187,9 +187,9 @@ class PartFunTestCase(unittest.TestCase):
         dihedral, angles, energies, geometries, top_indexes = load_rotscan_g03(
             "input/rotor/gaussian.log"
         )
-        cancel_freq = compute_cancel_frequency(molecule, top_indexes)
+        cancel_freq = compute_cancel_frequency(molecule, dihedral, top_indexes)
         rotor = Rotor(
-            top_indexes, cancel_freq, rotsym=3, even=True,
+            dihedral, top_indexes, cancel_freq, rotsym=3, even=True,
             potential=(angles, energies, 5), num_levels=50
         )
         pf = PartFun(nma, [
@@ -202,7 +202,7 @@ class PartFunTestCase(unittest.TestCase):
         temps = numpy.array([300.0,400.0,500.0,600.0,700.0])
         sfs = [
             pf.electronic, pf.translational, pf.rotational, pf.vibrational,
-            pf.hindered_rotor_0_1_3_4_5, pf
+            pf.hindered_rotor_3_4_5, pf
         ]
         for stat_fys in sfs:
             for temp in temps:

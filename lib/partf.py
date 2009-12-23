@@ -750,7 +750,7 @@ def compute_equilibrium_constant(pfs_A, pfs_B, temp, mol_volume=None):
     delta_G = 0.0
     delta_G += sum(pf_A.free_energy(temp) for pf_A in pfs_A)
     delta_G -= sum(pf_B.free_energy(temp) for pf_B in pfs_B)
-    log_K = -delta_G/(boltzmann*temp)
+    log_K = delta_G/(boltzmann*temp)
     if len(pfs_A) != len(pfs_B):
         if mol_volume is None:
             mol_volume = ExternalTranslation.default_volume

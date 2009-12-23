@@ -1,0 +1,88 @@
+ADK
+====
+
+Data generated with CHARMM:
+  closed/
+  open/
+
+Molecule adk.closed has been reoriented by minimizing
+the root mean square difference between open en closed form.
+Input files *.inp
+Output files *.out
+
+
+Analysis is bases on the script:
+  analyse-adk.py
+
+Blocks and Subsystem
+^^^^^^^^^^^^^^^^^^^^
+python script.generatefixed.py  --  to generate the block choices and
+subsystem/environment divisions as described below
+
+
+FULL
+^^^^
+./script.full.open  --  to launch the NMA calculation
+./script.full.closed  --  to launch the NMA calculation
+
+MBH
+^^^
+RTB blocks
+
+1
+2
+3
+4
+5
+
+MBH with adjoined blocks
+
+11 RHbending  calpha belonging to 4 blocks
+12 dihedral  only dihedral angles phi and psi
+13 normal  calpha belonging to 3 blocks
+
+./script.mbh.open  --  to launch the MBH NMA calculation
+./script.mbh.closed  --  to launch the MBH NMA calculation
+
+VSA
+^^^
+6
+7
+8
+9
+10
+
+./script.vsa.open  --  to launch the VSA NMA calculation
+./script.vsa.closed  --  to launch the VSA NMA calculation
+
+
+
+Overlap delta vector
+^^^^^^^^^^^^^^^^^^^^
+cd output/
+
+./script.overlap.full  --  to calculate the overlap between full Hessian modes and
+the conformational change
+
+./script.overlap  --  to calculate the overlap between approximate modes and
+the conformational change
+
+python get_overlap_7-7.py  --  to pick out the overlap of the lowest nonzero
+mode and write the summary file delta.overlaps.7-7.csv
+
+
+Free energy difference
+^^^^^^^^^^^^^^^^^^^^^^
+
+First increase the accuracy of the free energy output:
+in file ..../tamkin/lib/tools.py
+change the format e.g. from %f.1 to %f.5 for the energy etc.
+
+cd output/
+
+./script.gibbs  --  to construct the partition functions based on chk-files
+
+./script.grep  --  to gather the information in a file thermo.all.csv
+
+
+

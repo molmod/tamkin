@@ -1,4 +1,3 @@
-#!/usr/bin/python
 # TAMkin is a post-processing toolkit for thermochemistry and kinetics analysis.
 # Copyright (C) 2008-2009 Toon Verstraelen <Toon.Verstraelen@UGent.be>,
 # Matthias Vandichel <Matthias.Vandichel@UGent.be> and
@@ -56,25 +55,49 @@
 #
 # --
 
+import time, sys
 
-import sys, os, unittest, glob
+__all__ = ["Timer"]
 
-retcode = os.system("(cd ..; python setup.py build)")
-if retcode != 0: sys.exit(retcode)
-lib_dir = glob.glob(os.path.join("../build/lib*"))[0]
-sys.path.insert(0, lib_dir)
+class Timer(object):
+    """ Timer object which serves to keep track of timings.
+    When sampling:
+    - CPU times are obtained with time.time()
+    - WALL times are obtained with time.clock()
+    - a label can be added
+    """
+    def __init__(self):
+        self.cpu_times = []
+        self.wall_times = []
+        self.labels = []
 
-if not os.path.isdir("output"):
-    os.mkdir("output")
+    def sample(self,label):
+        self.cpu_times.append(time.clock())
+        self.wall_times.append(time.time())
+        self.labels.append(label)
 
-from io import *
-from partf import *
-from tools import *
-from nma import *
-from nmatools import *
-from tunneling import *
-from rotor import *
-from timer import *
-unittest.main()
+    def dump(self, f=sys.stdout):
+        """Dump the logfile with timing information, to screen or to a file stream.
+        Optional argument:
+             f  --  the stream to write to. [default=sys.stdout]
+        """
+        print >> f, "-------------------"
+        print >> f, "Printing LOG jobtimer"
+        print >> f, '%12s %12s %21s %16s %30s' %("cpu times [s]", "diff [s]", "wall times [s]", "diff [s]", "labels" )
+        for i,label in enumerate(self.labels[:-1]):
+            print >> f, '%12.3f %12.3f %21.3f %16.3f %30s' %(self.cpu_times[i],
+                                         self.cpu_times[i+1]-self.cpu_times[i],
+                                         self.wall_times[i],
+                                         self.wall_times[i+1]-self.wall_times[i],
+                                         label)
+        print >> f, '%12.3f %12s %21.3f %16s %30s' %(self.cpu_times[-1], "",
+                                         self.wall_times[-1], "",
+                                         self.labels[-1])
+        print >> f, "-------------------"
 
+    def write_to_file(self, filename):
+        """Write the logfile with timing information to filename."""
+        f = file(filename, 'w')
+        self.dump(f)
+        f.close()
 

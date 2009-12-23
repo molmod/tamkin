@@ -62,6 +62,7 @@ from nma import *
 from nmatools import *
 from partf import *
 from rotor import *
+from timer import *
 from tools import *
 from tunneling import *
 

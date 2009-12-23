@@ -1,0 +1,9 @@
+#!/bin/bash
+
+
+for x in 1 2 3 4 5  11 12 13 ; do
+python analyse-adk.py --job mbh --filecor closed/adk.closed.new.cor  --filehess closed/adk.closed.hess.full \
+                      --filechk chkfiles/adk.closed.$x.chk  \
+                      --filefixed fixed_files/fixed.$x.txt
+
+done

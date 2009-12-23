@@ -1,0 +1,61 @@
+* import PSF and COORDS of adk.open (Adenylate Kinase) and do freq calc
+* AG, 14 October 2009
+*
+
+bomlev -3
+
+!----- Setting up molecule -----------------------------
+read rtf card name "top_all27_prot_na.rtf"
+read param card name "par_all27_prot_na.prm"
+
+read psf card name adk.open.psf
+read coor card name adk.open.new.cor  ! use optimized coordinates
+
+
+!--------------------------------------------------------
+! START VIBRAN
+calc k = 3 * ?NATOM
+vibran nmodes @k  fswitch vswitch
+
+diag
+
+open write card unit 20 name adk.open.hess.full
+write second card unit 20
+* FULL Hessian
+*
+
+open write card unit 31 name adk.open.modes.full
+write norm card unit 31
+* FULL modes
+*
+
+end
+
+stop
+
+
+!--------------------------------------------------------
+! START VIBRAN
+!  nb of modes
+   calc k = 3 * 3 * ( @N * 22 + 1)
+vibran nmodes @K fswitch vswitch
+
+   open read unit 41 card name amylose@N-freq.modes.full
+   read norm unit 41 card
+
+   open read unit 42 card name amylose@N-freq.modes.vsa
+   read norm unit 43 card
+
+   open read unit 43 card name amylose@N-freq.modes.mbh
+   read norm unit 43 card append
+
+
+
+   print norm dotproduct
+
+
+! END VIBRAN
+   end
+
+stop
+

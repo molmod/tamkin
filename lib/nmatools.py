@@ -58,19 +58,17 @@
 import numpy
 from molmod.units import cm
 from molmod.constants import lightspeed
-from molmod.units import angstrom, amu, cm #kjmol, second, meter, mol, K, J
-#from molmod.constants import boltzmann
-
-###import sys, numpy, pylab, types
+from molmod.units import angstrom, amu, cm
 
 
 __all__ = [
            "load_coordinates_charmm", "load_modes_charmm",
            "calculate_overlap_nma", "calculate_overlap", "write_overlap",
-           "get_Delta_vector",
+           "get_delta_vector", "get_delta_vector_charmmcor",
            "calculate_sensitivity_freq",
            "create_blocks_peptide_charmm", "create_subs_peptide_charmm",
            "BlocksPeptideMBH", "SubsPeptideVSA",
+           "blocks_write_to_file", "subs_write_to_file",
           ]
 
 
@@ -217,51 +215,52 @@ def write_overlap(freqs1, freqs2, overlap, filename=None):
     f.close()
 
 
-def get_Delta_vector(coor1, coor2, masses = None, normalize = False, normthreshold = 1e-10):
-    """Calculate mass weighted Delta vector between two conformations.
+def get_delta_vector(coor1, coor2, masses = None, normalize = False, normthreshold = 1e-10):
+    """Calculate mass weighted delta vector between two conformations.
     It is assumed that the structures have been aligned (center of mass, orientation) previously.
     Optional:
-    massweight  --  Whether Delta vector should be mass weighted. Default is True.
-    normalize  --  Whether Delta vector should be normalized. Default is False."""
+    massweight  --  Whether delta vector should be mass weighted. Default is True.
+    normalize  --  Whether delta vector should be normalized. Default is False."""
     # check consistency
     if len(coor1) != len(coor2):
         raise ValueError("coordinates should have same length: found "+str(len(coor1))+" and "+str(len(coor2)))
 
-    Delta = numpy.ravel(coor1 - coor2)
-    if not masses is None:  #Mass-weighting Delta vector
+    delta = numpy.ravel(coor1 - coor2)
+    if not masses is None:  #Mass-weighting delta vector
         for i,mass in enumerate(masses):
-            Delta[3*i:3*(i+1)] *=  numpy.sqrt(mass)
-    if normalize:   #Normalizing Delta vector
-        norm = numpy.sum(Delta**2)
+            delta[3*i:3*(i+1)] *=  numpy.sqrt(mass)
+    if normalize:   #Normalizing delta vector
+        norm = numpy.sum(delta**2)
         if norm < normthreshold:
-            raise ValueError("Can not normalize Delta vector, because norm (squared) it too small: "+str(norm))
-        Delta /= numpy.sqrt(norm)
-    return numpy.reshape(Delta, (-1,1))
+            raise ValueError("Can not normalize delta vector, because norm (squared) it too small: "+str(norm))
+        delta /= numpy.sqrt(norm)
+    return numpy.reshape(delta, (-1,1))
 
 
-#def get_Delta_vector_charmmcor(charmmcorfile1, charmmcorfile2, massweight = True, normalize = False):
-#    """Calculate mass weighted Delta vector between two charmm conformations.
+def get_delta_vector_charmmcor(charmmcorfile1, charmmcorfile2, massweight = True, normalize = False):
+    """Calculate mass weighted delta vector between two charmm conformations.
+       Masses from first coordinate file are used.
+       Optional:
+       massweight  --  Whether delta vector should be mass weighted. Default is True.
+       normalize  --  Whether delta vector should be normalized. Default is False."""
+    symb1,coor1,masses1 = load_coordinates_charmm(charmmcorfile1)
+    symb2,coor2,masses2 = load_coordinates_charmm(charmmcorfile2)
+    # check consistency
+    if not symb1 == symb2:
+        raise ValueError("not the same atom symbols in both coordinate files: comparison makes no sense.")
+    #if not masses1 == masses2:
+    #    raise ValueError("not the same atom masses in both coordinate files: comparison makes no sense.")
+    if massweight:
+        return get_delta_vector(coor1, coor2, masses = masses1, normalize = normalize)
+    else:
+        return get_delta_vector(coor1, coor2, normalize = normalize)
+
+
+#def get_delta_vector_molecules(molecule1, molecule2, massweight = True, normalize = False):
+#    """Calculate mass weighted delta vector between two charmm conformations.
 #    Optional:
-#    massweight  --  Whether Delta vector should be mass weighted. Default is True.
-#    normalize  --  Whether Delta vector should be normalized. Default is False."""
-#    symb1,coor1,masses1 = read_charmm_cor(charmmcorfile1)
-#    symb2,coor2,masses2 = read_charmm_cor(charmmcorfile2)
-#    # check consistency
-#    if not symb1 == symb2:
-#        raise ValueError("not the same atom symbols in both coordinate files: comparison makes no sense.")
-#    if not masses1 == masses2:
-#        raise ValueError("not the same atom masses in both coordinate files: comparison makes no sense.")
-#    if massweight:
-#        return get_Delta_vector(coor1, coor2, masses = masses1, normalize = normalize)
-#    else:
-#        return get_Delta_vector(coor1, coor2, normalize = normalize)
-
-
-#def get_Delta_vector_molecules(molecule1, molecule2, massweight = True, normalize = False):
-#    """Calculate mass weighted Delta vector between two charmm conformations.
-#    Optional:
-#    massweight  --  Whether Delta vector should be mass weighted. Default is True.
-#    normalize  --  Wihether Delta vector should be normalized. Default is False."""
+#    massweight  --  Whether delta vector should be mass weighted. Default is True.
+#    normalize  --  Wihether delta vector should be normalized. Default is False."""
 #    # check consistency
 #    if molecule1.size != molecule2.size:
 #        raise ValueError("Nb of atoms is not the same in the two molecules. Found "+str(molecule1)+" (1) and "+str(molecule)+" (2).")
@@ -272,10 +271,10 @@ def get_Delta_vector(coor1, coor2, masses = None, normalize = False, normthresho
 #        raise ValueError("not the same atom masses in both coordinate files: comparison makes no sense.")
 #
 #    if massweight:
-#        return get_Delta_vector(molecule1.coordinates, molecule2.coordinates,
+#        return get_delta_vector(molecule1.coordinates, molecule2.coordinates,
 #                    masses = molecule1.masses, normalize = normalize)
 #    else:
-#        return get_Delta_vector(molecule1.coordinates, molecule2.coordinates, normalize = normalize)
+#        return get_delta_vector(molecule1.coordinates, molecule2.coordinates, normalize = normalize)
 
 
 
@@ -308,16 +307,7 @@ def calculate_sensitivity_freq(nma, index, symmetric = False, massweight = True)
 # of the first and last residue are less predictable.
 
 
-class PeptideBlockChoice(object):
-    def __init__(self, label):
-          self.label = label
-    def calc_blocks(self):
-        raise NotImplementedError
-    def calc_subs(self):
-        raise NotImplementedError
-
-
-class BlocksPeptideMBH(PeptideBlockChoice):
+class BlocksPeptideMBH(object):
     # TODO add references
 
     def __init__(self, label=None, blocksize=1):
@@ -333,6 +323,8 @@ class BlocksPeptideMBH(PeptideBlockChoice):
             return self.calc_blocks_RHbending(N, CA, PRO, Carbon, Oxigen, Nitrogen)
         elif self.label is "normal" or self.label is None:
             return self.calc_blocks_normal(N, CA, PRO, Carbon, Oxigen, Nitrogen)
+        else:
+            raise NotImplementedError
 
     def calc_blocks_RTB(self, N, CA, PRO, Carbon, Oxigen, Nitrogen):
         """Rotation-Translation Blocks scheme of Tama et al.
@@ -466,7 +458,7 @@ class BlocksPeptideMBH(PeptideBlockChoice):
 
 
 def get_pept_linked(N, CA, PRO):
-        # PEPT bonds = CA + CONH + CA
+        # PEPT bonds = CA + CONH + CA = 6 atoms
         pept = []
         for i in xrange(1,len(CA)):
             if CA[i] in PRO:
@@ -478,7 +470,7 @@ def get_pept_linked(N, CA, PRO):
 
 
 
-class SubsPeptideVSA(PeptideBlockChoice):
+class SubsPeptideVSA(object):
 
     def __init__(self, atomtype=["CA"], frequency=1):
         """VSA subsystem/environment for peptides.
@@ -498,6 +490,8 @@ class SubsPeptideVSA(PeptideBlockChoice):
             subs.extend(Nitrogen)
         if "CA" in self.atomtype:
             subs.extend( numpy.take(CA, range(0,len(CA),self.frequency)).tolist() )
+        else:
+            raise NotImplementedError
         return subs
 
 
@@ -542,13 +536,18 @@ def select_info_peptide_charmm(charmmfile_crd):
     return N, CA, PRO, Carbon, Oxigen, Nitrogen
 
 
-def print_blocks_totxtfile(fixedfile, blocks):
-    g = file(fixedfile,"w")
-    for b in blocks:
-        for at in b:
-            print >> g, at
-        print >> g, ""
-    g.close()
-    print "file written", fixedfile
-    return blocks
+def blocks_write_to_file(blocks, filename):
+    f = file(filename, "w")
+    for bl in blocks:
+        for at in bl:
+            print >> f, at
+        print >> f, ""
+    f.close()
+
+def subs_write_to_file(subs, filename):
+    f = file(filename, "w")
+    for at in subs:
+        print >> f, at
+    print >> f, ""
+    f.close()
 

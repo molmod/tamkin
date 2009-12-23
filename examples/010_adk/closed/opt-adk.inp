@@ -1,0 +1,34 @@
+* import PSF and COORDS of adk.closed (Adk, adenylate kinase) and optimize
+* AG, 14 October 2009
+*
+
+bomlev -2
+
+!----- Setting up molecule -----------------------------
+read rtf card name "top_all27_prot_na.rtf"
+read param card name "par_all27_prot_na.prm"
+
+read psf card name "adk.closed.psf"
+read coor card name "adk.closed.new.cor"
+
+
+
+!----- ENERGY MINIMIZATION -----
+!   mini sd nstep 10 nprint 100 fswitch vswitch  !do this only first time
+   mini abnr nstep 8000 tolgrd 0.000001 nprint 100 fswitch vswitch
+!   mini abnr nstep 200 nprint 1 tolgrd 0.000001 tolene 0.000000001
+
+
+!----- Update the coords -----
+! get masses into .crd file
+   scalar wmain copy mass
+!   scalar mass show
+
+write coor card name "adk.closed.new.cor"
+* initial coords for adk.closed (Adenylate Kinase), being optimized
+* min e = ?ENER
+* AG, 14 October 2009
+*
+
+stop
+

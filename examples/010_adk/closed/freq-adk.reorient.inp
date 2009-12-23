@@ -1,0 +1,107 @@
+* import PSF and COORDS of adk.closed (Adenylate Kinase) and do freq calc
+* AG, 14 October 2009
+*
+
+bomlev -3
+
+!----- Setting up molecule -----------------------------
+read rtf card name "top_all27_prot_na.rtf"
+read param card name "par_all27_prot_na.prm"
+
+read psf card name adk.closed.psf
+read coor card name adk.closed.new.cor  ! use optimized coordinates
+
+
+!---------------- Reorientation ---------------------
+! Align adk.closed with adk.open, in order to have conformational change
+! that is, Delta = (coords of adk.closed - coords adk.open)
+
+!----- Read in coords of adk.open:
+coor copy comp
+read coor card name adk.open.new.cor comp !sele..end
+!print coor sele resid 1 end
+!print coor comp sele resi 1 end
+
+!----- Orient adk.closed to adk.open, taking into account CA atoms
+coor orient rms sele type CA end
+!print coor sele resid 1 end
+!print coor comp sele resid 1 end
+
+
+!----- Write new files
+write psf card name adk.closed.reorient.psf
+* PSF for adk.closed (Adenylate Kinase), reoriented
+* AG, 14 October 2009
+*
+
+* PSF for 1lst
+*
+
+! get masses into .crd file
+   scalar wmain copy mass
+   !scalar mass show
+
+write coor card name adk.closed.reorient.new.cor
+* coords for adk.closed (Adenylate Kinase), reoriented
+* min e = ?ENER
+* AG, 14 October 2009
+*
+
+
+!--------------------------------------------------------
+! START VIBRAN
+calc k = 3 * ?NATOM
+vibran nmodes @k  fswitch vswitch
+
+diag
+
+open write card unit 20 name adk.closed.hess.full
+write second card unit 20
+* FULL Hessian
+*
+
+open write card unit 31 name adk.closed.modes.full
+write norm card unit 31
+* FULL modes
+*
+
+end
+
+stop
+
+
+!--------------------------------------------------------
+! START VIBRAN
+vibran nmodes @k  fswitch vswitch
+   diag
+
+!   thermo mode 8 thru 27 temp 300.0
+!   print norm vect temp 300.0
+!   print norm intd mode
+!   write traj mode 1 thru @M step 0.002 ncyc 5 tenp 2000.0 unit 88
+
+end
+
+stop
+!--------------------------------------------------------
+! START VIBRAN
+!  nb of modes
+   calc k = 3 * 3 * ( @N * 22 + 1)
+vibran nmodes @K fswitch vswitch
+
+   open read unit 41 card name amylose@N-freq.modes.full
+   read norm unit 41 card
+
+   open read unit 42 card name amylose@N-freq.modes.vsa
+   read norm unit 43 card
+
+   open read unit 43 card name amylose@N-freq.modes.mbh
+   read norm unit 43 card append
+
+   print norm dotproduct
+
+! END VIBRAN
+   end
+
+stop
+

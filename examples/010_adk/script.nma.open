@@ -1,0 +1,4 @@
+#!/bin/bash
+
+python analyse-adk.py --job nma --filecor open/adk.open.new.cor  --filehess open/adk.open.hess.full \
+                      --filechk chkfiles/adk.open.full.chk 

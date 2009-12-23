@@ -312,9 +312,9 @@ class PeptideBlockChoice(object):
     def __init__(self, label):
           self.label = label
     def calc_blocks(self):
-    raise NotImplementedError
+        raise NotImplementedError
     def calc_subs(self):
-    raise NotImplementedError
+        raise NotImplementedError
 
 
 class BlocksPeptideMBH(PeptideBlockChoice):
@@ -326,7 +326,7 @@ class BlocksPeptideMBH(PeptideBlockChoice):
 
     def calc_blocks(self, N, CA, PRO, Carbon, Oxigen, Nitrogen):
         if self.label is "RTB":
-        return self.calc_blocks_RTB(N, CA, PRO, Carbon, Oxigen, Nitrogen)
+            return self.calc_blocks_RTB(N, CA, PRO, Carbon, Oxigen, Nitrogen)
         elif self.label is "dihedral":
             return self.calc_blocks_dihedral(N, CA, PRO, Carbon, Oxigen, Nitrogen)
         elif self.label is "RHbending":
@@ -443,7 +443,7 @@ class BlocksPeptideMBH(PeptideBlockChoice):
     def calc_blocks_normal(self, N, CA, PRO, Carbon, Oxigen, Nitrogen):
         """MBH scheme with linked blocks where each side chain is
         considered as a block attached to the CA atom."""
-    pept = get_pept_linked(N, CA, PRO)
+        pept = get_pept_linked(N, CA, PRO)
         res  = []
 
         # start with an ending
@@ -532,7 +532,7 @@ def select_info_peptide_charmm(charmmfile_crd):
             CA.append(int(words[0]))
             if words[2]=="PRO":
                 PRO.append(int(words[0]))
-    if words[3]=="C":
+        if words[3]=="C":
             Carbon.append(int(words[0]))
         if words[3]=="O":
             Oxigen.append(int(words[0]))

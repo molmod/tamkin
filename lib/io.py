@@ -1097,7 +1097,8 @@ def write_modes_for_VMD(nma, index, filename=None,
                         A = 50.0, frames = 36):
     """This function selects calls the function write_modes_for_VMD_2,
     where the mode trajectory is actually written.
-    The function selects the relevant attributes."""
+    The function selects the relevant attributes.
+    Numbering modes starts at 0."""
 
     if filename is None: filename = "mode"+str(index)+".txt"
 

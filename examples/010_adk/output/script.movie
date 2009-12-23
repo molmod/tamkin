@@ -1,0 +1,13 @@
+#!/bin/bash
+
+index=6
+for mol in open closed ; do
+#for x in `seq 1 1 6` full 11 12 13 ; do
+for x in 10 ; do
+python ../analyse-adk.py --job movie --filechk ../chkfiles/adk.$mol.$x.chk  \
+                      --filemovie mode.adk.$mol.$x.nr$index.xyz \
+                      --index $index
+
+done
+done
+

@@ -268,6 +268,14 @@ class ReactionAnalysis(object):
     def compute_rate_coeff(self, temp):
         return compute_rate_coeff(self.pfs_react, self.pf_trans, temp, self.mol_volume)
 
+    def compute_delta_G(self, temp):
+        return self.pf_trans.free_energy(temp) - \
+               sum(pf_react.free_energy(temp) for pf_react in self.pfs_react)
+
+    def compute_delta_E(self):
+        return self.pf_trans.energy - \
+               sum(pf_react.energy for pf_react in self.pfs_react)
+
     def dump(self, f=sys.stdout):
         """Write the results in text format on screen or to another stream.
 
@@ -280,11 +288,9 @@ class ReactionAnalysis(object):
         print >> f, "A [%s] = %.5e" % (self.unit_name, self.A/self.unit)
         print >> f, "ln(A [a.u.]) = %.2f" % (self.parameters[0])
         print >> f, "Ea [kJ/mol] = %.2f" % (self.Ea/kjmol)
-        delta_E = self.pf_trans.energy - \
-                  sum(pf_react.energy for pf_react in self.pfs_react)
+        delta_E = self.compute_delta_E()
         print >> f, "Delta E at T=0K (classical nuclei) [kJ/mol] = %.1f" % (delta_E/kjmol)
-        delta_G0K = self.pf_trans.free_energy(0.0) - \
-                    sum(pf_react.free_energy(0.0) for pf_react in self.pfs_react)
+        delta_G0K = self.compute_delta_G(0.0)
         print >> f, "Delta E at T=0K (partition function) [kJ/mol] = %.1f" % (delta_G0K/kjmol)
         print >> f, "R2 (Pearson) = %.2f%%" % (self.R2*100)
         print >> f

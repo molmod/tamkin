@@ -47,7 +47,7 @@ def main():
         if not os.path.isdir(root1):
             os.mkdir(root1)
         for dirname in glob.glob("%s/*" % root0):
-            if os.path.isdir(dirname):
+            if os.path.isdir(dirname) and not (dirname.endswith("sp") or dirname.endswith("bsse")):
                 jobdir = os.path.basename(dirname)
                 source = "../%s/%s" % (root0, jobdir)
                 destination = "%s/%s" % (root1, jobdir)
@@ -55,7 +55,7 @@ def main():
                     os.symlink(source, destination)
         for state in states:
             for job in state.jobs:
-                if job.name != "sp":
+                if job.name != "bsse":
                     continue
                 job.write_input(state, root1, lot1_label, basis1_label, options.suffix, options.random)
     else:

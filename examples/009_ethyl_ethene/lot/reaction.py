@@ -67,31 +67,8 @@ import pylab
 import os, sys
 
 
-def my_load_molecule(dir_freq, dir_sp):
-    if os.path.isdir(dir_sp):
-        return load_molecule_g03fchk("%s/gaussian.fchk" % dir_freq, "%s/gaussian.fchk" % dir_sp)
-    else:
-        return load_molecule_g03fchk("%s/gaussian.fchk" % dir_freq)
-
-
-def outlier_mask(x):
-    """Returns an array of booleans: False = outlier"""
-    # a robust estimate of the width
-    y = x.copy()
-    y.sort()
-    width = y[int(len(y)*0.8)] - y[int(len(y)*0.2)]
-    median = y[int(len(y)*0.5)]
-    mask = x < (median+2*width)
-    mask &= x > (median-2*width)
-    return mask
-
-
 def load_rotor(mol, filename, rotsym, even, expansion=5):
     dihedral, angles, energies, geometries, top_indexes = load_rotscan_g03(filename)
-    mask = outlier_mask(energies)
-    angles = angles[mask]
-    energies = energies[mask]
-    geometries = geometries[mask]
     cancel_freq = compute_cancel_frequency(mol, dihedral, top_indexes)
     rotor = Rotor(
         dihedral, top_indexes, cancel_freq, rotsym=rotsym, even=even,
@@ -100,13 +77,26 @@ def load_rotor(mol, filename, rotsym, even, expansion=5):
     return rotor
 
 
-def run(do_rotor):
+def run(do_rotor, do_counterpoise, load_sp):
     prefix = {True: "ir", False: "ho"}[do_rotor]
+    prefix += {True: "_cps", False: "_bss"}[do_counterpoise]
 
-    mol_ethyl = my_load_molecule("ethyl__freq", "ethyl__sp")
-    mol_ethene = my_load_molecule("ethene__freq", "ethene__sp")
-    mol_ts_gauche = my_load_molecule("ts_ad1_gauche__freq", "ts_ad1_gauche__sp")
-    mol_ts_trans = my_load_molecule("ts_ad1_trans__freq", "ts_ad1_trans__sp")
+    if load_sp:
+        mol_ethyl = load_molecule_g03fchk("ethyl__freq/gaussian.fchk", "ethyl__sp/gaussian.fchk")
+        mol_ethene = load_molecule_g03fchk("ethene__freq/gaussian.fchk", "ethene__sp/gaussian.fchk")
+    else:
+        mol_ethyl = load_molecule_g03fchk("ethyl__freq/gaussian.fchk")
+        mol_ethene = load_molecule_g03fchk("ethene__freq/gaussian.fchk")
+    if do_counterpoise:
+        mol_ts_gauche = load_molecule_g03fchk("ts_ad1_gauche__freq/gaussian.fchk", "ts_ad1_gauche__bsse/gaussian.fchk")
+        mol_ts_trans = load_molecule_g03fchk("ts_ad1_trans__freq/gaussian.fchk", "ts_ad1_trans__bsse/gaussian.fchk")
+    else:
+        if load_sp:
+            mol_ts_gauche = load_molecule_g03fchk("ts_ad1_gauche__freq/gaussian.fchk", "ts_ad1_gauche__sp/gaussian.fchk")
+            mol_ts_trans = load_molecule_g03fchk("ts_ad1_trans__freq/gaussian.fchk", "ts_ad1_gauche__sp/gaussian.fchk")
+        else:
+            mol_ts_gauche = load_molecule_g03fchk("ts_ad1_gauche__freq/gaussian.fchk")
+            mol_ts_trans = load_molecule_g03fchk("ts_ad1_trans__freq/gaussian.fchk")
     # Perform normal mode analysis on the molecules
     nma_ethyl = NMA(mol_ethyl, ConstrainExt(gradient_threshold=1e-3))
     nma_ethene = NMA(mol_ethene, ConstrainExt(gradient_threshold=1e-3))
@@ -208,7 +198,7 @@ def run(do_rotor):
     ra_gauche.write_to_file("%s_reaction_gauche.txt" % prefix)
     ra_trans.write_to_file("%s_reaction_trans.txt" % prefix)
 
-    if do_rotor:
+    if do_rotor and do_counterpoise:
         # Plot the energy levels and the potential of the hindered rotor. The
         # temperature argument is used to indicate the population of each level in the
         # plot.
@@ -249,9 +239,16 @@ def main():
     if len(args) != 1:
         parser.error("Expecting exactly on argument")
 
+    print "Processing %s" % args[0]
     os.chdir(args[0])
-    run(False)
-    run(True)
+    load_sp = args[0].startswith("GEO")
+    for do_rotor in True, False:
+        for do_counterpoise in True, False:
+            try:
+                run(do_rotor, do_counterpoise, load_sp)
+                print "      OK: do_rotor=%i, do_counterpoise=%i, load_sp=%i" % (do_rotor, do_counterpoise, load_sp)
+            except (IOError, KeyError):
+                print "  Failed: do_rotor=%i, do_counterpoise=%i, load_sp=%i" % (do_rotor, do_counterpoise, load_sp)
 
 
 if __name__ == "__main__":

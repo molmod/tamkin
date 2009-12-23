@@ -21,10 +21,8 @@ def get_root(lot_label, basis_label, suffix):
 
 
 class State(object):
-    def __init__(self, name, charge, mult, jobs):
+    def __init__(self, name, jobs):
         self.name = name
-        self.charge = charge
-        self.mult = mult
         self.jobs = jobs
 
 
@@ -40,23 +38,29 @@ class G03Job(object):
     def get_mol(self, state, root):
         if self.name == "opt":
             # load the initial geometry
-            return XYZFile("init/%s.xyz" % state.name).get_molecule()
+            mol = XYZFile("init/%s.xyz" % state.name).get_molecule()
         else:
             # load the optimized geometry
             fn_fchk = "%s/%s__opt/gaussian.fchk" % (root, state.name)
-            return FCHKFile(fn_fchk, field_labels=[]).molecule
+            mol = FCHKFile(fn_fchk, field_labels=[]).molecule
+        f = file("init/%s.fragments" % state.name)
+        mol.charge_mult = f.readline().split()
+        mol.tags = f.readline().split()
+        f.close()
+        return mol
 
     def write_input(self, state, root, lot_label, basis_label, suffix="", random=False):
-        if lot_label.startswith("ro"):
-            lot = get_lot(lot_label[2:], state.mult, restricted=True)
-        else:
-            lot = get_lot(lot_label, state.mult)
-        basis = get_basis(basis_label)
-
         try:
             mol = self.get_mol(state, root)
         except IOError:
             return
+
+        mult = int(mol.charge_mult[1])
+        if lot_label.startswith("ro"):
+            lot = get_lot(lot_label[2:], mult, restricted=True)
+        else:
+            lot = get_lot(lot_label, mult)
+        basis = get_basis(basis_label)
 
         dirname = "%s/%s__%s" % (root, state.name, self.name)
         if not os.path.isdir(dirname):
@@ -68,7 +72,7 @@ class G03Job(object):
 
         # copy an initial guess of the wavefunction
         destination = "%s/gaussian.in.fchk" % dirname
-        if not self.name.startswith("opt"):
+        if not (self.name == "opt" or self.name == "bsse"):
             if os.path.isfile(destination):
                 os.remove(destination)
             os.symlink(
@@ -84,7 +88,7 @@ class G03Job(object):
         print >> f, "#p %s/%s %s %s maxdisk=5GB" % (lot.name, basis.name, self.cmd, lot.iop),
         if basis.diffuse:
             print >> f, "scf=tight",
-        if not self.name.startswith("opt"):
+        if not (self.name == "opt" or self.name == "bsse"):
             print >> f, "guess=read",
         if len(lot.extra_overlay) > 0:
             print >> f, "extraoverlay",
@@ -95,14 +99,21 @@ class G03Job(object):
             print >> f
         print >> f, dirname
         print >> f
-        print >> f, "%i %i" % (state.charge, state.mult)
+        if self.name == "bsse":
+            print >> f, " ".join(mol.charge_mult)
+        else:
+            print >> f, " ".join(mol.charge_mult[:2])
         for i in xrange(mol.size):
             if random and self.name == "opt":
                 x, y, z = mol.coordinates[i]/angstrom + numpy.random.uniform(-0.1,0.1,3)
             else:
                 x, y, z = mol.coordinates[i]/angstrom
-            print >> f, " %2s   % 10.5f   % 10.5f   % 10.5f" % (
-                periodic[mol.numbers[i]].symbol, x, y, z,
+            if self.name == "bsse":
+                tag = mol.tags[i]
+            else:
+                tag = ""
+            print >> f, " %2s   % 10.5f   % 10.5f   % 10.5f  %s" % (
+                periodic[mol.numbers[i]].symbol, x, y, z, tag
             )
         print >> f
         print >> f, self.post
@@ -116,31 +127,33 @@ class G03Job(object):
 
 
 states = [
-    State("ethene", 0, 1, [
+    State("ethene", [
         G03Job("opt", "opt"),
         G03Job("freq", "freq(noraman)"),
         G03Job("sp", "sp"),
     ]),
 
-    State("ethyl", 0, 2, [
+    State("ethyl", [
         G03Job("opt", "opt"),
         G03Job("freq", "freq(noraman)"),
         G03Job("sp", "sp"),
         G03Job("scan_methyl", "opt(modredundant)", "4 1 2 6 S 72 5.0"),
     ]),
 
-    State("ts_ad1_trans", 0, 2, [
+    State("ts_ad1_trans", [
         G03Job("opt", "opt(ts,calcfc,noeigentest)"),
         G03Job("freq", "freq(noraman)"),
-        G03Job("sp", "sp"),
+        G03Job("bsse", "counterpoise=2"),
+        #G03Job("sp", "sp"),
         G03Job("scan_forming_bond", "opt(ts,calcfc,modredundant,noeigentest)", ["1 2 3 4 S 72 5.0"]),
         G03Job("scan_methyl", "opt(ts,calcfc,modredundant,noeigentest)", ["5 1 2 8 S 72 5.0", "1 2 3 5 B"]),
     ]),
 
-    State("ts_ad1_gauche", 0, 2, [
+    State("ts_ad1_gauche", [
         G03Job("opt", "opt(ts,calcfc,noeigentest)"),
         G03Job("freq", "freq(noraman)"),
-        G03Job("sp", "sp"),
+        G03Job("bsse", "counterpoise=2"),
+        #G03Job("sp", "sp"),
         G03Job("scan_methyl", "opt(ts,calcfc,modredundant,noeigentest)", ["5 1 2 8 S 72 5.0", "1 2 3 5 B"]),
     ]),
 ]

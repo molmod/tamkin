@@ -204,7 +204,7 @@ def load_rotscan_g03(fn_log, do_top_indexes=True):
             break
         else:
             words = line.split()
-            if len(words) == 8 and words[0] == "D" and words[5] == "S":
+            if words[0] == "D" and (words[5] == "S" or words[5] == "F"):
                 if dihedral is None:
                     dihedral = tuple(int(word)-1 for word in words[1:5])
                 else:

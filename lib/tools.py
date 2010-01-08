@@ -246,6 +246,8 @@ class ReactionAnalysis(object):
         design_matrix[:,0] = 1
         design_matrix[:,1] = -self.temps_inv/boltzmann
         expected_values = self.ln_rate_coeffs
+        if not numpy.isfinite(expected_values).all():
+            raise ValueError("non-finite rate coefficients. check your partition functions for errors.")
         self.hessian = numpy.dot(design_matrix.transpose(), design_matrix)
         self.parameters, SSE, rank, s = numpy.linalg.lstsq(design_matrix, self.ln_rate_coeffs)
 

@@ -56,9 +56,10 @@
 # --
 
 import numpy
+import matplotlib, pylab
 from molmod.constants import lightspeed
 from molmod.units import angstrom, amu, cm
-import matplotlib, pylab
+from tamkin.data import Molecule
 
 __all__ = [
            "load_coordinates_charmm", "load_modes_charmm",
@@ -69,6 +70,7 @@ __all__ = [
            "BlocksPeptideMBH", "SubsPeptideVSA",
            "blocks_write_to_file", "selectedatoms_write_to_file",
            "plot_spectrum",
+           "ENM",
           ]
 
 
@@ -565,50 +567,63 @@ def selectedatoms_write_to_file(selected, filename, shift=1):
 
 def plot_spectrum(label, filename, freqlist, min=None, max=None, Imax=None,
                   step=1.0, width=10.0, amplitudes=None, title=None):
+    """
+    Plot the spectra of the frequencies in the freqlist: each item in freqlist
+    leads to an additional spectrum.
+    * label dos (density of states): sum of Gaussians each centered around
+                                     a certain freq, with certain width
+    * label lines (line spectrum): draw a horizontal line for each freq.
 
-  if label=="dos":
-      fig = pylab.figure()
-      fig.hold(True)
-      ax = fig.add_subplot(1,1,1)
-      # do plotting
-      for i,freqs in enumerate(freqlist):
-          if amplitudes is not None: ampl = amplitudes[i]
-          else: ampl = 1.0
-          do_plot_intensity(ax, freqs /lightspeed*cm, min=min, max=max,
-                            step=step, width=width, amplitude=ampl)
-      # clean up
-      if Imax is not None:  ax.set_ylim(0.0,IMax)
-      if min is not None:   ax.set_xlim(xmin=min)
-      if max is not None:   ax.set_xlim(xmax=max)
-      pylab.legend([str(nb) for nb in range(1,len(freqlist)+1)])
-      pylab.ylabel("intensity")
-      if title is not None: pylab.title(title)
-      fig.savefig(filename)
-      #fig.close()
+    Options
+    min  --  min on x-axis, in cm-1
+    max  --  max on x-axis, in cm-1
+    Imax  --  maximum intensity on y-axis, no unit
+    step  --  resulotion of plot, in cm-1
+    width  --  width of Gaussian, in cm-1
+    amplitudes  --  if different amplitudes for the items in freqlist
+    title  --  title for plot (a string)
+    """
+    if label=="dos":   # plot density of states spectrum
+        fig = pylab.figure()
+        fig.hold(True)
+        ax = fig.add_subplot(1,1,1)
+        # do plotting
+        for i,freqs in enumerate(freqlist):
+            if amplitudes is not None: ampl = amplitudes[i]
+            else: ampl = 1.0
+            do_plot_dos(ax, freqs /lightspeed*cm, min=min, max=max,
+                              step=step, width=width, amplitude=ampl)
+        # clean up
+        if Imax is not None:  ax.set_ylim(0.0,IMax)
+        if min is not None:   ax.set_xlim(xmin=min)
+        if max is not None:   ax.set_xlim(xmax=max)
+        pylab.legend([str(nb) for nb in range(1,len(freqlist)+1)])
+        pylab.ylabel("intensity")
+        if title is not None: pylab.title(title)
+        fig.savefig(filename)
+        pylab.close()
 
-  if label=="lines":   # plot line spectrum
-      pylab.figure()
-      pylab.hold(True)
-      # do plotting
-      for i,freqs in enumerate(freqlist):
-          for freq in freqs /lightspeed*cm :
-              if (freq>min or min is None) and (freq<max or max is None):
-                  pylab.plot([i+0.75,i+1.25],[freq,freq],"k-")
-      # clean up
-      pylab.xticks(range(1,len(freqlist)+1))
-      if min is not None:  pylab.ylim(ymin=min)
-      if max is not None:  pylab.ylim(ymax=max)
-      pylab.ylabel("freq in cm-1")
-      if title is not None: pylab.title(title)
-      pylab.savefig(filename)
-      pylab.close()
+    if label=="lines":   # plot line spectrum
+        pylab.figure()
+        pylab.hold(True)
+        # do plotting
+        for i,freqs in enumerate(freqlist):
+            for freq in freqs /lightspeed*cm :
+                if (freq>min or min is None) and (freq<max or max is None):
+                    pylab.plot([i+0.75,i+1.25],[freq,freq],"k-")
+        # clean up
+        pylab.xticks(range(1,len(freqlist)+1))
+        if min is not None:  pylab.ylim(ymin=min)
+        if max is not None:  pylab.ylim(ymax=max)
+        pylab.ylabel("freq in cm-1")
+        if title is not None: pylab.title(title)
+        pylab.savefig(filename)
+        pylab.close()
 
+def do_plot_dos(ax, freqs, min, max,
+                step=1.0, width=10.0, amplitude=1.0):
 
-def   do_plot_intensity(ax, freqs,
-                        min, max, IMax = 5.0, step=1.0,
-                        width=10.0, amplitude=1.0):
-
-    if min is None:  min=freqs[0]-3*width
+    if min is None:  min=freqs[0]-3*width   # to avoid unnecessary plotting
     if max is None:  max=freqs[-1]+3*width
 
     freqs = numpy.array(freqs)
@@ -621,4 +636,33 @@ def   do_plot_intensity(ax, freqs,
             intensity += numpy.exp(-(nu-freq)**2/(2*s2))
     ax.plot(nu,intensity*amplitude)
 
+
+def ENM(mol, selected, rcut=5.0, K=1.0):
+    rcut2 = (rcut/angstrom)**2
+    coordinates = numpy.take(mol.coordinates, selected, 0)
+    N = len(selected)
+    hessian = numpy.zeros((3*N,3*N),float)
+
+    for i in range(N):
+        for j in range(i+1,N):
+            x = numpy.reshape( (coordinates[i,:]-coordinates[j,:]), (3,1))
+            dist2 = numpy.sum(x**2)
+            if dist2 < rcut2:
+                corr = K * numpy.dot( x, x.transpose() )*K / dist2
+                hessian[3*i:3*(i+1), 3*i:3*(i+1)] += corr
+                hessian[3*i:3*(i+1), 3*j:3*(j+1)] -= corr
+                hessian[3*j:3*(j+1), 3*i:3*(i+1)] -= corr
+                hessian[3*j:3*(j+1), 3*j:3*(j+1)] += corr
+
+    return Molecule(
+        numpy.take(mol.numbers, selected),
+        coordinates,
+        numpy.take(mol.masses, selected),
+        0.0,
+        numpy.zeros((N,3), float),
+        hessian,
+        mol.multiplicity,
+        mol.symmetry_number,
+        mol.periodic,
+    )
 

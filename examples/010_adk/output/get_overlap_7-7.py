@@ -14,14 +14,14 @@ def get_freqs_and_overlap_7_7(filename):
     f = file(filename)
     print "-"*20
     print "Reading file...", filename
-    
+
     # read 7th freq on first line (first element is 0, so is 8th freq)
     for line in f:
         words = line.split(";")
         #freq1 = float(words[7])  # !!!!!!!!!!!!!
         freq1 = float(words[-1])
         break
-    
+
     # get 7th freq in first column (we already skipped first line)
     # and overlap 7th-7th
     count = 0
@@ -33,12 +33,12 @@ def get_freqs_and_overlap_7_7(filename):
             #overlap = float(words[7])  # !!!!!!!!!
             overlap = float(words[-1])
             break
-    
+
     f.close()
     print "freq1: ", freq1
     print "freq2: ", freq2
     print "overlap: ", overlap
-    
+
     return freq1, freq2, overlap
 
 
@@ -67,6 +67,6 @@ f = file(filename_out,"w+")
 for i in range(len(freqs1)):
     print >> f, filenames[i]+";"+str(freqs1[i]/conv)+";"+str(freqs2[i]/conv)+";"+str(overlaps[i])
 f.close()
-print "file written:", filename_out    
+print "file written:", filename_out
 
 

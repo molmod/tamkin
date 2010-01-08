@@ -16,17 +16,17 @@ def do_NMA(filecor, filehess, filechk, jobtimer):
     jobtimer.sample("start loading")
     jobtimer.dump()
     molecule = load_molecule_charmm(filecor,filehess)
-    
+
     # Perform the normal mode analysis
     jobtimer.sample("nma")
     jobtimer.dump()
     nma = NMA(molecule)
-    
+
     # Write to file
     jobtimer.sample("start writing")
     jobtimer.dump()
     nma.write_to_file(filechk)
-    
+
     jobtimer.sample("done")
     jobtimer.dump()
 
@@ -78,7 +78,7 @@ def take_cut(filechk,jobtimer):
     jobtimer.sample("start reading")
     jobtimer.dump()
     nma = NMA.read_from_file(filechk)
- 
+
     jobtimer.sample("done")
     jobtimer.dump()
 
@@ -127,7 +127,7 @@ def get_delta(filecor1,filecor2,filedelta):
     jobtimer.sample("start delta")
     jobtimer.dump()
     get_delta_vector_charmmcor(filecor1, filecor2, normalize=True)
- 
+
 
 
 #-----------------------------------------
@@ -203,7 +203,7 @@ if __name__ == '__main__':
     jobtimer.sample("start")
 
 
- 
+
     if options.job == "nma":
         if None in [options.filecor, options.filehess, options.filechk]:
             print "at least one of the variables filecor, filehess or filechk is empty"
@@ -245,7 +245,7 @@ if __name__ == '__main__':
             print "at least one of the variables filecor, filecor2, filechk or fileoverlap is empty"
             print "Doing nothing..."
         else:
-            overlap(options.filecor, options.filecor2, 
+            overlap(options.filecor, options.filecor2,
                     options.filechk, options.fileoverlap, jobtimer)
 
     elif options.job == "gibbs":

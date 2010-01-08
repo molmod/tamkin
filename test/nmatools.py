@@ -210,3 +210,6 @@ class NMAToolsTestCase(unittest.TestCase):
         selected = range(5)
         mol = ENM(molecule, selected)
         nma = NMA(mol)
+
+        mol = ENM_from_coords(molecule.coordinates, rcut=5)
+        nma = NMA(mol)

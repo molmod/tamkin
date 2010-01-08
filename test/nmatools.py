@@ -142,4 +142,53 @@ class NMAToolsTestCase(unittest.TestCase):
         blocks = create_blocks_peptide_charmm("input/charmm/crambin.crd", BlocksPeptideMBH("normal"))
         self.assertEqual(len(blocks), 91)
 
+    def test_writing(self):
+        subs = range(10)
+        selectedatoms_write_to_file(subs, "output/subs-atoms.1.txt", shift=0)
+        selectedatoms_write_to_file(subs, "output/subs-atoms.2.txt", shift=1)
+        selectedatoms_write_to_file(subs, "output/subs-atoms.3.txt")
+
+        subs1 = load_subs_txt("output/subs-atoms.1.txt", shift=0)
+        self.assertEqual(len(subs),len(subs1))
+        for (i,j) in zip(subs,subs1):
+            self.assertEqual(i,j)
+        subs2 = load_subs_txt("output/subs-atoms.2.txt", shift=-1)
+        self.assertEqual(len(subs),len(subs2))
+        for i,j in zip(subs,subs2): 
+            self.assertEqual(i,j)
+        subs22 = load_subs_txt("output/subs-atoms.2.txt")  # should not matter
+        self.assertEqual(len(subs),len(subs22))
+        for i,j in zip(subs,subs22):
+            self.assertEqual(i,j)
+        subs3 = load_subs_txt("output/subs-atoms.3.txt")
+        self.assertEqual(len(subs),len(subs3))
+        for i,j in zip(subs,subs3):
+            self.assertEqual(i,j)
+
+        blocks = [range(10), range(10,20)]
+        blocks_write_to_file(blocks, "output/blocks.1.txt", shift=0)
+        blocks_write_to_file(blocks, "output/blocks.2.txt", shift=1)
+        blocks_write_to_file(blocks, "output/blocks.3.txt")
+
+        blocks1 = load_blocks_txt("output/blocks.1.txt", shift=0)
+        self.assertEqual(len(blocks),len(blocks1))
+        for bl,bl1 in zip(blocks,blocks1):
+            for i,j in zip(bl,bl1):
+                self.assertEqual(i,j)
+        blocks2 = load_blocks_txt("output/blocks.2.txt", shift=-1)
+        self.assertEqual(len(blocks),len(blocks2))
+        for bl,bl1 in zip(blocks,blocks2):
+            for i,j in zip(bl,bl1):
+                self.assertEqual(i,j)
+        blocks22 = load_blocks_txt("output/blocks.2.txt")  # should not matter
+        self.assertEqual(len(blocks),len(blocks2))
+        for bl,bl1 in zip(blocks,blocks2):
+            for i,j in zip(bl,bl1):
+                self.assertEqual(i,j)
+        blocks3 = load_blocks_txt("output/blocks.3.txt")
+        self.assertEqual(len(blocks),len(blocks3))
+        for bl,bl1 in zip(blocks,blocks3):
+            for i,j in zip(bl,bl1):
+                self.assertEqual(i,j)
+
 

@@ -68,7 +68,7 @@ __all__ = [
            "calculate_sensitivity_freq",
            "create_blocks_peptide_charmm", "create_subs_peptide_charmm",
            "BlocksPeptideMBH", "SubsPeptideVSA",
-           "blocks_write_to_file", "subs_write_to_file",
+           "blocks_write_to_file", "selectedatoms_write_to_file",
           ]
 
 
@@ -536,18 +536,28 @@ def select_info_peptide_charmm(charmmfile_crd):
     return N, CA, PRO, Carbon, Oxigen, Nitrogen
 
 
-def blocks_write_to_file(blocks, filename):
+def blocks_write_to_file(blocks, filename, shift=1):
+    """write atoms in blocks to file.
+    One atom per line, a blank line starts a new block.
+    Optional
+    shift  --  write atom+shift to file.
+               Default is 1, because default shift in load_subs_txt and load_fixed_txt is -1."""
     f = file(filename, "w")
     for bl in blocks:
         for at in bl:
-            print >> f, at
+            print >> f, at+shift
         print >> f, ""
     f.close()
 
-def subs_write_to_file(subs, filename):
+def selectedatoms_write_to_file(selected, filename, shift=1):
+    """write selected atoms to file, e.g. subsystem or environment atoms.
+    One atom per line.
+    Optional:
+    shift  --  write atom+shift to file.
+               Default is 1, because default shift in load_subs_txt and load_fixed_txt is -1."""
     f = file(filename, "w")
-    for at in subs:
-        print >> f, at
+    for at in selected:
+        print >> f, at+shift
     print >> f, ""
     f.close()
 

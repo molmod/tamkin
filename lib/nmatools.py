@@ -56,10 +56,9 @@
 # --
 
 import numpy
-from molmod.units import cm
 from molmod.constants import lightspeed
 from molmod.units import angstrom, amu, cm
-
+import matplotlib, pylab
 
 __all__ = [
            "load_coordinates_charmm", "load_modes_charmm",
@@ -69,6 +68,7 @@ __all__ = [
            "create_blocks_peptide_charmm", "create_subs_peptide_charmm",
            "BlocksPeptideMBH", "SubsPeptideVSA",
            "blocks_write_to_file", "selectedatoms_write_to_file",
+           "plot_spectrum",
           ]
 
 
@@ -560,4 +560,65 @@ def selectedatoms_write_to_file(selected, filename, shift=1):
         print >> f, at+shift
     print >> f, ""
     f.close()
+
+
+
+def plot_spectrum(label, filename, freqlist, min=None, max=None, Imax=None,
+                  step=1.0, width=10.0, amplitudes=None, title=None):
+
+  if label=="dos":
+      fig = pylab.figure()
+      fig.hold(True)
+      ax = fig.add_subplot(1,1,1)
+      # do plotting
+      for i,freqs in enumerate(freqlist):
+          if amplitudes is not None: ampl = amplitudes[i]
+          else: ampl = 1.0
+          do_plot_intensity(ax, freqs /lightspeed*cm, min=min, max=max,
+                            step=step, width=width, amplitude=ampl)
+      # clean up
+      if Imax is not None:  ax.set_ylim(0.0,IMax)
+      if min is not None:   ax.set_xlim(xmin=min)
+      if max is not None:   ax.set_xlim(xmax=max)
+      pylab.legend([str(nb) for nb in range(1,len(freqlist)+1)])
+      pylab.ylabel("intensity")
+      if title is not None: pylab.title(title)
+      fig.savefig(filename)
+      #fig.close()
+
+  if label=="lines":   # plot line spectrum
+      pylab.figure()
+      pylab.hold(True)
+      # do plotting
+      for i,freqs in enumerate(freqlist):
+          for freq in freqs /lightspeed*cm :
+              if (freq>min or min is None) and (freq<max or max is None):
+                  pylab.plot([i+0.75,i+1.25],[freq,freq],"k-")
+      # clean up
+      pylab.xticks(range(1,len(freqlist)+1))
+      if min is not None:  pylab.ylim(ymin=min)
+      if max is not None:  pylab.ylim(ymax=max)
+      pylab.ylabel("freq in cm-1")
+      if title is not None: pylab.title(title)
+      pylab.savefig(filename)
+      pylab.close()
+
+
+def   do_plot_intensity(ax, freqs,
+                        min, max, IMax = 5.0, step=1.0,
+                        width=10.0, amplitude=1.0):
+
+    if min is None:  min=freqs[0]-3*width
+    if max is None:  max=freqs[-1]+3*width
+
+    freqs = numpy.array(freqs)
+    nu = numpy.arange(min, max, step)
+    intensity = numpy.zeros(nu.shape,float)
+
+    s2 = width**2 / ( 8*numpy.log(2) )  # standard deviation squared
+    for freq in freqs:
+        if freq>min and freq<max:
+            intensity += numpy.exp(-(nu-freq)**2/(2*s2))
+    ax.plot(nu,intensity*amplitude)
+
 

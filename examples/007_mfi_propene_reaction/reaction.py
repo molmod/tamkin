@@ -85,7 +85,7 @@ pf_trans = PartFun(NMA(mol_trans, PHVA(fixed_trans)))
 #     this is given: FixedVolume(temp=298.15*K, pressure=1*atm)
 #  7) tunneling: a tunneling correction object
 ra = ReactionAnalysis([pf_react], pf_trans, 670, 770)
-ra.plot("arrhenius.png") # make the Arrhenius plot
+ra.plot_arrhenius("arrhenius.png") # make the Arrhenius plot
 
 # Estimate the error on the kinetic parameters due to level of theory artifacts
 # with Monte Carlo sampling. The monte_carlo method takes three optional

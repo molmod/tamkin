@@ -175,8 +175,8 @@ def run(do_rotor, do_counterpoise, load_sp):
 
     # make the Arrhenius plots
     pylab.clf()
-    ra_gauche.plot(label="gauche", color="red")
-    ra_trans.plot(label="trans", color="blue")
+    ra_gauche.plot_arrhenius(label="gauche", color="red")
+    ra_trans.plot_arrhenius(label="trans", color="blue")
     pylab.legend(loc=0)
     pylab.savefig("%s_arrhenius.png" % prefix)
 

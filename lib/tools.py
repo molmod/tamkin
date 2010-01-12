@@ -350,7 +350,7 @@ class ReactionAnalysis(object):
         self.dump(f)
         f.close()
 
-    def plot(self, filename=None, label=None, color="red"):
+    def plot_arrhenius(self, filename=None, label=None, color="red"):
         """Plot the rate coefficients and the fitted line.
 
            Optional arguments:

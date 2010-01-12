@@ -80,7 +80,7 @@ class ToolsTestCase(unittest.TestCase):
         self.assertAlmostEqual(ra.Ea/kjmol, 25.96, 1)
         self.assertAlmostEqual(numpy.log(ra.A/ra.unit), numpy.log(2.29E+02), 1)
 
-        ra.plot("output/arrhenius_aa.png")
+        ra.plot_arrhenius("output/arrhenius_aa.png")
         ra.monte_carlo()
         ra.write_to_file("output/reaction_aa.txt")
         ra.plot_parameters("output/parameters_aa.png")
@@ -94,7 +94,7 @@ class ToolsTestCase(unittest.TestCase):
         # in the fancy excel file where these numbers come from.
         self.assertAlmostEqual(ra.Ea/kjmol, 160.6, 0)
         self.assertAlmostEqual(numpy.log(ra.A/ra.unit), numpy.log(3.33e10), 0)
-        ra.plot("output/arrhenius_mat1.png")
+        ra.plot_arrhenius("output/arrhenius_mat1.png")
         ra.monte_carlo()
         ra.write_to_file("output/reaction_mat1.txt")
         ra.plot_parameters("output/parameters_mat1.png")
@@ -102,7 +102,7 @@ class ToolsTestCase(unittest.TestCase):
         wigner = Wigner(pf_trans) # Blind test of the wigner correction and
         # the corrected reaction analysis.
         ra = ReactionAnalysis([pf_react], pf_trans, 100, 1200, temp_step=50, tunneling=wigner)
-        ra.plot("output/arrhenius_mat1w.png")
+        ra.plot_arrhenius("output/arrhenius_mat1w.png")
         ra.monte_carlo()
         ra.write_to_file("output/reaction_mat1w.txt")
         ra.plot_parameters("output/parameters_mat1w.png")
@@ -112,7 +112,7 @@ class ToolsTestCase(unittest.TestCase):
         # in the fancy excel file where these numbers come from.
         self.assertAlmostEqual(ra.Ea/kjmol, 161.9, 1)
         self.assertAlmostEqual(numpy.log(ra.A/ra.unit), numpy.log(4.08e10), 0)
-        ra.plot("output/arrhenius_mat2.png")
+        ra.plot_arrhenius("output/arrhenius_mat2.png")
         ra.monte_carlo()
         ra.write_to_file("output/reaction_mat2.txt")
         ra.plot_parameters("output/parameters_mat2.png")

@@ -66,11 +66,11 @@
    Abstract classes:
        Info, StatFys, StatFysTerms
    Contributions:
-       Electronic, ExternalTranslation, ExternalRotation, Vibrations,
+       Electronic, ExtTrans, ExtRot, Vibrations,
        Rotor (see rotor.py)
    Selection of the ensemble:
        IdealGasVolume, FixedVolume
-       (these are used by ExternalTranslation)
+       (these are used by ExtTrans)
    Helper functions:
        log_eval_vibrations, log_deriv_vibrations, log_deriv2_vibrations
    Applications:
@@ -88,7 +88,7 @@ import numpy
 __all__ = [
     "IdealGasVolume", "FixedVolume", "Info", "StatFys", "StatFysTerms",
     "helper0_levels", "helper1_levels", "helper2_levels",
-    "Electronic", "ExternalTranslation", "ExternalRotation", "PCMCorrection",
+    "Electronic", "ExtTrans", "ExtRot", "PCMCorrection",
     "Vibrations",
     "helper0_vibrations", "helper1_vibrations", "helper2_vibrations",
     "PartFun", "compute_rate_coeff", "compute_equilibrium_constant"
@@ -377,7 +377,7 @@ class Electronic(Info, StatFys):
         return 0.0
 
 
-class ExternalTranslation(Info, StatFys):
+class ExtTrans(Info, StatFys):
     """The contribution from the external translation"""
 
     default_volume = IdealGasVolume()
@@ -429,7 +429,7 @@ class ExternalTranslation(Info, StatFys):
 
 
 
-class ExternalRotation(Info, StatFys):
+class ExtRot(Info, StatFys):
     """The contribution from the external rotation"""
     def __init__(self, symmetry_number=None, im_threshold=1.0):
         self.symmetry_number = symmetry_number
@@ -642,7 +642,7 @@ class PartFun(Info, StatFys):
           nma  --  NMA object
         Optional arguments:
           terms  --  list to select the contributions to the partition function
-                     e.g. [Vibrations(classical=True), ExternalRotation(1)]
+                     e.g. [Vibrations(classical=True), ExtRot(1)]
         """
         if terms is None:
             terms = []
@@ -721,20 +721,21 @@ def compute_rate_coeff(pfs_react, pf_trans, temp, mol_volume=None):
        Optional argument:
          mol_volume  --  function that computes the molecular volume as a
                          function of temperature. It should be the same as
-                         the mol_volume function for the ExternalTranslation
+                         the mol_volume function for the ExtTrans
                          object of all the partition functions.
     """
     delta_G = pf_trans.free_energy(temp) - sum(pf_react.free_energy(temp) for pf_react in pfs_react)
     log_result = -delta_G/(boltzmann*temp)
     if len(pfs_react) > 1:
         if mol_volume is None:
-            mol_volume = ExternalTranslation.default_volume
+            mol_volume = ExtTrans.default_volume
         log_result += mol_volume.helper0(temp,0)*(len(pfs_react)-1)
     return boltzmann*temp/(2*numpy.pi)*numpy.exp(log_result)
 
 
 def compute_equilibrium_constant(pfs_A, pfs_B, temp, mol_volume=None):
-    """Computes the equilibrium constant between some reactants and some products
+    """Computes the logarithm of equilibrium constant between some reactants and
+       some products
 
        Arguments:
          pfs_A  --  a list of reactant partition functions
@@ -744,7 +745,7 @@ def compute_equilibrium_constant(pfs_A, pfs_B, temp, mol_volume=None):
        Optional argument:
          mol_volume  --  function that computes the molecular volume as a
                          function of temperature. It should be the same as
-                         the mol_volume function for the ExternalTranslation
+                         the mol_volume function for the ExtTrans
                          object of all the partition functions.
     """
     delta_G = 0.0

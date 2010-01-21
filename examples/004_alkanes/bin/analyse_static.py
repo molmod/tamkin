@@ -86,8 +86,8 @@ molecule = load_molecule_cp2k(
 )
 nma = NMA(molecule, ConstrainExt())
 pf = PartFun(nma, [
-    ExternalTranslation(IdealGasVolume(pressure)),
-    ExternalRotation(symmetry_number),
+    ExtTrans(IdealGasVolume(pressure)),
+    ExtRot(symmetry_number),
     Vibrations(classical=False), # change this boolean to get classical vibrations
 ])
 

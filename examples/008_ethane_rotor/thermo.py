@@ -72,7 +72,7 @@ rotor = Rotor(
     potential=(angles, energies, 5), num_levels=50
 )
 # Construct a partition function object with the typical gas phase contributions.
-pf = PartFun(nma, [ExternalTranslation(), ExternalRotation(6), rotor])
+pf = PartFun(nma, [ExtTrans(), ExtRot(6), rotor])
 # 6 is the rotational symmetry number.
 
 # Write some general information about the molecule and the partition function

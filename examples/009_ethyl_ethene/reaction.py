@@ -90,21 +90,21 @@ rotor1_ts_trans = load_rotor(mol_ts_trans, "ts_ad1/scan1/gaussian.log", 3, False
 rotor2_ts_trans = load_rotor(mol_ts_trans, "ts_ad1/scan2/gaussian.log", 1, True)
 # Construct the partition functions.
 pf_ethyl = PartFun(nma_ethyl, [
-    ExternalTranslation(), ExternalRotation(1), Electronic(2),
+    ExtTrans(), ExtRot(1), Electronic(2),
     Vibrations(freq_scaling=0.9614, zp_scaling=0.9806),
     rotor_ethyl,
 ])
 pf_ethene = PartFun(nma_ethene, [
-    ExternalTranslation(), ExternalRotation(4),
+    ExtTrans(), ExtRot(4),
     Vibrations(freq_scaling=0.9614, zp_scaling=0.9806),
 ])
 pf_ts_gauche = PartFun(nma_ts_gauche, [
-    ExternalTranslation(), ExternalRotation(1), Electronic(2),
+    ExtTrans(), ExtRot(1), Electronic(2),
     Vibrations(freq_scaling=0.9614, zp_scaling=0.9806),
     rotor1_ts_gauche, rotor2_ts_gauche,
 ])
 pf_ts_trans = PartFun(nma_ts_trans, [
-    ExternalTranslation(), ExternalRotation(1), Electronic(2),
+    ExtTrans(), ExtRot(1), Electronic(2),
     Vibrations(freq_scaling=0.9614, zp_scaling=0.9806),
     rotor1_ts_trans, rotor2_ts_trans,
 ])

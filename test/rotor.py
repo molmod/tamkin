@@ -214,20 +214,12 @@ class RotorTestCase(unittest.TestCase):
             dihedral, top_indexes, cancel_freq, rotsym=3, even=True,
             potential=(angles, energies, 5), num_levels=50
         )
-        pf1 = PartFun(nma, [
-            ExternalTranslation(),
-            ExternalRotation(6),
-            rotor1,
-        ])
+        pf1 = PartFun(nma, [ExtTrans(), ExtRot(6), rotor1])
         rotor2 = Rotor(
             dihedral, top_indexes, cancel_freq, rotsym=3, even=True,
             potential=None, num_levels=50
         )
-        pf2 = PartFun(nma, [
-            ExternalTranslation(),
-            ExternalRotation(6),
-            rotor2,
-        ])
+        pf2 = PartFun(nma, [ExtTrans(), ExtRot(6), rotor2])
         self.assertArraysAlmostEqual(rotor1.energy_levels, rotor2.energy_levels)
 
 
@@ -275,11 +267,7 @@ class RotorTestCase(unittest.TestCase):
             dihedral, top_indexes, cancel_freq, rotsym=3, even=True,
             potential=(angles, energies, 5), num_levels=50
         )
-        pf = PartFun(nma, [
-            ExternalTranslation(),
-            ExternalRotation(6),
-            rotor,
-        ])
+        pf = PartFun(nma, [ExtTrans(), ExtRot(6), rotor])
         self.assertArraysAlmostEqual(
             rotor.hb.eval_fn(angles, rotor.v_coeffs),
             energies
@@ -310,11 +298,7 @@ class RotorTestCase(unittest.TestCase):
             dihedral, top_indexes, cancel_freq, rotsym=6, even=True,
             potential=None, num_levels=50
         )
-        pf = PartFun(nma, [
-            ExternalTranslation(),
-            ExternalRotation(1),
-            rotor,
-        ])
+        pf = PartFun(nma, [ExtTrans(), ExtRot(1), rotor])
         # reference data from legacy code (Veronique & co)
         self.assertAlmostEqual(rotor.reduced_moment/amu, 4.007, 1)
         self.assertAlmostEqual(numpy.exp(rotor.log_eval_terms(100.0)[1]), 0.6386, 1)

@@ -66,9 +66,9 @@ nma_react1 = NMA(load_molecule_g03fchk("aa.fchk"), ConstrainExt())
 nma_react2 = NMA(load_molecule_g03fchk("aarad.fchk"), ConstrainExt())
 nma_trans = NMA(load_molecule_g03fchk("paats.fchk"), ConstrainExt())
 # Construct the three partition functions.
-pf_react1 = PartFun(nma_react1, [ExternalTranslation(), ExternalRotation(1)])
-pf_react2 = PartFun(nma_react2, [ExternalTranslation(), ExternalRotation(1)])
-pf_trans = PartFun(nma_trans, [ExternalTranslation(), ExternalRotation(1)])
+pf_react1 = PartFun(nma_react1, [ExtTrans(), ExtRot(1)])
+pf_react2 = PartFun(nma_react2, [ExtTrans(), ExtRot(1)])
+pf_trans = PartFun(nma_trans, [ExtTrans(), ExtRot(1)])
 
 # Analyze the chemical reaction. These are the arguments:
 #  1) a list of reactant partition functions

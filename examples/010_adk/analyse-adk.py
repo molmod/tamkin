@@ -90,7 +90,7 @@ def do_gibbs(filechk, filethermo, jobtimer):
 
     jobtimer.sample("gibbs")
     jobtimer.dump()
-    pf = PartFun(nma, [Vibrations(), ExternalTranslation(), ExternalRotation(1)] )
+    pf = PartFun(nma, [Vibrations(), ExtTrans(), ExtRot(1)] )
 
     jobtimer.sample("thermo analysis")
     jobtimer.dump()

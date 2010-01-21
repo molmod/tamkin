@@ -67,8 +67,8 @@ mol_trans = load_molecule_g03fchk("5Te_etheen_ts_deel2_punt108_freq.fchk")
 nma_react = NMA(mol_react, ConstrainExt(1e-3))
 nma_trans = NMA(mol_trans, ConstrainExt(1e-3))
 # Construct the two partition functions.
-pf_react = PartFun(nma_react, [ExternalTranslation(), ExternalRotation(1)])
-pf_trans = PartFun(nma_trans, [ExternalTranslation(), ExternalRotation(1)])
+pf_react = PartFun(nma_react, [ExtTrans(), ExtRot(1)])
+pf_trans = PartFun(nma_trans, [ExtTrans(), ExtRot(1)])
 
 # Analyze the chemical reaction. These are the arguments:
 #  1) a list of reactant partition functions

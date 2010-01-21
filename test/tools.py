@@ -70,9 +70,9 @@ __all__ = ["ToolsTestCase"]
 
 class ToolsTestCase(unittest.TestCase):
     def test_reaction_analysis_sterck(self):
-        pf_react1 = PartFun(NMA(load_molecule_g03fchk("input/sterck/aa.fchk")), [ExternalTranslation(), ExternalRotation(1)])
-        pf_react2 = PartFun(NMA(load_molecule_g03fchk("input/sterck/aarad.fchk")), [ExternalTranslation(), ExternalRotation(1)])
-        pf_trans = PartFun(NMA(load_molecule_g03fchk("input/sterck/paats.fchk")), [ExternalTranslation(), ExternalRotation(1)])
+        pf_react1 = PartFun(NMA(load_molecule_g03fchk("input/sterck/aa.fchk")), [ExtTrans(), ExtRot(1)])
+        pf_react2 = PartFun(NMA(load_molecule_g03fchk("input/sterck/aarad.fchk")), [ExtTrans(), ExtRot(1)])
+        pf_trans = PartFun(NMA(load_molecule_g03fchk("input/sterck/paats.fchk")), [ExtTrans(), ExtRot(1)])
 
         ra = ReactionAnalysis([pf_react1, pf_react2], pf_trans, 280, 360)
         # not a very accurate check because the fit is carried out differently
@@ -86,8 +86,8 @@ class ToolsTestCase(unittest.TestCase):
         ra.plot_parameters("output/parameters_aa.png")
 
     def test_reaction_analysis_mat(self):
-        pf_react = PartFun(NMA(load_molecule_g03fchk("input/mat/5Te_etheen_react_deel2.fchk")), [ExternalTranslation(), ExternalRotation(1)])
-        pf_trans = PartFun(NMA(load_molecule_g03fchk("input/mat/5Te_etheen_ts_deel2_punt108_freq.fchk")), [ExternalTranslation(), ExternalRotation(1)])
+        pf_react = PartFun(NMA(load_molecule_g03fchk("input/mat/5Te_etheen_react_deel2.fchk")), [ExtTrans(), ExtRot(1)])
+        pf_trans = PartFun(NMA(load_molecule_g03fchk("input/mat/5Te_etheen_ts_deel2_punt108_freq.fchk")), [ExtTrans(), ExtRot(1)])
 
         ra = ReactionAnalysis([pf_react], pf_trans, 100, 1200, temp_step=50)
         # not a very accurate check because the fit is carried out differently
@@ -119,7 +119,7 @@ class ToolsTestCase(unittest.TestCase):
 
     def test_thermo_analysis_mat(self):
         # just a blind test to see test whether the code does not crash.
-        pf = PartFun(NMA(load_molecule_g03fchk("input/mat/5Te_etheen_react_deel2.fchk")), [ExternalTranslation(), ExternalRotation(1)])
+        pf = PartFun(NMA(load_molecule_g03fchk("input/mat/5Te_etheen_react_deel2.fchk")), [ExtTrans(), ExtRot(1)])
         ta = ThermoAnalysis(pf, [200,300,400,500,600,700,800,900])
         ta.write_to_file("output/thermo_mat2.csv")
 

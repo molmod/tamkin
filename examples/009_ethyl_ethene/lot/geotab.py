@@ -2,6 +2,7 @@
 # -*- coding:utf8 -*-
 
 from lot_basis import lots_list
+import html
 
 from molmod.io.gaussian03.fchk import FCHKFile
 from molmod.units import angstrom, deg
@@ -47,7 +48,7 @@ def generic_geom(ic_descs, fn_fchk, name, basis_label, rows):
 def ts_geom(ts_name, basis_label, rows):
     fn_fchk = "%%s__%%s/ts_ad1_%s__opt/gaussian.fchk" % ts_name.lower()
     ic_descs = [
-        (u"<td>d<sub>12</sub>/Å</td>", "<td>%.2f</td>", bond_length, (1, 2), angstrom),
+        (u"<td>d<sub>12</sub>/Å</td>", "<td style='background-color:#DDD;'>%.2f</td>", bond_length, (1, 2), angstrom),
         (u"<td>a<sub>012</sub>/°</td>", "<td>%.1f</td>", bend_angle, (0, 1, 2), deg),
         (u"<td>a<sub>123</sub>/°</td>", "<td>%.1f</td>", bend_angle, (1, 2, 3), deg),
     ]
@@ -62,15 +63,7 @@ def ra_geom(mol_name, basis_label, rows):
 
 
 f = file("geotab.html", "w")
-print >> f, "<?xml version='1.0' encoding='UTF-8'?>"
-print >> f, "<html><head><title>Geometry Overview</title>"
-print >> f, "<style type='text/css'>"
-print >> f, "body { font-family: sans; }"
-print >> f, "td { text-align: right; width: 50px; padding: 0px 10px; }"
-print >> f, "table, td, th, tr { border: solid 1px black; }"
-print >> f, "table { table-layout: fixed; border-collapse:collapse; }"
-print >> f, "</style>"
-print >> f, "</head><body>"
+print >> f, html.header % "GEO Overview"
 
 rows = []
 ts_geom("Gauche", "6-31gd", rows)
@@ -79,10 +72,7 @@ ts_geom("Gauche", "6-311+g3df2p", rows)
 ts_geom("Trans", "6-311+g3df2p", rows)
 
 print >> f, "<p>Geometrical parameters related to the transition state.</p>"
-print >> f, "<table style='border-color:black'>"
-for row in rows:
-    print >> f, "<tr>%s</tr>" % ("".join(row).encode('UTF-8'))
-print >> f, "</table>"
+html.print_table(f, rows)
 
 rows = []
 ra_geom("Ethene", "6-31gd", rows)
@@ -91,10 +81,7 @@ ra_geom("Ethene", "6-311+g3df2p", rows)
 ra_geom("Ethyl", "6-311+g3df2p", rows)
 
 print >> f, "<p>Geometrical parameters related to the reactants.</p>"
-print >> f, "<table style='border-color:black'>"
-for row in rows:
-    print >> f, "<tr>%s</tr>" % ("".join(row).encode('UTF-8'))
-print >> f, "</table>"
+html.print_table(f, rows)
 
-print >> f, "</body></html>"
+print >> f, html.footer
 

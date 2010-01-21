@@ -148,6 +148,17 @@ def run(do_rotor, do_counterpoise, load_sp):
             #Vibrations(freq_scaling=0.9614, zp_scaling=0.9806),
         ])
 
+    if do_rotor:
+        # Plot the energy levels and the potential of the hindered rotor. The
+        # temperature argument is used to indicate the population of each level in the
+        # plot.
+        rotor_ethyl.plot_levels("rotor_ethyl_energy_levels.png", 300)
+        rotor1_ts_gauche.plot_levels("rotor1_ts_gauche_energy_levels.png", 300)
+        rotor2_ts_gauche.plot_levels("rotor2_ts_gauche_energy_levels.png", 300)
+        rotor1_ts_trans.plot_levels("rotor1_ts_trans_energy_levels.png", 300)
+        rotor2_ts_trans.plot_levels("rotor2_ts_trans_energy_levels.png", 300)
+
+
     # Analyse the partition functions in detail
     ta_ethyl = ThermoAnalysis(pf_ethyl, [300,400,500,600])
     ta_ethyl.write_to_file("%s_thermo_ethyl.csv" % prefix)
@@ -198,25 +209,17 @@ def run(do_rotor, do_counterpoise, load_sp):
     ra_gauche.write_to_file("%s_reaction_gauche.txt" % prefix)
     ra_trans.write_to_file("%s_reaction_trans.txt" % prefix)
 
-    if do_rotor and do_counterpoise:
-        # Plot the energy levels and the potential of the hindered rotor. The
-        # temperature argument is used to indicate the population of each level in the
-        # plot.
-        rotor_ethyl.plot_levels("rotor_ethyl_energy_levels.png", 300)
-        rotor1_ts_gauche.plot_levels("rotor1_ts_gauche_energy_levels.png", 300)
-        rotor2_ts_gauche.plot_levels("rotor2_ts_gauche_energy_levels.png", 300)
-        rotor1_ts_trans.plot_levels("rotor1_ts_trans_energy_levels.png", 300)
-        rotor2_ts_trans.plot_levels("rotor2_ts_trans_energy_levels.png", 300)
-
     def write_ra_summary(fn, ra):
         f = file(fn, "w")
-        print >> f, "% 10.5e % 10.5e % 10.5e % 10.5e    %10.5e %10.2e" % (
+        print >> f, "% 10.5e % 10.5e % 10.5e % 10.5e    %10.5e %10.2e    %10.2e %10.2e" % (
             ra.compute_rate_coeff(300)/ra.unit,
             ra.compute_rate_coeff(400)/ra.unit,
             ra.compute_rate_coeff(500)/ra.unit,
             ra.compute_rate_coeff(600)/ra.unit,
             ra.A/ra.unit,
             ra.Ea/kjmol,
+            ra.compute_delta_G(0.0)/kjmol,
+            ra.compute_delta_E()/kjmol,
         )
         f.close()
 
@@ -247,8 +250,9 @@ def main():
             try:
                 run(do_rotor, do_counterpoise, load_sp)
                 print "      OK: do_rotor=%i, do_counterpoise=%i, load_sp=%i" % (do_rotor, do_counterpoise, load_sp)
-            except (IOError, KeyError):
+            except (IOError, KeyError), e:
                 print "  Failed: do_rotor=%i, do_counterpoise=%i, load_sp=%i" % (do_rotor, do_counterpoise, load_sp)
+                print e
 
 
 if __name__ == "__main__":

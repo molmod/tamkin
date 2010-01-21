@@ -144,7 +144,7 @@ states = [
         G03Job("opt", "opt(ts,calcfc,noeigentest)"),
         G03Job("freq", "freq(noraman)"),
         G03Job("bsse", "counterpoise=2"),
-        #G03Job("sp", "sp"),
+        G03Job("sp", "sp"),
         G03Job("scan_forming_bond", "opt(ts,calcfc,modredundant,noeigentest)", ["1 2 3 4 S 72 5.0"]),
         G03Job("scan_methyl", "opt(ts,calcfc,modredundant,noeigentest)", ["5 1 2 8 S 72 5.0", "1 2 3 5 B"]),
     ]),
@@ -153,7 +153,7 @@ states = [
         G03Job("opt", "opt(ts,calcfc,noeigentest)"),
         G03Job("freq", "freq(noraman)"),
         G03Job("bsse", "counterpoise=2"),
-        #G03Job("sp", "sp"),
+        G03Job("sp", "sp"),
         G03Job("scan_methyl", "opt(ts,calcfc,modredundant,noeigentest)", ["5 1 2 8 S 72 5.0", "1 2 3 5 B"]),
     ]),
 ]

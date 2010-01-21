@@ -55,9 +55,8 @@ def main():
                     os.symlink(source, destination)
         for state in states:
             for job in state.jobs:
-                if job.name != "bsse":
-                    continue
-                job.write_input(state, root1, lot1_label, basis1_label, options.suffix, options.random)
+                if job.name == "bsse" or job.name == "sp":
+                    job.write_input(state, root1, lot1_label, basis1_label, options.suffix, options.random)
     else:
         parser.error("Unknown command: %s" % args[0])
 

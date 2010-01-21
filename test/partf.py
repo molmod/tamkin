@@ -184,14 +184,8 @@ class PartFunTestCase(unittest.TestCase):
     def test_derivatives(self):
         molecule = load_molecule_g03fchk("input/ethane/gaussian.fchk")
         nma = NMA(molecule)
-        dihedral, angles, energies, geometries, top_indexes = load_rotscan_g03(
-            "input/rotor/gaussian.log"
-        )
-        cancel_freq = compute_cancel_frequency(molecule, dihedral, top_indexes)
-        rotor = Rotor(
-            dihedral, top_indexes, cancel_freq, rotsym=3, even=True,
-            potential=(angles, energies, 5), num_levels=50
-        )
+        rotscan = load_rotscan_g03log("input/rotor/gaussian.log")
+        rotor = Rotor(rotscan, molecule, rotsym=3, even=True)
         pf = PartFun(nma, [
             ExtTrans(), ExtRot(6),
             rotor,

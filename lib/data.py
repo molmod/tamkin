@@ -59,13 +59,14 @@
 from tamkin.geom import transrot_basis
 
 from molmod.molecules import Molecule as BaseMolecule
+from molmod.molecular_graphs import MolecularGraph
 from molmod.data.periodic import periodic
 from molmod.graphs import cached
 
 import numpy
 
 
-__all__ = ["Molecule", "BareNucleus", "Proton"]
+__all__ = ["Molecule", "BareNucleus", "Proton", "RotScan"]
 
 
 class Molecule(BaseMolecule):
@@ -138,5 +139,46 @@ class BareNucleus(Molecule):
 class Proton(BareNucleus):
     def __init__(self, mass=None):
         BareNucleus.__init__(self, 1, mass)
+
+
+class RotScan(object):
+    def __init__(self, dihedral, molecule=None, top_indexes=None, potential=None):
+        """Initialize a rotational scan object
+
+           Arguments
+             dihedral  --  the index of the atoms that define the dihedral angle
+
+           Optional arguments
+             molecule  --  a molecule object. required when top_indexes is not
+                           given
+             top_indexes  --  a list of atom indexes involved in the rotor.
+                              required when molecule is not given
+             potential  --  rotational potential info (if this is a hindered
+                            rotor). must be a two-tuple containing the angles
+                            and the corresponding energies.
+
+        """
+        if len(dihedral) != 4:
+            raise ValueError("The first argument must be a list of 4 integers")
+        self.dihedral = dihedral
+        if top_indexes is None:
+            # try to deduce the top indexes
+            if molecule is None:
+                raise ValueError("missing arguemt: top_indexes or molecule from which top_indexes can be derived")
+            atom0, atom1 = dihedral[1:3]
+            graph = MolecularGraph.from_geometry(molecule)
+            half0, half1 = graph.get_halfs(atom0, atom1)
+            if len(half1) > len(half0):
+                top_indexes = half0
+                top_indexes.discard(atom0)
+            else:
+                top_indexes = half1
+                top_indexes.discard(atom1)
+            self.top_indexes = list(top_indexes)
+        else:
+            self.top_indexes = top_indexes
+        if len(self.top_indexes) < 1:
+            raise ValueError("A rotational scan must have at least one atom rotating")
+        self.potential = potential
 
 

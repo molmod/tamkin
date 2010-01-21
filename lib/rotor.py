@@ -300,43 +300,48 @@ class Rotor(Info, StatFysTerms):
        The corresponding contribution to the partition function is subtracted.
        (Use compute_cancel_frequency to obtain this frequency.)
     """
-    def __init__(self, dihedral, indexes, cancel_freq, suffix=None, rotsym=1, even=False, potential=None, num_levels=50):
+    def __init__(self, rot_scan, molecule=None, cancel_freq=None, suffix=None,
+                 rotsym=1, even=False, num_levels=50, dofmax=5):
         """Initialize a Rotor term for the partition function
 
            Arguments:
-             dihedral  --  the index of the atoms that define the dihedral angle
-             indexes  --  a list of atom indexes involved in the rotor.
-             cancel_freq  --  the frequency to cancel in the vibrational
-                              partition function
+             rot_scan  --  A rotational scan object (free or hindered rotor
+                           information)
 
            Optional arguments:
+             molecule  --  molecule  to which the rotor applies, is used to
+                           compute the cancel frequency. not required when the
+                           cancel_freq argument is present
+             cancel_freq  --  the frequency to cancel in the vibrational
+                              partition function. not required when molecule is
+                              given
              suffix  --  a name suffix used to distinguish between different
                          rotors
              rotsym  --  the rotational symmetry of the rotor (default=1)
              even    --  True of the rotor is not chiral, i.e. when it has a
                          even potential
-             potential  --  a tuple with two arrays, the first containing the
-                            angles and the second containing the corresponding
-                            energies
              num_levels  --  the number of energy levels considered in the
                              QM treatment of the rotor (default=50)
+             dofmax  --  the maximym number of cosines used to represent the
+                         torsional potential. if the potential is not even,
+                         the same number of sines is also used. (default=5)
         """
-        if len(dihedral) != 4:
-            raise ValueError("The first argument must be a list of 4 integers")
-        if len(indexes) < 1:
-            raise ValueError("A rotor must have at least one atoms")
-        self.dihedral = dihedral
-        self.indexes = indexes
-        self.cancel_freq = cancel_freq
+        self.rot_scan = rot_scan
+        if cancel_freq is not None:
+            self.cancel_freq = cancel_freq
+        else:
+            self.cancel_freq = compute_cancel_frequency(
+                molecule, rot_scan.dihedral, rot_scan.top_indexes
+            )
         if suffix is None:
-            self.suffix = "_".join(str(i) for i in indexes)
+            self.suffix = "_".join(str(i) for i in rot_scan.top_indexes)
         else:
             self.suffix = suffix
         self.rotsym = rotsym
         self.even = even
-        self.potential = potential
         self.num_levels = num_levels
-        if self.potential is None:
+        self.dofmax = dofmax
+        if rot_scan.potential is None:
             Info.__init__(self, "free_rotor_%s" % self.suffix)
         else:
             Info.__init__(self, "hindered_rotor_%s" % self.suffix)
@@ -353,14 +358,14 @@ class Rotor(Info, StatFysTerms):
         """
         if nma.periodic:
             raise NotImplementedError("Rotors in periodic systems are not supported yet")
-        self.center = nma.coordinates[self.dihedral[1]]
-        self.axis = nma.coordinates[self.dihedral[2]] - self.center
+        self.center = nma.coordinates[self.rot_scan.dihedral[1]]
+        self.axis = nma.coordinates[self.rot_scan.dihedral[2]] - self.center
         self.axis /= numpy.linalg.norm(self.axis)
         self.moment, self.reduced_moment = compute_moments(
-            nma.coordinates, nma.masses3, self.center, self.axis, self.indexes
+            nma.coordinates, nma.masses3, self.center, self.axis, self.rot_scan.top_indexes
         )
         # the energy levels
-        if self.potential is None:
+        if self.rot_scan.potential is None:
             # free rotor
             self.energy_levels = numpy.zeros(self.num_levels, float)
             for i in xrange(self.num_levels-1):
@@ -373,7 +378,7 @@ class Rotor(Info, StatFysTerms):
             # hindered rotor
             a = 2*numpy.pi
             self.hb = HarmonicBasis(self.num_levels, a)
-            angles, energies, dofmax = self.potential
+            angles, energies = self.rot_scan.potential
             # apply periodic boundary conditions
             angles -= numpy.floor(angles/a)*a
             # set reference energy, which is take to be the energy of the geometry
@@ -383,8 +388,10 @@ class Rotor(Info, StatFysTerms):
             # that the nma energy.
             from molmod.ic import dihed_angle
             nma_angle = dihed_angle(
-                nma.coordinates[self.dihedral[0]], nma.coordinates[self.dihedral[1]],
-                nma.coordinates[self.dihedral[2]], nma.coordinates[self.dihedral[3]],
+                nma.coordinates[self.rot_scan.dihedral[0]],
+                nma.coordinates[self.rot_scan.dihedral[1]],
+                nma.coordinates[self.rot_scan.dihedral[2]],
+                nma.coordinates[self.rot_scan.dihedral[3]],
             )[0]
             deltas = angles - nma_angle
             # apply periodic boundary conditions
@@ -392,7 +399,7 @@ class Rotor(Info, StatFysTerms):
             # get the right energy
             energies -= energies[deltas.argmin()]
 
-            self.v_coeffs = self.hb.fit_fn(angles, energies, dofmax, self.rotsym, self.even)
+            self.v_coeffs = self.hb.fit_fn(angles, energies, self.dofmax, self.rotsym, self.even)
             self.energy_levels = self.hb.solve(self.reduced_moment, self.v_coeffs)
             self.energy_levels = self.energy_levels[:self.num_levels]
         # scaling factors
@@ -412,15 +419,15 @@ class Rotor(Info, StatFysTerms):
         """
         Info.dump(self, f)
         # parameters
-        print >> f, "    Indexes: %s" % " ".join(str(i) for i in self.indexes)
+        print >> f, "    Indexes: %s" % " ".join(str(i) for i in self.rot_scan.top_indexes)
         print >> f, "    Rotational symmetry: %i" % self.rotsym
         print >> f, "    Even potential: %s" % self.even
-        if self.potential is None:
+        if self.rot_scan.potential is None:
             print >> f, "    This is a free rotor"
         else:
-            angles, energies, dofmax = self.potential
+            angles, energies = self.rot_scan.potential
             print >> f, "    This is a hindered rotor"
-            print >> f, "    Maximum number of cosines in the fit: %i" % dofmax
+            print >> f, "    Maximum number of cosines in the fit: %i" % self.dofmax
             print >> f, "    Potential: Angle [deg]    Energy [kJ/mol]"
             for i in xrange(len(angles)):
                 print >> f, "              % 7.2f         %6.1f" % (angles[i]/deg, energies[i]/kjmol)
@@ -454,8 +461,8 @@ class Rotor(Info, StatFysTerms):
         import pylab
         pylab.clf()
         # plot the original potential data
-        if self.potential is not None:
-            angles, energies, dofmax = self.potential
+        if self.rot_scan.potential is not None:
+            angles, energies = self.rot_scan.potential
             pylab.plot(angles/deg, energies/kjmol, "rx", mew=2)
         # plot the fitted potential
         if self.hb is not None:
@@ -472,8 +479,11 @@ class Rotor(Info, StatFysTerms):
             pylab.axhline(e, color="b", linewidth=0.5)
             pylab.axhline(e, xmax=bfs[i], color="b", linewidth=2)
         pylab.xlim(0,360)
-        if self.potential is not None:
-            pylab.ylim(self.potential[1].min()/kjmol, 1.5*self.potential[1].max()/kjmol)
+        if self.rot_scan.potential is not None:
+            pylab.ylim(
+                self.rot_scan.potential[1].min()/kjmol,
+                1.5*self.rot_scan.potential[1].max()/kjmol
+            )
         pylab.ylabel("Energy [kjmol]")
         pylab.xlabel("Dihedral angle [deg]")
         pylab.savefig(filename)

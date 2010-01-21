@@ -68,12 +68,8 @@ import os, sys
 
 
 def load_rotor(mol, filename, rotsym, even, expansion=5):
-    dihedral, angles, energies, geometries, top_indexes = load_rotscan_g03(filename)
-    cancel_freq = compute_cancel_frequency(mol, dihedral, top_indexes)
-    rotor = Rotor(
-        dihedral, top_indexes, cancel_freq, rotsym=rotsym, even=even,
-        potential=(angles, energies, expansion), num_levels=50
-    )
+    rot_scan = load_rotscan_g03log(filename)
+    rotor = Rotor(rot_scan, mol, rotsym=rotsym, even=even)
     return rotor
 
 

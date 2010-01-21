@@ -56,7 +56,7 @@
 # --
 
 
-from tamkin.data import Molecule
+from tamkin.data import Molecule, RotScan
 
 from molmod.io.gaussian03.fchk import FCHKFile
 from molmod.io.xyz import XYZFile
@@ -70,7 +70,7 @@ import numpy
 
 __all__ = [
     "load_fixed_g03com", "load_molecule_g03fchk", "load_molecule_g98fchk",
-    "load_rotscan_g03", "load_molecule_cp2k", "load_molecule_cpmd",
+    "load_rotscan_g03log", "load_molecule_cp2k", "load_molecule_cpmd",
     "load_molecule_charmm","load_molecule_qchem", "load_molecule_vasp",
     "load_fixed_vasp",
     "load_chk", "dump_chk",
@@ -184,7 +184,7 @@ def load_molecule_g98fchk(filename_freq, filename_ener=None):
     )
 
 
-def load_rotscan_g03(fn_log, do_top_indexes=True):
+def load_rotscan_g03log(fn_log, top_indexes=None):
     # find the line that specifies the dihedral angle
     f = file(fn_log)
 
@@ -251,31 +251,19 @@ def load_rotscan_g03(fn_log, do_top_indexes=True):
     if len(energies) == 0:
         raise IOError("Cold not find any stationary point")
 
-    result = (
-        dihedral,
-        numpy.array(angles),
-        numpy.array(energies),
-        numpy.array(geometries),
-    )
-    if do_top_indexes:
+    if top_indexes is None:
         # figure out what the two parts of the molecule are
         from molmod.molecules import Molecule as BaseMolecule
         molecule = BaseMolecule(numbers, geometries[0])
-        graph = MolecularGraph.from_geometry(molecule)
-        if dihedral[1] in graph.neighbors[dihedral[2]]:
-            half1, half2 = graph.get_halfs(dihedral[1], dihedral[2])
-        else:
-            half1 = graph.get_part(dihedral[1], [])
-            half2 = graph.get_part(dihedral[2], [])
-        if len(half2) > len(half1):
-            top_indexes = half1
-            top_indexes.discard(dihedral[1])
-        else:
-            top_indexes = half2
-            top_indexes.discard(dihedral[2])
-        top_indexes = list(top_indexes)
-        result = result + (top_indexes,)
+    else:
+        molecule = None
+    result = RotScan(
+        dihedral, molecule, top_indexes,
+        (numpy.array(angles), numpy.array(energies))
+    )
+    result.geometries = numpy.array(geometries)
     return result
+
 
 def load_molecule_cp2k(fn_xyz, fn_sp, fn_freq, multiplicity=1, is_periodic=True):
     molecule = XYZFile(fn_xyz).get_molecule()

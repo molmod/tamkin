@@ -65,12 +65,8 @@ import pylab
 
 # Define an auxiliary function
 def load_rotor(mol, filename, rotsym, even):
-    dihedral, angles, energies, geometries, top_indexes = load_rotscan_g03(filename)
-    cancel_freq = compute_cancel_frequency(mol, top_indexes)
-    rotor = Rotor(
-        top_indexes, cancel_freq, rotsym=rotsym, even=even,
-        potential=(angles, energies, 5), num_levels=50
-    )
+    rot_scan = load_rotscan_g03log(filename)
+    rotor = Rotor(rot_scan, mol, rotsym=rotsym, even=even)
     return rotor
 
 mol_ethyl = load_molecule_g03fchk("ethyl/freq/gaussian.fchk")

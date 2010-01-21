@@ -204,21 +204,13 @@ class RotorTestCase(unittest.TestCase):
     def test_flat2(self):
         molecule = load_molecule_g03fchk("input/ethane/gaussian.fchk")
         nma = NMA(molecule)
-        dihedral, angles, energies, geometries, top_indexes = load_rotscan_g03(
-            "input/rotor/gaussian.log"
-        )
-        energies[:] = nma.energy
-        cancel_freq = compute_cancel_frequency(molecule, dihedral, top_indexes)
-        self.assertAlmostEqual(cancel_freq/lightspeed*cm, 314, 0)
-        rotor1 = Rotor(
-            dihedral, top_indexes, cancel_freq, rotsym=3, even=True,
-            potential=(angles, energies, 5), num_levels=50
-        )
+        rotscan1 = load_rotscan_g03log("input/rotor/gaussian.log")
+        rotscan1.potential[1][:] = nma.energy
+        rotor1 = Rotor(rotscan1, molecule, rotsym=3, even=True)
+        self.assertAlmostEqual(rotor1.cancel_freq/lightspeed*cm, 314, 0)
         pf1 = PartFun(nma, [ExtTrans(), ExtRot(6), rotor1])
-        rotor2 = Rotor(
-            dihedral, top_indexes, cancel_freq, rotsym=3, even=True,
-            potential=None, num_levels=50
-        )
+        rotscan2 = RotScan(rotscan1.dihedral, top_indexes=rotscan1.top_indexes)
+        rotor2 = Rotor(rotscan2, molecule, rotsym=3, even=True)
         pf2 = PartFun(nma, [ExtTrans(), ExtRot(6), rotor2])
         self.assertArraysAlmostEqual(rotor1.energy_levels, rotor2.energy_levels)
 
@@ -258,19 +250,13 @@ class RotorTestCase(unittest.TestCase):
     def test_ethane_hindered(self):
         molecule = load_molecule_g03fchk("input/ethane/gaussian.fchk")
         nma = NMA(molecule)
-        dihedral, angles, energies, geometries, top_indexes = load_rotscan_g03(
-            "input/rotor/gaussian.log"
-        )
-        cancel_freq = compute_cancel_frequency(molecule, dihedral, top_indexes)
-        self.assertAlmostEqual(cancel_freq/lightspeed*cm, 314, 0)
-        rotor = Rotor(
-            dihedral, top_indexes, cancel_freq, rotsym=3, even=True,
-            potential=(angles, energies, 5), num_levels=50
-        )
+        rot_scan = load_rotscan_g03log("input/rotor/gaussian.log")
+        rotor = Rotor(rot_scan, molecule, rotsym=3, even=True)
+        self.assertAlmostEqual(rotor.cancel_freq/lightspeed*cm, 314, 0)
         pf = PartFun(nma, [ExtTrans(), ExtRot(6), rotor])
         self.assertArraysAlmostEqual(
-            rotor.hb.eval_fn(angles, rotor.v_coeffs),
-            energies
+            rotor.hb.eval_fn(rot_scan.potential[0], rotor.v_coeffs),
+            rot_scan.potential[1]
         )
         # reference data from legacy code (Veronique & co)
         self.assertAlmostEqual(rotor.moment/amu, 11.092362911176032, 2)
@@ -291,13 +277,9 @@ class RotorTestCase(unittest.TestCase):
         molecule = load_molecule_g03fchk("input/ethyl/gaussian.fchk")
         nma = NMA(molecule)
         dihedral = [5, 1, 0, 2]
-        top_indexes = [2, 3, 4]
-        cancel_freq = compute_cancel_frequency(molecule, dihedral, top_indexes)
-        self.assertAlmostEqual(cancel_freq/lightspeed*cm, 141.2, 0)
-        rotor = Rotor(
-            dihedral, top_indexes, cancel_freq, rotsym=6, even=True,
-            potential=None, num_levels=50
-        )
+        rot_scan = RotScan(dihedral, molecule)
+        rotor = Rotor(rot_scan, molecule, rotsym=6, even=True)
+        self.assertAlmostEqual(rotor.cancel_freq/lightspeed*cm, 141.2, 0)
         pf = PartFun(nma, [ExtTrans(), ExtRot(1), rotor])
         # reference data from legacy code (Veronique & co)
         self.assertAlmostEqual(rotor.reduced_moment/amu, 4.007, 1)

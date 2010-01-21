@@ -65,12 +65,8 @@ molecule = load_molecule_g03fchk("../001_ethane/gaussian.fchk")
 # Perform the normal mode analysis
 nma = NMA(molecule)
 # Treat the hindered rotor
-dihedral, angles, energies, geometries, top_indexes = load_rotscan_g03("scan/gaussian.log")
-cancel_freq = compute_cancel_frequency(molecule, top_indexes)
-rotor = Rotor(
-    top_indexes, cancel_freq, rotsym=3, even=True,
-    potential=(angles, energies, 5), num_levels=50
-)
+rot_scan = load_rotscan_g03log("scan/gaussian.log")
+rotor = Rotor(rot_scan, molecule, rotsym=3, even=True)
 # Construct a partition function object with the typical gas phase contributions.
 pf = PartFun(nma, [ExtTrans(), ExtRot(6), rotor])
 # 6 is the rotational symmetry number.

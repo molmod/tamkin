@@ -434,7 +434,7 @@ class Rotor(Info, StatFysTerms):
         self.dump_values(f, "Energy levels [kJ/mol]", self.energy_levels/kjmol, "% 8.2f", 8)
         if self.hb is not None:
             print >> f, "    Number of basis functions: %i" % (self.hb.size)
-        print >> f, "    Free energy contribution at T=0 [au]: %.7f" % self.free_energy(0.0)
+        print >> f, "    Free energy contribution at T=0 [kJ/mol]: %.7f" % (self.free_energy(0.0)/kjmol)
 
     def plot_levels(self, filename, temp, num=20):
         """Plots the potential with the energy levels

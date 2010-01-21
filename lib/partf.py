@@ -602,7 +602,7 @@ class Vibrations(Info, StatFysTerms):
         self.dump_values(f, "Zero Wavenumbers [1/cm]", self.zero_freqs/(lightspeed/cm), "% 10.3f", 7)
         self.dump_values(f, "Real Wavenumbers [1/cm]", self.positive_freqs/(lightspeed/cm), "% 10.3f", 7)
         self.dump_values(f, "Imaginary Wavenumbers [1/cm]", self.negative_freqs/(lightspeed/cm), "% 10.3f", 7)
-        print >> f, "    Free energy contribution at T=0K [au]: %.7f" % self.free_energy(0.0)
+        print >> f, "    Free energy contribution at T=0 [kJ/mol]: %.7f" % (self.free_energy(0.0)/kjmol)
 
     def helper0_terms(self, temp, n):
         return helper0_vibrations(

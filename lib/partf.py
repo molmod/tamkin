@@ -753,8 +753,8 @@ def compute_equilibrium_constant(pfs_A, pfs_B, temp, mol_volume=None):
     log_K = delta_G/(boltzmann*temp)
     if len(pfs_A) != len(pfs_B):
         if mol_volume is None:
-            mol_volume = ExternalTranslation.default_volume
-        log_K += (len(pfs_B)-len(pfs_A))*mol_volume.helper0(temp,0)
+            mol_volume = ExtTrans.default_volume
+        log_K += (len(pfs_A)-len(pfs_B))*mol_volume.helper0(temp,0)
     return log_K
 
 

@@ -327,10 +327,12 @@ class PartFunTestCase(unittest.TestCase):
         pf_trans = PartFun(NMA(mol_trans), [ExternalTranslation(), ExternalRotation(1)])
 
         for temp in numpy.arange(100,1000,10.0):
-            K = compute_equilibrium_constant([pf_react1, pf_react2], [pf_comlex], temp)
+            log_K = compute_equilibrium_constant([pf_react1, pf_react2], [pf_comlex], temp)
             k = compute_rate_coeff([pf_react1, pf_react2], pf_trans, temp)
+            log_k = numpy.log(k)
             k_prime = compute_rate_coeff([pf_comlex], pf_trans, temp)
-            self.assertAlmostEqual(K*k_prime, k)
+            log_k_prime = numpy.log(k_prime)
+            self.assertAlmostEqual(log_K + log_k_prime, log_k)
 
     def test_proton(self):
         mol = Proton()

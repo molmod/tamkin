@@ -8,7 +8,7 @@ J. Chem. Theory Comput., Vol. 3, No. 3. (8 May 2007), pp. 1120-1133.
 This is the workflow, applied to alkane_2 (ethane):
 
 bin/run_static.sh alkane_2
-bin/analyse_static.sh alkane_2 6
+bin/analyse_static.py alkane_2 6
 bin/run_md.sh alkane_2
 bin/analyse_md.sh alkane_2
 

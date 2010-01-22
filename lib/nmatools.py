@@ -71,6 +71,7 @@ __all__ = [
            "blocks_write_to_file", "selectedatoms_write_to_file",
            "plot_spectrum",
            "ENM", "ENM_from_coords",
+           "write_modes_for_VMD",
           ]
 
 

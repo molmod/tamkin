@@ -75,7 +75,6 @@ __all__ = [
     "load_fixed_vasp",
     "load_chk", "dump_chk",
     "load_fixed_txt", "load_subs_txt", "load_envi_txt", "load_blocks_txt",
-    "write_modes_for_VMD",
 ]
 
 

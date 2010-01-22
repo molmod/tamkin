@@ -538,4 +538,16 @@ class NMATestCase(unittest.TestCase):
         fixed = load_fixed_txt("input/an/fixed.06.txt")
         nma = NMA(molecule, PHVA_MBH(fixed,blocks))
 
+    def test_constrain(self):
+        molecule = load_molecule_charmm("input/an/ethanol.cor","input/an/ethanol.hess.full")
+        nma = NMA(molecule)
+        print nma.freqs/lightspeed*cm
+        fixed = [[1,2]]
+        nma = NMA(molecule, Constrain(fixed))
+        print nma.freqs/lightspeed*cm
+        nma.write_logfile_gaussian("output/ethanol.constr.molden.1.log")
 
+        fixed = [[1,2], [0,4], [0,5],[2,8],[3,4],[4,5],[5,6],[6,7],[7,8],[7,1],[7,3]]
+        nma = NMA(molecule, Constrain(fixed))
+        print nma.freqs/lightspeed*cm
+        nma.write_logfile_gaussian("output/ethanol.constr.molden.2.log")

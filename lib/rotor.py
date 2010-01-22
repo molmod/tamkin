@@ -318,7 +318,7 @@ class Rotor(Info, StatFysTerms):
              suffix  --  a name suffix used to distinguish between different
                          rotors
              rotsym  --  the rotational symmetry of the rotor (default=1)
-             even    --  True of the rotor is not chiral, i.e. when it has a
+             even    --  True of the rotor is not chiral, i.e. when it has an
                          even potential
              num_levels  --  the number of energy levels considered in the
                              QM treatment of the rotor (default=50)
@@ -489,7 +489,7 @@ class Rotor(Info, StatFysTerms):
         pylab.savefig(filename)
 
     def helper0_terms(self, temp, n):
-        """Compute the conbtributions to the logarithm of the partition function
+        """Compute the contributions to the logarithm of the partition function
 
            Argument:
              temp  --  the temperature
@@ -503,7 +503,7 @@ class Rotor(Info, StatFysTerms):
         ])
 
     def helper1_terms(self, temp, n):
-        """Compute the conbtributions to the derivative of the logarithm of the
+        """Compute the contributions to the derivative of the logarithm of the
            partition function
 
            Argument:
@@ -518,7 +518,7 @@ class Rotor(Info, StatFysTerms):
         ])
 
     def helper2_terms(self, temp, n):
-        """Compute the conbtributions to the second derivative of the logarithm
+        """Compute the contributions to the second derivative of the logarithm
            of the partition function
 
            Argument:

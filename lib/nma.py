@@ -1156,17 +1156,24 @@ class PHVA_MBH(MBH):
 
 
 class Constrain(Treatment):
-    def __init__(self, constraints, svd_threshold=1e-5):
-        """Initialize the PHVA treatment.
+    def __init__(self, constraints, do_grad_correction=True, svd_threshold=1e-5):
+        """Initialize the Constrain treatment.
 
            One argument:
-             fixed  --  a list with fixed atoms, counting starts from zero.
+             constraints  --  a list with constraints of internal coordinates:
+                              [at1,at2] to constrain a distance,
+                              [at1,at2,at3] to constrain an angle,
+                              [at1,at2,at3,at4] to constrain a dihedral angle.
+           Optional:
+             do_grad_correction  --  whether gradient correction should be applied
+             svd_threshold  --  threshold for singular value decomposition
         """
         # QA:
         if len(constraints) == 0:
-            raise ValueError("At least one fixed atom is required.")
+            raise ValueError("At least one constraint is required.")
         # Rest of init:
         self.constraints = constraints
+        self.do_grad_correction = do_grad_correction
         self.svd_threshold = svd_threshold
         Treatment.__init__(self)
 
@@ -1178,20 +1185,17 @@ class Constrain(Treatment):
         #- If periodic system:
         # 3 zeros in all cases
 
-       # An unambigous way to define the 'external' degrees of freedom is as
-        # follows: first construct an external basis of the entire systems,
-        U, W, Vt = numpy.linalg.svd(molecule.external_basis, full_matrices=False)
-        rank = (abs(W) > abs(W[0])*self.svd_threshold).sum()
-        self.num_zeros = rank
-        if do_modes:
-            self.external_basis = Vt[:rank]
-
-        #if not molecule.periodic:
-        #    self.num_zeros = rank_linearity(numpy.take(molecule.coordinates,self.subs,0), svd_threshold = self.svd_threshold)
-        #else:
-        #    self.num_zeros = 3
-
-
+        if not molecule.periodic:
+            #self.num_zeros = rank_linearity(numpy.take(molecule.coordinates,self.subs,0), svd_threshold = self.svd_threshold)
+            U, W, Vt = numpy.linalg.svd(molecule.external_basis, full_matrices=False)
+            rank = (abs(W) > abs(W[0])*self.svd_threshold).sum()
+            self.num_zeros = rank
+            if do_modes:
+                self.external_basis = Vt[:rank]
+        else:
+            self.num_zeros = 3
+            if do_modes:
+                self.external_basis = self.external_basis = molecule.external_basis[:3,:]  # three translations
 
     def compute_hessian(self, molecule, do_modes):
 
@@ -1212,33 +1216,26 @@ class Constrain(Treatment):
         # displacements determined by the constraints.
         U, W, Vt = numpy.linalg.svd(constrmat.transpose(), full_matrices=True)
         rank = (W/W[0] > self.svd_threshold).sum()
-        #print "constrmat",constrmat
-        freemat = Vt[rank:].transpose()
+        nullspace = Vt[rank:].transpose()
 
-        # mass matrix small = freemat^T . M . freemat
-        # hessian     small = freemat^T . H . freemat + gradient correction
-        self.mass_matrix_small = MassMatrix(
-             numpy.dot(freemat.transpose(),freemat * molecule.masses3.reshape((-1,1))) )
+        # mass matrix small = nullspace^T . M . nullspace
+        # hessian     small = nullspace^T . H . nullspace + gradient correction
+        self.mass_matrix_small = MassMatrix(numpy.dot(nullspace.transpose(),nullspace * molecule.masses3.reshape((-1,1))) )
+        self.hessian_small     = numpy.dot(nullspace.transpose(), numpy.dot(molecule.hessian, nullspace))
 
-        self.hessian_small = numpy.dot(freemat.transpose(), numpy.dot(molecule.hessian, freemat))
+        # check if gradient is small enough in this complement: overlap with nullspace should be small enough
+        # print  numpy.sum(numpy.dot(nullspace.transpose(), numpy.ravel(molecule.gradient))**2)
 
-        self.do_gradient_correction(constrmat.transpose(), U,W,Vt, rank, freemat, molecule.gradient)
+        if self.do_grad_correction:
+            self.do_the_gradient_correction(constrmat.transpose(), U,W,Vt, rank, nullspace, molecule.gradient)
 
         if do_modes:
-            self.transform = Transform(freemat)
+            self.transform = Transform(nullspace)
 
 
-    def do_gradient_correction(self, K,u,s,vh, rank, nullspace, gradient):
+    def do_the_gradient_correction(self, K,u,s,vh, rank, nullspace, gradient):
 
 
-        # extend nullspace with an identity matrix for the free atoms part
-        # to get the right dimension
-     #   [r_null,c_null] = nullspace.shape
-     #   n = numpy.zeros((self.blocks.mbhdim,c_null+3*self.blocks.N_E),float)
-     #   n[:r_null,:c_null] = nullspace
-     #   n[r_null:,c_null:] = numpy.identity(3*self.blocks.N_E,float)
-
-#         print "="*40
 #         print "Cart grad", self.gradient
 #         print "W grad", G_W
 #         print "orthogonal?",numpy.dot(nullspace.transpose(),G_W)
@@ -1249,49 +1246,43 @@ class Constrain(Treatment):
         # GRADIENT CORRECTION
         # construct generalized inverse L of K
         # zero rows for free atoms not included in L
-        hess = numpy.zeros(self.hessian_small.shape)
-        for i in xrange(len(hess)):
-            for j in xrange(len(hess)):
-                hess[i,j] = self.hessian_small[i,j]
 
-        if True:
-         L = numpy.zeros((K.shape[1],K.shape[0]),float)
-         for i,sigma in enumerate(s[:rank]):
-            L[i,:] = 1/sigma*u[:,i]  # u.transpose()[i,:]
-         print K.shape, L.shape, u.shape, s.shape, vh.shape, nullspace.shape
-         print "K, L, u, s, vh, nullspace"
-         L = numpy.dot(vh.transpose(),L)
+        # construct generalized inverse
+        L = numpy.zeros((K.shape[1],K.shape[0]),float)
+        for i,sigma in enumerate(s[:rank]):
+           L[i,:] = 1/sigma*u[:,i]
+        L = numpy.dot(vh.transpose(),L)
 
+        # construct right hand side of the equation
+        Y = numpy.zeros((K.shape[0],len(self.hessian_small)**2))
+        y = numpy.zeros((K.shape[0],1))
+        count = 0
+        for i in xrange(len(self.hessian_small)):
+            for j in xrange(len(self.hessian_small)):
+                for k,constraint in enumerate(self.constraints):
+                    if len(constraint) == 2:
+                        at1 = constraint[0]
+                        at2 = constraint[1]
+                        dist = 1.0
+                        for a in range(3*at1,3*at1+3):
+                            y[k] += 2 * nullspace[a,i]*nullspace[a,j]/dist
+                        for b in range(3*at2,3*at2+3):
+                            y[k] += 2 * nullspace[b,i]*nullspace[b,j]/dist
+                        for (a,b) in zip(range(3*at1,3*at1+3),range(3*at2,3*at2+3)):
+                            y[k] -= 2 * nullspace[a,i]*nullspace[b,j]/dist
 
-         Y = numpy.zeros((K.shape[0],len(self.hessian_small)**2))
-         y = numpy.zeros((K.shape[0],1))
-         count = 0
-         for i in xrange(len(self.hessian_small)):
-             for j in xrange(len(self.hessian_small)):
-                 for k,constraint in enumerate(self.constraints):
-                     if len(constraint) == 2:
-                         at1 = constraint[0]
-                         at2 = constraint[1]
-                         dist = 1.0 
-                         for a in range(3*at1,3*at1+3):
-                             y[k] += 2 * nullspace[a,i]*nullspace[a,j]/dist
-                         for b in range(3*at2,3*at2+3):
-                             y[k] += 2 * nullspace[b,i]*nullspace[b,j]/dist
-                         for (a,b) in zip(range(3*at1,3*at1+3),range(3*at2,3*at2+3)):
-                             y[k] -= 2 * nullspace[a,i]*nullspace[b,j]/dist
+                Y[:,count] = y[:,0]
+                count += 1
 
-                 Y[:,count] = y[:,0]
-                 count += 1
-         X = -numpy.dot(L, Y)
+        # solve equation
+        X = -numpy.dot(L, Y)
 
-         count = 0
-         for i in xrange(len(self.hessian_small)):
-             for j in xrange(len(self.hessian_small)):
+        # apply correction
+        count = 0
+        for i in xrange(len(self.hessian_small)):
+            for j in xrange(len(self.hessian_small)):
 
-                 self.hessian_small[i,j] += numpy.sum( numpy.ravel(gradient)*X[:,count] )
-                 count += 1
-         print X.shape, gradient.shape, y.shape, self.hessian_small.shape
-         print "x, grad, y, hess"
-         #print hess-self.hessian_small
+                self.hessian_small[i,j] += numpy.sum( numpy.ravel(gradient)*X[:,count] )
+                count += 1
 
 

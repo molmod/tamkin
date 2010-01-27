@@ -73,7 +73,7 @@ __all__ = [
            "BlocksPeptideMBH", "SubsPeptideVSA",
            "blocks_write_to_file", "selectedatoms_write_to_file",
            "plot_spectrum",
-           "ENM", "ENM_from_coords",
+           "create_enm_molecule",
            "write_modes_for_VMD", "make_moldenfile_nma",
           ]
 
@@ -541,53 +541,57 @@ def do_plot_dos(ax, freqs, min, max,
     ax.plot(nu,intensity*amplitude)
 
 
-def ENM(molecule, selected, rcut=8.0, K=1.0):
-    """Create a molecule according to the Elastic Network Model.
-    selected  --  if you don't consider all atoms, but only a subset
-    Optional:
-    rcut  --  cutoff distance in Angstrom between interacting pairs
-    K  --  strength of the interaction. Assume the same interaction strength for all interacting pairs.
+def create_enm_molecule(molecule, selected=None, numbers=None, masses=None,
+                        rcut=8.0*angstrom, K=1.0, periodic=None):
+    """Create a molecule according to the Elastic Network Model
+
+       Argument:
+         molecule  --  The molecule to start from. can be two types: (i) a
+                       Molecule object or (ii) a numpy array with shape (N,3)
+                       with coordinates in atomic units.
+
+       When a Molecule object is given, atom numbers, masses and periodic are
+       inherited from the molecule, unless they are specified explicitly in the
+       optional arguments.
+
+       Optional arguments:
+         selected  --  Selection of atoms to include in the ENM model. This can
+                       be a list or array of atom indices (length < N), or an
+                       array of booleans (length = N).
+         numbers  --  atom numbers in the ENM model (length = N). default is
+                      array of ones or the numbers from the molecule object.
+         masses  --  atomic masses in atomic units in the ENM model (length = N).
+                     default is array of hydrogen masses or the masses from the
+                     molecule object.
+         rcut  --  cutoff distance between interacting pairs in atomic units
+         K  --  strength of the interaction in atomic units (Hartree/Bohr**2).
+                The interaction strength is the same for all interacting pairs.
     """
-    coordinates = numpy.take(molecule.coordinates, selected, 0)
-    hessian = create_ENM_hessian(coordinates, rcut, K)
+    if isinstance(molecule, Molecule):
+        coordinates = molecule.coordinates
+        if numbers is None:
+            numbers = molecule.numbers
+        if masses is None:
+            masses = molecule.masses
+        if periodic is None:
+            periodic = molecule.periodic
+    else:
+        coordinates = numpy.array(molecule, copy=False)
+        if numbers is None:
+            # pretend being hydrogens
+            numbers = numpy.ones(len(coordinates))
+        if masses is None:
+            # pretend being hydrogens
+            masses  = numpy.ones(len(coordinates),float)*amu
+        if periodic is None:
+            periodic = False
 
-    return Molecule(
-        numpy.take(molecule.numbers, selected),
-        coordinates,
-        numpy.take(molecule.masses, selected),
-        0.0,
-        numpy.zeros((len(coordinates),3), float),
-        hessian,
-        molecule.multiplicity,
-        molecule.symmetry_number,
-        molecule.periodic,
-    )
+    if selected is not None:
+        coordinates = coordinates[selected]
+        numbers = numbers[selected]
+        masses = masses[selected]
 
-def ENM_from_coords(coordinates, numbers=None, masses=None, rcut=8.0, K=1.0, multiplicity=1, is_periodic=False):
-    """Create a molecule according to the Elastic Network Model.
-    Optional:
-    masses  --  if you do not want to give all equal masses
-    rcut  --  cutoff distance in Angstrom between interacting pairs
-    K  --  strength of the interaction. Assume the same interaction strength for all interacting pairs.
-    """
-    hessian = create_ENM_hessian(coordinates, rcut, K)
-    if masses is None:   masses  = numpy.ones(len(coordinates),float)*amu  # pretend being hydrogens
-    if numbers is None:  numbers = numpy.ones((len(coordinates)))  # pretend being hydrogens
-
-    return Molecule(
-        numbers,
-        coordinates,
-        masses,
-        0.0, #energy
-        numpy.zeros((len(coordinates),3), float),  #gradient
-        hessian,
-        multiplicity,
-        None,
-        is_periodic,
-    )
-
-def create_ENM_hessian(coordinates, rcut, K):
-    rcut2 = (rcut*angstrom)**2
+    rcut2 = rcut**2
     N = len(coordinates)
     hessian = numpy.zeros((3*N,3*N),float)
     for i in range(N):
@@ -600,8 +604,18 @@ def create_ENM_hessian(coordinates, rcut, K):
                 hessian[3*i:3*(i+1), 3*j:3*(j+1)] -= corr
                 hessian[3*j:3*(j+1), 3*i:3*(i+1)] -= corr
                 hessian[3*j:3*(j+1), 3*j:3*(j+1)] += corr
-    return hessian
 
+    return Molecule(
+        numbers,
+        coordinates,
+        masses,
+        0.0, #energy
+        numpy.zeros((len(coordinates),3), float),  #gradient
+        hessian,
+        1, # multiplicity
+        1, # rotational symmetry number
+        periodic,
+    )
 
 
 def write_modes_for_VMD(nma, index, filename=None,

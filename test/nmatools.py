@@ -208,11 +208,15 @@ class NMAToolsTestCase(unittest.TestCase):
         plot_spectrum("dos","output/spectrum-dos.6.png", [nma.freqs, nma.freqs*1.1], amplitudes=[1.0,2.0], title="different amplitude")
 
 
-    def test_ENM(self):
+    def test_create_enm_molecule(self):
         molecule = load_molecule_charmm("input/an/ethanol.cor", "input/an/ethanol.hess.full")
         selected = range(5)
-        mol = ENM(molecule, selected)
+        mol = create_enm_molecule(molecule, selected)
         nma = NMA(mol)
 
-        mol = ENM_from_coords(molecule.coordinates, rcut=5)
+        mol = create_enm_molecule(molecule.coordinates, rcut=5)
         nma = NMA(mol)
+
+        mol = create_enm_molecule(molecule.coordinates, selected, masses=numpy.ones(molecule.size)*2.0, rcut=5)
+        nma = NMA(mol)
+

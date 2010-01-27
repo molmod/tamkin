@@ -67,7 +67,7 @@ import numpy, matplotlib, pylab
 
 __all__ = [
            "calculate_overlap", "write_overlap",
-           "get_delta_vector", "get_delta_vector_charmmcor",
+           "compute_delta",
            "calculate_sensitivity_freq",
            "create_blocks_peptide_charmm", "create_subs_peptide_charmm",
            "BlocksPeptideMBH", "SubsPeptideVSA",
@@ -156,15 +156,23 @@ def write_overlap(freqs1, freqs2, overlap, filename=None):
     f.close()
 
 
-def get_delta_vector(coor1, coor2, masses = None, normalize = False, normthreshold = 1e-10):
-    """Calculate mass weighted delta vector between two conformations.
-    It is assumed that the structures have been aligned (center of mass, orientation) previously.
-    Optional:
-    massweight  --  Whether delta vector should be mass weighted. Default is True.
-    normalize  --  Whether delta vector should be normalized. Default is False."""
+def compute_delta(coor1, coor2, masses=None, normalize=False):
+    """Calculate mass weighted delta vector between two conformations
+
+       It is assumed that the structures have been aligned (center of mass,
+       orientation) previously.
+
+       Arguments:
+         coor1  --  coordinates of structure 1 in a numpy array with shape (N,3)
+         coor2  --  coordinates of structure 2 in a numpy array with shape (N,3)
+
+       Optional arguments:
+         masses  --  when given, the mass-weighted delta vector is computed
+         normalize  --  whether delta vector should be normalized [default=False]
+    """
     # check consistency
     if len(coor1) != len(coor2):
-        raise ValueError("coordinates should have same length: found "+str(len(coor1))+" and "+str(len(coor2)))
+        raise ValueError("coordinates should have same length: found %i and %i" % (len(coor1), len(coor2)))
 
     delta = numpy.ravel(coor1 - coor2)
     if not masses is None:  #Mass-weighting delta vector
@@ -172,51 +180,8 @@ def get_delta_vector(coor1, coor2, masses = None, normalize = False, normthresho
             delta[3*i:3*(i+1)] *=  numpy.sqrt(mass)
     if normalize:   #Normalizing delta vector
         norm = numpy.sum(delta**2)
-        if norm < normthreshold:
-            raise ValueError("Can not normalize delta vector, because norm (squared) it too small: "+str(norm))
         delta /= numpy.sqrt(norm)
     return numpy.reshape(delta, (-1,1))
-
-
-def get_delta_vector_charmmcor(charmmcorfile1, charmmcorfile2, massweight = True, normalize = False):
-    """Calculate mass weighted delta vector between two charmm conformations.
-       Masses from first coordinate file are used.
-       Optional:
-       massweight  --  Whether delta vector should be mass weighted. Default is True.
-       normalize  --  Whether delta vector should be normalized. Default is False."""
-    coor1,masses1,symb1 = load_coordinates_charmm(charmmcorfile1)
-    coor2,masses2,symb2 = load_coordinates_charmm(charmmcorfile2)
-    # check consistency
-    if not symb1 == symb2:
-        raise ValueError("not the same atom symbols in both coordinate files: comparison makes no sense.")
-    #if not masses1 == masses2:
-    #    raise ValueError("not the same atom masses in both coordinate files: comparison makes no sense.")
-    if massweight:
-        return get_delta_vector(coor1, coor2, masses = masses1, normalize = normalize)
-    else:
-        return get_delta_vector(coor1, coor2, normalize = normalize)
-
-
-#def get_delta_vector_molecules(molecule1, molecule2, massweight = True, normalize = False):
-#    """Calculate mass weighted delta vector between two charmm conformations.
-#    Optional:
-#    massweight  --  Whether delta vector should be mass weighted. Default is True.
-#    normalize  --  Wihether delta vector should be normalized. Default is False."""
-#    # check consistency
-#    if molecule1.size != molecule2.size:
-#        raise ValueError("Nb of atoms is not the same in the two molecules. Found "+str(molecule1)+" (1) and "+str(molecule)+" (2).")
-#    for i in range(molecule1.size):
-#        if molecule1.numbers[i] != molecule2.numbers[i]:
-#            raise ValueError("Atoms of molecule1 differ from those of molecule2 (different atomic numbers), but should be the same.")
-#    if not molecule1.masses == molecule2.masses:
-#        raise ValueError("not the same atom masses in both coordinate files: comparison makes no sense.")
-#
-#    if massweight:
-#        return get_delta_vector(molecule1.coordinates, molecule2.coordinates,
-#                    masses = molecule1.masses, normalize = normalize)
-#    else:
-#        return get_delta_vector(molecule1.coordinates, molecule2.coordinates, normalize = normalize)
-
 
 
 def calculate_sensitivity_freq(nma, index, symmetric = False, massweight = True):

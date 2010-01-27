@@ -113,10 +113,10 @@ class NMAToolsTestCase(unittest.TestCase):
         # from charmmcor
         coor1,masses1,symb1 = load_coordinates_charmm("input/an/ethanol.cor")
         coor2,masses2,symb2 = load_coordinates_charmm("input/an/ethanol.2.cor")
-        delta = get_delta_vector(coor1, coor2)
+        delta = compute_delta(coor1, coor2)
         # TODO
         #self.assertAlmostEqual()
-        delta = get_delta_vector(coor1, coor2, masses = masses1, normalize = True)
+        delta = compute_delta(coor1, coor2, masses=masses1, normalize=True)
         #self.assertAlmostEqual()
 
     def test_eigenvalue_sensitivity(self):

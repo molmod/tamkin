@@ -101,10 +101,10 @@ class NMAToolsTestCase(unittest.TestCase):
         nma1 = NMA(molecule)
         fixed = load_fixed_txt("input/an/fixed.06.txt")
         nma2 = NMA(molecule, PHVA(fixed))
-        overlap = calculate_overlap(nma1, nma2)
-        overlap = calculate_overlap((nma1.modes, nma1.freqs), (nma2.modes, nma2.freqs))
-        overlap = calculate_overlap(nma1.modes, nma2.modes)
-        overlap = calculate_overlap(nma1.modes[:,0], nma2.modes[:,0])
+        overlap = compute_overlap(nma1, nma2)
+        overlap = compute_overlap((nma1.modes, nma1.freqs), (nma2.modes, nma2.freqs))
+        overlap = compute_overlap(nma1.modes, nma2.modes)
+        overlap = compute_overlap(nma1.modes[:,0], nma2.modes[:,0])
         # TODO
         #self.assertAlmostEqual()
 
@@ -123,7 +123,7 @@ class NMAToolsTestCase(unittest.TestCase):
         molecule = load_molecule_charmm("input/an/ethanol.cor","input/an/ethanol.hess.full")
         nma = NMA(molecule)
         for i in range(7,27):
-            sensit = calculate_sensitivity_freq(nma, i)
+            sensit = compute_sensitivity_freq(nma, i)
             self.assertAlmostEqual(numpy.sum((numpy.dot(sensit,nma.modes)-nma.modes)**2,0)[i],0.0,9)
 
 

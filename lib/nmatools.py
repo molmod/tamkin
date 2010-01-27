@@ -66,9 +66,9 @@ import numpy, matplotlib, pylab
 
 
 __all__ = [
-           "calculate_overlap", "write_overlap",
+           "compute_overlap", "write_overlap",
            "compute_delta",
-           "calculate_sensitivity_freq",
+           "compute_sensitivity_freq",
            "create_blocks_peptide_charmm", "create_subs_peptide_charmm",
            "BlocksPeptideMBH", "SubsPeptideVSA",
            "blocks_write_to_file", "selectedatoms_write_to_file",
@@ -80,8 +80,8 @@ __all__ = [
 
 
 
-def calculate_overlap(nma1, nma2, filename=None):
-    """Calculate overlap of modes and print to file if requested
+def compute_overlap(nma1, nma2, filename=None):
+    """Compute overlap of modes and print to file if requested
 
        Arguments:
          nma1  --  modes and frequencies (see below)
@@ -120,7 +120,7 @@ def calculate_overlap(nma1, nma2, filename=None):
     # check dimensions
     if modes1.shape[0] != modes2.shape[0] :
         raise ValueError("Length of columns in modes1 and modes2 should be equal, but found %i and %i." % (modes1.shape[0], modes2.shape[0]))
-    # calculate overlap
+    # compute overlap
     overlap = numpy.dot(numpy.transpose(modes1), modes2)
     if filename is not None:
         write_overlap(freqs1, freqs2, overlap, filename=filename)
@@ -157,7 +157,7 @@ def write_overlap(freqs1, freqs2, overlap, filename=None):
 
 
 def compute_delta(coor1, coor2, masses=None, normalize=False):
-    """Calculate mass weighted delta vector between two conformations
+    """Compute mass weighted delta vector between two conformations
 
        It is assumed that the structures have been aligned (center of mass,
        orientation) previously.
@@ -184,8 +184,8 @@ def compute_delta(coor1, coor2, masses=None, normalize=False):
     return numpy.reshape(delta, (-1,1))
 
 
-def calculate_sensitivity_freq(nma, index, symmetric = False, massweight = True):
-    """Calculate the sensity of the index-th frequency to changes of
+def compute_sensitivity_freq(nma, index, symmetric = False, massweight = True):
+    """Compute the sensity of the index-th frequency to changes of
     the mass-weighted Hessian elements.
     Optional:
     symmetric  --  Slightly different formula if symmetry of matrix is taken into account. Default False.

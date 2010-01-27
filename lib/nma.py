@@ -573,7 +573,7 @@ class VSA(Treatment):
     def __init__(self, subs, svd_threshold=1e-5):
         """Initialize the VSA treatment.
 
-           Frequencies and modes are calculated with the VSA approach:
+           Frequencies and modes are computed with the VSA approach:
            Vibrational Subsystem Analysis
            - Zheng and Brooks, ... (2006)
            - Woodcock, ... (2008)
@@ -606,7 +606,7 @@ class VSA(Treatment):
             if self.num_zeros == 3:
                 self.external_basis = molecule.external_basis[:3,:]  # three translations
             elif self.num_zeros == 5:
-                # Calculate direction of the linear SUBSystem (with two atoms) and check for highest alignment with one of the axes.
+                # Compute direction of the linear SUBSystem (with two atoms) and check for highest alignment with one of the axes.
                 diff = molecule.coordinates[self.subs[0]] - molecule.coordinates[self.subs[1]]
                 axis = 3+abs(diff).tolist().index(max(abs(diff)))   # axis to be skipped
                 alphas = [i for i in range(6) if i is not axis]
@@ -659,7 +659,7 @@ class VSANoMass(Treatment):
     def __init__(self, subs, svd_threshold=1e-5):
         """Initialize the VSA treatment.
 
-           Frequencies and modes are calculated with the VSA approach:
+           Frequencies and modes are computed with the VSA approach:
            Vibrational Subsystem Analysis
            - Zheng and Brooks, ... (2006)
            - Woodcock, ... (2008)
@@ -697,7 +697,7 @@ class VSANoMass(Treatment):
             if self.num_zeros == 3:
                 self.external_basis = molecule.external_basis[:3,:]  # three translations
             elif self.num_zeros == 5:
-                # Calculate direction of the linear SUBSystem (with two atoms) and check for highest alignment with one of the axes.
+                # Compute direction of the linear SUBSystem (with two atoms) and check for highest alignment with one of the axes.
                 diff = molecule.coordinates[self.subs[0]] - molecule.coordinates[self.subs[1]]
                 axis = 3+abs(diff).tolist().index(max(abs(diff)))   # axis to be skipped
                 alphas = [i for i in range(6) if i is not axis]
@@ -739,7 +739,7 @@ class MBH(Treatment):
     def __init__(self, blocks, svd_threshold=1e-5):
         """Initialize the MBH treatment.
 
-           Frequencies and modes are calculated with the MBH approach:
+           Frequencies and modes are computed with the MBH approach:
            Mobile Block Hessian method
            -  J. Chem. Phys. 126 (22): Art. No. 224102, 2007
            -  J. Chem. Phys. 127 (16), Art. No. 164108, 2007
@@ -777,7 +777,7 @@ class MBH(Treatment):
             if self.num_zeros == 3:
                 self.external_basis = molecule.external_basis[:3,:]
             elif self.num_zeros == 5:
-                # Calculate direction of the linear SYSTEM (with two atoms) and check for highest alignment with one of the axes.
+                # Compute direction of the linear SYSTEM (with two atoms) and check for highest alignment with one of the axes.
                 diff = molecule.coordinates[0,:] - molecule.coordinates[1,:]
                 axis = 3+abs(diff).tolist().index(max(abs(diff)))   # axis to be skipped
                 alphas = [i for i in range(6) if i is not axis]
@@ -790,12 +790,12 @@ class MBH(Treatment):
     def compute_hessian(self, molecule, do_modes):
         if do_modes:
             self.hessian_small,self.mass_matrix_small,self.transform = \
-                     self.calculate_matrices_small(molecule,do_modes)
+                     self.compute_matrices_small(molecule,do_modes)
         else:
             self.hessian_small,self.mass_matrix_small = \
-                     self.calculate_matrices_small(molecule,do_modes)
+                     self.compute_matrices_small(molecule,do_modes)
 
-    def calculate_matrices_small(self, molecule, do_modes):
+    def compute_matrices_small(self, molecule, do_modes):
         # Notation: b,b0,b1   --  a block index
         #           block  --  a list of atoms, e.g. [at1,at4,at6]
         #           alphas  --  the 6 block parameter indices (or 5 for linear block)
@@ -1037,7 +1037,7 @@ class Blocks(object):
             blocks_lin_strict.append(atoms)
 
         # for linear blocks: axis?
-        # Calculate direction of the linear block (with two atoms) and check for highest
+        # Compute direction of the linear block (with two atoms) and check for highest
         # alignment with one of the axes.
         skip_axis_lin = numpy.zeros((nb_lin),int)
         for b,block in enumerate(blocks_lin):       # do not use strict partition here
@@ -1135,12 +1135,12 @@ class PHVA_MBH(MBH):
                 self.blocks[bl][at] = atom - shifts[atom]
 
         if do_modes:
-            self.hessian_small, self.mass_matrix_small, transform = self.calculate_matrices_small(submolecule, do_modes)
+            self.hessian_small, self.mass_matrix_small, transform = self.compute_matrices_small(submolecule, do_modes)
             transf = numpy.zeros((3*molecule.size, transform.matrix.shape[1]),float)
             transf[selectedcoords,:] = transform.matrix
             self.transform = Transform(transf)
         else:
-            self.hessian_small, self.mass_matrix_small = self.calculate_matrices_small(submolecule, do_modes)
+            self.hessian_small, self.mass_matrix_small = self.compute_matrices_small(submolecule, do_modes)
 
 
 class Constrain(Treatment):

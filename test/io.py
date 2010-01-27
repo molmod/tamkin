@@ -281,4 +281,27 @@ class IOTestCase(unittest.TestCase):
             for i,j in zip(bl,bl1):
                 self.assertEqual(i,j)
 
+    def test_load_dump_indices2(self):
+        randint = numpy.random.randint
+        for counter in xrange(20):
+            for compact in True, False:
+                shift = randint(-5,5)
+                indices = []
+                for i in xrange(randint(10,20)):
+                    l = list(set(randint(0,10,randint(20))))
+                    if len(l) > 0:
+                        indices.append(l)
+                indices_flat = sum(indices, [])
+
+                dump_indices("output/indices_blocks.txt", indices, compact=compact, shift=shift)
+                dump_indices("output/indices_flat.txt", indices_flat, compact=compact, shift=shift)
+
+                check = load_indices("output/indices_blocks.txt", shift=-shift, groups=True)
+                self.assertEqual(indices, check)
+                check = load_indices("output/indices_blocks.txt", shift=-shift)
+                self.assertEqual(indices_flat, check)
+                check = load_indices("output/indices_flat.txt", shift=-shift, groups=True)
+                self.assertEqual([indices_flat], check)
+                check = load_indices("output/indices_flat.txt", shift=-shift)
+                self.assertEqual(indices_flat, check)
 

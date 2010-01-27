@@ -208,28 +208,25 @@ class IOTestCase(unittest.TestCase):
     def test_load_blocks_txt(self):
         blocks = load_blocks_txt("input/an/fixed.07.txt")
 
-    def test_write_modes_for_VMD(self):
+    def test_dump_modes_xyz(self):
         molecule = load_molecule_charmm("input/an/ethanol.cor","input/an/ethanol.hess.full")
         nma = NMA(molecule)
-        write_modes_for_VMD(nma, 6, filename="output/mode6.xyz")
-        f = file("output/mode6.xyz")
-        line = f.readline()    # first line
-        words = line.split()
-        self.assertEqual(len(words),1)
-        self.assertEqual(words[0],"9")
-        line = f.readline()    # 2nd line
-        words = line.split()
-        self.assertEqual(len(words),1)
-        self.assertEqual(words[0],"i=0")
-        line = f.readline()    # 3rd line
+        dump_modes_xyz(nma, 6, prefix="output/mode", amplitude=50.0)
+        f = file("output/mode.6.xyz")
+        # 1st line
+        line = f.readline().strip()
+        self.assertEqual(line,"9")
+        # 2nd line
+        line = f.readline().strip()
+        self.assertEqual(line,"frame 0")
+        # 3rd line
+        line = f.readline()
         words = line.split()
         self.assertEqual(len(words),4)
-        self.assertEqual(words[0],"6")
-        self.assertEqual(words[2],"0.0816")
+        self.assertEqual(words[0],"C")
+        self.assertEqual(words[2],"0.081608346")
         for i in range(9):
-            line = f.readline()
-        words = line.split()
-        self.assertEqual(len(words),1)
-        self.assertEqual(words[0],"9")
-        f.close
+            line = f.readline().strip()
+        self.assertEqual(line,"9")
+        f.close()
 

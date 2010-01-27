@@ -56,47 +56,71 @@
 # --
 
 
-import numpy
+from tamkin.nma import NMA
 
 from molmod import angstrom
+from molmod.io import XYZWriter
+from molmod.periodic import periodic
+
+import numpy
 
 
-__all__ = ["write_modes_for_VMD"]
+__all__ = ["dump_modes_xyz"]
 
 
-def write_modes_for_VMD(nma, index, filename=None, A=50.0, frames=36):
-    """This function selects calls the function write_modes_for_VMD_2,
-    where the mode trajectory is actually written.
-    The function selects the relevant attributes.
-    Numbering modes starts at 0."""
+def dump_modes_xyz(nma, indexes, prefix=None, amplitude=5.0*angstrom, frames=36):
+    """Write XYZ trajectory file(s) that vizualize internal mode(s)
 
-    if filename is None: filename = "mode"+str(index)+".txt"
+       Arguments:
+         nma  --  an object that specifies the normal modes, several formats
+                  are supported: (i) a Tamkin NMA object, (ii) a 3-tuple with
+                  reference coordinates, mass-unweighted modes and atom numbers
+                  or (iii) a 4-tuple with reference coordinates, mass-weighted
+                  modes, atom numbers and a masses3 vector. the latter is a
+                  vector with 3*N elements containing the masses of the
+                  atoms.
+         indexes  --  the index or a list of indexes of modes that must be
+                      written to trajectory files
 
-    # Select mode from the nma.modes and undo mass-weighting
-    mode = nma.modes[:,index]
-    for i in range(len(mode)):
-        mode[i] /= numpy.sqrt(nma.masses3[i])
+       Optional arguments:
+         prefix  --  a prefix used for the output files. the generated
+                     trajectory filenames have the format prefix.index.xyz
+                     [default="mode"]
+         amplitude  --  the amplitude of the normal mode vibration in atomic
+                        untis [default=5*angstrom]
+         frames  --  the number of frames written to the trajectory file
+                     [default=36]
+    """
 
-    write_modes_for_VMD_2(nma.numbers, nma.coordinates, mode, filename=filename, A=A, frames=frames)
+    if isinstance(nma, NMA):
+        coordinates = nma.coordinates
+        modes = nma.modes
+        numbers = nma.numbers
+        masses3 = nma.masses3
+    elif hasattr(nma, "__len__") and len(nma==3):
+        coordinates, modes, numbers = nma
+        masses3 = None
+    elif hasattr(nma, "__len__") and len(nma==4):
+        coordinates, modes, numbers, masses3 = nma
+    else:
+        raise TypeError("Could not understand first argument. Check documentation.")
 
+    if not hasattr(indexes, "__len__"):
+        indexes = [indexes]
 
-def write_modes_for_VMD_2(atomicnumbers, coordinates, mode, filename=None, A=50.0, frames=36):
+    if prefix is None:
+        prefix = "mode"
 
-    import math
-    if filename is None: filename = "mode.xyz"
+    symbols = [periodic[n].symbol for n in numbers]
 
-    nbatoms = len(atomicnumbers)
-    positions = coordinates/angstrom   # units for VMD
-
-    f = open(filename,'w')
-
-    for time in range(frames+1):
-        factor = A * math.sin( 2*math.pi * float(time)/frames)
-        print >> f, nbatoms
-        print >> f, 'i='+str(time)
-        for at in range(nbatoms):
-            coor = positions[at,:] + factor * mode[3*at:3*at+3]
-            print >> f, "%-5i  %10.4f  %10.4f  %10.4f" %(atomicnumbers[at], coor[0],coor[1],coor[2])
-    f.close
-
+    for index in indexes:
+        filename = "%s.%i.xyz" % (prefix, index)
+        mode = nma.modes[:,index]
+        if masses3 is not None:
+            mode /= numpy.sqrt(masses3)
+        xyz_writer = XYZWriter(filename, symbols)
+        for frame in xrange(frames):
+            factor = amplitude*numpy.sin(2*numpy.pi*float(frame)/frames)
+            xyz_writer.dump("frame %i" % frame, coordinates + factor*mode.reshape((-1,3)))
+        del xyz_writer
 

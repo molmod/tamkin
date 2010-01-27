@@ -55,15 +55,18 @@
 #
 # --
 
-import numpy
-import matplotlib, pylab
-from molmod.constants import lightspeed
-from molmod.units import angstrom, amu, centimeter
+
 from tamkin.data import Molecule
+from tamkin.nma import NMA
+
+from molmod import lightspeed, angstrom, amu, centimeter
+
+import numpy, matplotlib, pylab
+
 
 __all__ = [
            "load_coordinates_charmm", "load_modes_charmm",
-           "calculate_overlap_nma", "calculate_overlap", "write_overlap",
+           "calculate_overlap", "write_overlap",
            "get_delta_vector", "get_delta_vector_charmmcor",
            "calculate_sensitivity_freq",
            "create_blocks_peptide_charmm", "create_subs_peptide_charmm",
@@ -71,7 +74,7 @@ __all__ = [
            "blocks_write_to_file", "selectedatoms_write_to_file",
            "plot_spectrum",
            "ENM", "ENM_from_coords",
-           "write_modes_for_VMD",
+           "write_modes_for_VMD", "make_moldenfile_nma",
           ]
 
 
@@ -166,27 +169,51 @@ def load_modes_charmm(filename):
     return freqs, mat
 
 
-def calculate_overlap_nma(nma1, nma2, filename=None):
-    """Calculate overlap of modes of NMA objects, and print to file if requested."""
-    overlap = calculate_overlapmatrix(nma1.modes, nma2.modes)
-    if filename is not None:
-        write_overlap(nma1.freqs, nma2.freqs, overlap, filename=filename)
-    return overlap
+def calculate_overlap(nma1, nma2, filename=None):
+    """Calculate overlap of modes and print to file if requested
 
-def calculate_overlap(mat1, freqs1, mat2, freqs2, filename=None):
-    """Calculate overlap of matrices (with corresponding frequencies), and write to file if requested."""
-    overlap = calculate_overlapmatrix(mat1, mat2)
+       Arguments:
+         nma1  --  modes and frequencies (see below)
+         nma2  --  modes and frequencies (see below)
+
+       Optional argument:
+         filename  --  when given, the overlap is written to file by the
+                       function write_overlap
+
+       The nma arguments can have different formats:
+       1) an NMA object
+       2) a tuple or list with two elements: modes and frequencies
+       3) a numpy array with the mass-weighted modes
+       4) a numpy array with one mass-weighted mode
+    """
+
+    def parse_nma(nma):
+        if isinstance(nma, NMA):
+            # NMA object
+            return nma.modes, nma.freqs
+        elif hasattr(nma, "__len__") and len(nma) == 2 and not isinstance(nma, numpy.ndarray):
+            # [modes,freqs] or (modes,freqs)
+            return nma
+        elif isinstance(nma, numpy.ndarray) and len(nma.shape) == 2:
+            # modes only
+            return nma, numpy.zeros(nma.shape[1], float)
+        elif isinstance(nma, numpy.ndarray) and len(nma.shape) == 1:
+            # one mode only
+            return nma.reshape(-1,1), numpy.zeros(1, float)
+        else:
+            raise TypeError("nma argument has wrong type")
+
+    modes1, freqs1 = parse_nma(nma1)
+    modes2, freqs2 = parse_nma(nma2)
+
+    # check dimensions
+    if modes1.shape[0] != modes2.shape[0] :
+        raise ValueError("Length of columns in modes1 and modes2 should be equal, but found %i and %i." % (modes1.shape[0], modes2.shape[0]))
+    # calculate overlap
+    overlap = numpy.dot(numpy.transpose(modes1), modes2)
     if filename is not None:
         write_overlap(freqs1, freqs2, overlap, filename=filename)
     return overlap
-
-def calculate_overlapmatrix(mat1, mat2):
-    """Calculate overlap of matrices."""
-    # check dimensions
-    if mat1.shape[0] != mat2.shape[0] :
-        raise ValueError("Length of columns in mat1 and mat2 should be equal, but found "+str(mat1.shape[0])+" and "+str(mat2.shape[0]) )
-    # calculate overlap
-    return numpy.dot(numpy.transpose(mat1), mat2)
 
 
 def write_overlap(freqs1, freqs2, overlap, filename=None):
@@ -802,6 +829,18 @@ Number     Number      Type              X           Y           Z
    return HEAD, head_coordinates, head_basisfunctions, \
           head_freq0, head_freq1, head_freq2, head_freq3, head_end
 
+
+def make_moldenfile_nma(filename, nma):
+    """Write a logfile with the modes and frequencies
+    in the way Gaussian03 does, such that molden can
+    read this logfile.
+    """
+    if filename is None:
+        filename = "molden.log"
+    if nma.modes is None:
+        raise ValueError("No modes available (do_modes=False), cannot write logfile with modes.")
+    make_moldenfile(filename, nma.masses, nma.numbers, nma.coordinates,
+                    nma.modes, nma.freqs )
 
 
 

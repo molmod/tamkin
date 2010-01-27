@@ -69,7 +69,6 @@
 
 
 from tamkin.io import load_chk, dump_chk
-from tamkin.nmatools import make_moldenfile
 from tamkin.geom import transrot_basis, rank_linearity
 
 import numpy
@@ -189,18 +188,6 @@ class NMA(object):
             ]
             data = dict((key, self.__dict__[key]) for key in keys)
         dump_chk(filename, data)
-
-    def write_logfile_gaussian(self,filename):
-        """Write a logfile with the modes and frequencies
-        in the way Gaussian03 does, such that molden can
-        read this logfile.
-        """
-        if filename is None:
-            filename = "molden.log"
-        if self.modes is None:
-            raise ValueError("No modes available (do_modes=False), cannot write logfile with modes.")
-        make_moldenfile(filename, self.masses, self.numbers, self.coordinates,
-                       self.modes, self.freqs )
 
     @classmethod
     def read_from_file(cls, filename):

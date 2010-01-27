@@ -101,7 +101,10 @@ class NMAToolsTestCase(unittest.TestCase):
         nma1 = NMA(molecule)
         fixed = load_fixed_txt("input/an/fixed.06.txt")
         nma2 = NMA(molecule, PHVA(fixed))
-        overlap = calculate_overlap_nma(nma1, nma2)
+        overlap = calculate_overlap(nma1, nma2)
+        overlap = calculate_overlap((nma1.modes, nma1.freqs), (nma2.modes, nma2.freqs))
+        overlap = calculate_overlap(nma1.modes, nma2.modes)
+        overlap = calculate_overlap(nma1.modes[:,0], nma2.modes[:,0])
         # TODO
         #self.assertAlmostEqual()
 

@@ -521,8 +521,8 @@ class NMATestCase(unittest.TestCase):
         blocks = load_blocks_txt("input/an/fixed.07.txt")
         nma = NMA(molecule, MBH(blocks))
         self.check_ortho(nma.modes)
-        nma.write_logfile_gaussian("output/ethanol.mbh.molden.log")
-        self.check_ortho(nma.modes)   # write_logfile_gaussian should not have changed this
+        make_moldenfile_nma("output/ethanol.mbh.molden.log", nma)
+        self.check_ortho(nma.modes)   # make_moldenfile_nma should not have changed this
 
     def test_mbh_ethane(self):
         molecule = load_molecule_g03fchk("input/ethane/gaussian.fchk")
@@ -545,9 +545,11 @@ class NMATestCase(unittest.TestCase):
         fixed = [[1,2]]
         nma = NMA(molecule, Constrain(fixed))
         print nma.freqs/lightspeed*centimeter
-        nma.write_logfile_gaussian("output/ethanol.constr.molden.1.log")
+        make_moldenfile_nma("output/ethanol.constr.molden.1.log", nma)
 
         fixed = [[1,2], [0,4], [0,5],[2,8],[3,4],[4,5],[5,6],[6,7],[7,8],[7,1],[7,3]]
         nma = NMA(molecule, Constrain(fixed))
         print nma.freqs/lightspeed*centimeter
-        nma.write_logfile_gaussian("output/ethanol.constr.molden.2.log")
+        make_moldenfile_nma("output/ethanol.constr.molden.2.log", nma)
+
+

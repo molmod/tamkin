@@ -68,7 +68,7 @@ class NMAToolsTestCase(unittest.TestCase):
 
     def test_load_coordinates_charmm(self):
         molecule = load_molecule_charmm("input/an/ethanol.cor", "input/an/ethanol.hess.full")
-        symbols, coordinates, masses = load_coordinates_charmm("input/an/ethanol.cor")
+        coordinates, masses, symbols = load_coordinates_charmm("input/an/ethanol.cor")
         for at in range(9):
             self.assertAlmostEqual(molecule.masses[at], masses[at], 3)
             for j in range(3):
@@ -79,7 +79,7 @@ class NMAToolsTestCase(unittest.TestCase):
 
         # full Hessian
         nma = NMA(molecule)
-        freqs2, modes2 = load_modes_charmm("input/an/ethanol.modes.full")
+        modes2, freqs2, masses2 = load_modes_charmm("input/an/ethanol.modes.full")
         for index in range(6,27):
             for j in range(27):
                 self.assertAlmostEqual(abs(nma.modes[j,index]), abs(modes2[j,index]), 7)
@@ -88,7 +88,7 @@ class NMAToolsTestCase(unittest.TestCase):
 
         # MBH
         nma = NMA(molecule, MBH([[5,6,7,8]]))
-        freqs2, modes2 = load_modes_charmm("input/an/ethanol.modes.mbh")
+        modes2, freqs2, masses2 = load_modes_charmm("input/an/ethanol.modes.mbh")
         for index in range(6,21):
             for j in range(27):
                 self.assertAlmostEqual(abs(nma.modes[j,index]), abs(modes2[j,index]), 7)
@@ -111,8 +111,8 @@ class NMAToolsTestCase(unittest.TestCase):
 
     def test_delta_vector(self):
         # from charmmcor
-        symb1,coor1,masses1 = load_coordinates_charmm("input/an/ethanol.cor")
-        symb2,coor2,masses2 = load_coordinates_charmm("input/an/ethanol.2.cor")
+        coor1,masses1,symb1 = load_coordinates_charmm("input/an/ethanol.cor")
+        coor2,masses2,symb2 = load_coordinates_charmm("input/an/ethanol.2.cor")
         delta = get_delta_vector(coor1, coor2)
         # TODO
         #self.assertAlmostEqual()

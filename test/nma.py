@@ -456,7 +456,7 @@ class NMATestCase(unittest.TestCase):
         molecule = load_molecule_charmm("input/an/ethanol.cor","input/an/ethanol.hess.full")
 
         #  --- single atom as subsystem: results should be three translations
-        subs = load_subs_txt("input/an/fixed.01.txt")
+        subs = load_indices("input/an/fixed.01.txt")
         nma = NMA(molecule, VSA(subs))
         self.check_ortho(nma.modes)
         self.assert_(len(nma.zeros)==3)
@@ -464,7 +464,7 @@ class NMATestCase(unittest.TestCase):
         self.check_freqs(expected_freqs, nma, 0, check_zeros=True)
 
         #  ---  atoms of subsystem are collinear: not yet external_basis implemented...
-        subs = load_subs_txt("input/an/fixed.02.txt")
+        subs = load_indices("input/an/fixed.02.txt")
         nma = NMA(molecule, VSA(subs))
         self.check_ortho(nma.modes)
         self.assert_(len(nma.zeros)==5)
@@ -473,7 +473,7 @@ class NMATestCase(unittest.TestCase):
         self.check_freqs(expected_freqs, nma, 0, check_zeros=True)
 
         #  --- atoms of subsystem are not collinear
-        subs = load_subs_txt("input/an/fixed.03.txt")  # atom 1 to atom 7
+        subs = load_indices("input/an/fixed.03.txt")  # atom 1 to atom 7
         nma = NMA(molecule, VSA(subs))
         self.check_ortho(nma.modes)
         self.assert_(len(nma.zeros)==6)
@@ -484,20 +484,19 @@ class NMATestCase(unittest.TestCase):
                3653.7642078 ])
         self.check_freqs(expected_freqs, nma, 4, check_zeros=True)
 
-
     def test_vsa_no_mass(self):
         # Modes are a priori known to be non-orthogonal, so no 'self.check_ortho(nma.modes)'
         molecule = load_molecule_charmm("input/an/ethanol.cor","input/an/ethanol.hess.full")
 
         #  --- single atom as subsystem: results should be three translations
-        subs = load_subs_txt("input/an/fixed.01.txt")
+        subs = load_indices("input/an/fixed.01.txt")
         nma = NMA(molecule, VSANoMass(subs))
         self.assert_(len(nma.zeros)==3)
         expected_freqs = numpy.array([-0.4205594, 0.03940166, 0.13774798])
         self.check_freqs(expected_freqs, nma, 0, check_zeros=True)
 
         #  ---  atoms of subsystem are collinear
-        subs = load_subs_txt("input/an/fixed.02.txt")
+        subs = load_indices("input/an/fixed.02.txt")
         nma = NMA(molecule, VSANoMass(subs))
         self.assert_(len(nma.zeros)==5)
         expected_freqs = numpy.array([-6.07975753e-01,-3.47371852e-01,6.34080688e-02,
@@ -505,7 +504,7 @@ class NMATestCase(unittest.TestCase):
         self.check_freqs(expected_freqs, nma, 0,  check_zeros=True)
 
         #  --- atoms of subsystem are not collinear
-        subs = load_subs_txt("input/an/fixed.03.txt")  # atom 1 to atom 7
+        subs = load_indices("input/an/fixed.03.txt")  # atom 1 to atom 7
         nma = NMA(molecule, VSANoMass(subs))
         self.assert_(len(nma.zeros)==6)
         expected_freqs = numpy.array([ # taken from previous working python version
@@ -515,10 +514,9 @@ class NMATestCase(unittest.TestCase):
                         2864.80440032, 3680.49886454 ] )
         self.check_freqs(expected_freqs, nma, 4, check_zeros=True)
 
-
     def test_mbh(self):
         molecule = load_molecule_charmm("input/an/ethanol.cor","input/an/ethanol.hess.full")
-        blocks = load_blocks_txt("input/an/fixed.07.txt")
+        blocks = load_indices("input/an/fixed.07.txt", groups=True)
         nma = NMA(molecule, MBH(blocks))
         self.check_ortho(nma.modes)
         make_moldenfile_nma("output/ethanol.mbh.molden.log", nma)
@@ -534,8 +532,8 @@ class NMATestCase(unittest.TestCase):
 
     def test_phva_mbh(self):
         molecule = load_molecule_charmm("input/an/ethanol.cor","input/an/ethanol.hess.full")
-        blocks = load_blocks_txt("input/an/fixed.07.txt")
-        fixed = load_fixed_txt("input/an/fixed.06.txt")
+        blocks = load_indices("input/an/fixed.07.txt", groups=True)
+        fixed = load_indices("input/an/fixed.06.txt")
         nma = NMA(molecule, PHVA_MBH(fixed,blocks))
 
     def test_constrain(self):

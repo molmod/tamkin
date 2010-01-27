@@ -204,9 +204,11 @@ class IOTestCase(unittest.TestCase):
         self.assertEqual(nma1.multiplicity, nma2.multiplicity)
         self.assertEqual(nma1.symmetry_number, nma2.symmetry_number)
 
-
-    def test_load_blocks_txt(self):
-        blocks = load_blocks_txt("input/an/fixed.07.txt")
+    def test_load_indices(self):
+        blocks = load_indices("input/an/fixed.07.txt", groups=True)
+        self.assertEqual(blocks, [[3,2,6]])
+        blocks = load_indices("input/an/fixed.07.txt")
+        self.assertEqual(blocks, [3,2,6])
 
     def test_dump_modes_xyz(self):
         molecule = load_molecule_charmm("input/an/ethanol.cor","input/an/ethanol.hess.full")
@@ -229,4 +231,54 @@ class IOTestCase(unittest.TestCase):
             line = f.readline().strip()
         self.assertEqual(line,"9")
         f.close()
+
+    def test_load_dump_indices1(self):
+        subs = range(10)
+        dump_indices("output/subs-atoms.1.txt", subs, shift=0)
+        dump_indices("output/subs-atoms.2.txt", subs, shift=1)
+        dump_indices("output/subs-atoms.3.txt", subs)
+
+        subs1 = load_indices("output/subs-atoms.1.txt", shift=0)
+        self.assertEqual(len(subs),len(subs1))
+        for (i,j) in zip(subs,subs1):
+            self.assertEqual(i,j)
+        subs2 = load_indices("output/subs-atoms.2.txt", shift=-1)
+        self.assertEqual(len(subs),len(subs2))
+        for i,j in zip(subs,subs2):
+            self.assertEqual(i,j)
+        subs22 = load_indices("output/subs-atoms.2.txt")  # should not matter
+        self.assertEqual(len(subs),len(subs22))
+        for i,j in zip(subs,subs22):
+            self.assertEqual(i,j)
+        subs3 = load_indices("output/subs-atoms.3.txt")
+        self.assertEqual(len(subs),len(subs3))
+        for i,j in zip(subs,subs3):
+            self.assertEqual(i,j)
+
+        blocks = [range(10), range(10,20)]
+        dump_indices("output/blocks.1.txt", blocks, shift=0)
+        dump_indices("output/blocks.2.txt", blocks, shift=1)
+        dump_indices("output/blocks.3.txt", blocks)
+
+        blocks1 = load_indices("output/blocks.1.txt", shift=0, groups=True)
+        self.assertEqual(len(blocks),len(blocks1))
+        for bl,bl1 in zip(blocks,blocks1):
+            for i,j in zip(bl,bl1):
+                self.assertEqual(i,j)
+        blocks2 = load_indices("output/blocks.2.txt", shift=-1, groups=True)
+        self.assertEqual(len(blocks),len(blocks2))
+        for bl,bl1 in zip(blocks,blocks2):
+            for i,j in zip(bl,bl1):
+                self.assertEqual(i,j)
+        blocks22 = load_indices("output/blocks.2.txt", groups=True)  # should not matter
+        self.assertEqual(len(blocks),len(blocks2))
+        for bl,bl1 in zip(blocks,blocks2):
+            for i,j in zip(bl,bl1):
+                self.assertEqual(i,j)
+        blocks3 = load_indices("output/blocks.3.txt", groups=True)
+        self.assertEqual(len(blocks),len(blocks3))
+        for bl,bl1 in zip(blocks,blocks3):
+            for i,j in zip(bl,bl1):
+                self.assertEqual(i,j)
+
 

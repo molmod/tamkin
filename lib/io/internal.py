@@ -61,8 +61,7 @@ import numpy
 
 __all__ = [
     "load_chk", "dump_chk",
-    "load_fixed_txt", "load_subs_txt", "load_envi_txt", "load_blocks_txt",
-    "blocks_write_to_file", "selectedatoms_write_to_file",
+    "load_indices", "dump_indices",
 ]
 
 
@@ -159,101 +158,68 @@ def dump_chk(filename, data):
     f.close()
 
 
-def load_fixed_txt(filename,shift=-1):
-    """Read the fixed atoms into the list fixed_atoms.
-    Empty lines are skipped.
+def load_indices(filename, shift=-1, groups=False):
+    """Load atom indexes from file
 
-    Arguments:
-    filename  --  file that contains the fixed atoms:
-                  1 atom on every line, empty lines are skipped
-    shift  --  default on -1, because numbering in Python starts with -1
-    """
-    fixed_atoms = []
-    f = file(filename)
-    for line in f:
-        if line != "\n":    # skip empty lines
-            fixed_atoms.append(int(line)+shift)
-    f.close()
-    # TODO
-    # check that every atom appears once
-    return fixed_atoms
+       Individual indexes or separated by white space or by one new-line
+       character. The atom indexes can be separated by one or more empty lines
+       to define groups of atoms that belong toghether in one block.
 
+       Arguments:
+         filename  --  The file to load the indexes from
 
-def load_subs_txt(filename,shift=-1):
-    """Read the subsystem atoms into a list (for VSA treatment).
-    Empty lines are skipped.
+       Optional arguments:
+         shift  --  A constant shift applied to all atom indexes to convert
+                    between numbers starting from zero and numbers starting from
+                    one.
+         groups  --  When True, the function always returns a list of lists,
+                     even when only one group of indexes is found in the file.
+                     Otherwise only a single list of indexes is returned, even
+                     when multiple groups of indexes are encountered.
 
-    Arguments:
-    filename  --  file that contains the subsystem atoms:
-                  1 atom on every line, empty lines are skipped
-    shift  --  default on -1, because numbering in Python starts with -1
-    """
-    return load_fixed_txt(filename,shift=shift)
-
-
-def load_envi_txt(filename,shift=-1):
-    """Read the environment atoms into a list (for VSA treatment).
-    Empty lines are skipped.
-
-    Arguments:
-    filename  --  file that contains the environment atoms:
-                  1 atom on every line, empty lines are skipped
-    shift  --  default on -1, because numbering in Python starts with -1
-    """
-    return load_fixed_txt(filename,shift=shift)
-
-
-def load_blocks_txt(filename,shift=-1):
-    """Read the block structure into a list of blocks.
-    Returns  blocks, a list of lists of atoms:
-                 [ [at1,at5,at3], [at4,at5], ...]
-    Arguments:
-    filename  --  file that contains the block structure:
-                  one line per atom
-                  one or more empty lines separate subsequent blocks
-    shift  --  default on -1, because numbering in Python starts with -1
     """
     blocks = []
     block  = []
     f = file(filename)
     for line in f:
-        if line == "\n":     # empty line seperates blocks
-            if len(block)!=0:
-                blocks.append(block)
-                block = []   # start new block
+        words = line.split()
+        if len(words) == 0 and len(block) > 0:
+            blocks.append(block)
+            # start new block
+            block = []
         else:
-            block.append(int(line)+shift)  # add atom to current block
-    if len(block)!=0:
-        blocks.append(block)   # add last block to blocks list
+            for word in words:
+                block.append(int(word)+shift)
+    if len(block) > 0:
+        # add last block to blocks list
+        blocks.append(block)
     f.close()
-    return blocks
+    if groups:
+        return blocks
+    else:
+        return sum(blocks, [])
 
 
-def blocks_write_to_file(blocks, filename, shift=1):
-    """write atoms in blocks to file.
-    One atom per line, a blank line starts a new block.
-    Optional
-    shift  --  write atom+shift to file.
-               Default is 1, because default shift in load_subs_txt and load_fixed_txt is -1."""
+def dump_indices(filename, indices, shift=1, compact=True):
+    """Dump atom indexes to file
+
+       Arguments:
+         filename  --  the file to dump the atom indexes to
+
+       Optional arguments:
+         indices  --  a list of atom indices or a list of lists of atom indices
+                      (the latter is used to define blocks of atoms)
+    """
+
+    if len(indices) > 0 and not hasattr(indices[0], "__len__"):
+        indices = [indices]
+
+    separator = {True: " ", False: "\n"}[compact]
+
     f = file(filename, "w")
-    for bl in blocks:
-        for at in bl:
-            print >> f, at+shift
-        print >> f, ""
+    for l in indices:
+        group_str = separator.join(str(index+shift) for index in l)
+        print >> f, group_str
+        print >> f
     f.close()
-
-
-def selectedatoms_write_to_file(selected, filename, shift=1):
-    """write selected atoms to file, e.g. subsystem or environment atoms.
-    One atom per line.
-    Optional:
-    shift  --  write atom+shift to file.
-               Default is 1, because default shift in load_subs_txt and load_fixed_txt is -1."""
-    f = file(filename, "w")
-    for at in selected:
-        print >> f, at+shift
-    print >> f, ""
-    f.close()
-
-
 

@@ -97,11 +97,10 @@ class NMAToolsTestCase(unittest.TestCase):
         for at in range(21):
             self.assertAlmostEqual(nma.freqs[at], freqs2[at], 7)
 
-
     def test_overlap(self):
         molecule = load_molecule_charmm("input/an/ethanol.cor","input/an/ethanol.hess.full")
         nma1 = NMA(molecule)
-        fixed = load_fixed_txt("input/an/fixed.06.txt")
+        fixed = load_indices("input/an/fixed.06.txt")
         nma2 = NMA(molecule, PHVA(fixed))
         overlap = compute_overlap(nma1, nma2)
         overlap = compute_overlap((nma1.modes, nma1.freqs), (nma2.modes, nma2.freqs))
@@ -109,7 +108,6 @@ class NMAToolsTestCase(unittest.TestCase):
         overlap = compute_overlap(nma1.modes[:,0], nma2.modes[:,0])
         # TODO
         #self.assertAlmostEqual()
-
 
     def test_delta_vector(self):
         # from charmmcor
@@ -128,8 +126,6 @@ class NMAToolsTestCase(unittest.TestCase):
             sensit = compute_sensitivity_freq(nma, i)
             self.assertAlmostEqual(numpy.sum((numpy.dot(sensit,nma.modes)-nma.modes)**2,0)[i],0.0,9)
 
-
-
     def test_create_blocks_peptide_charmm(self):
         blocks1 = create_blocks_peptide_charmm("input/charmm/crambin.crd", "RTB",blocksize=1)
         blocks2 = create_blocks_peptide_charmm("input/charmm/crambin.crd", "RTB",blocksize=2)
@@ -147,55 +143,6 @@ class NMAToolsTestCase(unittest.TestCase):
         blocks = create_blocks_peptide_charmm("input/charmm/crambin.crd", "normal")
         self.assertEqual(len(blocks), 91)
 
-    def test_writing(self):
-        subs = range(10)
-        selectedatoms_write_to_file(subs, "output/subs-atoms.1.txt", shift=0)
-        selectedatoms_write_to_file(subs, "output/subs-atoms.2.txt", shift=1)
-        selectedatoms_write_to_file(subs, "output/subs-atoms.3.txt")
-
-        subs1 = load_subs_txt("output/subs-atoms.1.txt", shift=0)
-        self.assertEqual(len(subs),len(subs1))
-        for (i,j) in zip(subs,subs1):
-            self.assertEqual(i,j)
-        subs2 = load_subs_txt("output/subs-atoms.2.txt", shift=-1)
-        self.assertEqual(len(subs),len(subs2))
-        for i,j in zip(subs,subs2):
-            self.assertEqual(i,j)
-        subs22 = load_subs_txt("output/subs-atoms.2.txt")  # should not matter
-        self.assertEqual(len(subs),len(subs22))
-        for i,j in zip(subs,subs22):
-            self.assertEqual(i,j)
-        subs3 = load_subs_txt("output/subs-atoms.3.txt")
-        self.assertEqual(len(subs),len(subs3))
-        for i,j in zip(subs,subs3):
-            self.assertEqual(i,j)
-
-        blocks = [range(10), range(10,20)]
-        blocks_write_to_file(blocks, "output/blocks.1.txt", shift=0)
-        blocks_write_to_file(blocks, "output/blocks.2.txt", shift=1)
-        blocks_write_to_file(blocks, "output/blocks.3.txt")
-
-        blocks1 = load_blocks_txt("output/blocks.1.txt", shift=0)
-        self.assertEqual(len(blocks),len(blocks1))
-        for bl,bl1 in zip(blocks,blocks1):
-            for i,j in zip(bl,bl1):
-                self.assertEqual(i,j)
-        blocks2 = load_blocks_txt("output/blocks.2.txt", shift=-1)
-        self.assertEqual(len(blocks),len(blocks2))
-        for bl,bl1 in zip(blocks,blocks2):
-            for i,j in zip(bl,bl1):
-                self.assertEqual(i,j)
-        blocks22 = load_blocks_txt("output/blocks.2.txt")  # should not matter
-        self.assertEqual(len(blocks),len(blocks2))
-        for bl,bl1 in zip(blocks,blocks2):
-            for i,j in zip(bl,bl1):
-                self.assertEqual(i,j)
-        blocks3 = load_blocks_txt("output/blocks.3.txt")
-        self.assertEqual(len(blocks),len(blocks3))
-        for bl,bl1 in zip(blocks,blocks3):
-            for i,j in zip(bl,bl1):
-                self.assertEqual(i,j)
-
     def test_plot_spectrum(self):
         molecule = load_molecule_charmm("input/an/ethanol.cor", "input/an/ethanol.hess.full")
         nma = NMA(molecule)
@@ -209,7 +156,6 @@ class NMAToolsTestCase(unittest.TestCase):
         plot_spectrum_dos("output/spectrum-dos.4.png", [nma.freqs], low=-10.0*invcm, high=1500.0*invcm, width=50.0*invcm, step=20.0*invcm, title="step size")
         plot_spectrum_dos("output/spectrum-dos.5.png", [nma.freqs, nma.freqs*1.1], title="two spectra")
         plot_spectrum_dos("output/spectrum-dos.6.png", [nma.freqs, nma.freqs*1.1], all_amps=[1.0,2.0], title="different amplitude")
-
 
     def test_create_enm_molecule(self):
         molecule = load_molecule_charmm("input/an/ethanol.cor", "input/an/ethanol.hess.full")

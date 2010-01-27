@@ -124,20 +124,28 @@ def compute_overlap(nma1, nma2, filename=None):
     return overlap
 
 
-def write_overlap(freqs1, freqs2, overlap, filename=None):
-    """Write overlap matrix to a file, default is overlap.csv. Format:
-    ------------------------
-           | freqs2
-    ------------------------
-    freqs1 | mat1^T . mat2
-    ------------------------
+def write_overlap(freqs1, freqs2, overlap, filename="overlap.csv"):
+    """Write the overlap matrix to a csv file
+
+       Arguments:
+         freqs1  --  the list of frequencies associated with the rows of the
+                     overlap matrix
+         freqs2  --  the list of frequencies associated with the columns of the
+                     overlap matrix
+         overlap  --  the overlap matrix
+
+       Optional arguments:
+         filename  --  the file to write to [default="overlap.csv"]
+
+       The table is contains the following blocks:
+        ------------------------
+                 | freqs2
+        ------------------------
+        freqs1^T | mat1^T . mat2
+        ------------------------
     """
     #freqs1 = freqs1 /lightspeed*centimeter
     #freqs2 = freqs2 /lightspeed*centimeter
-
-    # write to file
-    if filename==None:
-        filename="overlap.csv"   # TODO sys.currentdir
 
     to_append="w+"   # not append, just overwrite
     f = file(filename,to_append)
@@ -181,12 +189,18 @@ def compute_delta(coor1, coor2, masses=None, normalize=False):
     return numpy.reshape(delta, (-1,1))
 
 
-def compute_sensitivity_freq(nma, index, symmetric = False, massweight = True):
-    """Compute the sensity of the index-th frequency to changes of
-    the mass-weighted Hessian elements.
-    Optional:
-    symmetric  --  Slightly different formula if symmetry of matrix is taken into account. Default False.
-    massweight  --  Whether mass-weighted or un-mass-weighted Hessian is considered."""
+def compute_sensitivity_freq(nma, index, symmetric=False, massweight=True):
+    """Compute the sensity of the index-th frequency to changes in
+       the mass-weighted Hessian elements.
+
+       Arguments:
+         nma  --  an NMA object
+
+       Optional argumets:
+         symmetric  --  when True, a slightly different formula is used to take
+                        into account the symmetry of the Hessian [default=False]
+         massweight  --  when True, a mass-weighted hessian is considered
+    """
     L = 3*len(nma.masses)
     mode = nma.modes[:,index]
     if not massweight: # un-mass-weight the mode
@@ -411,6 +425,7 @@ def _calc_blocks_RHbending(N, calpha, proline, carbon, oxygen, nitrogen):
     res.append([calpha[-1]]+range(calpha[-1]+2,N+1)) # calpha and rest of residue
 
     return res + pept + CH
+
 
 def _calc_blocks_normal(N, calpha, proline, carbon, oxygen, nitrogen):
     """MBH scheme with linked blocks where each side chain is considered as a

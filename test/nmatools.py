@@ -58,8 +58,10 @@
 
 from tamkin import *
 
-import unittest, numpy
-import pylab
+from molmod import lightspeed, centimeter
+
+import unittest, numpy,pylab
+
 
 __all__ = ["NMAToolsTestCase"]
 
@@ -197,15 +199,16 @@ class NMAToolsTestCase(unittest.TestCase):
     def test_plot_spectrum(self):
         molecule = load_molecule_charmm("input/an/ethanol.cor", "input/an/ethanol.hess.full")
         nma = NMA(molecule)
-        plot_spectrum("lines","output/spectrum-lines.1.png", [nma.freqs, nma.freqs], title="standard settings")
-        plot_spectrum("lines","output/spectrum-lines.2.png", [nma.freqs, nma.freqs], min=-10.0, max=500.0, title="zoom")
+        invcm = lightspeed/centimeter
+        plot_spectrum_lines("output/spectrum-lines.1.png", [nma.freqs, nma.freqs], title="standard settings")
+        plot_spectrum_lines("output/spectrum-lines.2.png", [nma.freqs, nma.freqs], low=-10.0*invcm, high=500.0*invcm, title="zoom")
 
-        plot_spectrum("dos","output/spectrum-dos.1.png", [nma.freqs], title="standard settings")
-        plot_spectrum("dos","output/spectrum-dos.2.png", [nma.freqs], min=-10.0, max=1500.0, title="zoom")
-        plot_spectrum("dos","output/spectrum-dos.3.png", [nma.freqs], min=-10.0, max=1500.0, width=50.0, title="width")
-        plot_spectrum("dos","output/spectrum-dos.4.png", [nma.freqs], min=-10.0, max=1500.0, width=50.0, step=20.0, title="step size")
-        plot_spectrum("dos","output/spectrum-dos.5.png", [nma.freqs, nma.freqs*1.1], title="two spectra")
-        plot_spectrum("dos","output/spectrum-dos.6.png", [nma.freqs, nma.freqs*1.1], amplitudes=[1.0,2.0], title="different amplitude")
+        plot_spectrum_dos("output/spectrum-dos.1.png", [nma.freqs], title="standard settings")
+        plot_spectrum_dos("output/spectrum-dos.2.png", [nma.freqs], low=-10.0*invcm, high=1500.0*invcm, title="zoom")
+        plot_spectrum_dos("output/spectrum-dos.3.png", [nma.freqs], low=-10.0*invcm, high=1500.0*invcm, width=50.0*invcm, title="width")
+        plot_spectrum_dos("output/spectrum-dos.4.png", [nma.freqs], low=-10.0*invcm, high=1500.0*invcm, width=50.0*invcm, step=20.0*invcm, title="step size")
+        plot_spectrum_dos("output/spectrum-dos.5.png", [nma.freqs, nma.freqs*1.1], title="two spectra")
+        plot_spectrum_dos("output/spectrum-dos.6.png", [nma.freqs, nma.freqs*1.1], all_amps=[1.0,2.0], title="different amplitude")
 
 
     def test_create_enm_molecule(self):

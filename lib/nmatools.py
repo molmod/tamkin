@@ -71,10 +71,13 @@ __all__ = [
     "load_peptide_info_charmm", "create_blocks_peptide_charmm",
     "create_subs_peptide_charmm",
     "blocks_write_to_file", "selectedatoms_write_to_file",
-    "plot_spectrum",
+    "plot_spectrum_lines", "plot_spectrum_dos",
     "create_enm_molecule",
     "write_modes_for_VMD", "make_moldenfile_nma",
 ]
+
+
+invcm = lightspeed/centimeter
 
 
 def compute_overlap(nma1, nma2, filename=None):
@@ -511,77 +514,96 @@ def selectedatoms_write_to_file(selected, filename, shift=1):
     f.close()
 
 
-def plot_spectrum(label, filename, freqlist, min=None, max=None, Imax=None,
-                  step=1.0, width=10.0, amplitudes=None, title=None):
+def plot_spectrum_lines(filename, all_freqs, low=None, high=None, title=None):
+    """Plot multiple spectra in a comparative line plot
+
+       Arguments:
+         filename  --  the filename to write the figure too (the extension and
+                       the matplotlib settings determine the file format)
+         all_freqs  --  a list with spectra, each item in the list is an array
+                       with multiple frequencies that represent one spectrum
+
+       Optional arguments:
+         low  --  minimum on x-axis, in atomic units
+         high  --  maximum on x-axis, in atomic units
+         title  --  title for plot (a string)
     """
-    Plot the spectra of the frequencies in the freqlist: each item in freqlist
-    leads to an additional spectrum.
-    * label dos (density of states): sum of Gaussians each centered around
-                                     a certain freq, with certain width
-    * label lines (line spectrum): draw a horizontal line for each freq.
+    pylab.clf()
+    for i, freqs in enumerate(all_freqs):
+        for freq in freqs:
+            if (freq>low or low is None) and (freq<high or high is None):
+                pylab.plot([i+0.75,i+1.25],[freq/invcm,freq/invcm],"k-")
+    pylab.xticks(range(1,len(all_freqs)+1))
+    if low is not None:
+        pylab.ylim(ymin=low/invcm)
+    if high is not None:
+        pylab.ylim(ymax=high/invcm)
+    pylab.ylabel("Frequency in cm-1")
+    if title is not None:
+        pylab.title(title)
+    pylab.savefig(filename)
 
-    Options
-    min  --  min on x-axis, in cm-1
-    max  --  max on x-axis, in cm-1
-    Imax  --  maximum intensity on y-axis, no unit
-    step  --  resulotion of plot, in cm-1
-    width  --  width of Gaussian, in cm-1
-    amplitudes  --  if different amplitudes for the items in freqlist
-    title  --  title for plot (a string)
+
+def plot_spectrum_dos(filename, all_freqs, low=None, high=None, imax=None,
+                      step=1.0*invcm, width=10.0*invcm, all_amps=None, title=None):
+    """Plot multiple spectra in a comparative density of states plot
+
+       Arguments:
+         filename  --  the filename to write the figure too (the extension and
+                       the matplotlib settings determine the file format)
+         all_freqs  --  a list with spectra, each item in the list is an array
+                       with multiple frequencies that represent one spectrum
+
+       Optional arguments:
+         low  --  minimum on x-axis, in atomic units
+         high  --  maximum on x-axis, in atomic units
+         imax  --  maximum intensity on y-axis, no unit
+         step  --  resulotion of plot, in atomic units
+         width  --  width of Gaussian, in atomic units
+         all_amps  --  list of arrays in the same format as all_freqs with an
+                       amplitude for each individual frequency
+         title  --  title for plot (a string)
     """
-    if label=="dos":   # plot density of states spectrum
-        fig = pylab.figure()
-        fig.hold(True)
-        ax = fig.add_subplot(1,1,1)
-        # do plotting
-        for i,freqs in enumerate(freqlist):
-            if amplitudes is not None: ampl = amplitudes[i]
-            else: ampl = 1.0
-            do_plot_dos(ax, freqs /lightspeed*centimeter, min=min, max=max,
-                              step=step, width=width, amplitude=ampl)
-        # clean up
-        if Imax is not None:  ax.set_ylim(0.0,IMax)
-        if min is not None:   ax.set_xlim(xmin=min)
-        if max is not None:   ax.set_xlim(xmax=max)
-        pylab.legend([str(nb) for nb in range(1,len(freqlist)+1)])
-        pylab.ylabel("intensity")
-        if title is not None: pylab.title(title)
-        fig.savefig(filename)
-        pylab.close()
 
-    if label=="lines":   # plot line spectrum
-        pylab.figure()
-        pylab.hold(True)
-        # do plotting
-        for i,freqs in enumerate(freqlist):
-            for freq in freqs /lightspeed*centimeter :
-                if (freq>min or min is None) and (freq<max or max is None):
-                    pylab.plot([i+0.75,i+1.25],[freq,freq],"k-")
-        # clean up
-        pylab.xticks(range(1,len(freqlist)+1))
-        if min is not None:  pylab.ylim(ymin=min)
-        if max is not None:  pylab.ylim(ymax=max)
-        pylab.ylabel("freq in cm-1")
-        if title is not None: pylab.title(title)
-        pylab.savefig(filename)
-        pylab.close()
+    def plot_single_dos(freqs, low, high, step, width, amps):
+        if low is None:
+            low=freqs[0]-3*width   # to avoid unnecessary plotting
+        if high is None:
+            high=freqs[-1]+3*width
 
+        nu = numpy.arange(low, high, step)
+        intensity = numpy.zeros(nu.shape, float)
 
-def do_plot_dos(ax, freqs, min, max,
-                step=1.0, width=10.0, amplitude=1.0):
+        s2 = width**2 / ( 8*numpy.log(2) )  # standard deviation squared
+        for i in xrange(len(freqs)):
+            if freqs[i] > low and freqs[i] < high:
+                tmp = numpy.exp(-(nu-freqs[i])**2/(2*s2))
+                if amps is not None:
+                    if hasattr(amps, "__len__"):
+                        tmp *= amps[i]
+                    else:
+                        tmp *= amps
+                intensity += tmp
+        pylab.plot(nu/invcm, intensity)
 
-    if min is None:  min=freqs[0]-3*width   # to avoid unnecessary plotting
-    if max is None:  max=freqs[-1]+3*width
-
-    freqs = numpy.array(freqs)
-    nu = numpy.arange(min, max, step)
-    intensity = numpy.zeros(nu.shape,float)
-
-    s2 = width**2 / ( 8*numpy.log(2) )  # standard deviation squared
-    for freq in freqs:
-        if freq>min and freq<max:
-            intensity += numpy.exp(-(nu-freq)**2/(2*s2))
-    ax.plot(nu,intensity*amplitude)
+    pylab.clf()
+    for i, freqs in enumerate(all_freqs):
+        if all_amps is None:
+            amps = None
+        else:
+            amps = all_amps[i]
+        plot_single_dos(freqs, low, high, step, width, amps)
+    pylab.ylim(0.0, imax)
+    if low is not None:
+        pylab.xlim(xmin=low/invcm)
+    if high is not None:
+        pylab.xlim(ymax=high/invcm)
+    pylab.legend([str(nb) for nb in range(1,len(all_freqs)+1)])
+    pylab.xlabel("Frequency in cm-1")
+    pylab.ylabel("Intensity")
+    if title is not None:
+        pylab.title(title)
+    pylab.savefig(filename)
 
 
 def create_enm_molecule(molecule, selected=None, numbers=None, masses=None,

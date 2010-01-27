@@ -58,7 +58,6 @@
 
 from tamkin.data import Molecule
 from tamkin.nma import NMA
-from tamkin.io import load_coordinates_charmm
 
 from molmod import lightspeed, angstrom, amu, centimeter
 

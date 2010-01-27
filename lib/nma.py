@@ -68,8 +68,8 @@
 #   weighted Hessian in the new coordinates.
 
 
-from tamkin.io import load_chk, dump_chk
 from tamkin.geom import transrot_basis, rank_linearity
+from tamkin.io.internal import load_chk, dump_chk
 
 import numpy
 

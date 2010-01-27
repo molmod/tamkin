@@ -56,14 +56,14 @@
 # --
 
 
-from data import *
-from io import *
-from nma import *
-from nmatools import *
-from partf import *
-from rotor import *
-from timer import *
-from pftools import *
-from tunneling import *
+from tamkin.data import *
+from tamkin.io import *
+from tamkin.nma import *
+from tamkin.nmatools import *
+from tamkin.partf import *
+from tamkin.rotor import *
+from tamkin.timer import *
+from tamkin.pftools import *
+from tamkin.tunneling import *
 
 

@@ -59,14 +59,14 @@
 from tamkin.data import Molecule, RotScan
 
 from molmod.io import FCHKFile
-from molmod import dihed_angle, amu, angstrom
+from molmod import dihed_angle, amu, angstrom, lightspeed, centimeter
 
 import numpy
 
 
 __all__ = [
     "load_fixed_g03com", "load_molecule_g03fchk", "load_molecule_g98fchk",
-    "load_rotscan_g03log",
+    "load_rotscan_g03log", "make_moldenfile_nma",
 ]
 
 
@@ -255,4 +255,191 @@ def load_rotscan_g03log(fn_log, top_indexes=None):
     result.geometries = numpy.array(geometries)
     return result
 
+
+
+#======================================
+#    write logfile as Gaussian03 does
+#======================================
+
+# this file contains all texts needed to generate
+# a .log file that can be read by molden (visualization program)
+# - def make_molden_texts()
+# - def make_moldenfile(filename, masses, atomicnumbers, positions, modes, ev)
+
+def make_molden_texts():
+
+   HEAD = """ Entering Gaussian System
+ this file is generated from the MLDGAU subroutine in the file secder.F
+ Please note, that this is a "faked" output;
+ there are no intensities computed in CPMD."""
+
+   head_coordinates = """ Standard orientation:
+ ---------------------------------------------------------------------
+Center     Atomic     Atomic              Coordinates (Angstroms)
+Number     Number      Type              X           Y           Z
+ ---------------------------------------------------------------------"""
+
+
+   head_basisfunctions = """ ---------------------------------------------------------------------
+       basis functions          primitive gaussians
+       alpha electrons          beta electrons
+ **********************************************************************"""
+
+   head_end = " Normal termination of Gaussian 98."
+
+   head_freq0= """ Harmonic frequencies (cm**-1), IR intensities (KM/Mole),
+ Raman scattering activities (A**4/AMU), Raman depolarization ratios,
+ reduced masses (AMU), force constants (mDyne/A) and normal coordinates:"""
+
+   head_freq1_1 =  "                    ?A"
+   head_freq1_2 =  "                    ?A                     ?A"
+   head_freq1_3 =  "                    ?A                     ?A                     ?A"
+   head_freq1 = [head_freq1_1,head_freq1_2,head_freq1_3]
+
+   head_freq2 =  " Frequencies --"
+
+   head_freq3_1 = """ Red. masses --     0.0000
+ Frc consts  --     0.0000
+ IR Inten    --     0.0000
+ Raman Activ --     0.0000
+ Depolar     --     0.0000
+ Atom AN      X      Y      Z"""
+   head_freq3_2 = """ Red. masses --     0.0000                 0.0000
+ Frc consts  --     0.0000                 0.0000
+ IR Inten    --     0.0000                 0.0000
+ Raman Activ --     0.0000                 0.0000
+ Depolar     --     0.0000                 0.0000
+ Atom AN      X      Y      Z        X      Y      Z"""
+   head_freq3_3 = """ Red. masses --     0.0000                 0.0000                 0.0000
+ Frc consts  --     0.0000                 0.0000                 0.0000
+ IR Inten    --     0.0000                 0.0000                 0.0000
+ Raman Activ --     0.0000                 0.0000                 0.0000
+ Depolar     --     0.0000                 0.0000                 0.0000
+ Atom AN      X      Y      Z        X      Y      Z        X      Y      Z"""
+   head_freq3 = [head_freq3_1,head_freq3_2,head_freq3_3]
+
+   return HEAD, head_coordinates, head_basisfunctions, \
+          head_freq0, head_freq1, head_freq2, head_freq3, head_end
+
+
+def make_moldenfile_nma(filename, nma):
+    """Write a logfile with the modes and frequencies
+    in the way Gaussian03 does, such that molden can
+    read this logfile.
+    """
+    if filename is None:
+        filename = "molden.log"
+    if nma.modes is None:
+        raise ValueError("No modes available (do_modes=False), cannot write logfile with modes.")
+    make_moldenfile(filename, nma.masses, nma.numbers, nma.coordinates,
+                    nma.modes, nma.freqs )
+
+
+
+def make_moldenfile(filename, masses, atomicnumbers, positions, modes, ev):
+    """This function produces a molden-readable file: coordinates + frequencies + modes
+
+    positions  -- coordinates, convert to angstrom
+    modes  -- each col is a mode in mass weighted Cartesian coordinates
+             un-mass-weighting necessary and renormalization (in order to see some movement)
+    ev  -- eigenvalues (freqs), convert to cm-1
+    """
+    masses3_sqrt1 = numpy.array(sum([[1/m,1/m,1/m] for m in numpy.sqrt(masses)],[]))
+    HEAD, head_coordinates, head_basisfunctions, \
+    head_freq0, head_freq1, head_freq2, head_freq3, head_end = make_molden_texts()
+
+    [rows,cols]=modes.shape
+    number_of_atoms = rows/3
+    number_of_modes = cols
+    number_of_iterations = number_of_modes/3    # organisation of file: per 3 modes
+
+    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+    # start writing
+    f = file(filename,"w+")
+
+    print >> f, HEAD
+
+    # ATOM PART
+    print >> f, head_coordinates
+    for at in range(number_of_atoms):
+       print >> f, '%5d %10d %13s %15f %11f %11f' %(
+                   at+1,atomicnumbers[at],"0",
+                   positions[at,0]/angstrom,
+                   positions[at,1]/angstrom,
+                   positions[at,2]/angstrom)
+
+    # ORBITAL PART
+    print >> f, head_basisfunctions
+    print >> f, " "   #this part is just empty
+
+    # FREQUENCY PART
+    print >> f, head_freq0
+
+    for iteration in range(number_of_iterations):
+        nb = 3*iteration   #number of mode
+        mode1 = modes[:,nb]  *masses3_sqrt1
+        mode2 = modes[:,nb+1]*masses3_sqrt1
+        mode3 = modes[:,nb+2]*masses3_sqrt1
+        mode1 = mode1/numpy.linalg.norm(mode1)
+        mode2 = mode2/numpy.linalg.norm(mode2)
+        mode3 = mode3/numpy.linalg.norm(mode3)
+        print >> f, '%22d %22d %22d' %(nb+1,nb+2,nb+3)
+        print >> f, head_freq1[2]
+        print >> f, '%s %10.4f %22.4f %22.4f' %(head_freq2,
+                                ev[nb]/lightspeed*centimeter,
+                                ev[nb+1]/lightspeed*centimeter,
+                                ev[nb+2]/lightspeed*centimeter)
+        print >> f, head_freq3[2]
+        for atomnb in range(number_of_atoms):
+            i = 3*atomnb
+            print >> f, '%4d %3d %8.2f %6.2f %6.2f %8.2f %6.2f %6.2f %8.2f %6.2f %6.2f' %(
+                   atomnb+1 , atomicnumbers[atomnb],
+                   mode1[i], mode1[i+1], mode1[i+2],
+                   mode2[i], mode2[i+1], mode2[i+2],
+                   mode3[i], mode3[i+1], mode3[i+2])
+
+    rest = number_of_modes - 3*number_of_iterations
+
+    if rest == 1:
+        nb = number_of_modes-1   #number of mode: the last one
+        mode1 = modes[:,nb]*masses3_sqrt1
+        mode1 = mode1/numpy.linalg.norm(mode1)
+        print >> f, '%22d' %(nb+1)
+        print >> f, head_freq1[0]
+        print >> f, '%s %10.4f' %(head_freq2, ev[nb]/lightspeed*centimeter)
+        print >> f, head_freq3[0]
+        for atomnb in range(number_of_atoms):
+            i = 3*atomnb
+            print >> f, '%4d %3d %8.2f %6.2f %6.2f' %(
+                   atomnb+1 , atomicnumbers[atomnb],
+                   mode1[i], mode1[i+1], mode1[i+2])
+
+    elif rest == 2:
+        nb = number_of_modes-2   #number of mode: the 2 last ones
+        mode1 = modes[:,nb]  *masses3_sqrt1
+        mode2 = modes[:,nb+1]*masses3_sqrt1
+        mode1 = mode1/numpy.linalg.norm(mode1)
+        mode2 = mode2/numpy.linalg.norm(mode2)
+        print >> f, '%22d %22d' %(nb+1,nb+2)
+        print >> f, head_freq1[1]
+        print >> f, '%s %10.4f %22.4f' %(head_freq2,
+                            ev[nb]  /lightspeed*centimeter,
+                            ev[nb+1]/lightspeed*centimeter)
+        print >> f, head_freq3[1]
+        for atomnb in range(number_of_atoms):
+            i = 3*atomnb
+            print >> f, '%4d %3d %8.2f %6.2f %6.2f %8.2f %6.2f %6.2f' %(
+                   atomnb+1 , atomicnumbers[atomnb],
+                   mode1[i], mode1[i+1], mode1[i+2],
+                   mode2[i], mode2[i+1], mode2[i+2],)
+
+    elif rest != 0:
+         print "error?! in number of iterations/number of atoms (writing molden file)"
+    print >> f, head_end
+
+    f.close()
+
+#======================================
+#    (END) write logfile as Gaussian03 does
+#======================================
 

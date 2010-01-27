@@ -62,6 +62,7 @@ import numpy
 __all__ = [
     "load_chk", "dump_chk",
     "load_fixed_txt", "load_subs_txt", "load_envi_txt", "load_blocks_txt",
+    "blocks_write_to_file", "selectedatoms_write_to_file",
 ]
 
 
@@ -226,4 +227,33 @@ def load_blocks_txt(filename,shift=-1):
         blocks.append(block)   # add last block to blocks list
     f.close()
     return blocks
+
+
+def blocks_write_to_file(blocks, filename, shift=1):
+    """write atoms in blocks to file.
+    One atom per line, a blank line starts a new block.
+    Optional
+    shift  --  write atom+shift to file.
+               Default is 1, because default shift in load_subs_txt and load_fixed_txt is -1."""
+    f = file(filename, "w")
+    for bl in blocks:
+        for at in bl:
+            print >> f, at+shift
+        print >> f, ""
+    f.close()
+
+
+def selectedatoms_write_to_file(selected, filename, shift=1):
+    """write selected atoms to file, e.g. subsystem or environment atoms.
+    One atom per line.
+    Optional:
+    shift  --  write atom+shift to file.
+               Default is 1, because default shift in load_subs_txt and load_fixed_txt is -1."""
+    f = file(filename, "w")
+    for at in selected:
+        print >> f, at+shift
+    print >> f, ""
+    f.close()
+
+
 

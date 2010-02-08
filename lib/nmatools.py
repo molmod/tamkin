@@ -544,7 +544,7 @@ def create_enm_molecule(molecule, selected=None, numbers=None, masses=None,
 
        Optional arguments:
          selected  --  Selection of atoms to include in the ENM model. This can
-                       be a list or array of atom indices (length < N), or an
+                       be a list or array of atom indices (length <= N), or an
                        array of booleans (length = N).
          numbers  --  atom numbers in the ENM model (length = N). default is
                       array of ones or the numbers from the molecule object.

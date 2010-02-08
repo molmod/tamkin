@@ -68,21 +68,21 @@ import numpy
 __all__ = ["dump_modes_xyz"]
 
 
-def dump_modes_xyz(nma, indexes, prefix=None, amplitude=5.0*angstrom, frames=36):
+def dump_modes_xyz(nma, indexes=0, prefix="mode", amplitude=5.0*angstrom, frames=36):
     """Write XYZ trajectory file(s) that vizualize internal mode(s)
 
        Arguments:
          nma  --  an object that specifies the normal modes, several formats
                   are supported: (i) a Tamkin NMA object, (ii) a 3-tuple with
-                  reference coordinates, mass-unweighted modes and atom numbers
-                  or (iii) a 4-tuple with reference coordinates, mass-weighted
-                  modes, atom numbers and a masses3 vector. the latter is a
-                  vector with 3*N elements containing the masses of the
-                  atoms.
-         indexes  --  the index or a list of indexes of modes that must be
-                      written to trajectory files
+                  reference coordinates, mass-unweighted mode(s) and atom
+                  numbers or (iii) a 4-tuple with reference coordinates, mass-
+                  weighted mode(s), atom numbers and a masses3 vector. the
+                  latter is a vector with 3*N elements containing the masses of
+                  the atoms in groups of three.
 
        Optional arguments:
+         indexes  --  the index or a list of indexes of modes that must be
+                      written to trajectory files [default=0]
          prefix  --  a prefix used for the output files. the generated
                      trajectory filenames have the format prefix.index.xyz
                      [default="mode"]
@@ -97,10 +97,10 @@ def dump_modes_xyz(nma, indexes, prefix=None, amplitude=5.0*angstrom, frames=36)
         modes = nma.modes
         numbers = nma.numbers
         masses3 = nma.masses3
-    elif hasattr(nma, "__len__") and len(nma==3):
+    elif hasattr(nma, "__len__") and len(nma)==3:
         coordinates, modes, numbers = nma
         masses3 = None
-    elif hasattr(nma, "__len__") and len(nma==4):
+    elif hasattr(nma, "__len__") and len(nma)==4:
         coordinates, modes, numbers, masses3 = nma
     else:
         raise TypeError("Could not understand first argument. Check documentation.")
@@ -108,16 +108,17 @@ def dump_modes_xyz(nma, indexes, prefix=None, amplitude=5.0*angstrom, frames=36)
     if not hasattr(indexes, "__len__"):
         indexes = [indexes]
 
-    if prefix is None:
-        prefix = "mode"
+    if len(modes.shape) == 1:
+        modes = modes.reshape((-1,1))
 
     symbols = [periodic[n].symbol for n in numbers]
 
     for index in indexes:
         filename = "%s.%i.xyz" % (prefix, index)
-        mode = nma.modes[:,index]
+        mode = modes[:,index]
         if masses3 is not None:
             mode /= numpy.sqrt(masses3)
+        mode /= numpy.linalg.norm(mode)
         xyz_writer = XYZWriter(filename, symbols)
         for frame in xrange(frames):
             factor = amplitude*numpy.sin(2*numpy.pi*float(frame)/frames)

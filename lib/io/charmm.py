@@ -65,7 +65,8 @@ import numpy
 
 
 __all__ = [
-    "load_molecule_charmm", "load_coordinates_charmm", "load_modes_charmm"
+    "load_molecule_charmm", "load_coordinates_charmm", "load_modes_charmm",
+    "load_peptide_info_charmm",
 ]
 
 
@@ -260,5 +261,53 @@ def load_modes_charmm(filename):
 
     f.close()
     return modes, freqs, masses
+
+
+def load_peptide_info_charmm(filename):
+    """Load information from CHARMM file for peptide blocks and subsystems
+
+       Arguments:
+         filename  --  the CHARMM coordinate file (typically extension .crd or
+                       .cor)
+
+       Return values:
+         N  --  total number of atoms in the peptide
+         calpha  --  indices of the alpha carbons ('CA' in CHARMM file)
+         proline  --  indices of the alpha carbons that belong to proline
+                      residues ('PRO  CA' in CHARMM file)
+         carbon  -- indices of the backbone carbons, exclude the alpha carbons
+                    ('C' in CHARMM file)
+         oxygen  -- indices of the backbone oxygens ('O' in CHARMM file)
+         nitrogen  --  indices of the backbone nitrogens ('N' in CHARMM file)
+    """
+    # Reading from charmmfile
+    f = file(filename)
+    # nb of atoms
+    for i,line in enumerate(f):
+        words = line.split()
+        if words[0]!="*":
+            N = int(words[0])
+            break
+    # find alpha carbons, proline residues, carbons, oxygens, nitrogens
+    calpha = []
+    proline = []
+    carbon = []
+    oxygen = []
+    nitrogen = []
+    for i,line in enumerate(f):
+        words = line.split()
+        if words[3].startswith("CA"):
+            calpha.append(int(words[0]))
+            if words[2]=="PRO":
+                proline.append(int(words[0]))
+        if words[3]=="C":
+            carbon.append(int(words[0]))
+        if words[3]=="O":
+            oxygen.append(int(words[0]))
+        if words[3]=="N":
+            nitrogen.append(int(words[0]))
+    f.close()
+    return N, calpha, proline, carbon, oxygen, nitrogen
+
 
 

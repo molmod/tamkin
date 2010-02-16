@@ -443,7 +443,10 @@ class ExtRot(Info, StatFys):
         if self.symmetry_number is None:
             self.symmetry_number = nma.symmetry_number
             if self.symmetry_number is None:
-                raise ValueError("Symmetry number is not defined.")
+                from molmod import Molecule
+                # compute the rotational symmetry number
+                tmp_mol = Molecule(nma.numbers, nma.coordinates)
+                self.symmetry_number = tmp_mol.compute_rotsym()
         self.factor = numpy.sqrt(numpy.product([
             2*numpy.pi*m*boltzmann for m in self.moments if m > self.im_threshold
         ]))/self.symmetry_number/numpy.pi

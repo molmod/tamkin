@@ -118,6 +118,23 @@ class PartFunTestCase(unittest.TestCase):
                 self.assertAlmostEqual(vib_contribs[i], expected_vib_contribs[i], 2)
             self.assertAlmostEqual(-53.068692, pf.log_eval(298.150), 2)
 
+            ## aa.fchk, rotational symmetry number is computed by molmod
+            pf = PartFun(nma, [ExtTrans(), ExtRot()])
+            self.assertEqual(pf.rotational.symmetry_number, 1)
+
+            # check partition function, values from aa.log
+            self.assertAlmostEqual(16.973928, pf.translational.log_eval(298.150), 6)
+            self.assertEqual(pf.rotational.count, 3)
+            self.assertAlmostEqual(11.225093, pf.rotational.log_eval(298.150), 6)
+            vib_contribs = pf.vibrational.log_eval_terms(298.150)
+            expected_vib_contribs = numpy.array([
+                0.674278, 0.292167, -0.357617, -1.017249, -1.018740, -1.427556,
+                -1.428865
+            ])
+            for i in xrange(len(expected_vib_contribs)):
+                self.assertAlmostEqual(vib_contribs[i], expected_vib_contribs[i], 2)
+            self.assertAlmostEqual(-53.068692, pf.log_eval(298.150), 2)
+
             ## aarad.fchk
             molecule = load_molecule_g03fchk("input/sterck/aarad.fchk")
             nma = NMA(molecule, treatment)
@@ -186,10 +203,8 @@ class PartFunTestCase(unittest.TestCase):
         nma = NMA(molecule)
         rotscan = load_rotscan_g03log("input/rotor/gaussian.log")
         rotor = Rotor(rotscan, molecule, rotsym=3, even=True)
-        pf = PartFun(nma, [
-            ExtTrans(), ExtRot(6),
-            rotor,
-        ])
+        pf = PartFun(nma, [ExtTrans(), ExtRot(), rotor])
+        self.assertEqual(pf.rotational.symmetry_number, 6)
 
         eps = 0.0001
         temps = numpy.array([300.0,400.0,500.0,600.0,700.0])

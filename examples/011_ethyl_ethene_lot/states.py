@@ -2,10 +2,9 @@
 
 from lot_basis import *
 
-from molmod.units import angstrom
-from molmod.data.periodic import periodic
-from molmod.io.xyz import XYZFile
-from molmod.io.gaussian03.fchk import FCHKFile
+from molmod import angstrom, Molecule
+from molmod.periodic import periodic
+from molmod.io import FCHKFile
 
 import os, numpy
 
@@ -38,7 +37,7 @@ class G03Job(object):
     def get_mol(self, state, root):
         if self.name == "opt":
             # load the initial geometry
-            mol = XYZFile("init/%s.xyz" % state.name).get_molecule()
+            mol = Molecule.from_file("init/%s.xyz" % state.name)
         else:
             # load the optimized geometry
             fn_fchk = "%s/%s__opt/gaussian.fchk" % (root, state.name)
@@ -55,7 +54,11 @@ class G03Job(object):
         except IOError:
             return
 
-        mult = int(mol.charge_mult[1])
+        if self.name.startswith("cps"):
+            i = int(self.name[-1])
+            mult = int(mol.charge_mult[2*i+1])
+        else:
+            mult = int(mol.charge_mult[1])
         if lot_label.startswith("ro"):
             lot = get_lot(lot_label[2:], mult, restricted=True)
         else:
@@ -72,7 +75,7 @@ class G03Job(object):
 
         # copy an initial guess of the wavefunction
         destination = "%s/gaussian.in.fchk" % dirname
-        if not (self.name == "opt" or self.name == "bsse"):
+        if not (self.name == "opt" or self.name == "bsse" or self.name.startswith("cps")):
             if os.path.isfile(destination):
                 os.remove(destination)
             os.symlink(
@@ -88,7 +91,7 @@ class G03Job(object):
         print >> f, "#p %s/%s %s %s maxdisk=5GB" % (lot.name, basis.name, self.cmd, lot.iop),
         if basis.diffuse:
             print >> f, "scf=tight",
-        if not (self.name == "opt" or self.name == "bsse"):
+        if not (self.name == "opt" or self.name == "bsse" or self.name.startswith("cps")):
             print >> f, "guess=read",
         if len(lot.extra_overlay) > 0:
             print >> f, "extraoverlay",
@@ -101,6 +104,9 @@ class G03Job(object):
         print >> f
         if self.name == "bsse":
             print >> f, " ".join(mol.charge_mult)
+        elif self.name.startswith("cps"):
+            i = int(self.name[-1])
+            print >> f, " ".join(mol.charge_mult[2*i:2*i+2])
         else:
             print >> f, " ".join(mol.charge_mult[:2])
         for i in xrange(mol.size):
@@ -108,12 +114,20 @@ class G03Job(object):
                 x, y, z = mol.coordinates[i]/angstrom + numpy.random.uniform(-0.1,0.1,3)
             else:
                 x, y, z = mol.coordinates[i]/angstrom
+            symbol = periodic[mol.numbers[i]].symbol
             if self.name == "bsse":
                 tag = mol.tags[i]
             else:
                 tag = ""
+            if self.name.startswith("cps"):
+                if self.name.startswith("cps_full"):
+                    if self.name[-1] != mol.tags[i] and self.name[-1] != "0":
+                        symbol += "-Bq"
+                else:
+                    if self.name[-1] != mol.tags[i]:
+                        continue
             print >> f, " %2s   % 10.5f   % 10.5f   % 10.5f  %s" % (
-                periodic[mol.numbers[i]].symbol, x, y, z, tag
+                symbol, x, y, z, tag
             )
         print >> f
         print >> f, self.post
@@ -144,6 +158,11 @@ states = [
         G03Job("opt", "opt(ts,calcfc,noeigentest)"),
         G03Job("freq", "freq(noraman)"),
         G03Job("bsse", "counterpoise=2"),
+        G03Job("cps_full_0", "sp"),
+        G03Job("cps_full_1", "sp"),
+        G03Job("cps_full_2", "sp"),
+        G03Job("cps_sole_1", "sp"),
+        G03Job("cps_sole_2", "sp"),
         G03Job("sp", "sp"),
         G03Job("scan_forming_bond", "opt(ts,calcfc,modredundant,noeigentest)", ["1 2 3 4 S 72 5.0"]),
         G03Job("scan_methyl", "opt(ts,calcfc,modredundant,noeigentest)", ["5 1 2 8 S 72 5.0", "1 2 3 5 B"]),
@@ -153,6 +172,11 @@ states = [
         G03Job("opt", "opt(ts,calcfc,noeigentest)"),
         G03Job("freq", "freq(noraman)"),
         G03Job("bsse", "counterpoise=2"),
+        G03Job("cps_full_0", "sp"),
+        G03Job("cps_full_1", "sp"),
+        G03Job("cps_full_2", "sp"),
+        G03Job("cps_sole_1", "sp"),
+        G03Job("cps_sole_2", "sp"),
         G03Job("sp", "sp"),
         G03Job("scan_methyl", "opt(ts,calcfc,modredundant,noeigentest)", ["5 1 2 8 S 72 5.0", "1 2 3 5 B"]),
     ]),

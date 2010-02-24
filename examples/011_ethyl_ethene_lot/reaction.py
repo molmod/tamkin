@@ -73,6 +73,20 @@ def load_rotor(mol, filename, rotsym, even, expansion=5):
     return rotor
 
 
+def load_cps_barrier(fn_template):
+    """Loads the counterpoise corrected barrier from five sp calculations"""
+    from molmod.io import FCHKFile
+    def load_ener(fn_fchk):
+        fchk = FCHKFile(fn_fchk, field_labels=["Total Energy"])
+        return fchk.fields["Total Energy"]
+    return (
+        load_ener(fn_template % "full_0") +
+        load_ener(fn_template % "sole_1") - load_ener(fn_template % "full_1") +
+        load_ener(fn_template % "sole_2") - load_ener(fn_template % "full_2")
+    )
+
+
+
 def run(do_rotor, do_counterpoise, load_sp):
     prefix = {True: "ir", False: "ho"}[do_rotor]
     prefix += {True: "_cps", False: "_bss"}[do_counterpoise]
@@ -84,8 +98,16 @@ def run(do_rotor, do_counterpoise, load_sp):
         mol_ethyl = load_molecule_g03fchk("ethyl__freq/gaussian.fchk")
         mol_ethene = load_molecule_g03fchk("ethene__freq/gaussian.fchk")
     if do_counterpoise:
-        mol_ts_gauche = load_molecule_g03fchk("ts_ad1_gauche__freq/gaussian.fchk", "ts_ad1_gauche__bsse/gaussian.fchk")
-        mol_ts_trans = load_molecule_g03fchk("ts_ad1_trans__freq/gaussian.fchk", "ts_ad1_trans__bsse/gaussian.fchk")
+        try:
+            mol_ts_gauche = load_molecule_g03fchk("ts_ad1_gauche__freq/gaussian.fchk", "ts_ad1_gauche__bsse/gaussian.fchk")
+        except (IOError, KeyError):
+            cps_barrier_gauche = load_cps_barrier("ts_ad1_gauche__cps_%s/gaussian.fchk")
+            mol_ts_gauche = load_molecule_g03fchk("ts_ad1_gauche__freq/gaussian.fchk", energy=cps_barrier_gauche)
+        try:
+            mol_ts_trans = load_molecule_g03fchk("ts_ad1_trans__freq/gaussian.fchk", "ts_ad1_trans__bsse/gaussian.fchk")
+        except (IOError, KeyError):
+            cps_barrier_trans = load_cps_barrier("ts_ad1_trans__cps_%s/gaussian.fchk")
+            mol_ts_trans = load_molecule_g03fchk("ts_ad1_trans__freq/gaussian.fchk", energy=cps_barrier_trans)
     else:
         if load_sp:
             mol_ts_gauche = load_molecule_g03fchk("ts_ad1_gauche__freq/gaussian.fchk", "ts_ad1_gauche__sp/gaussian.fchk")
@@ -243,12 +265,12 @@ def main():
     load_sp = args[0].startswith("GEO")
     for do_rotor in True, False:
         for do_counterpoise in True, False:
-            try:
+            #try:
                 run(do_rotor, do_counterpoise, load_sp)
                 print "      OK: do_rotor=%i, do_counterpoise=%i, load_sp=%i" % (do_rotor, do_counterpoise, load_sp)
-            except (IOError, KeyError), e:
-                print "  Failed: do_rotor=%i, do_counterpoise=%i, load_sp=%i" % (do_rotor, do_counterpoise, load_sp)
-                print e
+            #except (IOError, KeyError), e:
+            #    print "  Failed: do_rotor=%i, do_counterpoise=%i, load_sp=%i" % (do_rotor, do_counterpoise, load_sp)
+            #    print e
 
 
 if __name__ == "__main__":

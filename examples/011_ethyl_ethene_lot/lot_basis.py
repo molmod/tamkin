@@ -12,6 +12,10 @@ class G03LevelOfTheory(object):
         self.name = name
         self.iop = iop
         self.extra_overlay = extra_overlay
+        if spin =="ROS":
+            self.key = "ro%s" % self.label
+        else:
+            self.key = self.label
 
 
 colors = [
@@ -47,7 +51,7 @@ lots_list = [
     # coupled cluster
     G03LevelOfTheory("DEF", "ccd",       colors[2],  "-",  "CCD"),
     G03LevelOfTheory("DEF", "ccsd",      colors[2],  "--", "CCSD"),
-    G03LevelOfTheory("DEF", "ccsdt",     colors[2],  ":",  "CCSD-T"),
+    #G03LevelOfTheory("DEF", "ccsdt",     colors[2],  ":",  "CCSD-T"),
 
     # lda
     G03LevelOfTheory("DEF", "hfs",       colors[3],  "-",  "HFS"),
@@ -60,11 +64,9 @@ lots_list = [
     G03LevelOfTheory("DEF", "pw91pw91",  colors[5],  "--", "PW91PW91"),
     G03LevelOfTheory("DEF", "hfb",       colors[5],  ":",  "HFB"),
     G03LevelOfTheory("DEF", "pbepbe",    colors[5],  "-.", "PBEPBE"),
-    # meta-hybrid ()
     G03LevelOfTheory("DEF", "tpsstpss",  colors[6],  "-",  "TPSSTPSS"),
     G03LevelOfTheory("DEF", "vsxc",      colors[6],  "--", "VSXC"),
     # hybrid-gga (with fock exchange)
-    G03LevelOfTheory("DEF", "b1b95",     colors[7],  "-",  "B1B95"),
     G03LevelOfTheory("DEF", "b1lyp",     colors[7],  "--", "B1LYP"),
     G03LevelOfTheory("DEF", "b3pw91",    colors[7],  ":",  "B3PW91"),
     G03LevelOfTheory("DEF", "b3p86",     colors[7],  "-.", "B3P86"),
@@ -72,17 +74,19 @@ lots_list = [
     G03LevelOfTheory("DEF", "o3lyp",     colors[8],  "--", "O3LYP"),
     G03LevelOfTheory("DEF", "bhandh",    colors[8],  ":",  "BHANDH"),
     G03LevelOfTheory("DEF", "bhandhlyp", colors[8],  "-.", "BHANDHLYP"),
-    G03LevelOfTheory("DEF", "bmk",       colors[9],  "-",  "BMK"),
-    G03LevelOfTheory("DEF", "b98",       colors[9],  "--", "B98"),
     G03LevelOfTheory("DEF", "b971",      colors[9],  ":",  "B971"),
     G03LevelOfTheory("DEF", "b972",      colors[9],  "-.", "B972"),
     G03LevelOfTheory("DEF", "pbe1pbe",   colors[10], "-",  "PBE1PBE"),
     G03LevelOfTheory("DEF", "mpwpw91",   colors[10], "--", "MPWPW91"),
     G03LevelOfTheory("DEF", "mpw1pw91",  colors[10], ":",  "MPW1PW91"),
-    G03LevelOfTheory("DEF", "mpwb95",    colors[10], "-.", "MPWB95"),
-    # double-hybrid (also with mp2 based corrections)
     G03LevelOfTheory("DEF", "mpw1k",     colors[11], "-",  "MPWPW91",  "iop(3/76=0572004280)"),
+    # meta-hybrid ()
+    G03LevelOfTheory("DEF", "b98",       colors[9],  "--", "B98"),
+    G03LevelOfTheory("DEF", "b1b95",     colors[7],  "-",  "B1B95"),
+    G03LevelOfTheory("DEF", "mpwb95",    colors[10], "-.", "MPWB95"),
+    G03LevelOfTheory("DEF", "bmk",       colors[9],  "-",  "BMK"),
     G03LevelOfTheory("DEF", "mpwb1k",    colors[11], "--", "MPWB95",   "iop(3/76=0560004400)"),
+    # double-hybrid (also with mp2 based corrections)
     G03LevelOfTheory("DEF", "b2plyp",    colors[11], ":",  "BLYP",     "iop(3/76=0470005300,3/78=0730007300)", "8/10=90/1;9/16=-3/6;"),
     G03LevelOfTheory("DEF", "mpw2plyp",  colors[11], "-.", "MPWLYP",   "iop(3/76=0450005500,3/78=0750007500)", "8/10=90/1;9/16=-3/6;"),
     G03LevelOfTheory("ROS", "b2plyp",    colors[11], ":",  "ROBLYP",   "iop(3/76=0470005300,3/78=0730007300)", "8/5=-1,10=90/1;9/16=-3/6;"),

@@ -6,7 +6,10 @@ from optparse import OptionParser
 
 from states import *
 
-usage = "TODO"
+usage = """
+%prog create lot_label basis_label
+%prog clone geo_lot_label geo_basis_label sp_lot_label sp_basis_label
+"""
 
 def main():
     parser = OptionParser(usage)
@@ -55,7 +58,7 @@ def main():
                     os.symlink(source, destination)
         for state in states:
             for job in state.jobs:
-                if job.name == "bsse" or job.name == "sp":
+                if job.name == "bsse" or job.name == "sp" or job.name.startswith("cps"):
                     job.write_input(state, root1, lot1_label, basis1_label, options.suffix, options.random)
     else:
         parser.error("Unknown command: %s" % args[0])

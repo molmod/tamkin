@@ -132,8 +132,8 @@ ra_trans = ReactionAnalysis([pf_ethyl, pf_ethene], pf_ts_trans, 300, 600, 10)
 
 # make the Arrhenius plots
 pylab.clf()
-ra_gauche.plot(label="gauche", color="red")
-ra_trans.plot(label="trans", color="blue")
+ra_gauche.plot_arrhenius(label="gauche", color="red")
+ra_trans.plot_arrhenius(label="trans", color="blue")
 pylab.legend(loc=0)
 pylab.savefig("arrhenius.png")
 
@@ -143,13 +143,13 @@ pylab.savefig("arrhenius.png")
 #  1) freq_error: the relative systematic error on the frequencies
 #  2) freq_energy: the relative error on the energy
 #  4) num_iter: the number of monte carlo samples
-ra_gauche.monte_carlo(0.05, 0.05, 100)
-ra_trans.monte_carlo(0.05, 0.05, 100)
+ra_gauche.monte_carlo(num_iter=1000)
+ra_trans.monte_carlo(num_iter=1000)
 # plot the parameters, this includes the monte carlo results
 pylab.clf()
 ra_gauche.plot_parameters(label="gauche", color="red")
 ra_trans.plot_parameters(label="trans", color="blue")
-pylab.legend(loc=0)
+pylab.legend(loc=0, numpoints=1)
 pylab.savefig("parameters.png")
 # write all results to a file.
 ra_gauche.write_to_file("reaction_gauche.txt")

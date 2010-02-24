@@ -58,8 +58,8 @@
 
 from tamkin.partf import compute_rate_coeff
 
-from molmod.units import kjmol, second, meter, mol, kelvin, joule
-from molmod.constants import boltzmann
+from molmod.units import kjmol, second, meter, mol, kelvin, joule, centimeter
+from molmod.constants import boltzmann, lightspeed
 
 import sys, numpy, pylab, types
 
@@ -395,15 +395,21 @@ class ReactionAnalysis(object):
             pylab.savefig(filename)
 
 
-    def monte_carlo(self, freq_error=0.05, energy_error=0.00, num_iter=100):
-        """Estimate the uncertainty on the parameters due to a systematic error
-           in the frequencies.
+    def monte_carlo(self, freq_error=1*(lightspeed/centimeter), energy_error=0.00, num_iter=100):
+        """Estimate the uncertainty on the parameters
+
+           The uncertainties are modeled by stochastic errors in the frequencies
+           and the barrier. These may be caused by limitiated in convergence of
+           the wafunction, limited convergence of the geometry optimization,
+           errors in the numerical integration in DFT methods, or numerical
+           errors due to the computation of the Hessian with a finite difference
+           method.
 
            Optional argument:
-             freq_error  --  The systematic relative error on the frequencies
-                             [default=0.05]
-             energy_error  --  The systematic relative error on the energies
-                               [default=0.00]
+             freq_error  --  The with of the absolute gaussian distortion on the
+                             frequencies [default=1*invcm]
+             energy_error  --  The width of the relative gaussian error on the
+                               energy barrier [default=0.00]
              num_iter  --  The number of Monte Carlo iterations [default=1000]
 
         """
@@ -422,9 +428,13 @@ class ReactionAnalysis(object):
             pf.vibrational.negative_freqs_orig = pf.vibrational.negative_freqs.copy()
             pf.energy_backup = pf.energy
 
-        def alter_freqs(pf, scale_freq, scale_energy):
-            pf.vibrational.positive_freqs = pf.vibrational.positive_freqs_orig*scale_freq
-            pf.vibrational.negative_freqs = pf.vibrational.negative_freqs_orig*scale_freq
+        def alter_freqs(pf, scale_energy):
+            N = len(pf.vibrational.positive_freqs)
+            freq_shift = numpy.random.normal(0, freq_error, N)
+            pf.vibrational.positive_freqs = pf.vibrational.positive_freqs_orig + freq_shift
+            N = len(pf.vibrational.negative_freqs)
+            freq_shift = numpy.random.normal(0, freq_error, N)
+            pf.vibrational.negative_freqs = pf.vibrational.negative_freqs_orig + freq_shift
             pf.energy = pf.energy_backup*scale_energy
 
         def restore_freqs(pf):
@@ -441,11 +451,10 @@ class ReactionAnalysis(object):
 
         solutions = numpy.zeros((num_iter, 2), float)
         for i in xrange(num_iter):
-            scale_freq = 1.0 + numpy.random.normal(0.0, 1.0)*freq_error
             scale_energy = 1.0 + numpy.random.normal(0.0, 1.0)*energy_error
             for pf_react in self.pfs_react:
-                alter_freqs(pf_react, scale_freq, scale_energy)
-            alter_freqs(self.pf_trans, scale_freq, scale_energy)
+                alter_freqs(pf_react, scale_energy)
+            alter_freqs(self.pf_trans, scale_energy)
             altered_ra = ReactionAnalysis(
                 self.pfs_react, self.pf_trans, self.temp_low, self.temp_high,
                 self.temp_step, self.mol_volume, self.tunneling
@@ -483,7 +492,7 @@ class ReactionAnalysis(object):
                 self.unit_name, self.A/self.unit, self.Ea/kjmol
             ))
         pylab.xlabel("E_a [kJ/mol]")
-        pylab.ylabel("A [%s]" % self.unit_name)
+        pylab.ylabel("ln(A) [ln(%s)]" % self.unit_name)
         if label is None:
             label_point = "Optimal parameters"
             label_error = "Relative uncertainty"
@@ -506,19 +515,18 @@ class ReactionAnalysis(object):
                    numpy.outer(evecs[:,1],numpy.sin(angles))*numpy.sqrt(evals[1])
             pylab.plot(
                 (self.Ea + data[1])/kjmol,
-                (numpy.exp(self.parameters[0] + data[0]))/self.unit,
+                self.parameters[0] + data[0] - numpy.log(self.unit),
                 color=color, linestyle="-", marker="None",label=label_error
             )
             pylab.plot(
                 self.monte_carlo_samples[:,1]/kjmol,
-                numpy.exp(self.monte_carlo_samples[:,0])/self.unit,
+                self.monte_carlo_samples[:,0] - numpy.log(self.unit),
                 color=color, marker=".", label=label_scatter, linestyle="None",
                 markersize=2.0
             )
-        pylab.plot([self.Ea/kjmol],[self.A/self.unit],color=color, marker="o",label=label_point)
-        pylab.semilogy()
+        pylab.plot([self.Ea/kjmol],[numpy.log(self.A/self.unit)],color=color, marker="o",label=label_point)
         if label is None:
-            pylab.legend(loc=0)
+            pylab.legend(loc=0, numpoints=1, scatterpoints=1)
         if filename is not None:
             pylab.savefig(filename)
 

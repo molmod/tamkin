@@ -148,8 +148,11 @@ ra_trans.monte_carlo(num_iter=1000)
 # plot the parameters, this includes the monte carlo results
 pylab.clf()
 ra_gauche.plot_parameters(label="gauche", color="red")
-ra_trans.plot_parameters(label="trans", color="blue")
+ra_trans.plot_parameters(label="trans", color="blue", marker="^")
 pylab.legend(loc=0, numpoints=1)
+pylab.xlabel("E$_a$ [kJ mol$^{-1}$]")
+pylab.ylabel("ln(A) [ln(m$^3$ mol$^{-1}$ s$^{-1}$)]")
+pylab.xlim(33.24,33.75)
 pylab.savefig("parameters.png")
 # write all results to a file.
 ra_gauche.write_to_file("reaction_gauche.txt")

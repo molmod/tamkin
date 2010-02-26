@@ -469,7 +469,7 @@ class ReactionAnalysis(object):
             restore_freqs(pf_react)
         restore_freqs(self.pf_trans)
 
-    def plot_parameters(self, filename=None, label=None, color="red", error=True):
+    def plot_parameters(self, filename=None, label=None, color="red", marker="o", error=True):
         """Plot the kinetic parameters.
 
            Optional arguments:
@@ -483,6 +483,7 @@ class ReactionAnalysis(object):
              color -- Determines the color of the plotted data points and line.
                       [default="red"]. Common color names, html codes and RGB
                       tuples are accepted. (See matplotlib docs for more info.)
+             marker  --  The marker used for the (original) fitted parameters
              error -- A boolean that determines whether the monte carlo results
                       are plotted when they are available. [default=True]
         """
@@ -522,9 +523,10 @@ class ReactionAnalysis(object):
                 self.monte_carlo_samples[:,1]/kjmol,
                 self.monte_carlo_samples[:,0] - numpy.log(self.unit),
                 color=color, marker=".", label=label_scatter, linestyle="None",
-                markersize=2.0
+                markersize=1.2
             )
-        pylab.plot([self.Ea/kjmol],[numpy.log(self.A/self.unit)],color=color, marker="o",label=label_point)
+        pylab.plot([self.Ea/kjmol],[numpy.log(self.A/self.unit)], color=color,
+                   marker=marker, label=label_point, mew=2, mec="white", ms=10)
         if label is None:
             pylab.legend(loc=0, numpoints=1, scatterpoints=1)
         if filename is not None:

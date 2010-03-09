@@ -436,13 +436,13 @@ class Rotor(Info, StatFysTerms):
             # the rotational energy barriers may be computed at another level
             # that the nma energy.
             from molmod.ic import dihed_angle
-            nma_angle = dihed_angle(
+            self.nma_angle = dihed_angle(
                 nma.coordinates[self.rot_scan.dihedral[0]],
                 nma.coordinates[self.rot_scan.dihedral[1]],
                 nma.coordinates[self.rot_scan.dihedral[2]],
                 nma.coordinates[self.rot_scan.dihedral[3]],
             )[0]
-            deltas = angles - nma_angle
+            deltas = angles - self.nma_angle
             # apply periodic boundary conditions
             deltas -= numpy.floor(deltas/a)*a
             # get the right energy

@@ -65,10 +65,10 @@ import unittest
 import numpy
 
 
-__all__ = ["ToolsTestCase"]
+__all__ = ["PFToolsTestCase"]
 
 
-class ToolsTestCase(unittest.TestCase):
+class PFToolsTestCase(unittest.TestCase):
     def test_reaction_analysis_sterck(self):
         pf_react1 = PartFun(NMA(load_molecule_g03fchk("input/sterck/aa.fchk")), [ExtTrans(), ExtRot(1)])
         pf_react2 = PartFun(NMA(load_molecule_g03fchk("input/sterck/aarad.fchk")), [ExtTrans(), ExtRot(1)])

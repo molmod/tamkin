@@ -239,7 +239,7 @@ class RotorTestCase(unittest.TestCase):
         x = numpy.arange(0.0, a, 0.1)
         v = 0.5*(x-a/2)**2
         #v = 5*(1+numpy.cos(2*numpy.pi*x/a))**2
-        v_coeffs = hb.fit_fn(x, v, 20, even=True)
+        v_coeffs = hb.fit_fn(x, v, 20, even=True, v_threshold=0.1)
         energies, orbitals = hb.solve(1, v_coeffs, evecs=True)
         expected = numpy.arange(10) + 0.5
         self.assertAlmostEqual(energies[0], 0.5, 1)

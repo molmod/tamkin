@@ -184,7 +184,7 @@ class HarmonicBasis(object):
             return numpy.linalg.eigvalsh(H)
 
     def eval_fn(self, grid, coeffs):
-        """Evaluate the function represented by coeffs on the given grid
+        """Evaluate the function represented by coeffs
 
            Arguments:
              grid  --  the values at which the function must be evaluated
@@ -195,6 +195,37 @@ class HarmonicBasis(object):
             arg = ((i+1)*2*numpy.pi/self.a)*grid
             result += (coeffs[2*i+1]/numpy.sqrt(self.a/2))*numpy.cos(arg)
             result += (coeffs[2*i+2]/numpy.sqrt(self.a/2))*numpy.sin(arg)
+        return result
+
+    def eval_deriv(self, grid, coeffs):
+        """Evaluate the derivative of function represented by coeffs
+
+           Arguments:
+             grid  --  the values at which the derivative must ben evaluated
+             coeffs  --  the expansion coefficients
+        """
+        result = numpy.zeros(grid.shape, float)
+        for i in xrange(self.nmax):
+            scale = ((i+1)*2*numpy.pi/self.a)
+            arg = scale*grid
+            result -= (coeffs[2*i+1]*scale/numpy.sqrt(self.a/2))*numpy.sin(arg)
+            result += (coeffs[2*i+2]*scale/numpy.sqrt(self.a/2))*numpy.cos(arg)
+        return result
+
+    def eval_deriv2(self, grid, coeffs):
+        """Evaluate the second derivative of function represented by coeffs
+
+           Arguments:
+             grid  --  the values at which the second derivative must be
+                       evaluated
+             coeffs  --  the expansion coefficients
+        """
+        result = numpy.zeros(grid.shape, float)
+        for i in xrange(self.nmax):
+            scale = ((i+1)*2*numpy.pi/self.a)
+            arg = scale*grid
+            result -= (coeffs[2*i+1]*scale**2/numpy.sqrt(self.a/2))*numpy.cos(arg)
+            result -= (coeffs[2*i+2]*scale**2/numpy.sqrt(self.a/2))*numpy.sin(arg)
         return result
 
     def fit_fn(self, grid, v, dofmax, rotsym=1, even=False, rcond=0.0, v_threshold=0.01):

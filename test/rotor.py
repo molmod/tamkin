@@ -99,6 +99,26 @@ class RotorTestCase(unittest.TestCase):
         expected = 2*numpy.sin(grid*4.0*numpy.pi/a)/numpy.sqrt(a/2)
         self.assertArraysAlmostEqual(fn, expected)
 
+    def test_eval_deriv(self):
+        a = 10.0
+        hb = HarmonicBasis(3, a)
+        grid = numpy.arange(0.0, 10.01, 1.0)
+        coeffs = [-0.5,1.2,2.3,-0.7,0.1,0.3,-1.0]
+        eps = 1e-6
+        aderiv = hb.eval_deriv(grid, coeffs)
+        nderiv = (hb.eval_fn(grid+eps, coeffs) - hb.eval_fn(grid-eps, coeffs))/(2*eps)
+        self.assertArraysAlmostEqual(aderiv, nderiv)
+
+    def test_eval_deriv2(self):
+        a = 10.0
+        hb = HarmonicBasis(3, a)
+        grid = numpy.arange(0.0, 10.01, 1.0)
+        coeffs = [-0.5,1.2,2.3,-0.7,0.1,0.3,-1.0]
+        eps = 1e-6
+        aderiv2 = hb.eval_deriv2(grid, coeffs)
+        nderiv2 = (hb.eval_deriv(grid+eps, coeffs) - hb.eval_deriv(grid-eps, coeffs))/(2*eps)
+        self.assertArraysAlmostEqual(aderiv2, nderiv2)
+
     def test_fit_fn(self):
         a = 10.0
         hb = HarmonicBasis(10, a)
@@ -212,7 +232,6 @@ class RotorTestCase(unittest.TestCase):
         rotor2 = Rotor(rotscan2, molecule, rotsym=3, even=True)
         pf2 = PartFun(nma, [ExtTrans(), ExtRot(6), rotor2])
         self.assertArraysAlmostEqual(rotor1.energy_levels, rotor2.energy_levels)
-
 
     def test_harmonic(self):
         a = 20.0

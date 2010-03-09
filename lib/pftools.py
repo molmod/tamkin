@@ -433,9 +433,11 @@ class ReactionAnalysis(object):
             N = len(pf.vibrational.positive_freqs)
             freq_shift = numpy.random.normal(0, freq_error, N)
             pf.vibrational.positive_freqs = pf.vibrational.positive_freqs_orig + freq_shift
+            pf.vibrational.positive_freqs[pf.vibrational.positive_freqs<=0] = 0.01
             N = len(pf.vibrational.negative_freqs)
             freq_shift = numpy.random.normal(0, freq_error, N)
             pf.vibrational.negative_freqs = pf.vibrational.negative_freqs_orig + freq_shift
+            pf.vibrational.negative_freqs[pf.vibrational.negative_freqs>=0] = -0.01
             pf.energy = pf.energy_backup*scale_energy
 
         def restore_freqs(pf):

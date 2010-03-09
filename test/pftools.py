@@ -103,6 +103,7 @@ class ToolsTestCase(unittest.TestCase):
         # the corrected reaction analysis.
         ra = ReactionAnalysis([pf_react], pf_trans, 100, 1200, temp_step=50, tunneling=wigner)
         ra.plot_arrhenius("output/arrhenius_mat1w.png")
+        ra.monte_carlo()
         ra.write_to_file("output/reaction_mat1w.txt")
         ra.plot_parameters("output/parameters_mat1w.png")
 

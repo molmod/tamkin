@@ -387,7 +387,8 @@ class ReactionAnalysis(object):
         )
         pylab.plot(
             self.temps_inv,numpy.exp(self.ln_rate_coeffs)/self.unit,
-            color=color, linestyle="None", marker="o",label=label_data)
+            color=color, linestyle="None", marker="o",label=label_data
+        )
         pylab.semilogy()
         if label is None:
             pylab.legend(loc=0)

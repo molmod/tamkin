@@ -68,8 +68,7 @@ nma = NMA(molecule)
 rot_scan = load_rotscan_g03log("scan/gaussian.log")
 rotor = Rotor(rot_scan, molecule, rotsym=3, even=True)
 # Construct a partition function object with the typical gas phase contributions.
-pf = PartFun(nma, [ExtTrans(), ExtRot(6), rotor])
-# 6 is the rotational symmetry number.
+pf = PartFun(nma, [ExtTrans(), ExtRot(), rotor])
 
 # Write some general information about the molecule and the partition function
 # to a file.

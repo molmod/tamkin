@@ -66,3 +66,7 @@
 ( cd 009_ethyl_ethene/
   rm -v *.png *.csv *.txt
 )
+
+( cd 012_ethyl_ethene_scaling
+  rm -v *.png *.csv *.txt
+)

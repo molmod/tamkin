@@ -68,10 +68,9 @@ import sys, os, numpy # standard libraries
 
 # Parse the command line arguments
 args = sys.argv[1:]
-if len(args) != 2:
-    print "Two arguments are required: alkane_n and the symmetry number"
+if len(args) != 1:
+    print "One arguments are required: alkane_n"
     sys.exit()
-symmetry_number = int(args[1])
 
 # Hardcoded parameters
 temp = 298.15
@@ -87,7 +86,7 @@ molecule = load_molecule_cp2k(
 nma = NMA(molecule, ConstrainExt())
 pf = PartFun(nma, [
     ExtTrans(IdealGasVolume(pressure)),
-    ExtRot(symmetry_number),
+    ExtRot(),
     Vibrations(classical=False), # change this boolean to get classical vibrations
 ])
 
@@ -98,7 +97,7 @@ print >> f, '"Frequency","Wavenumber","Vibrational temperature"'
 print >> f, '"Atomic units","1/cm","K"'
 for i in xrange(len(pf.vibrational.freqs)):
     freq = pf.vibrational.freqs[i]
-    print >> f, '%e,%f,%f' % (freq, freq/lightspeed*cm, 2*numpy.pi*freq/boltzmann)
+    print >> f, '%e,%f,%f' % (freq, freq/lightspeed*centimeter, 2*numpy.pi*freq/boltzmann)
 f.close()
 
 

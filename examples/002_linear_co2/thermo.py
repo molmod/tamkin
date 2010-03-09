@@ -65,7 +65,7 @@ molecule = load_molecule_g03fchk("gaussian.fchk")
 # Perform the normal mode analysis
 nma = NMA(molecule)
 # Construct a partition function object with the typical gas phase contributions.
-pf = PartFun(nma, [ExtTrans(), ExtRot(2)])
+pf = PartFun(nma, [ExtTrans(), ExtRot()])
 
 # Write some general information about the molecule and the partition function
 # to a file.

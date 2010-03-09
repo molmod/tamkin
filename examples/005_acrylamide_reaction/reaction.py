@@ -66,9 +66,9 @@ nma_react1 = NMA(load_molecule_g03fchk("aa.fchk"), ConstrainExt())
 nma_react2 = NMA(load_molecule_g03fchk("aarad.fchk"), ConstrainExt())
 nma_trans = NMA(load_molecule_g03fchk("paats.fchk"), ConstrainExt())
 # Construct the three partition functions.
-pf_react1 = PartFun(nma_react1, [ExtTrans(), ExtRot(1)])
-pf_react2 = PartFun(nma_react2, [ExtTrans(), ExtRot(1)])
-pf_trans = PartFun(nma_trans, [ExtTrans(), ExtRot(1)])
+pf_react1 = PartFun(nma_react1, [ExtTrans(), ExtRot()])
+pf_react2 = PartFun(nma_react2, [ExtTrans(), ExtRot()])
+pf_trans = PartFun(nma_trans, [ExtTrans(), ExtRot()])
 
 # Analyze the chemical reaction. These are the arguments:
 #  1) a list of reactant partition functions
@@ -88,10 +88,10 @@ ra.plot_arrhenius("arrhenius.png") # make the Arrhenius plot
 # Estimate the error on the kinetic parameters due to level of theory artifacts
 # with Monte Carlo sampling. The monte_carlo method takes three optional
 # arguments:
-#  1) freq_error: the relative systematic error on the frequencies
-#  2) freq_energy: the relative error on the energy
-#  4) num_iter: the number of monte carlo samples
-ra.monte_carlo(0.05, 0.00, 100)
+#  1) freq_error: the absolute stochastic error on the frequencies (default=1*invcm)
+#  2) energy_error: the absolute error on the energy (default=0.0)
+#  3) num_iter: the number of monte carlo samples (default=100)
+ra.monte_carlo()
 # plot the parameters, this includes the monte carlo results
 ra.plot_parameters("parameters.png")
 # write all results to a file.

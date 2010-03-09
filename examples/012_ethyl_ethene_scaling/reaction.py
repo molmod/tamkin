@@ -88,9 +88,9 @@ for s, color in cases:
    # For each scaling factor, a new curve is plotted on the Arrhenius plot
 
    # Construct the partition functions.
-   pf_ethyl = PartFun(nma_ethyl, [ExtTrans(), ExtRot(1), Electronic(2), Vibrations(freq_scaling=s)])
-   pf_ethene = PartFun(nma_ethene, [ExtTrans(), ExtRot(4), Vibrations(freq_scaling=s)])
-   pf_ts_gauche = PartFun(nma_ts_gauche, [ExtTrans(), ExtRot(1), Electronic(2), Vibrations(freq_scaling=s)])
+   pf_ethyl = PartFun(nma_ethyl, [ExtTrans(), ExtRot(), Electronic(2), Vibrations(freq_scaling=s)])
+   pf_ethene = PartFun(nma_ethene, [ExtTrans(), ExtRot(), Vibrations(freq_scaling=s)])
+   pf_ts_gauche = PartFun(nma_ts_gauche, [ExtTrans(), ExtRot(), Electronic(2), Vibrations(freq_scaling=s)])
 
    # Analyze the chemical reaction. These are the arguments:
    #  1) a list of reactant partition functions

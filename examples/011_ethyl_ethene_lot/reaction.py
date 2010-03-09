@@ -129,21 +129,21 @@ def run(do_rotor, do_counterpoise, load_sp):
         rotor2_ts_trans = load_rotor(mol_ts_trans, "ts_ad1_trans__scan_forming_bond/gaussian.log", 1, True)
         # Construct the partition functions.
         pf_ethyl = PartFun(nma_ethyl, [
-            ExtTrans(), ExtRot(1), Electronic(2),
+            ExtTrans(), ExtRot(), Electronic(2),
             #Vibrations(freq_scaling=0.9614, zp_scaling=0.9806),
             rotor_ethyl,
         ])
         pf_ethene = PartFun(nma_ethene, [
-            ExtTrans(), ExtRot(4),
+            ExtTrans(), ExtRot(),
             #Vibrations(freq_scaling=0.9614, zp_scaling=0.9806),
         ])
         pf_ts_gauche = PartFun(nma_ts_gauche, [
-            ExtTrans(), ExtRot(1), Electronic(2),
+            ExtTrans(), ExtRot(), Electronic(2),
             #Vibrations(freq_scaling=0.9614, zp_scaling=0.9806),
             rotor1_ts_gauche, rotor2_ts_gauche,
         ])
         pf_ts_trans = PartFun(nma_ts_trans, [
-            ExtTrans(), ExtRot(1), Electronic(2),
+            ExtTrans(), ExtRot(), Electronic(2),
             #Vibrations(freq_scaling=0.9614, zp_scaling=0.9806),
             rotor1_ts_trans, rotor2_ts_trans,
         ])
@@ -212,11 +212,11 @@ def run(do_rotor, do_counterpoise, load_sp):
     # Estimate the error on the kinetic parameters due to level of theory artifacts
     # with Monte Carlo sampling. The monte_carlo method takes three optional
     # arguments:
-    #  1) freq_error: the relative systematic error on the frequencies
-    #  2) freq_energy: the relative error on the energy
-    #  4) num_iter: the number of monte carlo samples
-    ra_gauche.monte_carlo(0.05, 0.05, 100)
-    ra_trans.monte_carlo(0.05, 0.05, 100)
+    #  1) freq_error: the absolute stochastic error on the frequencies (default=1*invcm)
+    #  2) energy_error: the absolute error on the energy (default=0.0)
+    #  3) num_iter: the number of monte carlo samples (default=100)
+    ra_gauche.monte_carlo(num_iter=100)
+    ra_trans.monte_carlo(num_iter=100)
     # plot the parameters, this includes the monte carlo results
     pylab.clf()
     ra_gauche.plot_parameters(label="gauche", color="red")

@@ -197,12 +197,12 @@ class HarmonicBasis(object):
             result += (coeffs[2*i+2]/numpy.sqrt(self.a/2))*numpy.sin(arg)
         return result
 
-    def fit_fn(self, grid, f, dofmax, rotsym=1, even=False, rcond=0.0):
+    def fit_fn(self, grid, v, dofmax, rotsym=1, even=False, rcond=0.0, v_threshold=0.01):
         """Fit the expansion coefficients that represent function f
 
            Arguments:
              grid  --  the x values on which the function f is known
-             f  --  the function to be represented by expansion coefficients
+             v  --  the function to be represented by expansion coefficients
              dofmax  --  the maximum number of cosines in the fit
                          when even==False, the same number of sines is also
                          included
@@ -212,9 +212,15 @@ class HarmonicBasis(object):
              even  --  only fit even functions, i.e. cosines (default=False)
              rcond  --  the cutoff for the singular values in the least squares
                         fit (default=1e-10)
+             v_threshold  --  tolerance on the relative error between the Fourier
+                              expansion and the data points of the scan.
+                              (default=0.01). Absolute errors smaller than 1
+                              kJ/mol are always ignored.
         """
         if rotsym < 1:
-            raise ValueError("rotym must be at least 1")
+            raise ValueError("rotsym must be at least 1.")
+
+        # construct the design matrix
         ncos = min(dofmax, self.nmax/rotsym)
         if even:
             A = numpy.zeros((len(grid), ncos+1), float)
@@ -230,8 +236,15 @@ class HarmonicBasis(object):
                 A[:,counter] = numpy.sin(arg)/numpy.sqrt(self.a/2)
                 counter += 1
 
-        coeffs, residuals, rank, S = numpy.linalg.lstsq(A, f, rcond)
+        coeffs, residuals, rank, S = numpy.linalg.lstsq(A, v, rcond)
 
+        # check the error
+        residual = numpy.dot(A, coeffs) - v
+        abs_threshold = max(1*kjmol, (v.max() - v.min())*v_threshold)
+        if (abs(residual) > abs_threshold).any():
+            raise ValueError("Residual is too large. (poor Fourier expansion)")
+
+        # collect the parameters in a convenient array
         result = numpy.zeros(self.size)
         result[0] = coeffs[0]
         if even:
@@ -301,7 +314,7 @@ class Rotor(Info, StatFysTerms):
        (Use compute_cancel_frequency to obtain this frequency.)
     """
     def __init__(self, rot_scan, molecule=None, cancel_freq=None, suffix=None,
-                 rotsym=1, even=False, num_levels=50, dofmax=5):
+                 rotsym=1, even=False, num_levels=50, dofmax=5, v_threshold=0.01):
         """Initialize a Rotor term for the partition function
 
            Arguments:
@@ -325,6 +338,10 @@ class Rotor(Info, StatFysTerms):
              dofmax  --  the maximym number of cosines used to represent the
                          torsional potential. if the potential is not even,
                          the same number of sines is also used. (default=5)
+             v_threshold  --  tolerance on the relative error between the Fourier
+                              expansion and the data points of the scan.
+                              (default=0.01). Absolute errors smaller than 1
+                              kJ/mol are always ignored.
         """
         self.rot_scan = rot_scan
         if cancel_freq is not None:
@@ -341,6 +358,7 @@ class Rotor(Info, StatFysTerms):
         self.even = even
         self.num_levels = num_levels
         self.dofmax = dofmax
+        self.v_threshold = v_threshold
         if rot_scan.potential is None:
             Info.__init__(self, "free_rotor_%s" % self.suffix)
         else:
@@ -382,7 +400,7 @@ class Rotor(Info, StatFysTerms):
             # apply periodic boundary conditions
             angles -= numpy.floor(angles/a)*a
             # set reference energy, which is take to be the energy of the geometry
-            # with a dihedral angle closest to the dihedral angle of the refrence
+            # with a dihedral angle closest to the dihedral angle of the reference
             # geometry in the nma object. We can not take the nma energy because
             # the rotational energy barriers may be computed at another level
             # that the nma energy.
@@ -399,7 +417,8 @@ class Rotor(Info, StatFysTerms):
             # get the right energy
             energies -= energies[deltas.argmin()]
 
-            self.v_coeffs = self.hb.fit_fn(angles, energies, self.dofmax, self.rotsym, self.even)
+            self.v_coeffs = self.hb.fit_fn(angles, energies, self.dofmax,
+                self.rotsym, self.even, self.v_threshold)
             self.energy_levels = self.hb.solve(self.reduced_moment, self.v_coeffs)
             self.energy_levels = self.energy_levels[:self.num_levels]
         # scaling factors

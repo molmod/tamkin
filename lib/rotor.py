@@ -493,7 +493,7 @@ class Rotor(Info, StatFysTerms):
             print >> f, "    Number of basis functions: %i" % (self.hb.size)
         print >> f, "    Free energy contribution at T=0 [kJ/mol]: %.7f" % (self.free_energy(0.0)/kjmol)
 
-    def plot_levels(self, filename, temp, num=20):
+    def plot_levels(self, filename, temp, num=20, do_levels=True, do_data=True):
         """Plots the potential with the energy levels
 
            Arguments:
@@ -510,31 +510,33 @@ class Rotor(Info, StatFysTerms):
         """
         import pylab
         pylab.clf()
-        # plot the original potential data
-        if self.rot_scan.potential is not None:
-            angles, energies = self.rot_scan.potential
-            pylab.plot(angles/deg, energies/kjmol, "rx", mew=2)
+        if do_data:
+            # plot the original potential data
+            if self.rot_scan.potential is not None:
+                angles, energies = self.rot_scan.potential
+                pylab.plot(angles/deg, energies/kjmol, "rx", mew=2)
         # plot the fitted potential
         if self.hb is not None:
             step = 0.001
             x = numpy.arange(0.0, 2*numpy.pi*(1+0.5*step), 2*numpy.pi*step)
             v = self.hb.eval_fn(x, self.v_coeffs)
             pylab.plot(x/deg, v/kjmol, "k-", linewidth=2)
-        # plot the energy levels
-        eks = self.energy_levels/(temp*boltzmann)
-        bfs = numpy.exp(-eks)
-        bfs /= bfs.sum()
-        for i in xrange(min(num, self.num_levels)):
-            e = (self.energy_levels[i])/kjmol
-            pylab.axhline(e, color="b", linewidth=0.5)
-            pylab.axhline(e, xmax=bfs[i], color="b", linewidth=2)
-        pylab.xlim(0,360)
+        if do_levels:
+            # plot the energy levels
+            eks = self.energy_levels/(temp*boltzmann)
+            bfs = numpy.exp(-eks)
+            bfs /= bfs.sum()
+            for i in xrange(min(num, self.num_levels)):
+                e = (self.energy_levels[i])/kjmol
+                pylab.axhline(e, color="b", linewidth=0.5)
+                pylab.axhline(e, xmax=bfs[i], color="b", linewidth=2)
         if self.rot_scan.potential is not None:
             pylab.ylim(
                 self.rot_scan.potential[1].min()/kjmol,
                 1.5*self.rot_scan.potential[1].max()/kjmol
             )
-        pylab.ylabel("Energy [kjmol]")
+        pylab.xlim(0,360)
+        pylab.ylabel("Energy [kJ/mol]")
         pylab.xlabel("Dihedral angle [deg]")
         pylab.savefig(filename)
 

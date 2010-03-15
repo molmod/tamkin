@@ -76,7 +76,8 @@ import numpy
 
 
 __all__ = [
-    "HarmonicBasis", "compute_cancel_frequency", "compute_moments", "Rotor"
+    "HarmonicBasis", "RotorError", "compute_cancel_frequency_mbh",
+    "compute_moments", "Rotor"
 ]
 
 
@@ -289,10 +290,14 @@ class HarmonicBasis(object):
         return result
 
 
-def compute_cancel_frequency(molecule, dihedral, top_indexes):
+class RotorError(Exception):
+    pass
+
+
+def compute_cancel_frequency_mbh(molecule, dihedral, top_indexes):
     """Compute the frequency of the rotor in the HO approximation
 
-       This function is based on the MNH method and returns the frequency that
+       This function is based on the MBH method and returns the frequency that
        has to be canceled when this mode is replaced by a free or hindered
        rotor.
 
@@ -308,7 +313,7 @@ def compute_cancel_frequency(molecule, dihedral, top_indexes):
     ]
     nma = NMA(molecule, MBH(blocks))
     if len(nma.freqs) != 7:
-        raise RuntimeError("Expecting 7 frequencies, got %i" % len(nma.freqs))
+        raise RotorError("Expecting 7 frequencies, got %i" % len(nma.freqs))
     non_zero = [i for i in xrange(7) if i not in nma.zeros][0]
     return nma.freqs[non_zero]
 
@@ -344,8 +349,9 @@ class Rotor(Info, StatFysTerms):
        The corresponding contribution to the partition function is subtracted.
        (Use compute_cancel_frequency to obtain this frequency.)
     """
-    def __init__(self, rot_scan, molecule=None, cancel_freq=None, suffix=None,
-                 rotsym=1, even=False, num_levels=50, dofmax=5, v_threshold=0.01):
+    def __init__(self, rot_scan, molecule=None, cancel_freq='mbh', suffix=None,
+                 rotsym=1, even=False, num_levels=50, dofmax=5,
+                 v_threshold=0.01):
         """Initialize a Rotor term for the partition function
 
            Arguments:
@@ -357,8 +363,13 @@ class Rotor(Info, StatFysTerms):
                            compute the cancel frequency. not required when the
                            cancel_freq argument is present
              cancel_freq  --  the frequency to cancel in the vibrational
-                              partition function. not required when molecule is
-                              given
+                              partition function. This can also be 'mbh' or
+                              'scan' to indicate that the cancel frequency
+                              should be computed using the MBH method or based
+                              on the second order derivative of the rotational
+                              potential. Note that the latter option is only
+                              possible in the case of the hindered rotor
+                              formalism. (default='mbh')
              suffix  --  a name suffix used to distinguish between different
                          rotors
              rotsym  --  the rotational symmetry of the rotor (default=1)
@@ -375,12 +386,22 @@ class Rotor(Info, StatFysTerms):
                               kJ/mol are always ignored.
         """
         self.rot_scan = rot_scan
-        if cancel_freq is not None:
-            self.cancel_freq = cancel_freq
-        else:
-            self.cancel_freq = compute_cancel_frequency(
-                molecule, rot_scan.dihedral, rot_scan.top_indexes
+        self.cancel_freq = cancel_freq
+        self.cancel_method = 'given by the user'
+        # the cancelation frequency
+        if self.cancel_freq == 'mbh':
+            self.cancel_freq = compute_cancel_frequency_mbh(
+                molecule, self.rot_scan.dihedral, self.rot_scan.top_indexes
             )
+            self.cancel_method = 'computed with mbh'
+        elif self.cancel_freq == 'scan':
+            if self.rot_scan.potential is None:
+                raise RotorError("The option cancel_freq='scan' can only be used with hindered rotors.")
+            self.cancel_method = 'derived from the torsional potential'
+            # the actual computation is performed later
+        else:
+            raise ValueError("Could not interpret cancel_freq=%s" % cancel_freq)
+        #
         if suffix is None:
             self.suffix = "_".join(str(i) for i in rot_scan.top_indexes)
         else:
@@ -407,6 +428,7 @@ class Rotor(Info, StatFysTerms):
         """
         if nma.periodic:
             raise NotImplementedError("Rotors in periodic systems are not supported yet")
+
         self.center = nma.coordinates[self.rot_scan.dihedral[1]]
         self.axis = nma.coordinates[self.rot_scan.dihedral[2]] - self.center
         self.axis /= numpy.linalg.norm(self.axis)
@@ -452,6 +474,12 @@ class Rotor(Info, StatFysTerms):
                 self.rotsym, self.even, self.v_threshold)
             self.energy_levels = self.hb.solve(self.reduced_moment, self.v_coeffs)
             self.energy_levels = self.energy_levels[:self.num_levels]
+
+        # the cancelation frequency based on the scan
+        if self.cancel_freq == 'scan':
+            force_constant = self.hb.eval_deriv2(numpy.array([self.nma_angle]), self.v_coeffs)[0]
+            self.cancel_freq = numpy.sqrt(force_constant/self.reduced_moment)/(2*numpy.pi)
+
         # scaling factors
         self.freq_scaling = partf.vibrational.freq_scaling
         self.zp_scaling = partf.vibrational.zp_scaling
@@ -488,6 +516,7 @@ class Rotor(Info, StatFysTerms):
         print >> f, "    Moment [amu*bohr**2]: %f" % (self.moment/amu)
         print >> f, "    Reduced moment [amu*bohr**2]: %f" % (self.reduced_moment/amu)
         print >> f, "    Cancel wavenumber [1/cm]: %.1f" % (self.cancel_freq/(lightspeed/centimeter))
+        print >> f, "    The cancelation wavenumber is %s." % self.cancel_method
         self.dump_values(f, "Energy levels [kJ/mol]", self.energy_levels/kjmol, "% 8.2f", 8)
         if self.hb is not None:
             print >> f, "    Number of basis functions: %i" % (self.hb.size)

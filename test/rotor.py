@@ -269,12 +269,12 @@ class RotorTestCase(unittest.TestCase):
         molecule = load_molecule_g03fchk("input/ethane/gaussian.fchk")
         nma = NMA(molecule)
         rot_scan = load_rotscan_g03log("input/rotor/gaussian.log")
+        rotor = Rotor(rot_scan, molecule, rotsym=3, even=True, cancel_freq='scan')
+        pf = PartFun(nma, [ExtTrans(), ExtRot(6), rotor])
+        self.assertAlmostEqual(rotor.cancel_freq/lightspeed*centimeter, 298, 0)
         rotor = Rotor(rot_scan, molecule, rotsym=3, even=True)
         self.assertAlmostEqual(rotor.cancel_freq/lightspeed*centimeter, 314, 0)
         pf = PartFun(nma, [ExtTrans(), ExtRot(6), rotor])
-        force_constant = rotor.hb.eval_deriv2(numpy.array([rotor.nma_angle]), rotor.v_coeffs)
-        my_cancel_freq = numpy.sqrt(force_constant/rotor.reduced_moment)/(2*numpy.pi)
-        self.assertAlmostEqual(my_cancel_freq/lightspeed*centimeter, 298, 0)
         self.assertArraysAlmostEqual(
             rotor.hb.eval_fn(rot_scan.potential[0], rotor.v_coeffs),
             rot_scan.potential[1]

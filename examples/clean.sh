@@ -70,3 +70,11 @@
 ( cd 012_ethyl_ethene_scaling
   rm -v *.png *.csv *.txt
 )
+
+( cd 013_butane
+  rm -v *.png *.csv *.txt
+)
+
+( cd 014_pentane_mbh
+  rm -v *.png *.csv *.txt
+)

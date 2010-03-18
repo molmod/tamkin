@@ -59,9 +59,11 @@
 
 # Import the tamkin libarary.
 from tamkin import *
+from molmod import *
 
 # Load the gaussian data.
 molecule = load_molecule_g03fchk("gaussian.fchk")
+print molecule.numbers
 # Perform the normal mode analysis
 nma = NMA(molecule)
 # Construct a partition function object with the typical gas phase contributions.
@@ -71,6 +73,7 @@ pf = PartFun(nma, [ExtTrans(), ExtRot()])
 # Write some general information about the molecule and the partition function
 # to a file.
 pf.write_to_file("partfun.txt")
+print pf.free_energy(300)/(kjmol)
 # Write an extensive overview of the thermodynamic properties to a file:
 ta = ThermoAnalysis(pf, [300,400,500,600])
 ta.write_to_file("thermo.csv")

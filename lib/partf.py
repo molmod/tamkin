@@ -434,7 +434,7 @@ class ExtTrans(Info, StatFys):
 
 class ExtRot(Info, StatFys):
     """The contribution from the external rotation"""
-    def __init__(self, symmetry_number=None, im_threshold=1.0):
+    def __init__(self, symmetry_number=0, im_threshold=1.0):
         self.symmetry_number = symmetry_number
         self.im_threshold = im_threshold
         Info.__init__(self, "rotational")
@@ -444,9 +444,9 @@ class ExtRot(Info, StatFys):
             raise ValueError("There is no external rotation in periodic systems.")
         self.inertia_tensor = nma.inertia_tensor
         self.moments = numpy.linalg.eigvalsh(nma.inertia_tensor)
-        if self.symmetry_number is None:
+        if self.symmetry_number == 0:
             self.symmetry_number = nma.symmetry_number
-            if self.symmetry_number is None:
+            if self.symmetry_number == 0:
                 from molmod import Molecule
                 # compute the rotational symmetry number
                 tmp_mol = Molecule(nma.numbers, nma.coordinates)

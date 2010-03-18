@@ -151,7 +151,7 @@ def load_molecule_charmm(charmmfile_cor, charmmfile_hess,
 
     return Molecule(
         atomicnumbers, positions, masses, energy, gradient,
-        hessian, 1, None, is_periodic
+        hessian, 1, 0, is_periodic
     )
 
 

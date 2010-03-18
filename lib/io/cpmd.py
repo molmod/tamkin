@@ -143,6 +143,6 @@ def load_molecule_cpmd(fn_out, fn_geometry, fn_hessian, multiplicity=1, is_perio
 
     return Molecule(
         numbers, coordinates, masses, energy, gradient, hessian, multiplicity,
-        None, is_periodic
+        0, is_periodic
     )
 

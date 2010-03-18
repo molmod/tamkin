@@ -175,7 +175,7 @@ def load_molecule_vasp(vaspfile_xyz, vaspfile_out, is_periodic=True):
     energy = 0.0
     return Molecule(
         atomicnumbers, positions, masses, energy, gradient,
-        hessian, multiplicity, None, is_periodic )
+        hessian, multiplicity, 0, is_periodic )
 
 
 def load_fixed_vasp(filename):

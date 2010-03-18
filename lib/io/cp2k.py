@@ -133,7 +133,7 @@ def load_molecule_cp2k(fn_xyz, fn_sp, fn_freq, multiplicity=1, is_periodic=True)
 
     return Molecule(
         molecule.numbers, molecule.coordinates, masses, energy, gradient,
-        hessian, multiplicity, None, is_periodic
+        hessian, multiplicity, 0, is_periodic
     )
 
 

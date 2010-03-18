@@ -736,7 +736,7 @@ class VSANoMass(Treatment):
 
 
 class MBH(Treatment):
-    def __init__(self, blocks, svd_threshold=1e-5):
+    def __init__(self, blocks, do_gradient_correction=True, svd_threshold=1e-5):
         """Initialize the MBH treatment.
 
            Frequencies and modes are computed with the MBH approach:
@@ -752,6 +752,10 @@ class MBH(Treatment):
            One argument:
              blocks  --  a list of blocks, each block is a list of atoms,
                          counting starts from zero.
+           Optional arguments:
+             do_gradient_correction  --  logical, whether gradient correction
+                                         to MBH should be added
+             svd_threshold  --  threshold for zero singular values in svd
         """
         # QA:
         if len(blocks) == 0:
@@ -759,6 +763,9 @@ class MBH(Treatment):
         # Rest of init:
         self.blocks = blocks
         self.svd_threshold = svd_threshold
+        if type(do_gradient_correction).__name__ == 'bool':
+            self.do_gradient_correction = do_gradient_correction
+        else: raise TypeError("Optional argument do_grad_correction should be boolean.")
         Treatment.__init__(self)
 
     def compute_zeros(self, molecule, do_modes):
@@ -811,7 +818,7 @@ class MBH(Treatment):
         Hp = numpy.dot(numpy.dot( U.transpose(), molecule.hessian) , U)
 
         # gradient correction
-        if True:    # TODO: make this correction optional
+        if self.do_gradient_correction:
          for b,block in enumerate(blkinfo.blocks_nlin_strict+blkinfo.blocks_lin_strict):   # Nonlinear AND linear blocks
             GP = numpy.zeros((3,3),float)
             G = numpy.take(molecule.gradient,block,0)

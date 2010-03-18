@@ -84,11 +84,11 @@ molecule = load_molecule_cp2k(
     is_periodic=False,
 )
 nma = NMA(molecule, ConstrainExt())
-pf = PartFun(nma, [
-    ExtTrans(IdealGasVolume(pressure)),
-    ExtRot(),
-    Vibrations(classical=False), # change this boolean to get classical vibrations
-])
+pf = PartFun(
+    nma,
+    [ExtTrans(), ExtRot(), Vibrations(classical=False)],
+    gaslaw=IdealGasLaw(pressure)
+)
 
 
 # Write the frequencies to a csv file

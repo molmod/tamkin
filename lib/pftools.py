@@ -56,7 +56,7 @@
 # --
 
 
-from tamkin.partf import compute_rate_coeff
+from tamkin.partf import compute_rate_coeff, PartFun
 
 from molmod.units import kjmol, second, meter, mol, kelvin, joule, centimeter
 from molmod.constants import boltzmann, lightspeed
@@ -88,8 +88,11 @@ class ThermoAnalysis(object):
         self.temps = temps
         self.tables = [
             ThermoTable("Energy", "%.5f", kjmol, "kJ/mol", "internal_energy", pf, temps),
-            ThermoTable("Free energy", "%.5f", kjmol, "kJ/mol", "free_energy", pf, temps),
-            ThermoTable("Heat capacity", "%.3f", joule/mol/kelvin, "J/(mol*K)", "heat_capacity", pf, temps),
+            ThermoTable("Etnhalpy", "%.5f", kjmol, "kJ/mol", "internal_energy", pf, temps, pf_method_name="enthalpy"),
+            ThermoTable("Helmholtz Free energy", "%.5f", kjmol, "kJ/mol", "free_energy", pf, temps, pf_method_name="helmholtz_free_energy"),
+            ThermoTable("Gibbs Free energy", "%.5f", kjmol, "kJ/mol", "free_energy", pf, temps, pf_method_name="gibs_free_energy"),
+            ThermoTable("Heat capacity (v)", "%.3f", joule/mol/kelvin, "J/(mol*K)", "heat_capacity_v", pf, temps),
+            ThermoTable("Heat capacity (p)", "%.3f", joule/mol/kelvin, "J/(mol*K)", "heat_capacity_p", pf, temps),
             ThermoTable("Entropy", "%.5f",  joule/mol/kelvin, "J/(mol*K)", "entropy", pf, temps),
             ThermoTable("log(q)", "%.1f", 1, "1", "log_eval", pf, temps),
             ThermoTable("d log(q) / dT", "%.3e", 1/kelvin, "1/K", "log_deriv", pf, temps),
@@ -118,7 +121,7 @@ class ThermoAnalysis(object):
 
 
 class ThermoTable(object):
-    def __init__(self, label, format, unit, unit_name, method_name, pf, temps):
+    def __init__(self, label, format, unit, unit_name, method_name, pf, temps, pf_method_name=None):
         """Initialize a thermo table, i.e. the thermochemistry analysis for one
            specific thermodynamic quantity.
 
@@ -133,6 +136,13 @@ class ThermoTable(object):
              method_name  --  the method of the partition function that computes the quantity of interest
              temps  --  the temperatures at which the quantity has to be computed.
 
+           Optional argument:
+             pf_method_name  --  In case of the actual partition function object,
+                                 this alternative method can be used compute
+                                 to quantity of interest. This workaround is
+                                 required due to poor naming conventions in
+                                 statistical physics.
+
            The results are stored in an array self.data of which the columns
            correspond to the given temperatures and the rows correspond to the
            different terms in the partition function.
@@ -140,6 +150,9 @@ class ThermoTable(object):
            The attribute self.keys is a list describing the rows, i.e. the each
            contribution from the partition function.
         """
+        if pf_method_name is None:
+            pf_method_name = method_name
+
         self.label = label
         self.format = format
         self.unit = unit
@@ -147,12 +160,16 @@ class ThermoTable(object):
         self.method_name = method_name
         self.pf = pf
         self.temps = temps
+        self.pf_method_name = pf_method_name
 
         self.keys = []
         data =  []
         for term in [pf] + pf.terms:
             self.keys.append(term.name)
-            method = getattr(term, method_name, None)
+            if isinstance(term, PartFun):
+                method = getattr(term, pf_method_name, None)
+            else:
+                method = getattr(term, method_name, None)
             if isinstance(method, types.MethodType):
                 row = []
                 for temp in temps:
@@ -177,7 +194,7 @@ class ThermoTable(object):
 
 
 class ReactionAnalysis(object):
-    def __init__(self, pfs_react, pf_trans, temp_low, temp_high, temp_step=10*kelvin, mol_volume=None, tunneling=None):
+    def __init__(self, pfs_react, pf_trans, temp_low, temp_high, temp_step=10*kelvin, cp=True, tunneling=None):
         """Initialize a reaction analysis object
 
            Arguments:
@@ -190,10 +207,9 @@ class ReactionAnalysis(object):
            Optional arguments:
              temp_step  --  The resolution of the temperature grid.
                             [default=10K]
-             mol_volume  --  An object that computes the molecular volume as
-                             function of the temperature. When not given, a
-                             constant volume corresponding to normal conditions
-                             is assumed.
+             cp  --  When True, the rate coefficients are compute at constant
+                     pressure (default=True). When False, the rate coefficients
+                     are computed at constant volume.
              tunneling  --  A tunneling correction object. If not given, no
                             tunneling correction is applied.
 
@@ -224,13 +240,13 @@ class ReactionAnalysis(object):
         self.temp_high = float(temp_high)
         self.temp_step = float(temp_step)
         self.temp_high = numpy.ceil((self.temp_high-self.temp_low)/self.temp_step)*self.temp_step+self.temp_low
-        self.mol_volume = mol_volume
+        self.cp = cp
         self.tunneling = tunneling
 
         # make sure that the final temperature is included
         self.temps = numpy.arange(self.temp_low,self.temp_high+0.5*self.temp_step,self.temp_step)
         self.rate_coeffs = numpy.array([
-            compute_rate_coeff(pfs_react, pf_trans, temp, mol_volume)
+            compute_rate_coeff(pfs_react, pf_trans, temp, cp)
             for temp in self.temps
         ])
         if self.tunneling is None:
@@ -268,11 +284,15 @@ class ReactionAnalysis(object):
         self.covariance = None # see monte_carlo method
 
     def compute_rate_coeff(self, temp):
-        return compute_rate_coeff(self.pfs_react, self.pf_trans, temp, self.mol_volume)
+        return compute_rate_coeff(self.pfs_react, self.pf_trans, temp, self.cp)
 
     def compute_delta_G(self, temp):
-        return self.pf_trans.free_energy(temp) - \
-               sum(pf_react.free_energy(temp) for pf_react in self.pfs_react)
+        return self.pf_trans.gibbs_free_energy(temp) - \
+               sum(pf_react.gibbs_free_energy(temp) for pf_react in self.pfs_react)
+
+    def compute_delta_A(self, temp):
+        return self.pf_trans.helmholtz_free_energy(temp) - \
+               sum(pf_react.helmholtz_free_energy(temp) for pf_react in self.pfs_react)
 
     def compute_delta_E(self):
         return self.pf_trans.energy - \
@@ -291,9 +311,9 @@ class ReactionAnalysis(object):
         print >> f, "ln(A [a.u.]) = %.2f" % (self.parameters[0])
         print >> f, "Ea [kJ/mol] = %.2f" % (self.Ea/kjmol)
         delta_E = self.compute_delta_E()
-        print >> f, "Delta E at T=0K (classical nuclei) [kJ/mol] = %.1f" % (delta_E/kjmol)
-        delta_G0K = self.compute_delta_G(0.0)
-        print >> f, "Delta E at T=0K (partition function) [kJ/mol] = %.1f" % (delta_G0K/kjmol)
+        print >> f, "Delta E at T=0K [kJ/mol] = %.1f" % (delta_E/kjmol)
+        delta_A0K = self.compute_delta_A(0.0)
+        print >> f, "Delta E0 at T=0K (with zero-point if QM vibrations) [kJ/mol] = %.1f" % (delta_A0K/kjmol)
         print >> f, "R2 (Pearson) = %.2f%%" % (self.R2*100)
         print >> f
         if self.covariance is not None:
@@ -313,20 +333,24 @@ class ReactionAnalysis(object):
         print >> f, "Number of temperatures = %i" % len(self.temps)
         print >> f
         print >> f, "Reaction rate coefficients"
+        symbol = {True: "G", False: "A"}
         if self.tunneling is None:
-            print >> f, "    T [K]     Delta G [kJ/mol]       k(T) [%s]" % self.unit_name
+            print >> f, "    T [K]     Delta %s [kJ/mol]       k(T) [%s]" % (symbol, self.unit_name)
         else:
-            print >> f, "    T [K]     Delta G [kJ/mol]       k(T) [%s]         cor(T) [1]         k_tun(T) [%s]" % (self.unit_name, self.unit_name)
+            print >> f, "    T [K]     Delta %s [kJ/mol]       k(T) [%s]         cor(T) [1]         k_tun(T) [%s]" % (symbol, self.unit_name, self.unit_name)
         for i in xrange(len(self.temps)):
             temp = self.temps[i]
-            delta_G = self.pf_trans.free_energy(temp) - sum(pf_react.free_energy(temp) for pf_react in self.pfs_react)
+            if self.cp:
+                delta_free = self.compute_delta_G(temp)
+            else:
+                delta_free = self.compute_delta_A(temp)
             if self.tunneling is None:
                 print >> f, "% 10.2f      %8.1f             % 10.5e" % (
-                    temp, delta_G/kjmol, self.rate_coeffs[i]/self.unit
+                    temp, delta_free/kjmol, self.rate_coeffs[i]/self.unit
                 )
             else:
                 print >> f, "% 10.2f      %8.1f             % 10.5e       % 10.5e       % 10.5e" % (
-                    temp, delta_G/kjmol,
+                    temp, delta_free/kjmol,
                     self.rate_coeffs[i]/self.unit/self.corrections[i], # division undoes the correction
                     self.corrections[i], # the correction factor
                     self.rate_coeffs[i]/self.unit, # with correction
@@ -460,7 +484,7 @@ class ReactionAnalysis(object):
             alter_freqs(self.pf_trans, scale_energy)
             altered_ra = ReactionAnalysis(
                 self.pfs_react, self.pf_trans, self.temp_low, self.temp_high,
-                self.temp_step, self.mol_volume, self.tunneling
+                self.temp_step, self.cp, self.tunneling
             )
             solutions[i] = altered_ra.parameters
 

@@ -570,43 +570,20 @@ class Rotor(Info, StatFysTerms):
         pylab.savefig(filename)
 
     def helper0_terms(self, temp, n):
-        """Compute the contributions to the logarithm of the partition function
-
-           Argument:
-             temp  --  the temperature
-
-           Returns: 1D numpy arrays with contributions
-        """
         return numpy.array([
             -helper0_vibrations(temp, n, self.cancel_freq, self.classical,
                                  self.freq_scaling, self.zp_scaling),
             helper0_levels(temp, n, self.energy_levels) - temp**n*numpy.log(self.rotsym),
         ])
 
-    def helper1_terms(self, temp, n):
-        """Compute the contributions to the derivative of the logarithm of the
-           partition function
-
-           Argument:
-             temp  --  the temperature
-
-           Returns: 1D numpy arrays with contributions
-        """
+    def helper1_terms(self, temp, n, cp=False):
         return numpy.array([
             -helper1_vibrations(temp, n, self.cancel_freq, self.classical,
                                   self.freq_scaling, self.zp_scaling),
             helper1_levels(temp, n, self.energy_levels),
         ])
 
-    def helper2_terms(self, temp, n):
-        """Compute the contributions to the second derivative of the logarithm
-           of the partition function
-
-           Argument:
-             temp  --  the temperature
-
-           Returns: 1D numpy arrays with contributions
-        """
+    def helper2_terms(self, temp, n, cp=False):
         return numpy.array([
             -helper2_vibrations(temp, n, self.cancel_freq, self.classical,
                                    self.freq_scaling, self.zp_scaling),

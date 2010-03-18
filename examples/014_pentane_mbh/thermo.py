@@ -89,7 +89,8 @@ make_moldenfile_nma("molden.vib", nma)
 
 # B) Construct a partition function with the typical gas phase contributions.
 pf = PartFun(nma, [ExtTrans(), ExtRot()])
-print "Heat capacity at 300K [J/(mol*K)]:", pf.heat_capacity(300*kelvin)/(joule/mol/kelvin)
+print "Heat capacity at 300K, constant volume [J/(mol*K)]:", pf.heat_capacity_v(300*kelvin)/(joule/mol/kelvin)
+print "Heat capacity at 300K, constant pressure [J/(mol*K)]:", pf.heat_capacity_p(300*kelvin)/(joule/mol/kelvin)
 # Write some general information about the molecule and the partition function
 # to a file.
 pf.write_to_file("partfun.txt")

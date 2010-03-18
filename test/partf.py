@@ -193,7 +193,7 @@ class PartFunTestCase(unittest.TestCase):
         ])
         unit = meter**3/mol/second
         for i in xrange(len(temps)):
-            k = compute_rate_coeff([pf_react1, pf_react2], pf_trans, temps[i])
+            k = compute_rate_coeff([pf_react1, pf_react2], pf_trans, temps[i], cp=True)
             # Sometimes, the fancy excel files use slightly different constants.
             # Therefore, only equal up to 2 decimals.
             self.assertAlmostEqual(numpy.log(k/unit), numpy.log(expected_ks[i]),2)
@@ -215,15 +215,17 @@ class PartFunTestCase(unittest.TestCase):
         for stat_fys in sfs:
             for temp in temps:
                 # check the first derivative with finite differences
-                a = stat_fys.log_deriv(temp)
-                b = (stat_fys.log_eval(temp+eps) - stat_fys.log_eval(temp-eps))/(2*eps)
+                a = stat_fys.log_deriv(temp, cp=True)
+                b = (stat_fys.log_eval(temp+eps) -
+                     stat_fys.log_eval(temp-eps))/(2*eps)
                 self.assertAlmostEqual(
                     a, b, 8,
                     "error in partial derivative (%s): %s!=%s" % (stat_fys.name, a, b)
                 )
                 # check the second derivative with finite differences
-                a = stat_fys.log_deriv2(temp)
-                b = (stat_fys.log_deriv(temp+eps) - stat_fys.log_deriv(temp-eps))/(2*eps)
+                a = stat_fys.log_deriv2(temp, cp=True)
+                b = (stat_fys.log_deriv(temp+eps, cp=True) -
+                     stat_fys.log_deriv(temp-eps, cp=True))/(2*eps)
                 self.assertAlmostEqual(
                     a, b, 8,
                     "error in second partial derivative (%s): %s!=%s" % (stat_fys.name, a, b)
@@ -238,35 +240,35 @@ class PartFunTestCase(unittest.TestCase):
         # internal energy, heat capacity and entropy
         molecule = load_molecule_g03fchk("input/sterck/aa.fchk")
         nma = NMA(molecule, ConstrainExt())
-        pf = PartFun(nma, [ExtTrans(FixedVolume()), ExtRot(1)])
+        pf = PartFun(nma, [ExtTrans(), ExtRot(1)])
 
         # values taken from aa.log
         calmolK = calorie/mol/kelvin
-        # gaussian seems to add the constant R to the translational part of the
-        # entropy for some reason. I hope there is a mistake somewhere.
         R = 1.98720649773 # R in calorie/(mol*K)
         # electronic
         self.assertAlmostEqual(pf.electronic.internal_energy(298.15)/(kcalmol), 0.000)
-        self.assertAlmostEqual(pf.electronic.heat_capacity(298.15)/(calmolK), 0.000)
+        self.assertAlmostEqual(pf.electronic.heat_capacity_v(298.15)/(calmolK), 0.000)
         self.assertAlmostEqual(pf.electronic.entropy(298.15)/(calmolK), 0.000)
         # translational
         self.assertAlmostEqual(pf.translational.internal_energy(298.15)/(kcalmol), 0.889, 2)
-        self.assertAlmostEqual(pf.translational.heat_capacity(298.15)/(calmolK), 2.981, 2)
+        self.assertAlmostEqual(pf.translational.heat_capacity_v(298.15)/(calmolK), 2.981, 2)
         self.assertAlmostEqual(pf.translational.entropy(298.15)/(calmolK), 38.699-R, 2) # corrected
         # rotational
         self.assertAlmostEqual(pf.rotational.internal_energy(298.15)/(kcalmol), 0.889, 2)
-        self.assertAlmostEqual(pf.rotational.heat_capacity(298.15)/(calmolK), 2.981, 2)
+        self.assertAlmostEqual(pf.rotational.heat_capacity_v(298.15)/(calmolK), 2.981, 2)
         self.assertAlmostEqual(pf.rotational.entropy(298.15)/(calmolK), 25.287, 2)
         # vibrational
         self.assertAlmostEqual(pf.vibrational.internal_energy(298.15)/(kcalmol), 51.343, 2)
-        self.assertAlmostEqual(pf.vibrational.heat_capacity(298.15)/(calmolK), 13.264, 2)
+        self.assertAlmostEqual(pf.vibrational.heat_capacity_v(298.15)/(calmolK), 13.264, 2)
         self.assertAlmostEqual(pf.vibrational.entropy(298.15)/(calmolK), 10.710, 2)
         # total
         self.assertAlmostEqual((pf.internal_energy(298.15)-pf.energy)/(kcalmol), 53.121, 2)
-        self.assertAlmostEqual(pf.heat_capacity(298.15)/(calmolK), 19.225, 2)
+        self.assertAlmostEqual(pf.heat_capacity_v(298.15)/(calmolK), 19.225, 2)
         self.assertAlmostEqual(pf.entropy(298.15)/(calmolK), 74.696, 2)
-        # free energy of the molecule:
-        self.assertAlmostEqual(pf.free_energy(298.15), -247.257535, 5)
+        self.assertAlmostEqual(pf.helmholtz_free_energy(0.0), -247.228749, 2) # Zero-point energy
+        self.assertAlmostEqual(pf.internal_energy(298.15), -247.222989, 2)
+        self.assertAlmostEqual(pf.enthalpy(298.15), -247.222045, 2)
+        self.assertAlmostEqual(pf.gibbs_free_energy(298.15), -247.257535, 5)
 
     def test_classical(self):
         pf = PartFun(
@@ -275,7 +277,7 @@ class PartFunTestCase(unittest.TestCase):
         )
 
         for i in xrange(10):
-            tmp = pf.vibrational.heat_capacity_terms(numpy.random.uniform(100,500))
+            tmp = pf.vibrational.heat_capacity_v_terms(numpy.random.uniform(100,500))
             for value in tmp:
                 self.assertAlmostEqual(value, boltzmann, 10)
 
@@ -285,17 +287,17 @@ class PartFunTestCase(unittest.TestCase):
 
         # values taken from aa.log
         molecule = load_molecule_g03fchk("input/sterck/aa.fchk")
-        pf = PartFun(NMA(molecule, ConstrainExt()), [ExtTrans(FixedVolume())])
+        pf = PartFun(NMA(molecule, ConstrainExt()), [ExtTrans()])
         # translational
         self.assertAlmostEqual(pf.translational.internal_energy(298.15)/(kcalmol), 0.889, 2)
-        self.assertAlmostEqual(pf.translational.heat_capacity(298.15)/(calmolK), 2.981, 2)
+        self.assertAlmostEqual(pf.translational.heat_capacity_v(298.15)/(calmolK), 2.981, 2)
         self.assertAlmostEqual(pf.translational.entropy(298.15)/(calmolK), 38.699-R, 2) # corrected
 
         molecule = load_molecule_g03fchk("input/sterck/aa.fchk")
         pf = PartFun(NMA(molecule, ConstrainExt()), [ExtRot(1)])
         # rotational
         self.assertAlmostEqual(pf.rotational.internal_energy(298.15)/(kcalmol), 0.889, 2)
-        self.assertAlmostEqual(pf.rotational.heat_capacity(298.15)/(calmolK), 2.981, 2)
+        self.assertAlmostEqual(pf.rotational.heat_capacity_v(298.15)/(calmolK), 2.981, 2)
         self.assertAlmostEqual(pf.rotational.entropy(298.15)/(calmolK), 25.287, 2)
 
     def test_linear(self):
@@ -321,7 +323,7 @@ class PartFunTestCase(unittest.TestCase):
         # derived quantities
         calmolK = calorie/mol/kelvin
         self.assertAlmostEqual(pf.rotational.internal_energy(298.15)/(kcalmol), 0.592, 2)
-        self.assertAlmostEqual(pf.rotational.heat_capacity(298.15)/(calmolK), 1.987, 2)
+        self.assertAlmostEqual(pf.rotational.heat_capacity_v(298.15)/(calmolK), 1.987, 2)
         self.assertAlmostEqual(pf.rotational.entropy(298.15)/(calmolK), 13.130, 2)
 
     def test_equilibrium(self):
@@ -344,14 +346,14 @@ class PartFunTestCase(unittest.TestCase):
 
     def test_proton(self):
         mol = Proton()
-        pf = PartFun(NMA(mol), [ExtTrans(FixedVolume())])
+        pf = PartFun(NMA(mol), [ExtTrans()])
         temp = 298.15
-        self.assertAlmostEqual(pf.heat_capacity(temp), 1.5*boltzmann)
+        self.assertAlmostEqual(pf.heat_capacity_v(temp), 1.5*boltzmann)
         self.assertAlmostEqual(pf.internal_energy(temp), 1.5*boltzmann*temp)
         qt = (mol.masses[0]*boltzmann*temp/(2*numpy.pi))**1.5 * boltzmann*temp/(1*atm)
         self.assertAlmostEqual(pf.translational.helper1(temp, 1), 1.5)
         self.assertAlmostEqual(
-            pf.translational.mol_volume.helper0(temp, 0),
+            pf.gaslaw.helper0(temp, 0),
             numpy.log(boltzmann*temp/(1*atm))
         )
         self.assertAlmostEqual(
@@ -378,13 +380,13 @@ class PartFunTestCase(unittest.TestCase):
             PCMCorrection((-5*kjmol,300), (-10*kjmol,600)),
         ])
         # real tests
-        self.assertAlmostEqual(pf0.free_energy(300)-5*kjmol, pf1.free_energy(300))
-        self.assertAlmostEqual(pf0.free_energy(300)-5*kjmol, pf2.free_energy(300))
-        self.assertAlmostEqual(pf0.free_energy(600)-5*kjmol, pf1.free_energy(600))
-        self.assertAlmostEqual(pf0.free_energy(600)-10*kjmol, pf2.free_energy(600))
+        self.assertAlmostEqual(pf0.helmholtz_free_energy(300)-5*kjmol, pf1.helmholtz_free_energy(300))
+        self.assertAlmostEqual(pf0.helmholtz_free_energy(300)-5*kjmol, pf2.helmholtz_free_energy(300))
+        self.assertAlmostEqual(pf0.helmholtz_free_energy(600)-5*kjmol, pf1.helmholtz_free_energy(600))
+        self.assertAlmostEqual(pf0.helmholtz_free_energy(600)-10*kjmol, pf2.helmholtz_free_energy(600))
         # blind tests
-        pf1.heat_capacity(300)
-        pf2.heat_capacity(300)
+        pf1.heat_capacity_v(300)
+        pf2.heat_capacity_p(300)
         pf1.write_to_file("output/pcm_partf1.txt")
         pf2.write_to_file("output/pcm_partf2.txt")
 

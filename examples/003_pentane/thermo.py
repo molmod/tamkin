@@ -75,7 +75,8 @@ nma1 = NMA(molecule)
 print "The zero eigenmodes: %s" % nma1.zeros
 # Construct a partition function with the typical gas phase contributions.
 pf1 = PartFun(nma1, [ExtTrans(), ExtRot()])
-print "Heat capacity at 300K [J/(mol*K)]:", pf1.heat_capacity(300*kelvin)/(joule/mol/kelvin)
+print "Heat capacity at 300K, constant volume [J/(mol*K)]:", pf1.heat_capacity_v(300*kelvin)/(joule/mol/kelvin)
+print "Heat capacity at 300K, constant pressure [J/(mol*K)]:", pf1.heat_capacity_p(300*kelvin)/(joule/mol/kelvin)
 # Write some general information about the molecule and the partition function
 # to a file.
 pf1.write_to_file("partfun1.txt")
@@ -90,7 +91,8 @@ nma2 = NMA(molecule, ConstrainExt())
 print "The zero eigenmodes: %s" % nma2.zeros
 # Construct a partition function with the typical gas phase contributions.
 pf2 = PartFun(nma2, [ExtTrans(), ExtRot()])
-print "Heat capacity at 300K [J/(mol*K)]:", pf2.heat_capacity(300*kelvin)/(joule/mol/kelvin)
+print "Heat capacity at 300K, constant volume [J/(mol*K)]:", pf2.heat_capacity_v(300*kelvin)/(joule/mol/kelvin)
+print "Heat capacity at 300K, constant pressure [J/(mol*K)]:", pf2.heat_capacity_p(300*kelvin)/(joule/mol/kelvin)
 # Write some general information about the molecule and the partition function
 # to a file.
 pf2.write_to_file("partfun2.txt")

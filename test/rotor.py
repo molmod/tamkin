@@ -283,10 +283,10 @@ class RotorTestCase(unittest.TestCase):
         self.assertAlmostEqual(rotor.moment/amu, 11.092362911176032, 2)
         self.assertAlmostEqual(rotor.reduced_moment/amu, 5.5461814555880098, 2)
         self.assertAlmostEqual(numpy.exp(rotor.log_eval_terms(100.0)[1]), 0.12208E+00, 1)
-        self.assertAlmostEqual(rotor.heat_capacity_terms(100.0)[1]/(joule/mol/kelvin), 2.567, 0)
+        self.assertAlmostEqual(rotor.heat_capacity_v_terms(100.0)[1]/(joule/mol/kelvin), 2.567, 0)
         self.assertAlmostEqual(rotor.entropy_terms(100.0)[1]/(joule/mol), 0.766, 0)
         self.assertAlmostEqual(numpy.exp(rotor.log_eval_terms(800.0)[1]), 0.21108E+01, 1)
-        self.assertAlmostEqual(rotor.heat_capacity_terms(800.0)[1]/(joule/mol/kelvin), 6.346, 1)
+        self.assertAlmostEqual(rotor.heat_capacity_v_terms(800.0)[1]/(joule/mol/kelvin), 6.346, 1)
         self.assertAlmostEqual(rotor.entropy_terms(800.0)[1]/(joule/mol), 14.824, 1)
 
         rotor.plot_levels("output/ethane_hindered_levels.png", 300)

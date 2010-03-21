@@ -99,7 +99,7 @@ class IdealGasLaw(object):
         """Initialize an ideal gas law.
 
            Optional argument:
-              pressure  --  the external pressure of the systen [default=1*atm]
+             | pressure  --  the external pressure of the systen [default=1*atm]
         """
         self.pressure = pressure
 
@@ -203,8 +203,8 @@ class StatFys(object):
 
            Returns T^n (d^2 ln(Z) / dT^2)
 
-           The derivative is taken at constant volume when cp==False.
-           The derivative is taken at constant pressure when cp==True.
+           - The derivative is taken at constant volume when cp==False.
+           - The derivative is taken at constant pressure when cp==True.
         """
         raise NotImplementedError
 
@@ -643,16 +643,16 @@ class PartFun(Info, StatFys):
         """Initialize the PartFun object
 
         Arguments:
-          nma  --  NMA object
+          | nma  --  NMA object
         Optional arguments:
-          terms  --  list to select the contributions to the partition function
-                     e.g. [Vibrations(classical=True), ExtRot(1)]
-          gaslaw  --  the gas law that the system under study obeys. This is
-                      used to evaluation the PV term in the enthalpy and the
-                      Gibbs free energy, and also to compute the derivative of
-                      the volume towards the temperature under constant
-                      pressure (required for the heat capacity at constant
-                      pressure). By default, the ideal gas law is used.
+          | terms  --  list to select the contributions to the partition function
+                       e.g. [Vibrations(classical=True), ExtRot(1)]
+          | gaslaw  --  the gas law that the system under study obeys. This is
+                        used to evaluation the PV term in the enthalpy and the
+                        Gibbs free energy, and also to compute the derivative of
+                        the volume towards the temperature under constant
+                        pressure (required for the heat capacity at constant
+                        pressure). By default, the ideal gas law is used.
         """
         if terms is None:
             terms = []
@@ -752,15 +752,15 @@ def compute_rate_coeff(pfs_react, pf_trans, temp, cp=True):
        The implementation is based on transition state theory.
 
        Arguments:
-         pfs_react  --  a list of partition functions objects, one for each
-                        reactant
-         pf_trans  --  the partition function of the transition state
-         temp  --  the temperature
+         | pfs_react  --  a list of partition functions objects, one for each
+                          reactant
+         | pf_trans  --  the partition function of the transition state
+         | temp  --  the temperature
 
        Optional argument:
-         cp  --  When True, the rate coefficient is compute at constant
-                 pressure (default=True). When False, the rate coefficient
-                 is computed at constant volume.
+         | cp  --  When True, the rate coefficient is compute at constant
+                   pressure (default=True). When False, the rate coefficient
+                   is computed at constant volume.
     """
     if cp:
         delta_G = pf_trans.gibbs_free_energy(temp)
@@ -780,14 +780,14 @@ def compute_equilibrium_constant(pfs_A, pfs_B, temp, cp=True):
        some products
 
        Arguments:
-         pfs_A  --  a list of reactant partition functions
-         pfs_B  --  a list of product partition functions
-         temp  --  the temperature
+         | pfs_A  --  a list of reactant partition functions
+         | pfs_B  --  a list of product partition functions
+         | temp  --  the temperature
 
        Optional argument:
-         cp  --  When True, the equilibrium constant is compute at constant
-                 pressure (default=True). When False, the equilibrium constant
-                 is computed at constant volume.
+         | cp  --  When True, the equilibrium constant is compute at constant
+                   pressure (default=True). When False, the equilibrium constant
+                   is computed at constant volume.
     """
     if cp:
         delta_G = 0.0

@@ -72,24 +72,24 @@ def dump_modes_xyz(nma, indexes=0, prefix="mode", amplitude=5.0*angstrom, frames
     """Write XYZ trajectory file(s) that vizualize internal mode(s)
 
        Arguments:
-         nma  --  an object that specifies the normal modes, several formats
-                  are supported: (i) a Tamkin NMA object, (ii) a 3-tuple with
-                  reference coordinates, mass-unweighted mode(s) and atom
-                  numbers or (iii) a 4-tuple with reference coordinates, mass-
-                  weighted mode(s), atom numbers and a masses3 vector. the
-                  latter is a vector with 3*N elements containing the masses of
-                  the atoms in groups of three.
+         | nma  --  an object that specifies the normal modes, several formats
+                    are supported: (i) a Tamkin NMA object, (ii) a 3-tuple with
+                    reference coordinates, mass-unweighted mode(s) and atom
+                    numbers or (iii) a 4-tuple with reference coordinates, mass-
+                    weighted mode(s), atom numbers and a masses3 vector. the
+                    latter is a vector with 3*N elements containing the masses of
+                    the atoms in groups of three.
 
        Optional arguments:
-         indexes  --  the index or a list of indexes of modes that must be
-                      written to trajectory files [default=0]
-         prefix  --  a prefix used for the output files. the generated
-                     trajectory filenames have the format prefix.index.xyz
-                     [default="mode"]
-         amplitude  --  the amplitude of the normal mode vibration in atomic
-                        untis [default=5*angstrom]
-         frames  --  the number of frames written to the trajectory file
-                     [default=36]
+         | indexes  --  the index or a list of indexes of modes that must be
+                        written to trajectory files [default=0]
+         | prefix  --  a prefix used for the output files. the generated
+                       trajectory filenames have the format prefix.index.xyz
+                       [default="mode"]
+         | amplitude  --  the amplitude of the normal mode vibration in atomic
+                          untis [default=5*angstrom]
+         | frames  --  the number of frames written to the trajectory file
+                       [default=36]
     """
 
     if isinstance(nma, NMA):
@@ -135,17 +135,18 @@ def dump_modes_molden(filename, nma, selected=None):
     """Write freqs and modes to a file in Gaussian-output-format.
 
        Arguments:
-         filename  --  modes are written to this file,
-                       can be read by Molden (visualization program)
-         nma  --  modes information (see below)
+         | filename  --  modes are written to this file,
+                         can be read by Molden (visualization program)
+         | nma  --  modes information (see below)
 
        Optional argument:
-         selected  --  Selection of modes for which to make
-                       trajectories. This can be a list or array
-                       of mode indices (length <= N), or an
-                       array of booleans (length = N).
+         | selected  --  Selection of modes for which to make
+                         trajectories. This can be a list or array
+                         of mode indices (length <= N), or an
+                         array of booleans (length = N).
 
        The nma arguments can have different formats:
+
        1) an NMA object
        2) a tuple or list with five elements: modes,
           frequencies, masses, numbers, coordinates
@@ -175,10 +176,10 @@ def dump_modes_molden(filename, nma, selected=None):
 def _make_moldenfile(filename, masses, atomicnumbers, positions, modes, ev):
     """This function produces a molden-readable file: coordinates + frequencies + modes
 
-    positions  -- coordinates, convert to angstrom
-    modes  -- each col is a mode in mass weighted Cartesian coordinates
+    | positions  -- coordinates, convert to angstrom
+    | modes  -- each col is a mode in mass weighted Cartesian coordinates
              un-mass-weighting necessary and renormalization (in order to see some movement)
-    ev  -- eigenvalues (freqs), convert to cm-1
+    | ev  -- eigenvalues (freqs), convert to cm-1
     """
     masses3_sqrt1 = numpy.array(sum([[1/m,1/m,1/m] for m in numpy.sqrt(masses)],[]))
     HEAD, head_coordinates, head_basisfunctions, \

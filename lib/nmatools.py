@@ -81,14 +81,15 @@ def compute_overlap(nma1, nma2, filename=None):
     """Compute overlap of modes and print to file if requested
 
        Arguments:
-         nma1  --  modes and frequencies (see below)
-         nma2  --  modes and frequencies (see below)
+         | nma1  --  modes and frequencies (see below)
+         | nma2  --  modes and frequencies (see below)
 
        Optional argument:
-         filename  --  when given, the overlap is written to file by the
+         | filename  --  when given, the overlap is written to file by the
                        function write_overlap
 
        The nma arguments can have different formats:
+
        1) an NMA object
        2) a tuple or list with two elements: modes and frequencies
        3) a numpy array with the mass-weighted modes
@@ -128,11 +129,11 @@ def write_overlap(freqs1, freqs2, overlap, filename="overlap.csv"):
     """Write the overlap matrix to a csv file
 
        Arguments:
-         freqs1  --  the list of frequencies associated with the rows of the
+        | freqs1  --  the list of frequencies associated with the rows of the
                      overlap matrix
-         freqs2  --  the list of frequencies associated with the columns of the
+        | freqs2  --  the list of frequencies associated with the columns of the
                      overlap matrix
-         overlap  --  the overlap matrix
+        | overlap  --  the overlap matrix
 
        Optional arguments:
          filename  --  the file to write to [default="overlap.csv"]
@@ -169,12 +170,15 @@ def compute_delta(coor1, coor2, masses=None, normalize=False):
        orientation) previously.
 
        Arguments:
-         coor1  --  coordinates of structure 1 in a numpy array with shape (N,3)
-         coor2  --  coordinates of structure 2 in a numpy array with shape (N,3)
+         | coor1  --  coordinates of structure 1 in a numpy array with shape (N,3)
+         | coor2  --  coordinates of structure 2 in a numpy array with shape (N,3)
 
        Optional arguments:
-         masses  --  when given, the mass-weighted delta vector is computed
-         normalize  --  whether delta vector should be normalized [default=False]
+         | masses
+           --  when given, the mass-weighted delta vector is computed
+         | normalize
+           --  whether delta vector should be normalized [default=False]
+
     """
     # check consistency
     if len(coor1) != len(coor2):
@@ -191,16 +195,15 @@ def compute_delta(coor1, coor2, masses=None, normalize=False):
 
 
 def compute_sensitivity_freq(nma, index, symmetric=False, massweight=True):
-    """Compute the sensity of the index-th frequency to changes in
-       the mass-weighted Hessian elements.
+    """Compute the sensity of the index-th frequency to changes in the mass-weighted Hessian elements.
 
        Arguments:
          nma  --  an NMA object
 
        Optional arguments:
-         symmetric  --  when True, a slightly different formula is used to take
-                        into account the symmetry of the Hessian [default=False]
-         massweight  --  when True, a mass-weighted hessian is considered
+         | symmetric  --  when True, a slightly different formula is used to take
+                          into account the symmetry of the Hessian [default=False]
+         | massweight  --  when True, a mass-weighted hessian is considered
     """
     L = 3*len(nma.masses)
     mode = nma.modes[:,index]
@@ -221,13 +224,13 @@ def create_blocks_peptide_charmm(filename, label="normal", blocksize=1):
     """Create blocks list for CHARMM peptides
 
        Argument:
-         filename  --  the CHARMM coordinate file (typically extension .crd or
-                       .cor)
+         | filename  --  the CHARMM coordinate file (typically extension .crd or
+                         .cor)
 
        Optional argument:
-         label  --  type of MBH blocks: RTB, dihedral, RHbending, normal
+         | label  --  type of MBH blocks: RTB, dihedral, RHbending, normal
                     [default=normal]
-         blocksize  --  when using the RTB scheme, blocksize defines the number
+         | blocksize  --  when using the RTB scheme, blocksize defines the number
                         of residues in a block
 
        TODO: referenties
@@ -413,14 +416,14 @@ def create_subs_peptide_charmm(filename, atomtypes=["CA"], frequency=1):
     """Create subsystem selection for CHARMM peptides
 
        Argument:
-         filename  --  the CHARMM coordinate file (typically extension .crd or
+         | filename  --  the CHARMM coordinate file (typically extension .crd or
                        .cor)
 
        Optional argument:
-         atomtypes  --  list of strings. Let only these atom types be part of
-                        the subsystem.
-         frequency  --  let only one out of every *frequency* residues be part
-                        of the subsystem.
+         | atomtypes  --  list of strings. Let only these atom types be part of
+                          the subsystem.
+         | frequency  --  let only one out of every *frequency* residues be part
+                          of the subsystem.
     """
     N, calpha, proline, carbon, oxygen, nitrogen = load_peptide_info_charmm(filename)
 
@@ -442,15 +445,15 @@ def plot_spectrum_lines(filename, all_freqs, low=None, high=None, title=None):
     """Plot multiple spectra in a comparative line plot
 
        Arguments:
-         filename  --  the filename to write the figure too (the extension and
-                       the matplotlib settings determine the file format)
-         all_freqs  --  a list with spectra, each item in the list is an array
-                       with multiple frequencies that represent one spectrum
+         | filename  --  the filename to write the figure too (the extension and
+                         the matplotlib settings determine the file format)
+         | all_freqs  --  a list with spectra, each item in the list is an array
+                         with multiple frequencies that represent one spectrum
 
        Optional arguments:
-         low  --  minimum on x-axis, in atomic units
-         high  --  maximum on x-axis, in atomic units
-         title  --  title for plot (a string)
+         | low  --  minimum on x-axis, in atomic units
+         | high  --  maximum on x-axis, in atomic units
+         | title  --  title for plot (a string)
     """
     pylab.clf()
     for i, freqs in enumerate(all_freqs):
@@ -473,20 +476,20 @@ def plot_spectrum_dos(filename, all_freqs, low=None, high=None, imax=None,
     """Plot multiple spectra in a comparative density of states plot
 
        Arguments:
-         filename  --  the filename to write the figure too (the extension and
-                       the matplotlib settings determine the file format)
-         all_freqs  --  a list with spectra, each item in the list is an array
-                       with multiple frequencies that represent one spectrum
+         | filename  --  the filename to write the figure too (the extension and
+                         the matplotlib settings determine the file format)
+         | all_freqs  --  a list with spectra, each item in the list is an array
+                         with multiple frequencies that represent one spectrum
 
        Optional arguments:
-         low  --  minimum on x-axis, in atomic units
-         high  --  maximum on x-axis, in atomic units
-         imax  --  maximum intensity on y-axis, no unit
-         step  --  resulotion of plot, in atomic units
-         width  --  width of Gaussian, in atomic units
-         all_amps  --  list of arrays in the same format as all_freqs with an
-                       amplitude for each individual frequency
-         title  --  title for plot (a string)
+         | low  --  minimum on x-axis, in atomic units
+         | high  --  maximum on x-axis, in atomic units
+         | imax  --  maximum intensity on y-axis, no unit
+         | step  --  resulotion of plot, in atomic units
+         | width  --  width of Gaussian, in atomic units
+         | all_amps  --  list of arrays in the same format as all_freqs with an
+                         amplitude for each individual frequency
+         | title  --  title for plot (a string)
     """
 
     def plot_single_dos(freqs, low, high, step, width, amps):
@@ -535,7 +538,7 @@ def create_enm_molecule(molecule, selected=None, numbers=None, masses=None,
     """Create a molecule according to the Elastic Network Model
 
        Argument:
-         molecule  --  The molecule to start from. can be two types: (i) a
+         | molecule  --  The molecule to start from. can be two types: (i) a
                        Molecule object or (ii) a numpy array with shape (N,3)
                        with coordinates in atomic units.
 
@@ -544,17 +547,17 @@ def create_enm_molecule(molecule, selected=None, numbers=None, masses=None,
        optional arguments.
 
        Optional arguments:
-         selected  --  Selection of atoms to include in the ENM model. This can
-                       be a list or array of atom indices (length <= N), or an
-                       array of booleans (length = N).
-         numbers  --  atom numbers in the ENM model (length = N). default is
-                      array of ones or the numbers from the molecule object.
-         masses  --  atomic masses in atomic units in the ENM model (length = N).
-                     default is array of hydrogen masses or the masses from the
-                     molecule object.
-         rcut  --  cutoff distance between interacting pairs in atomic units
-         K  --  strength of the interaction in atomic units (Hartree/Bohr**2).
-                The interaction strength is the same for all interacting pairs.
+         | selected  --  Selection of atoms to include in the ENM model. This can
+                         be a list or array of atom indices (length <= N), or an
+                         array of booleans (length = N).
+         | numbers  --  atom numbers in the ENM model (length = N). default is
+                        array of ones or the numbers from the molecule object.
+         | masses  --  atomic masses in atomic units in the ENM model (length = N).
+                       default is array of hydrogen masses or the masses from the
+                       molecule object.
+         | rcut  --  cutoff distance between interacting pairs in atomic units
+         | K  --  strength of the interaction in atomic units (Hartree/Bohr**2).
+                  The interaction strength is the same for all interacting pairs.
     """
     if isinstance(molecule, Molecule):
         coordinates = molecule.coordinates

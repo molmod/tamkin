@@ -105,15 +105,15 @@ def load_molecule_g03fchk(fn_freq, fn_ener=None, fn_vdw=None, energy=None):
     """Load a molecule from Gaussian03 formatted checkpoint files
 
        Arguments:
-         fn_freq  --  the formatted checkpoint file of the frequency job
+         | fn_freq  --  the formatted checkpoint file of the frequency job
 
        Optional arguments:
-         fn_ener  --  the formatted checkpoint file of a single point
-                      computation for the energy
-         fn_vdw  --  An orca output file containing a Van der Waals correction
-                     for the energy
-         energy  --  override the energy from the formatted checkpoint file with
-                     the given value
+         | fn_ener  --  the formatted checkpoint file of a single point
+                        computation for the energy
+         | fn_vdw  --  An orca output file containing a Van der Waals correction
+                       for the energy
+         | energy  --  override the energy from the formatted checkpoint file with
+                       the given value
     """
 
     fchk_freq = FCHKFile(fn_freq, ignore_errors=True, field_labels=[

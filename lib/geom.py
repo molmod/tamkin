@@ -63,7 +63,8 @@ __all__ = ["transrot_basis","rank_linearity"]
 
 
 def transrot_basis(coordinates, rot=True):
-    """Constructs 6 vectors which represent global translations/rotations. (dim: 6xsize)
+    """
+    Constructs 6 vectors which represent global translations/rotations. (dim: 6xsize)
     Vectors are not mass-weighted.
     If rot=False, only translational vectors.
     """
@@ -94,9 +95,11 @@ def rank_linearity(coordinates,svd_threshold=1e-5):
     3 dof if system contains just 1 atom
 
     method:
-    Construct a kind of inertia matrix (6x6) of the system
+      Construct a kind of inertia matrix (6x6) of the system::
+
               A = transrot_basis . transrot_basis**T
-    Diagonalize A. The rank is the number of expected zero freqs.
+
+      Diagonalize A. The rank is the number of expected zero freqs.
 
     transrot_basis contains the 6 global translations and rotations of the subsystem (6 x 3*molecule.size)
     """

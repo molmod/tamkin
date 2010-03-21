@@ -248,6 +248,7 @@ class Transform(object):
 
        It is assumed that the reduced coordinates are always split into two
        parts (in order):
+
          1) the coordinates that are non-Cartesian
          2) the free coordinates that are Cartesian
 
@@ -257,13 +258,13 @@ class Transform(object):
         """Intialize the transformation object
 
            Arguments:
-              atom_division -- set AtomDivision class
-              matrix -- the linear transformation from the transformed
-                        displacements to Cartesian coordinates.
+             | atom_division -- set AtomDivision class
+             | matrix -- the linear transformation from the transformed
+                         displacements to Cartesian coordinates.
 
            Attributes:
-              matrix  --  see above
-              scalars  --  ...
+             |  matrix  --  see above
+             |  scalars  --  ...
         """
         if matrix is None:
             matrix = numpy.zeros((0,0), float)
@@ -338,17 +339,17 @@ class MassMatrix(object):
         """Initialize the mass matrix object
 
            Arguments, if one is given and it is a two-dimensional matrix:
-              mass_block -- the mass matrix associated with the transformed
-                            coordinates
+             | mass_block -- the mass matrix associated with the transformed
+                             coordinates
 
            Arguments, if one is given and it is a one-dimensional matrix:
-              mass_diag -- the diagonal of the mass matrix associated with the
-                           free atoms (each mass appears three times)
+             | mass_diag -- the diagonal of the mass matrix associated with the
+                            free atoms (each mass appears three times)
 
            Arguments, if two are given:  ! Attention for order of arguments.
-              mass_block -- the mass matrix associated with the transformed
+             | mass_block -- the mass matrix associated with the transformed
                             coordinates
-              mass_diag -- the diagonal of the mass matrix associated with the
+             | mass_diag -- the diagonal of the mass matrix associated with the
                            free atoms (each mass appears three times)
 
            The mass of the fixed atoms does not really matter here.
@@ -465,10 +466,10 @@ class ConstrainExt(Treatment):
         """Initialize the GassPhase treatment.
 
            One optional argument:
-             gradient_threshold  --  The maximum allowed value of the components
-                                     of the Cartesian gradient in atomic units.
-                                     When the threshold is exceeded, a
-                                     ValueError is raised. [default=1-e4]
+             | gradient_threshold  --  The maximum allowed value of the components
+                                       of the Cartesian gradient in atomic units.
+                                       When the threshold is exceeded, a
+                                       ValueError is raised. [default=1-e4]
         """
         self.gradient_threshold = gradient_threshold
         self.svd_threshold = svd_threshold
@@ -505,7 +506,7 @@ class PHVA(Treatment):
         """Initialize the PHVA treatment.
 
            One argument:
-             fixed  --  a list with fixed atoms, counting starts from zero.
+             |  fixed  --  a list with fixed atoms, counting starts from zero.
         """
         # QA:
         if len(fixed) == 0:
@@ -575,11 +576,11 @@ class VSA(Treatment):
 
            Frequencies and modes are computed with the VSA approach:
            Vibrational Subsystem Analysis
-           - Zheng and Brooks, ... (2006)
+           - Zheng and Brooks, ... (2006) TODO add reference
            - Woodcock, ... (2008)
 
            One argument:
-             subs  --  a list with the subsystem atoms, counting starts from zero.
+             | subs  --  a list with the subsystem atoms, counting starts from zero.
         """
         # QA:
         if len(subs) == 0:
@@ -661,7 +662,7 @@ class VSANoMass(Treatment):
 
            Frequencies and modes are computed with the VSA approach:
            Vibrational Subsystem Analysis
-           - Zheng and Brooks, ... (2006)
+           - Zheng and Brooks, ... (2006)  TODO ADD REFERENCE
            - Woodcock, ... (2008)
 
            VSA is performed according to the original version of 2006:
@@ -670,7 +671,7 @@ class VSANoMass(Treatment):
            of zero mass for all environment atoms.
 
            One argument:
-             subs  --  a list with the subsystem atoms, counting starts from zero.
+             | subs  --  a list with the subsystem atoms, counting starts from zero.
         """
         # QA:
         if len(subs) == 0:
@@ -750,12 +751,12 @@ class MBH(Treatment):
            MBH is ...  # TODO fill in
 
            One argument:
-             blocks  --  a list of blocks, each block is a list of atoms,
-                         counting starts from zero.
+             | blocks  --  a list of blocks, each block is a list of atoms,
+                           counting starts from zero.
            Optional arguments:
-             do_gradient_correction  --  logical, whether gradient correction
-                                         to MBH should be added
-             svd_threshold  --  threshold for zero singular values in svd
+             | do_gradient_correction  --  logical, whether gradient correction
+                                           to MBH should be added
+             | svd_threshold  --  threshold for zero singular values in svd
         """
         # QA:
         if len(blocks) == 0:
@@ -963,11 +964,13 @@ class Blocks(object):
     def __init__(self,blocks,molecule,svd_threshold):
         """
         initialization:  Blocks(blocks,N) with
-        blocks --   a list of lists of atoms
-                 [ [at1,at5,at3], [at4,at5], ...]
-                 with a list of atoms for each block
-        molecule -- Molecule object, necessary for N (total nb
-                    of atoms) and positions (linearity of blocks).
+
+        Arguments:
+          | blocks --   a list of lists of atoms
+                       [ [at1,at5,at3], [at4,at5], ...]
+                       with a list of atoms for each block
+          | molecule -- Molecule object, necessary for N (total nb
+                        of atoms) and positions (linearity of blocks).
         """
         N = molecule.size
         # check for empty blocks and single-atom-blocks
@@ -1086,8 +1089,8 @@ class PHVA_MBH(MBH):
         """Initialize the PHVA_MBH treatment.
 
            Two arguments:
-             fixed  --  a list with fixed atoms, counting starts from zero.
-             blocks  --  a list of blocks, each block is a list of atoms
+             | fixed  --  a list with fixed atoms, counting starts from zero.
+             | blocks  --  a list of blocks, each block is a list of atoms
         """
         # QA:
         if len(fixed) == 0:
@@ -1155,13 +1158,13 @@ class Constrain(Treatment):
         """Initialize the Constrain treatment.
 
            One argument:
-             constraints  --  a list with constraints of internal coordinates:
-                              [at1,at2] to constrain a distance,
-                              [at1,at2,at3] to constrain an angle,
-                              [at1,at2,at3,at4] to constrain a dihedral angle.
+             | constraints  --  a list with constraints of internal coordinates:
+                                [at1,at2] to constrain a distance,
+                                [at1,at2,at3] to constrain an angle,
+                                [at1,at2,at3,at4] to constrain a dihedral angle.
            Optional:
-             do_grad_correction  --  whether gradient correction should be applied
-             svd_threshold  --  threshold for singular value decomposition
+             | do_grad_correction  --  whether gradient correction should be applied
+             | svd_threshold  --  threshold for singular value decomposition
         """
         # QA:
         if len(constraints) == 0:

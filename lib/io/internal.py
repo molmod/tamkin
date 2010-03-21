@@ -166,16 +166,16 @@ def load_indices(filename, shift=-1, groups=False):
        to define groups of atoms that belong toghether in one block.
 
        Arguments:
-         filename  --  The file to load the indexes from
+         | filename  --  The file to load the indexes from
 
        Optional arguments:
-         shift  --  A constant shift applied to all atom indexes to convert
-                    between numbers starting from zero and numbers starting from
-                    one.
-         groups  --  When True, the function always returns a list of lists,
-                     even when only one group of indexes is found in the file.
-                     Otherwise only a single list of indexes is returned, even
-                     when multiple groups of indexes are encountered.
+         | shift  --  A constant shift applied to all atom indexes to convert
+                      between numbers starting from zero and numbers starting from
+                      one.
+         | groups  --  When True, the function always returns a list of lists,
+                       even when only one group of indexes is found in the file.
+                       Otherwise only a single list of indexes is returned, even
+                       when multiple groups of indexes are encountered.
 
     """
     blocks = []
@@ -204,11 +204,11 @@ def dump_indices(filename, indices, shift=1, compact=True):
     """Dump atom indexes to file
 
        Arguments:
-         filename  --  the file to dump the atom indexes to
+         | filename  --  the file to dump the atom indexes to
 
        Optional arguments:
-         indices  --  a list of atom indices or a list of lists of atom indices
-                      (the latter is used to define blocks of atoms)
+         | indices  --  a list of atom indices or a list of lists of atom indices
+         |             (the latter is used to define blocks of atoms)
     """
 
     if len(indices) > 0 and not hasattr(indices[0], "__len__"):

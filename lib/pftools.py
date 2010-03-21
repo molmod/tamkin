@@ -68,6 +68,7 @@ __all__ = ["ThermoAnalysis", "ThermoTable", "ReactionAnalysis"]
 
 
 class ThermoAnalysis(object):
+    """Perform a regular thermochemistry analysis."""
     def __init__(self, pf, temps):
         """Perform a regular thermochemistry analysis.
 
@@ -103,7 +104,7 @@ class ThermoAnalysis(object):
         """Write the entire thermochemistry analysis to a csv file.
 
            Argument:
-             filename  --  the file to write the output.
+             | filename  --  the file to write the output.
         """
         f = file(filename, "w")
         self.dump(f)
@@ -113,7 +114,7 @@ class ThermoAnalysis(object):
         """Write the entire thermochemistry analysis to screen or to a stream in csv format.
 
            Optional argument:
-             f  --  the stream to write to. [default=sys.stdout]
+             | f  --  the stream to write to. [default=sys.stdout]
         """
         for table in self.tables:
             table.dump(f)
@@ -121,6 +122,8 @@ class ThermoAnalysis(object):
 
 
 class ThermoTable(object):
+    """A thermo table, i.e. the thermochemistry analysis for one
+           specific thermodynamic quantity."""
     def __init__(self, label, format, unit, unit_name, method_name, pf, temps, pf_method_name=None):
         """Initialize a thermo table, i.e. the thermochemistry analysis for one
            specific thermodynamic quantity.
@@ -129,19 +132,19 @@ class ThermoTable(object):
            never be used directly.
 
            Arguments:
-             label  --  a string to identify the thermodynamic quantity.
-             format  --  the floating point format, e.g. "%.3f"
-             unit  --  the conversion factor from the conventional unit to atomic units
-             unit_name  --  a human readable string that describes the conventional unit
-             method_name  --  the method of the partition function that computes the quantity of interest
-             temps  --  the temperatures at which the quantity has to be computed.
+             | label  --  a string to identify the thermodynamic quantity.
+             | format  --  the floating point format, e.g. "%.3f"
+             | unit  --  the conversion factor from the conventional unit to atomic units
+             | unit_name  --  a human readable string that describes the conventional unit
+             | method_name  --  the method of the partition function that computes the quantity of interest
+             | temps  --  the temperatures at which the quantity has to be computed.
 
            Optional argument:
-             pf_method_name  --  In case of the actual partition function object,
-                                 this alternative method can be used compute
-                                 to quantity of interest. This workaround is
-                                 required due to poor naming conventions in
-                                 statistical physics.
+             | pf_method_name  --  In case of the actual partition function object,
+                                   this alternative method can be used compute
+                                   to quantity of interest. This workaround is
+                                   required due to poor naming conventions in
+                                   statistical physics.
 
            The results are stored in an array self.data of which the columns
            correspond to the given temperatures and the rows correspond to the
@@ -194,24 +197,25 @@ class ThermoTable(object):
 
 
 class ReactionAnalysis(object):
+    """reaction analysis object."""
     def __init__(self, pfs_react, pf_trans, temp_low, temp_high, temp_step=10*kelvin, cp=True, tunneling=None):
         """Initialize a reaction analysis object
 
            Arguments:
-             pfs_react  --  a list of partition functions for the reactants
-             pf_trans  --  the partition function of the transition state
-             temp_low  --  the lower bound of the temperature interval in Kelvin
-             temp_high  --  the upper bound of the temperature interval in
-                            Kelvin
+             | pfs_react  --  a list of partition functions for the reactants
+             | pf_trans  --  the partition function of the transition state
+             | temp_low  --  the lower bound of the temperature interval in Kelvin
+             | temp_high  --  the upper bound of the temperature interval in
+                              Kelvin
 
            Optional arguments:
-             temp_step  --  The resolution of the temperature grid.
-                            [default=10K]
-             cp  --  When True, the rate coefficients are compute at constant
-                     pressure (default=True). When False, the rate coefficients
-                     are computed at constant volume.
-             tunneling  --  A tunneling correction object. If not given, no
-                            tunneling correction is applied.
+             | temp_step  --  The resolution of the temperature grid.
+                              [default=10K]
+             | cp  --  When True, the rate coefficients are compute at constant
+                       pressure (default=True). When False, the rate coefficients
+                       are computed at constant volume.
+             | tunneling  --  A tunneling correction object. If not given, no
+                              tunneling correction is applied.
 
            The rate coefficients are computed on the specified temperature grid
            and afterwards the kinetic parameters are fitted to these data. All
@@ -221,15 +225,15 @@ class ReactionAnalysis(object):
            reactions can be gathered in a single plot when this is desirable.
 
            The following attributes might be useful:
-             self.A and self.Ea  --  The kinetic parameters in atomic units.
-             self.unit_name  --  A string describing the conventional unit of
-                                 self.A
-             self.unit  --  The conversion factor to transform self.A into
-                            conventional units (self.A/self.unit)
-             self.R2  --  The Pearson R^2 of the fit.
-             self.temps  --  An array with the temperature grid in Kelvin
-             self.temps_inv  --  An array with the inverse temperatures
-             self.ln_rate_coeffs  -- the logarithm of 'the rate coefficients in
+             | self.A and self.Ea  --  The kinetic parameters in atomic units.
+             | self.unit_name  --  A string describing the conventional unit of
+                                   self.A
+             | self.unit  --  The conversion factor to transform self.A into
+                              conventional units (self.A/self.unit)
+             | self.R2  --  The Pearson R^2 of the fit.
+             | self.temps  --  An array with the temperature grid in Kelvin
+             | self.temps_inv  --  An array with the inverse temperatures
+             | self.ln_rate_coeffs  -- the logarithm of 'the rate coefficients in
                                      atomic units'
         """
         if len(pfs_react) == 0:
@@ -302,8 +306,8 @@ class ReactionAnalysis(object):
         """Write the results in text format on screen or to another stream.
 
            Optional argument:
-             f  --  the file object to write to. This is by default the standard
-                    output.
+             | f  --  the file object to write to. This is by default the
+                      standard output.
         """
         print >> f, "Summary"
         print >> f, "number of reactants: %i" % len(self.pfs_react)
@@ -368,7 +372,7 @@ class ReactionAnalysis(object):
         """Write the entire analysis to a text file.
 
            One argument:
-             filename  --  the file to write the output.
+             | filename  --  the file to write the output.
         """
         f = file(filename, "w")
         self.dump(f)
@@ -378,16 +382,16 @@ class ReactionAnalysis(object):
         """Plot the rate coefficients and the fitted line.
 
            Optional arguments:
-             filename  --  When given, the plot is written to that file, other-
-                           wise this plot method can be called multiple times
-                           with different reaction analysis objects to put all
-                           the results in one plot.
-             label -- When multiple fits are put in one figure, this label is
-                      used distinguish between the various results with a
-                      legend.
-             color -- Determines the color of the plotted data points and line.
-                      [default="red"]. Common color names, html codes and RGB
-                      tuples are accepted. (See matplotlib docs for more info.)
+             | filename  --  When given, the plot is written to that file, other-
+                             wise this plot method can be called multiple times
+                             with different reaction analysis objects to put all
+                             the results in one plot.
+             | label -- When multiple fits are put in one figure, this label is
+                        used distinguish between the various results with a
+                        legend.
+             | color -- Determines the color of the plotted data points and line.
+                        [default="red"]. Common color names, html codes and RGB
+                        tuples are accepted. (See matplotlib docs for more info.)
         """
         temps_inv_line = numpy.linspace(self.temps_inv.min(),self.temps_inv.max(),100)
         ln_rate_coeffs_line = self.parameters[0] - self.parameters[1]/boltzmann*temps_inv_line
@@ -431,12 +435,11 @@ class ReactionAnalysis(object):
            method.
 
            Optional argument:
-             freq_error  --  The with of the absolute gaussian distortion on the
-                             frequencies [default=1*invcm]
-             energy_error  --  The width of the relative gaussian error on the
-                               energy barrier [default=0.00]
-             num_iter  --  The number of Monte Carlo iterations [default=1000]
-
+             | freq_error  --  The with of the absolute gaussian distortion on the
+                               frequencies [default=1*invcm]
+             | energy_error  --  The width of the relative gaussian error on the
+                                 energy barrier [default=0.00]
+             | num_iter  --  The number of Monte Carlo iterations [default=1000]
         """
         if freq_error < 0.0 or freq_error >= 1.0:
             raise ValueError("The argument freq_error must be in the range [0,1[.")
@@ -500,19 +503,19 @@ class ReactionAnalysis(object):
         """Plot the kinetic parameters.
 
            Optional arguments:
-             filename  --  When given, the plot is written to that file, other-
-                           wise this plot method can be called multiple times
-                           with different reaction analysis objects to put all
-                           the results in one plot.
-             label -- When multiple fits are put in one figure, this label is
-                      used distinguish between the various results with a
-                      legend.
-             color -- Determines the color of the plotted data points and line.
-                      [default="red"]. Common color names, html codes and RGB
-                      tuples are accepted. (See matplotlib docs for more info.)
-             marker  --  The marker used for the (original) fitted parameters
-             error -- A boolean that determines whether the monte carlo results
-                      are plotted when they are available. [default=True]
+             | filename  --  When given, the plot is written to that file, other-
+                             wise this plot method can be called multiple times
+                             with different reaction analysis objects to put all
+                             the results in one plot.
+             | label -- When multiple fits are put in one figure, this label is
+                        used distinguish between the various results with a
+                        legend.
+             | color -- Determines the color of the plotted data points and line.
+                        [default="red"]. Common color names, html codes and RGB
+                        tuples are accepted. (See matplotlib docs for more info.)
+             | marker  --  The marker used for the (original) fitted parameters
+             | error -- A boolean that determines whether the monte carlo results
+                        are plotted when they are available. [default=True]
         """
         if filename is not None:
             pylab.clf()

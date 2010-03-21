@@ -137,12 +137,13 @@ def write_overlap(freqs1, freqs2, overlap, filename="overlap.csv"):
        Optional arguments:
          filename  --  the file to write to [default="overlap.csv"]
 
-       The table is contains the following blocks:
-        ------------------------
-                 | freqs2
-        ------------------------
-        freqs1^T | mat1^T . mat2
-        ------------------------
+       The table contains the following blocks:
+
+       +----------+--------------+
+       |          | freqs2       |
+       +----------+--------------+
+       | freqs1^T | mat1^T . mat2|
+       +----------+--------------+
     """
     #freqs1 = freqs1 / invcm
     #freqs2 = freqs2 / invcm
@@ -196,7 +197,7 @@ def compute_sensitivity_freq(nma, index, symmetric=False, massweight=True):
        Arguments:
          nma  --  an NMA object
 
-       Optional argumets:
+       Optional arguments:
          symmetric  --  when True, a slightly different formula is used to take
                         into account the symmetry of the Hessian [default=False]
          massweight  --  when True, a mass-weighted hessian is considered

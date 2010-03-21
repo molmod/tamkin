@@ -32,7 +32,7 @@ clean:
 	-rm tamkin
 
 html:
-	ln -s ../lib tamkin
+	#ln -s ../lib tamkin
 	mkdir -p $(BUILDDIR)/html _static
 	$(SPHINXBUILD) -b html $(ALLSPHINXOPTS) $(BUILDDIR)/html
 	@echo

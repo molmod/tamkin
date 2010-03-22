@@ -71,7 +71,7 @@
    * **Helper functions:** helper0_levels, helper1_levels, helper2_levels,
      helper0_vibrations, helper1_vibrations, helper2_vibrations
    * **Applications:** compute_rate_coeff, compute_equilibrium_constant (see
-     tools.py for a friendly interface to these functions)
+     pftools.py for a friendly interface to these functions)
 
    Note that all the extensive thermodynamic quantities computed here are in
    atomic units per molecule. If you want to express the Gibbs free energy at

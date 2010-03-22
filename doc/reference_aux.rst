@@ -1,16 +1,20 @@
 Auxiliary modules
 =================
 
-Some more functions/classes.
-
-.. automodule:: tamkin.__init__
-   :members:
+Timer module
+------------
 
 .. automodule:: tamkin.timer
    :members:
 
+Standard representation of QM or MM data
+----------------------------------------
+
 .. automodule:: tamkin.data
    :members:
+
+Analysis of molecular geometries
+--------------------------------
 
 .. automodule:: tamkin.geom
    :members:

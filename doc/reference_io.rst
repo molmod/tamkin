@@ -7,27 +7,45 @@ Input/output
 Tools to read data from general packages
 ----------------------------------------
 
+CHARMM
+~~~~~~
+
 .. automodule:: tamkin.io.charmm
    :members:
+
+CP2K
+~~~~
 
 .. automodule:: tamkin.io.cp2k
    :members:
 
+CPMD
+~~~~
+
 .. automodule:: tamkin.io.cpmd
    :members:
+
+Gaussian 03
+~~~~~~~~~~~
 
 .. automodule:: tamkin.io.gaussian
    :members:
 
+QChem
+~~~~~
+
 .. automodule:: tamkin.io.qchem
    :members:
+
+VASP
+~~~~
 
 .. automodule:: tamkin.io.vasp
    :members:
 
 
-Tools for internal usage in Tamkin
-----------------------------------
+File formats specific for Tamkin
+---------------------------------
 
 .. automodule:: tamkin.io.internal
    :members:

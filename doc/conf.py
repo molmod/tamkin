@@ -38,7 +38,7 @@ master_doc = 'index'
 
 # General information about the project.
 project = u'TAMKin'
-copyright = u'2010, An Ghysels'
+copyright = u'2010, An Ghysels, Toon Verstraelen'
 
 # The version info for the project you're documenting, acts as replacement for
 # |version| and |release|, also used in various other places throughout the
@@ -173,7 +173,7 @@ htmlhelp_basename = 'tamkindoc'
 # (source start file, target name, title, author, documentclass [howto/manual]).
 latex_documents = [
   ('index', 'tamkindocs.tex', u'tamkindocs Documentation',
-   u'An Ghysels', 'manual'),
+   u'An Ghysels, Toon Verstraelen', 'manual'),
 ]
 
 # The name of an image file (relative to this directory) to place at the top of

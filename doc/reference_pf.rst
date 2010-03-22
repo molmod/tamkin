@@ -28,8 +28,8 @@ a 1-D rotor.
 .. automodule:: tamkin.rotor
    :members:
 
-Tunneling effects
------------------
+Tunneling effects in chemical reactions
+---------------------------------------
 
 This module calculates the correction to the partition function due
 to (quantum) tunneling through the reaction barrier.

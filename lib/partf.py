@@ -96,9 +96,7 @@ class IdealGasLaw(object):
     """Bundles several functions related to the ideal gas law."""
 
     def __init__(self, pressure=1*atm):
-        """Initialize an ideal gas law.
-
-           Optional argument:
+        """Optional argument:
              | pressure  --  the external pressure of the systen [default=1*atm]
         """
         self.pressure = pressure
@@ -357,7 +355,7 @@ class Electronic(Info, StatFys):
     """The electronic contribution to the partition function
 
        TODO: this should also include the potential energy from the ab initio
-       computation
+       computation. This is now added in the PartFun object.
     """
     def __init__(self, multiplicity=None):
         self.multiplicity = multiplicity
@@ -480,7 +478,25 @@ class ExtRot(Info, StatFys):
 
 
 class PCMCorrection(Info, StatFys):
+    """A correction to the free energy as function of the temperature
+
+       The correction can be a constant shift of the free energy or a linear
+       shift of the free energy as function of the temperature.
+    """
+
     def __init__(self, point1, point2=None):
+        """
+        Argument:
+         | point1  --  A 2-tuple with free energy and a temperature. A
+                       correction for the free energy at the given temperature.
+                       (If no second point is given, the same correction is
+                       applied to all temperatures.)
+
+        Optional argument:
+         | point2  --  A 2-tuple with free energy and a temperature. In
+                       combination with point1, a linear free energy correction
+                       as function of the temperature is added.
+        """
         if (not hasattr(point1, "__len__")) or len(point1) != 2:
             raise ValueError("The first argument must be a (delta_G, temp) pair.")
         if point2 is not None and ((not hasattr(point2, "__len__")) or len(point2)) != 2:
@@ -581,6 +597,13 @@ def helper2_vibrations(temp, n, freqs, classical=False, freq_scaling=1, zp_scali
 class Vibrations(Info, StatFysTerms):
     """The vibrational contribution to the partition function"""
     def __init__(self, classical=False, freq_scaling=1, zp_scaling=1):
+        """
+        Optional arguments:
+         | classical  --  When True, the vibrations are treated classically
+                          [default=False]
+         | freq_scaling  --  Scale factor for the frequencies [default=1]
+         | zp_scaling  --  Scale factor for the zero-point energy [default=1]
+        """
         self.classical = classical
         self.freq_scaling = freq_scaling
         self.zp_scaling = zp_scaling
@@ -640,8 +663,7 @@ class PartFun(Info, StatFys):
     __reserved_names__ = set(["terms"])
 
     def __init__(self, nma, terms=None, gaslaw=None):
-        """Initialize the PartFun object
-
+        """
         Arguments:
           | nma  --  NMA object
         Optional arguments:

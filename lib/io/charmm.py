@@ -76,7 +76,7 @@ def load_molecule_charmm(charmmfile_cor, charmmfile_hess,
 
     Read from Hessian-CHARMM-file
     format:
- 
+
     - nb of atoms = N
     - energy
     - gradient (N lines, 3 elements on each line)

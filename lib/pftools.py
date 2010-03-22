@@ -69,10 +69,9 @@ __all__ = ["ThermoAnalysis", "ThermoTable", "ReactionAnalysis"]
 
 class ThermoAnalysis(object):
     """Perform a regular thermochemistry analysis."""
-    def __init__(self, pf, temps):
-        """Perform a regular thermochemistry analysis.
 
-           Arguments:
+    def __init__(self, pf, temps):
+        """Arguments:
              pf  --  A partition function
              temps  --  An array with temperatures to consider.
 
@@ -110,11 +109,11 @@ class ThermoAnalysis(object):
         self.dump(f)
         f.close()
 
-    def dump(self, f=sys.stdout):
+    def dump(self, f):
         """Write the entire thermochemistry analysis to screen or to a stream in csv format.
 
-           Optional argument:
-             | f  --  the stream to write to. [default=sys.stdout]
+           Argument:
+             | f  --  the stream to write to.
         """
         for table in self.tables:
             table.dump(f)
@@ -123,12 +122,11 @@ class ThermoAnalysis(object):
 
 class ThermoTable(object):
     """A thermo table, i.e. the thermochemistry analysis for one
-           specific thermodynamic quantity."""
-    def __init__(self, label, format, unit, unit_name, method_name, pf, temps, pf_method_name=None):
-        """Initialize a thermo table, i.e. the thermochemistry analysis for one
-           specific thermodynamic quantity.
+       specific thermodynamic quantity.
+    """
 
-           This object is used by the ThermoAnalysis class and should probably
+    def __init__(self, label, format, unit, unit_name, method_name, pf, temps, pf_method_name=None):
+        """This object is used by the ThermoAnalysis class and should probably
            never be used directly.
 
            Arguments:
@@ -197,11 +195,10 @@ class ThermoTable(object):
 
 
 class ReactionAnalysis(object):
-    """reaction analysis object."""
-    def __init__(self, pfs_react, pf_trans, temp_low, temp_high, temp_step=10*kelvin, cp=True, tunneling=None):
-        """Initialize a reaction analysis object
+    """A Reaction analysis object."""
 
-           Arguments:
+    def __init__(self, pfs_react, pf_trans, temp_low, temp_high, temp_step=10*kelvin, cp=True, tunneling=None):
+        """Arguments:
              | pfs_react  --  a list of partition functions for the reactants
              | pf_trans  --  the partition function of the transition state
              | temp_low  --  the lower bound of the temperature interval in Kelvin
@@ -212,7 +209,7 @@ class ReactionAnalysis(object):
              | temp_step  --  The resolution of the temperature grid.
                               [default=10K]
              | cp  --  When True, the rate coefficients are compute at constant
-                       pressure (default=True). When False, the rate coefficients
+                       pressure [default=True]. When False, the rate coefficients
                        are computed at constant volume.
              | tunneling  --  A tunneling correction object. If not given, no
                               tunneling correction is applied.
@@ -224,17 +221,17 @@ class ReactionAnalysis(object):
            (methods plot and plot_parameters). The results from multiple
            reactions can be gathered in a single plot when this is desirable.
 
-           The following attributes might be useful:
-             | self.A and self.Ea  --  The kinetic parameters in atomic units.
-             | self.unit_name  --  A string describing the conventional unit of
-                                   self.A
-             | self.unit  --  The conversion factor to transform self.A into
-                              conventional units (self.A/self.unit)
-             | self.R2  --  The Pearson R^2 of the fit.
-             | self.temps  --  An array with the temperature grid in Kelvin
-             | self.temps_inv  --  An array with the inverse temperatures
-             | self.ln_rate_coeffs  -- the logarithm of 'the rate coefficients in
-                                     atomic units'
+           The following attributes may be useful:
+             | A and Ea  --  The kinetic parameters in atomic units.
+             | unit_name  --  A string describing the conventional unit of
+                              self.A
+             | unit  --  The conversion factor to transform self.A into
+                         conventional units (self.A/self.unit)
+             | R2  --  The Pearson R^2 of the fit.
+             | temps  --  An array with the temperature grid in Kelvin
+             | temps_inv  --  An array with the inverse temperatures
+             | ln_rate_coeffs  -- the logarithm of 'the rate coefficients in
+                                  atomic units'
         """
         if len(pfs_react) == 0:
             raise ValueError("At least one reactant must be given.")
@@ -302,12 +299,11 @@ class ReactionAnalysis(object):
         return self.pf_trans.energy - \
                sum(pf_react.energy for pf_react in self.pfs_react)
 
-    def dump(self, f=sys.stdout):
+    def dump(self, f):
         """Write the results in text format on screen or to another stream.
 
-           Optional argument:
-             | f  --  the file object to write to. This is by default the
-                      standard output.
+           Argument:
+             | f  --  the file object to write to.
         """
         print >> f, "Summary"
         print >> f, "number of reactants: %i" % len(self.pfs_react)
@@ -514,6 +510,7 @@ class ReactionAnalysis(object):
                         [default="red"]. Common color names, html codes and RGB
                         tuples are accepted. (See matplotlib docs for more info.)
              | marker  --  The marker used for the (original) fitted parameters
+                           [default="o"] (See matplotlib docs for more info.)
              | error -- A boolean that determines whether the monte carlo results
                         are plotted when they are available. [default=True]
         """

@@ -193,6 +193,6 @@ latex_documents = [
 # If false, no module index is generated.
 #latex_use_modindex = True
 
+# -- Configuration of extensions -----------------------------------------------
 
-# Example configuration for intersphinx: refer to the Python standard library.
-intersphinx_mapping = {'http://docs.python.org/': None}
+autoclass_content = "both"

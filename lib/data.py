@@ -54,7 +54,12 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
+"""Data containers for input from QM or MM simulation codes
 
+   Most IO routines in ``molmod.io`` return instances of the classes defined
+   here. These objects are just read-only containers for the QM or MM output
+   with a standardized interface.
+"""
 
 from tamkin.geom import transrot_basis
 
@@ -69,7 +74,35 @@ __all__ = ["Molecule", "BareNucleus", "Proton", "RotScan"]
 
 
 class Molecule(BaseMolecule):
+    """A container for a Hessian computation output from QM or MM codes."""
+
     def __init__(self, numbers, coordinates, masses, energy, gradient, hessian, multiplicity, symmetry_number=0, periodic=False, title=None, graph=None, symbols=None):
+        """
+           Arguments:
+            | numbers  --  The atom numbers (integer numpy array with shape N)
+            | coordinates  --  the atom coordinates in Bohr (float numpy array
+                               with shape Nx3)
+            | masses  --  The atomic masses in atomic units (float numpy array
+                          with shape N)
+            | energy  --  The molecular energy in Hartree
+            | gradient  --  The gradient of the energy, i.e. the derivatives
+                            towards Cartesian coordinates, in atomic units
+                            (float numpy array with shape Nx3)
+            | hessian  --  The hessian of the energy, i.e. the matrix with
+                           second order derivatives towards Cartesian
+                           coordinates, in atomic units (float numpy array with
+                           shape 3Nx3N)
+            | multiplicity  --  The spin multiplicity of the electronic system
+
+           Optional arguments:
+            | symmetry_number  --  The rotational symmetry number, 0 when not
+                                   known or computed [default=0]
+            | periodic  --  True when the system is periodic in three dimensions
+                            [default=False]
+            | title  --  The title of the system
+            | graph  --  The molecular graph of the system
+            | symbols  --  A list with atom symbols
+        """
         ReadOnly.__init__(self)
         mandatory = {
             "numbers": numpy.array(numbers, int),
@@ -103,7 +136,16 @@ class Molecule(BaseMolecule):
 
 
 class BareNucleus(Molecule):
+    """A molecule object for bare nuclei"""
+
     def __init__(self, number, mass=None):
+        """
+           Argument:
+            | number  --  The atom number
+
+           Optional argument:
+            | mass  --  The mass of the atom in atomic units
+        """
         if mass is None:
             mass = periodic[number].mass
         Molecule.__init__(
@@ -113,25 +155,33 @@ class BareNucleus(Molecule):
 
 
 class Proton(BareNucleus):
+    """A molecule object for a proton (or one of its isotopes)"""
+
     def __init__(self, mass=None):
+        """
+           Optional argument:
+            | mass  --  The mass of the proton in atomic units
+        """
         BareNucleus.__init__(self, 1, mass)
 
 
 class RotScan(object):
-    def __init__(self, dihedral, molecule=None, top_indexes=None, potential=None):
-        """Initialize a rotational scan object
+    """A container for rotational scan data"""
 
+    def __init__(self, dihedral, molecule=None, top_indexes=None, potential=None):
+        """
            Arguments
-             dihedral  --  the index of the atoms that define the dihedral angle
+            | dihedral  --  the index of the atoms that define the dihedral
+                            angle
 
            Optional arguments
-             molecule  --  a molecule object. required when top_indexes is not
-                           given
-             top_indexes  --  a list of atom indexes involved in the rotor.
-                              required when molecule is not given
-             potential  --  rotational potential info (if this is a hindered
-                            rotor). must be a two-tuple containing the angles
-                            and the corresponding energies.
+            | molecule  --  a molecule object. required when top_indexes is not
+                            given
+            | top_indexes  --  a list of atom indexes involved in the rotor.
+                               required when molecule is not given
+            | potential  --  rotational potential info (if this is a hindered
+                             rotor). must be a two-tuple containing the angles
+                             and the corresponding energies.
 
         """
         if len(dihedral) != 4:

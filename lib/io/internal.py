@@ -208,7 +208,7 @@ def dump_indices(filename, indices, shift=1, compact=True):
 
        Optional arguments:
          | indices  --  a list of atom indices or a list of lists of atom indices
-         |             (the latter is used to define blocks of atoms)
+                        (the latter is used to define blocks of atoms)
     """
 
     if len(indices) > 0 and not hasattr(indices[0], "__len__"):

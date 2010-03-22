@@ -565,7 +565,7 @@ class Full(Treatment):
         Treatment.__init__(self)
 
     def compute_zeros(self, molecule, do_modes):
-        """See Treatment.compute_zeros"""
+        """See :meth:`Treatment.compute_zeros`"""
         # An unambiguous way to define the 'external' degrees of freedom is as
         # follows: first construct an external basis of the entire systems,
         # TODO: this will fail if the molecule is displaced far from the origin
@@ -578,7 +578,7 @@ class Full(Treatment):
             self.external_basis = Vt[:rank]
 
     def compute_hessian(self, molecule, do_modes):
-        """See Treatment.compute_hessian"""
+        """See :meth:`Treatment.compute_hessian`"""
         self.hessian_small = molecule.hessian
         self.mass_matrix_small = MassMatrix(molecule.masses3)
         if do_modes:
@@ -610,11 +610,11 @@ class ConstrainExt(Treatment):
         Treatment.__init__(self)
 
     def compute_zeros(self, molecule, do_modes):
-        """See Treatment.compute_zeros"""
+        """See :meth:`Treatment.compute_zeros`"""
         self.num_zeros = 0
 
     def compute_hessian(self, molecule, do_modes):
-        """See Treatment.compute_hessian"""
+        """See :meth:`Treatment.compute_hessian`"""
         if abs(molecule.gradient).max() > self.gradient_threshold:
             raise ValueError(
                 "Some components of the gradient exceed the threshold "
@@ -661,7 +661,7 @@ class PHVA(Treatment):
         Treatment.__init__(self)
 
     def compute_zeros(self, molecule, do_modes):
-        """See Treatment.compute_zeros"""
+        """See :meth:`Treatment.compute_zeros`"""
         # This is a bit tricky. Most of the times the number of zero eigenvalues
         # is zero, but there are a few exceptions. When there is one fixed
         # point, there are in general three zeros. When there are two (or more
@@ -695,7 +695,7 @@ class PHVA(Treatment):
             raise NotImplementedError
 
     def compute_hessian(self, molecule, do_modes):
-        """See Treatment.compute_hessian"""
+        """See :meth:`Treatment.compute_hessian`"""
         free = numpy.zeros(molecule.size - len(self.fixed), int)
         free3 = numpy.zeros(len(free)*3, int)
         counter_fixed = 0
@@ -740,7 +740,7 @@ class VSA(Treatment):
         Treatment.__init__(self)
 
     def compute_zeros(self, molecule, do_modes):
-        """See Treatment.compute_zeros"""
+        """See :meth:`Treatment.compute_zeros`"""
         # Number of zeros for VSA:
         #- If nonperiodic system:
         # 6 zeros if atoms of subsystem are non-collinear
@@ -767,7 +767,7 @@ class VSA(Treatment):
                 raise ValueError("Number of zeros is expected to be 3, 5 or 6, but found %i." % self.num_zeros)
 
     def compute_hessian(self, molecule, do_modes):
-        """See Treatment.compute_hessian"""
+        """See :meth:`Treatment.compute_hessian`"""
 
         # fill lists with subsystem/environment atoms/coordinates
         subs = self.subs.tolist()
@@ -833,7 +833,7 @@ class VSANoMass(Treatment):
         Treatment.__init__(self)
 
     def compute_zeros(self, molecule, do_modes):
-        """See Treatment.compute_zeros"""
+        """See :meth:`Treatment.compute_zeros`"""
         # Number of zeros for VSANoMass:
         #- If nonperiodic system:
         # 6 zeros if atoms of subsystem are non-collinear
@@ -860,7 +860,7 @@ class VSANoMass(Treatment):
                 raise ValueError("Number of zeros is expected to be 3, 5 or 6, but found %i." % self.num_zeros)
 
     def compute_hessian(self, molecule, do_modes):
-        """See Treatment.compute_hessian"""
+        """See :meth:`Treatment.compute_hessian`"""
 
         # fill lists with subsystem/environment atoms/coordinates
         subs = self.subs.tolist()
@@ -922,7 +922,7 @@ class MBH(Treatment):
         Treatment.__init__(self)
 
     def compute_zeros(self, molecule, do_modes):
-        """See Treatment.compute_zeros"""
+        """See :meth:`Treatment.compute_zeros`"""
         # Number of zeros for MBH:
         #- If nonperiodic system:
         # 6 zeros if atoms of system are non-collinear
@@ -949,7 +949,7 @@ class MBH(Treatment):
                 raise ValueError("Number of zeros is expected to be 3, 5 or 6, but found %i." % self.num_zeros)
 
     def compute_hessian(self, molecule, do_modes):
-        """See Treatment.compute_hessian"""
+        """See :meth:`Treatment.compute_hessian`"""
         if do_modes:
             self.hessian_small,self.mass_matrix_small,self.transform = \
                      self.compute_matrices_small(molecule,do_modes)
@@ -1259,7 +1259,7 @@ class PHVA_MBH(MBH):
         MBH.__init__(self, blocks, svd_threshold=svd_threshold)
 
     def compute_zeros(self, molecule, do_modes):
-        """See Treatment.compute_zeros"""
+        """See :meth:`Treatment.compute_zeros`"""
         # [ See explanation PHVA ]
         U, W, Vt = numpy.linalg.svd(molecule.external_basis, full_matrices=False)
         rank = (abs(W) > abs(W[0])*self.svd_threshold).sum()
@@ -1278,7 +1278,7 @@ class PHVA_MBH(MBH):
             raise NotImplementedError
 
     def compute_hessian(self,molecule,do_modes):
-        """See Treatment.compute_hessian"""
+        """See :meth:`Treatment.compute_hessian`"""
         # Make submolecule
         selectedatoms = [at for at in xrange(molecule.size) if at not in self.fixed]
         selectedcoords = sum([[3*at,3*at+1,3*at+2] for at in selectedatoms],[])
@@ -1336,7 +1336,7 @@ class Constrain(Treatment):
         Treatment.__init__(self)
 
     def compute_zeros(self, molecule, do_modes):
-        """See Treatment.compute_zeros"""
+        """See :meth:`Treatment.compute_zeros`"""
         # Number of zeros for Constrain:
         #- If nonperiodic system:
         # 6 zeros if atoms of subsystem are non-collinear
@@ -1357,7 +1357,7 @@ class Constrain(Treatment):
                 self.external_basis = self.external_basis = molecule.external_basis[:3,:]  # three translations
 
     def compute_hessian(self, molecule, do_modes):
-        """See Treatment.compute_hessian"""
+        """See :meth:`Treatment.compute_hessian`"""
 
         # make constraint matrix
         constrmat = numpy.zeros((3*molecule.size,len(self.constraints)))

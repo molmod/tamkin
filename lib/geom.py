@@ -106,6 +106,7 @@ def rank_linearity(coordinates, svd_threshold=1e-5):
                              linearity [default=1e-5]
 
        Returns the number of degrees of freedom (dof). This can be
+
        * 6 dof if atoms of system are non-collinear
        * 5 dof if atoms of system are collinear, e.g. when the subsystem
          contains only 2 atoms

@@ -54,7 +54,39 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
+"""Normal mode analysis with default and extended schemes.
 
+A normal mode analysis is carried out by constructing an NMA object. The first
+argument is a molecule object created by one of the IO routines in
+``tamkin.io``. ::
+
+>>> nma = NMA(molecule)
+
+This leads to a standard normal mode analysis in 3*N degrees of freedom.
+The results, including those relevant for the construction of the molecular
+partition function, are stored as attributes of the NMA object. For example::
+
+>>> print nma.freqs
+
+prints the frequencies of the normal modes. Note that all data is stored in
+atomic units and that the freqs array contains really frequencies, not
+wavenumbers. If you want to print the wavenumbers in cm**-1, use the unit
+conversion constants from the ``molmod`` package::
+
+>>> from molmod import centimeter, lightspeed
+>>> invcm = lightspeed/centimeter
+>>> print nma.freqs/invcm
+
+One can also use modified schemes by giving a second argument to the NMA
+constructor. The following example computes the normal modes in 3*N-6 degrees
+of freedom::
+
+>>> nma = NMA(molecule, ConstrainExt())
+
+The second argument is an instance of a class that derives from the
+``Treatment`` class. Other treatments include: ``Full`` (the default),
+``PHVA``, ``VSA``, ``VSANoMass``, ``MBH``, ``PHVA_MBH``, and ``Constrain``.
+"""
 
 # A few conventions for the variables names:
 #
@@ -76,7 +108,7 @@ import numpy
 
 __all__ = [
     "NMA", "AtomDivision", "Transform", "MassMatrix", "Treatment",
-    "Full", "ConstrainExt", "PHVA", "VSA","VSANoMass", "MBH",
+    "Full", "ConstrainExt", "PHVA", "VSA", "VSANoMass", "MBH",
     "PHVA_MBH", "Constrain",
 ]
 

@@ -54,7 +54,7 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
-
+"""TAMkin is a post-processing toolkit for normal mode, thermochemistry and kinetics."""
 
 from tamkin.data import *
 from tamkin.io import *

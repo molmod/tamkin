@@ -4,8 +4,14 @@ Partition functions
 The molecular partion function
 ------------------------------
 
+**Inheritance diagram**
+
+.. inheritance-diagram:: tamkin.partf
+   :parts: 1
+
 .. automodule:: tamkin.partf
    :members:
+   :show-inheritance:
 
 Tools to analyze partition functions
 ------------------------------------

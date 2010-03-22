@@ -10,8 +10,13 @@ Timer module
 Standard representation of QM or MM data
 ----------------------------------------
 
+**Inheritance diagram**
+
+.. inheritance-diagram:: tamkin.data
+
 .. automodule:: tamkin.data
    :members:
+   :show-inheritance:
 
 Analysis of molecular geometries
 --------------------------------

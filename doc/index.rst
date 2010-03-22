@@ -6,17 +6,29 @@
 Welcome to TAMkin's documentation!
 ======================================
 
-Contents:
+Tutorial
+--------
 
 .. toctree::
    :maxdepth: 2
 
-   gatherdocs
+   tutorial
+
+Reference
+---------
+
+.. toctree::
+   :maxdepth: 2
+
+   reference_io
+   reference_nma
+   reference_pf
+   reference_aux
 
 
 
 Indices and tables
-==================
+------------------
 
 * :ref:`genindex`
 * :ref:`modindex`

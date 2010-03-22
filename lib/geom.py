@@ -54,19 +54,26 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
-
+"""Analysis of molecular geometries"""
 
 import numpy
 
 
-__all__ = ["transrot_basis","rank_linearity"]
+__all__ = ["transrot_basis", "rank_linearity"]
 
 
 def transrot_basis(coordinates, rot=True):
-    """
-    Constructs 6 vectors which represent global translations/rotations. (dim: 6xsize)
-    Vectors are not mass-weighted.
-    If rot=False, only translational vectors.
+    """Constructs 6 vectors which represent global translations/rotations.
+
+       Argument:
+        | coordinates  --  The atom coordinates (float numpy array with shape
+                           Nx3)
+
+       Optional argument:
+        | rot  --  When True the rotations are included [default=True]
+
+       The return value is a numpy array with 3*N rows and 6 (``rot==True``) or
+       3 (``rot==False``) columns. The columns are not mass weighted.
     """
     if not rot:
         result = numpy.zeros((3, coordinates.size), float)
@@ -87,21 +94,28 @@ def transrot_basis(coordinates, rot=True):
     return result
 
 
-def rank_linearity(coordinates,svd_threshold=1e-5):
-    """
-    Linearity of system with given coordinates (degrees of freedom = dof)
-    6 dof if atoms of system are non-collinear
-    5 dof if atoms of system are collinear, e.g. when the subsystem contains only 2 atoms
-    3 dof if system contains just 1 atom
+def rank_linearity(coordinates, svd_threshold=1e-5):
+    """Test the linearity of the given coordinates
 
-    method:
-      Construct a kind of inertia matrix (6x6) of the system::
+       Arguments:
+        | coordinates  --  The atom coordinates (float numpy array with shape
+                           Nx3)
+
+       Optional argument:
+        | svd_threshold  --  Defines the sensitivity for deviations from
+                             linearity [default=1e-5]
+
+       Returns the number of degrees of freedom (dof). This can be
+       * 6 dof if atoms of system are non-collinear
+       * 5 dof if atoms of system are collinear, e.g. when the subsystem
+         contains only 2 atoms
+       * 3 dof if system contains just 1 atom
+
+       Method: Construct a kind of inertia matrix (6x6) of the system::
 
               A = transrot_basis . transrot_basis**T
 
-      Diagonalize A. The rank is the number of expected zero freqs.
-
-    transrot_basis contains the 6 global translations and rotations of the subsystem (6 x 3*molecule.size)
+       Diagonalize A. The rank is the number of expected zero freqs.
     """
     # TODO clean up printing statements
     #print "coooor", coordinates

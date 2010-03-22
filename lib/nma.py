@@ -1128,13 +1128,17 @@ class PHVA_MBH(MBH):
         selectedcoords = sum([[3*at,3*at+1,3*at+2] for at in selectedatoms],[])
 
         from tamkin.data import Molecule
-        submolecule=  Molecule( numpy.take(molecule.numbers, selectedatoms),
-                numpy.take(molecule.coordinates, selectedatoms, 0),
-                numpy.take(molecule.masses, selectedatoms),
-                molecule.energy,
-                numpy.take(molecule.gradient,selectedatoms,0),
-                numpy.take(numpy.take(molecule.hessian,selectedcoords,0),selectedcoords,1),
-                molecule.multiplicity, None, False) #molecule.is_periodic)
+        submolecule = Molecule(
+            numpy.take(molecule.numbers, selectedatoms),
+            numpy.take(molecule.coordinates, selectedatoms, 0),
+            numpy.take(molecule.masses, selectedatoms),
+            molecule.energy,
+            numpy.take(molecule.gradient,selectedatoms,0),
+            numpy.take(numpy.take(molecule.hessian,selectedcoords,0),selectedcoords,1),
+            molecule.multiplicity,
+            0, # undefined molecule.symmetry_number
+            False # molecule.is_periodic
+        )
 
         # adapt numbering in blocks
         shifts = numpy.zeros((molecule.size),int)

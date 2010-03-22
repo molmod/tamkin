@@ -106,7 +106,10 @@ class BareNucleus(Molecule):
     def __init__(self, number, mass=None):
         if mass is None:
             mass = periodic[number].mass
-        Molecule.__init__(self, [number], [[0,0,0]], [mass], 0.0, [[0,0,0]], [[0,0,0],[0,0,0],[0,0,0]], 1, None, False)
+        Molecule.__init__(
+            self, [number], [[0,0,0]], [mass], 0.0, [[0,0,0]],
+            [[0,0,0],[0,0,0],[0,0,0]], 1, 0, False
+        )
 
 
 class Proton(BareNucleus):

@@ -58,7 +58,7 @@
 
 A normal mode analysis is carried out by constructing an NMA object. The first
 argument is a molecule object created by one of the IO routines in
-``tamkin.io``. ::
+:mod:`tamkin.io`. ::
 
 >>> nma = NMA(molecule)
 

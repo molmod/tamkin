@@ -54,6 +54,7 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
+"""Tunneling models to approximate QM behavior in reaction coordinate."""
 
 
 from molmod.constants import boltzmann

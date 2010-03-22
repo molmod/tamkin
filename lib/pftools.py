@@ -54,6 +54,7 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
+"""High level utilities for partition functions"""
 
 
 from tamkin.partf import compute_rate_coeff, PartFun

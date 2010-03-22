@@ -56,23 +56,30 @@
 # --
 """Partition functions based on the harmonic oscillator approximation & extensions
 
-   The workhorse of this module is the PartFun class. PartFun objects represent
-   a partition function with a interface that does not depend on the different
-   types of terms that are present in the partition function. PartFun objects
+   The workhorse of this module is the **PartFun** class. A PartFun object
+   represents a partition function with a interface that does not depend on the
+   distinct contributions present in the partition function. PartFun objects
    can be used to study chemical equilibrium, rate coefficients and various
-   thermodynamic properties. All the applications work without explicitly relying
-   on the individual contributions to the partition function.
+   thermodynamic properties.
 
-   Abstract classes:
-       Info, StatFys, StatFysTerms
-   Contributions:
-       Electronic, ExtTrans, ExtRot, Vibrations,
-       Rotor (see rotor.py)
-   Helper functions:
-       log_eval_vibrations, log_deriv_vibrations, log_deriv2_vibrations
-   Applications:
-       compute_rate_coeff, compute_equilibrium_constant
-       (see tools.py for a friendly interface to these functions)
+   These are the other classes and functions present in this module:
+
+   * **Gas Laws:** IdealGasLaw
+   * **Abstract classes:** Info, StatFys, StatFysTerms
+   * **Contributions:** Electronic, ExtTrans, ExtRot, Vibrations, Rotor
+     (see rotor.py)
+   * **Helper functions:** helper0_levels, helper1_levels, helper2_levels,
+     helper0_vibrations, helper1_vibrations, helper2_vibrations
+   * **Applications:** compute_rate_coeff, compute_equilibrium_constant (see
+     tools.py for a friendly interface to these functions)
+
+   Note that all the extensive thermodynamic quantities computed here are in
+   atomic units per molecule. If you want to express the Gibbs free energy at
+   300 Kelvin of a system in kJ/mol, use the molmod module to perform unit
+   conversions. For example::
+
+     >>> pf = PartFun(...)
+     >>> print pf.gibss_free_energy(300)/kjmol
 """
 
 
@@ -96,7 +103,8 @@ class IdealGasLaw(object):
     """Bundles several functions related to the ideal gas law."""
 
     def __init__(self, pressure=1*atm):
-        """Optional argument:
+        """
+           Optional argument:
              | pressure  --  the external pressure of the systen [default=1*atm]
         """
         self.pressure = pressure
@@ -104,7 +112,8 @@ class IdealGasLaw(object):
     def pv(self, temp):
         """Returns the product of pressure and volume.
 
-           Note that in SI units this would be RT.
+           Note that in SI units this is RT. The internal units of this module
+           are atomic units and per molecule, so the return value becomes kT.
         """
         return boltzmann*temp
 
@@ -141,10 +150,11 @@ class IdealGasLaw(object):
         else:
             return -temp**(n-2)
 
-    def get_description(self):
+    def _get_description(self):
+        """A one-line summary of the gas law"""
         return "Ideal gas law, external pressure [bar] = %.5f" % (self.pressure/bar)
 
-    description = property(get_description)
+    description = property(_get_description)
 
 
 class Info(object):
@@ -153,9 +163,25 @@ class Info(object):
         self.name = name
 
     def dump(self, f):
+        """Write a description to file
+
+           Arguments:
+            | f  --  the file object to write to
+        """
         print >> f, "  %s" % self.name.upper()
 
     def dump_values(self, f, label, values, format, num_col=8):
+        """Write a nicely formatted array of numbers to file
+
+           Arguments:
+            | f  --  the file object to write to
+            | label  --  a label that explains the meaning of the numbers
+            | values  --  the array with numbers
+            | format  --  a Python format string for one number
+
+           Optional argumet:
+            | num_col  --  the number of columns [default=8]
+        """
         parts = ["    "]
         for counter, value in enumerate(values):
             parts.append(format % value)
@@ -171,9 +197,8 @@ class Info(object):
 class StatFys(object):
     """Abstract class for (contributions to) the parition function
 
-       The constructor (__init__) and the first four methods (init_part_fun,
-       log_eval, log_deriv and log_deriv2) must be implemented in derived
-       classes.
+       The constructor (__init__) and four methods (init_part_fun, helper0,
+       helper1, helper2) must be implemented in derived classes.
     """
     def init_part_fun(self, nma, partf):
         """Compute variables that depend on nma and other parts of the partf"""
@@ -183,6 +208,10 @@ class StatFys(object):
         """Helper function zero
 
            Returns T^n ln(Z)
+
+           Arguments:
+            | temp  --  the temperature
+            | n  --  the power for the temperature factor
         """
         raise NotImplementedError
 
@@ -191,8 +220,13 @@ class StatFys(object):
 
            Returns T^n (d ln(Z) / dT)
 
-           The derivative is taken at constant volume when cp==False.
-           The derivative is taken at constant pressure when cp==True.
+           Arguments:
+            | temp  --  the temperature
+            | n  --  the power for the temperature factor
+
+           Optional argument:
+            | cp  --  When True, the derivative is taken at constant pressure,
+                      otherwise it is taken at constant volume. [default=False]
         """
         raise NotImplementedError
 
@@ -201,34 +235,88 @@ class StatFys(object):
 
            Returns T^n (d^2 ln(Z) / dT^2)
 
-           - The derivative is taken at constant volume when cp==False.
-           - The derivative is taken at constant pressure when cp==True.
+           Arguments:
+            | temp  --  the temperature
+            | n  --  the power for the temperature factor
+
+           Optional argument:
+            | cp  --  When True, the derivative is taken at constant pressure,
+                      otherwise it is taken at constant volume. [default=False]
         """
         raise NotImplementedError
 
     def log_eval(self, temp, helper0=None):
+        """The logarithm of the partition function
+
+           Argument:
+            | temp  --  the temperature
+
+           Optional argument:
+            | helper0  --  an alternative implementation of helper0
+                           [default=self.helper0]
+        """
         if helper0 is None:
             helper0 = self.helper0
         return helper0(temp, 0)
 
     def log_deriv(self, temp, helper1=None, cp=False):
+        """The derivative towards temperature of the logarithm of the partition function
+
+           Argument:
+            | temp  --  the temperature
+
+           Optional arguments:
+            | helper1  --  an alternative implementation of helper1
+                           [default=self.helper1]
+            | cp  --  When True, the derivative is taken at constant pressure,
+                      otherwise it is taken at constant volume. [default=False]
+        """
         if helper1 is None:
             helper1 = self.helper1
         return helper1(temp, 0, cp)
 
     def log_deriv2(self, temp, helper2=None, cp=False):
+        """The second derivative towards temperature of the logarithm of the partition function
+
+           Argument:
+            | temp  --  the temperature
+
+           Optional arguments:
+            | helper2  --  an alternative implementation of helper2
+                           [default=self.helper2]
+            | cp  --  When True, the derivative is taken at constant pressure,
+                      otherwise it is taken at constant volume. [default=False]
+        """
         if helper2 is None:
             helper2 = self.helper2
         return helper2(temp, 0, cp)
 
     def internal_energy(self, temp, helper1=None):
-        """Computes the internal energy per molecule at constant volume"""
+        """Computes the internal energy per molecule
+
+           Argument:
+            | temp  --  the temperature
+
+           Optional argument:
+            | helper1  --  an alternative implementation of helper1
+                           [default=self.helper1]
+        """
         if helper1 is None:
             helper1 = self.helper1
         return boltzmann*helper1(temp, 2)
 
     def heat_capacity_v(self, temp, helper1=None, helper2=None):
-        """Computes the heat capacity per molecule at constant pressure"""
+        """Computes the heat capacity per molecule at constant pressure
+
+           Argument:
+            | temp  --  the temperature
+
+           Optional arguments:
+            | helper1  --  an alternative implementation of helper1
+                           [default=self.helper1]
+            | helper2  --  an alternative implementation of helper2
+                           [default=self.helper2]
+        """
         if helper1 is None:
             helper1 = self.helper1
         if helper2 is None:
@@ -236,7 +324,17 @@ class StatFys(object):
         return boltzmann*(2*helper1(temp, 1) + helper2(temp, 2))
 
     def heat_capacity_p(self, temp, helper1=None, helper2=None):
-        """Computes the heat capacity per molecule"""
+        """Computes the heat capacity per molecule at constant pressure
+
+           Argument:
+            | temp  --  the temperature
+
+           Optional arguments:
+            | helper1  --  an alternative implementation of helper1
+                           [default=self.helper1]
+            | helper2  --  an alternative implementation of helper2
+                           [default=self.helper2]
+        """
         if helper1 is None:
             helper1 = self.helper1
         if helper2 is None:
@@ -244,7 +342,17 @@ class StatFys(object):
         return boltzmann*(2*helper1(temp, 1, cp=True) + helper2(temp, 2, cp=True))
 
     def entropy(self, temp, helper0=None, helper1=None):
-        """Computes the entropy contribution per molecule"""
+        """Computes the entropy contribution per molecule
+
+           Argument:
+            | temp  --  the temperature
+
+           Optional arguments:
+            | helper0  --  an alternative implementation of helper0
+                           [default=self.helper0]
+            | helper1  --  an alternative implementation of helper1
+                           [default=self.helper1]
+        """
         if helper0 is None:
             helper0 = self.helper0
         if helper1 is None:
@@ -252,7 +360,19 @@ class StatFys(object):
         return boltzmann*(helper0(temp, 0) + helper1(temp, 1))
 
     def free_energy(self, temp, helper0=None):
-        """Computes the free energy per molecule"""
+        """Computes the free energy per molecule
+
+           Argument:
+            | temp  --  the temperature
+
+           Optional argument:
+            | helper0  --  an alternative implementation of helper0
+                           [default=self.helper0]
+
+           Note: at this point there is no real distinction between Helmoholtz
+           and Gibbs free energy. This distinction is only introduced at the
+           level of the PartFun object.
+        """
         if helper0 is None:
             helper0 = self.helper0
         return -boltzmann*helper0(temp, 1)
@@ -261,20 +381,30 @@ class StatFys(object):
 class StatFysTerms(StatFys):
     """Abstract class for (contributions to) the parition function with multiple terms
 
+       The different terms (or factors if you like) are of the same mathematical
+       structure.
+
        The constructor (__init__) and the four methods (init_part_fun,
-       log_eval_terms, log_deriv_terms and log_deriv2_terms) must be implemented
-       in derived classes.
+       helper0_terms, helper1_terms, helper2_terms) must be implemented in
+       derived classes.
     """
     def __init__(self, num_terms):
+        """
+           Arguments:
+             num_terms  --  the number of terms present in this contribution.
+        """
         self.num_terms = num_terms
 
     def helper0(self, temp, n):
+        """See :meth:`StatFys.helper0`"""
         return self.helper0_terms(temp, n).sum()
 
     def helper1(self, temp, n, cp=False):
+        """See :meth:`StatFys.helper1`"""
         return self.helper1_terms(temp, n, cp).sum()
 
     def helper2(self, temp, n, cp=False):
+        """See :meth:`StatFys.helper2`"""
         return self.helper2_terms(temp, n).sum()
 
     def helper0_terms(self, temp, n):
@@ -372,12 +502,15 @@ class Electronic(Info, StatFys):
         print >> f, "    Multiplicity: %i" % self.multiplicity
 
     def helper0(self, temp, n):
+        """See :meth:`StatFys.helper0`"""
         return temp**n*numpy.log(self.multiplicity)
 
     def helper1(self, temp, n, cp=False):
+        """See :meth:`StatFys.helper1`"""
         return 0.0
 
     def helper2(self, temp, n, cp=False):
+        """See :meth:`StatFys.helper2`"""
         return 0.0
 
 
@@ -399,6 +532,7 @@ class ExtTrans(Info, StatFys):
         print >> f, "    Mass [amu]: %f" % (self.mass/amu)
 
     def helper0(self, temp, n):
+        """See :meth:`StatFys.helper0`"""
         if temp == 0:
             if n > 0:
                 return 0.0
@@ -411,6 +545,7 @@ class ExtTrans(Info, StatFys):
             )
 
     def helper1(self, temp, n, cp=False):
+        """See :meth:`StatFys.helper1`"""
         if temp == 0:
             raise NotImplementedError
         else:
@@ -420,6 +555,7 @@ class ExtTrans(Info, StatFys):
             return result
 
     def helper2(self, temp, n, cp=False):
+        """See :meth:`StatFys.helper2`"""
         if temp == 0:
             raise NotImplementedError
         else:
@@ -462,6 +598,7 @@ class ExtRot(Info, StatFys):
         print >> f, "    Non-zero moments of inertia: %i" % self.count
 
     def helper0(self, temp, n):
+        """See :meth:`StatFys.helper0`"""
         if temp == 0:
             if n > 0:
                 return 0.0
@@ -471,9 +608,11 @@ class ExtRot(Info, StatFys):
             return temp**n*(numpy.log(temp)*0.5*self.count + numpy.log(self.factor))
 
     def helper1(self, temp, n, cp=False):
+        """See :meth:`StatFys.helper1`"""
         return temp**(n-1)*0.5*self.count
 
     def helper2(self, temp, n, cp=False):
+        """See :meth:`StatFys.helper2`"""
         return -temp**(n-2)*0.5*self.count
 
 
@@ -530,14 +669,17 @@ class PCMCorrection(Info, StatFys):
             )
 
     def helper0(self, temp, n):
+        """See :meth:`StatFys.helper0`"""
         F, Fp, Fpp = self._eval_free(temp)
         return -F*temp**(n-1)/boltzmann
 
     def helper1(self, temp, n, cp=False):
+        """See :meth:`StatFys.helper1`"""
         F, Fp, Fpp = self._eval_free(temp)
         return (F*temp**(n-2) - Fp*temp**(n-1))/boltzmann
 
     def helper2(self, temp, n, cp=False):
+        """See :meth:`StatFys.helper2`"""
         F, Fp, Fpp = self._eval_free(temp)
         return (-Fpp*temp**(n-1) + 2*(Fp*temp**(n-2) - F*temp**(n-3)))/boltzmann
 
@@ -713,12 +855,15 @@ class PartFun(Info, StatFys):
         Info.__init__(self, "total")
 
     def helper0(self, temp, n):
+        """See :meth:`StatFys.helper0`"""
         return sum(term.helper0(temp, n) for term in self.terms)
 
     def helper1(self, temp, n, cp=False):
+        """See :meth:`StatFys.helper1`"""
         return sum(term.helper1(temp, n, cp) for term in self.terms)
 
     def helper2(self, temp, n, cp=False):
+        """See :meth:`StatFys.helper2`"""
         return sum(term.helper2(temp, n, cp) for term in self.terms)
 
     def internal_energy(self, temp):

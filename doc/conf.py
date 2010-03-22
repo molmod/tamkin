@@ -196,3 +196,13 @@ latex_documents = [
 # -- Configuration of extensions -----------------------------------------------
 
 autoclass_content = "both"
+
+def autodoc_skip_member(app, what, name, obj, skip, options):
+    if what=="class" and name=="__call__":
+        return False
+    if name.startswith("_"):
+        return True
+    return False
+
+def setup(app):
+    app.connect("autodoc-skip-member", autodoc_skip_member)

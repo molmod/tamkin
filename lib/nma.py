@@ -117,12 +117,25 @@ class NMA(object):
     """A generic normal mode analysis class.
 
        This class gathers the functionality that is common between all types of
-       nma variations, i.e. computation of frequencies and modes, once the
+       NMA variations, i.e. computation of frequencies and modes, once the
        problem is transformed to reduced coordinates. The actual nature of the
        reduced coordinates is determined by the treatment argument.
     """
 
     def __init__(self, molecule, treatment=None, do_modes=True):
+        """
+           Arguments:
+            | molecule  --  a molecule object obtained from a routine in
+                            tamkin.io
+
+           Optional arguments:
+            | treatment  --  an instance of a Treatment subclass
+                             [default=Full()]
+            | do_modes  --  When False, only the frequencies are computed. When
+                            True, also the normal modes are computed.
+                            [default=True]
+
+        """
         if treatment == None:
             treatment = Full()
 
@@ -208,6 +221,18 @@ class NMA(object):
         self.energy = molecule.energy
 
     def write_to_file(self, filename, fields='all'):
+        """Write the NMA results to a human-readable checkpoint file.
+
+           Argument:
+            | filename  --  the file to write to
+
+           Optional argument:
+            | fields  --  define the selection of attributes to be written to
+                          file. This is one of 'all' (all attributes), 'modes'
+                          (only attributes required for nmatools.py), or 'partf'
+                          (only attributes required for the construction of
+                          a partition function)
+        """
         if fields == 'all':
             data = dict((key, val) for key, val in self.__dict__.iteritems())
         elif fields == 'modes':
@@ -223,6 +248,16 @@ class NMA(object):
 
     @classmethod
     def read_from_file(cls, filename):
+        """Construct an NMA object from a previously saved checkpoint file
+
+           Arguments:
+            | filename  --  the file to load from
+
+           Usage::
+
+             >>> nma = NMA.read_from_file("foo.chk")
+
+        """
         # ugly way to bypass the default constructor
         result = cls.__new__(cls)
         # load the file
@@ -241,14 +276,18 @@ class NMA(object):
 
 
 class AtomDivision(object):
-    """A division of atoms into transformed, free and fixed.
-
-       transformed: transformed in the reduced coordinates
-       free:        identical in the reduced coordinates
-       fixed:       absent in the reduced coordinates
-    """
+    """A division of atoms into transformed, free and fixed."""
 
     def __init__(self, transformed, free, fixed):
+        """
+           Arguments:
+            | transformed  --  the atom indices of the atoms whose coordinates
+                               are transformed into non-Cartesian coordinates.
+            | free  --  the atom indices that are not transformed and retained
+                        as Cartesian coordinates in the new set of coordinates
+            | fixed  --  the atoms that are not used for the new coordinates,
+                         i.e. their positions are constrained.
+        """
         self.transformed = numpy.array(transformed, int)
         self.free = numpy.array(free, int)
         self.fixed = numpy.array(fixed, int)
@@ -287,16 +326,19 @@ class Transform(object):
     """
 
     def __init__(self, matrix, atom_division=None):
-        """Intialize the transformation object
-
+        """
            Arguments:
-             | atom_division -- set AtomDivision class
              | matrix -- the linear transformation from the transformed
                          displacements to Cartesian coordinates.
 
+           Optional argument
+             | atom_division -- an AtomDivision instance, when not given all
+                                atom coordinates are `transformed`
+
            Attributes:
              |  matrix  --  see above
-             |  scalars  --  ...
+             |  scalars  --  diagonal part of the linear transformation (only
+                             used with mass-weighted transformations)
         """
         if matrix is None:
             matrix = numpy.zeros((0,0), float)
@@ -320,14 +362,27 @@ class Transform(object):
         self.scalars = None
         self._weighted = False
 
-    weighted = property(lambda self: self._weighted)
+    weighted = property(lambda self: self._weighted, doc="True when the transform is already mass-weighted")
 
     def __call__(self, modes):
-        """A transform object behaves like a function that transforms small
-           displacement vectors from new to Cartesian coordinates.
+        """Transform small displacement vectors from new to Cartesian coordinates.
 
-           The array modes is a matrix with columns corresponding to the mass
-           weighted modes in the reduced coordinates.
+           Argument:
+            | modes  -- Small (mass-weighted) displacements (or modes) in
+                        internal coordinates (float numpy array with shape KxM,
+                        where K is the number of internal coordinates and M is
+                        the number of modes)
+
+           Returns:
+            | Small non-mass-weighted displacements (or modes) in Cartesian
+              coordinates (float numpy array with shape 3NxM, where N is the
+              number of Cartesian coordinates and M is the number of modes)
+
+           Usage::
+
+             >>> transform = Transform(...)
+             >>> modes_cartesian = transform(modes_internal)
+
         """
         # Quality Assurance:
         if len(modes.shape) != 2:
@@ -354,6 +409,16 @@ class Transform(object):
             return tmp
 
     def make_weighted(self, mass_matrix):
+        """Include mass-weighting into the transformation
+
+           The original transformation is from non-mass-weighted new coordinates
+           to non-mass-weighted Cartesian coordinates and becomes a transform
+           from mass-weighted new coordinates to non-mass-weighted Cartesian
+           coordinates.
+
+           Argument:
+            | mass_matrix  --  A MassMatrix instance
+        """
         if self.weighted:
             raise Exception("The transformation is already weighted.")
         self.matrix = numpy.dot(self.matrix, mass_matrix.mass_block_inv_sqrt)
@@ -421,9 +486,13 @@ class MassMatrix(object):
 
 
 class Treatment(object):
-    """An abstract base class for the treatments. Derived classes must
-       override the __call__ function. Parameters specific for the treatment
-       are passed to the constructor, see for example the PHVA implementation."""
+    """An abstract base class for the NMA treatments. Derived classes must
+       override the __call__ function, or they have to override the individual
+       compute_zeros and compute_hessian methods. Parameters specific for the
+       treatment are passed to the constructor, see for example the PHVA
+       implementation.
+    """
+
     def __init__(self):
         self.hessian_small = None
         self.mass_matrix_small = None
@@ -432,32 +501,53 @@ class Treatment(object):
         self.external_basis = None
 
     def __call__(self, molecule, do_modes):
+        """Calls compute_hessian and compute_zeros (in order) with same arguments
+
+           Arguments:
+            | molecule  --  a Molecule instance
+            | do_modes  --  a boolean indicates whether the modes have to be
+                            computed
+        """
         self.compute_hessian(molecule, do_modes)
         self.compute_zeros(molecule, do_modes)
 
-    def compute_zeros(self, molecule, do_modes):
-        # to be computed in derived classes:
-        # treatment.num_zeros:
-        #    the number of zero eigenvalues to expect
-        # treatment.external_basis: (None if do_modes=False)
-        #    the basis of external degrees of freedom. number of basis vectors
-        #    matches the number of zeros.
+    def compute_hessian(self, molecule, do_modes):
+        """To be computed in derived classes
+
+           Arguments:
+            | molecule  --  a Molecule instance
+            | do_modes  --  a boolean indicates whether the modes have to be
+
+           Attributes to be computed:
+
+           * ``treatment.hessian_small``: the Hessian in reduced coordinates
+           * ``treatment.mass_matrix_small``: the mass matrix in reduced
+             coordinates (see MassMatrix class)
+           * ``treatment.transform``: (None if ``do_modes==False``) the
+             transformation from small displacements in reduced coordinates
+             to small displacements in Cartesian coordinates. (see Transform
+             class)
+
+           For the implementation of certain treatments, it is easier to produce
+           a mass-weighted small Hessian immediately. In such cases, the
+           transform is readily mass-weighted and mass_matrix_small is None.
+        """
         raise NotImplementedError
 
-    def compute_hessian(self, molecule, do_modes):
-        # to be computed in derived classes:
-        # treatment.hessian_small:
-        #    the Hessian in reduced coordinates
-        # treatment.mass_matrix_small:
-        #    the mass matrix in reduced coordinates (see MassMatrix class)
-        # treatment.transform: (None if do_modes=False)
-        #    the transformation from small displacements in reduced coordinates
-        #    to small displacements in Cartesian coordinates. (see Transform class)
-        #
-        # For the implementation of certain treatments, it is easier to produce
-        # a mass-weighted small Hessian immediately. In such cases, the
-        # transform is also readily mass-weighted and mass_matrix_small is
-        # None.
+    def compute_zeros(self, molecule, do_modes):
+        """To be computed in derived classes
+
+           Arguments:
+            | molecule  --  a Molecule instance
+            | do_modes  --  a boolean indicates whether the modes have to be
+
+           Attributes to be computed:
+
+           * ``treatment.num_zeros``: the number of zero eigenvalues to expect
+           * ``treatment.external_basis``: (None if ``do_modes=False``) the
+             basis of external degrees of freedom. number of basis vectors
+             matches the number of zeros.
+        """
         raise NotImplementedError
 
 
@@ -466,12 +556,21 @@ class Full(Treatment):
        coordinates.
     """
     def __init__(self, svd_threshold=1e-5):
+        """
+           Optional argument:
+            | svd_threshold  --  threshold for detection of deviations for
+                                 linearity [default=1e-5]
+        """
         self.svd_threshold = svd_threshold
         Treatment.__init__(self)
 
     def compute_zeros(self, molecule, do_modes):
-        # An unambigous way to define the 'external' degrees of freedom is as
+        """See Treatment.compute_zeros"""
+        # An unambiguous way to define the 'external' degrees of freedom is as
         # follows: first construct an external basis of the entire systems,
+        # TODO: this will fail if the molecule is displaced far from the origin
+        # TODO: keep it simple and just analyze the inertia tensor
+        # TODO: make ext_dof a molecule property
         U, W, Vt = numpy.linalg.svd(molecule.external_basis, full_matrices=False)
         rank = (abs(W) > abs(W[0])*self.svd_threshold).sum()
         self.num_zeros = rank
@@ -479,6 +578,7 @@ class Full(Treatment):
             self.external_basis = Vt[:rank]
 
     def compute_hessian(self, molecule, do_modes):
+        """See Treatment.compute_hessian"""
         self.hessian_small = molecule.hessian
         self.mass_matrix_small = MassMatrix(molecule.masses3)
         if do_modes:
@@ -495,22 +595,26 @@ class ConstrainExt(Treatment):
     """
 
     def __init__(self, gradient_threshold=1e-4, svd_threshold=1e-5):
-        """Initialize the GassPhase treatment.
-
-           One optional argument:
+        """
+           Optional arguments:
              | gradient_threshold  --  The maximum allowed value of the components
                                        of the Cartesian gradient in atomic units.
                                        When the threshold is exceeded, a
                                        ValueError is raised. [default=1-e4]
+             | svd_threshold  --  threshold for detection of deviations for
+                                  linearity (needed to construct a basis of
+                                  external degrees of freedom.)
         """
         self.gradient_threshold = gradient_threshold
         self.svd_threshold = svd_threshold
         Treatment.__init__(self)
 
     def compute_zeros(self, molecule, do_modes):
+        """See Treatment.compute_zeros"""
         self.num_zeros = 0
 
     def compute_hessian(self, molecule, do_modes):
+        """See Treatment.compute_hessian"""
         if abs(molecule.gradient).max() > self.gradient_threshold:
             raise ValueError(
                 "Some components of the gradient exceed the threshold "
@@ -521,6 +625,9 @@ class ConstrainExt(Treatment):
             )
         # project the hessian on the orthogonal complement of the basis of small
         # displacements in the external degrees of freedom.
+        # TODO: this will fail if the molecule is displaced far from the origin
+        # TODO: keep it simple and just analyze the inertia tensor
+        # TODO: make ext_dof a molecule property
         U, W, Vt = numpy.linalg.svd(molecule.external_basis, full_matrices=True)
         rank = (W/W[0] > self.svd_threshold).sum()
         internal_basis_mw = (Vt[rank:]/numpy.sqrt(molecule.masses3)).transpose()
@@ -537,8 +644,12 @@ class PHVA(Treatment):
     def __init__(self, fixed, svd_threshold=1e-5):
         """Initialize the PHVA treatment.
 
-           One argument:
-             |  fixed  --  a list with fixed atoms, counting starts from zero.
+           Argument:
+             | fixed  --  a list with fixed atoms, counting starts from zero.
+
+           Optional argument:
+             | svd_threshold  --  threshold for detection of deviations for
+                                  linearity
         """
         # QA:
         if len(fixed) == 0:
@@ -550,6 +661,7 @@ class PHVA(Treatment):
         Treatment.__init__(self)
 
     def compute_zeros(self, molecule, do_modes):
+        """See Treatment.compute_zeros"""
         # This is a bit tricky. Most of the times the number of zero eigenvalues
         # is zero, but there are a few exceptions. When there is one fixed
         # point, there are in general three zeros. When there are two (or more
@@ -558,6 +670,9 @@ class PHVA(Treatment):
         #
         # An unambigous way to define the 'external' degrees of freedom is as
         # follows: first construct an external basis of the entire systems,
+        # TODO: this will fail if the molecule is displaced far from the origin
+        # TODO: make it complicated and analyze the inertia tensor
+        # TODO: make ext_dof a molecule property
         U, W, Vt = numpy.linalg.svd(molecule.external_basis, full_matrices=False)
         rank = (abs(W) > abs(W[0])*self.svd_threshold).sum()
         external_basis = Vt[:rank]
@@ -580,6 +695,7 @@ class PHVA(Treatment):
             raise NotImplementedError
 
     def compute_hessian(self, molecule, do_modes):
+        """See Treatment.compute_hessian"""
         free = numpy.zeros(molecule.size - len(self.fixed), int)
         free3 = numpy.zeros(len(free)*3, int)
         counter_fixed = 0
@@ -624,6 +740,7 @@ class VSA(Treatment):
         Treatment.__init__(self)
 
     def compute_zeros(self, molecule, do_modes):
+        """See Treatment.compute_zeros"""
         # Number of zeros for VSA:
         #- If nonperiodic system:
         # 6 zeros if atoms of subsystem are non-collinear
@@ -650,6 +767,7 @@ class VSA(Treatment):
                 raise ValueError("Number of zeros is expected to be 3, 5 or 6, but found %i." % self.num_zeros)
 
     def compute_hessian(self, molecule, do_modes):
+        """See Treatment.compute_hessian"""
 
         # fill lists with subsystem/environment atoms/coordinates
         subs = self.subs.tolist()
@@ -715,6 +833,7 @@ class VSANoMass(Treatment):
         Treatment.__init__(self)
 
     def compute_zeros(self, molecule, do_modes):
+        """See Treatment.compute_zeros"""
         # Number of zeros for VSANoMass:
         #- If nonperiodic system:
         # 6 zeros if atoms of subsystem are non-collinear
@@ -741,6 +860,7 @@ class VSANoMass(Treatment):
                 raise ValueError("Number of zeros is expected to be 3, 5 or 6, but found %i." % self.num_zeros)
 
     def compute_hessian(self, molecule, do_modes):
+        """See Treatment.compute_hessian"""
 
         # fill lists with subsystem/environment atoms/coordinates
         subs = self.subs.tolist()
@@ -802,6 +922,7 @@ class MBH(Treatment):
         Treatment.__init__(self)
 
     def compute_zeros(self, molecule, do_modes):
+        """See Treatment.compute_zeros"""
         # Number of zeros for MBH:
         #- If nonperiodic system:
         # 6 zeros if atoms of system are non-collinear
@@ -828,6 +949,7 @@ class MBH(Treatment):
                 raise ValueError("Number of zeros is expected to be 3, 5 or 6, but found %i." % self.num_zeros)
 
     def compute_hessian(self, molecule, do_modes):
+        """See Treatment.compute_hessian"""
         if do_modes:
             self.hessian_small,self.mass_matrix_small,self.transform = \
                      self.compute_matrices_small(molecule,do_modes)
@@ -1137,6 +1259,7 @@ class PHVA_MBH(MBH):
         MBH.__init__(self, blocks, svd_threshold=svd_threshold)
 
     def compute_zeros(self, molecule, do_modes):
+        """See Treatment.compute_zeros"""
         # [ See explanation PHVA ]
         U, W, Vt = numpy.linalg.svd(molecule.external_basis, full_matrices=False)
         rank = (abs(W) > abs(W[0])*self.svd_threshold).sum()
@@ -1155,6 +1278,7 @@ class PHVA_MBH(MBH):
             raise NotImplementedError
 
     def compute_hessian(self,molecule,do_modes):
+        """See Treatment.compute_hessian"""
         # Make submolecule
         selectedatoms = [at for at in xrange(molecule.size) if at not in self.fixed]
         selectedcoords = sum([[3*at,3*at+1,3*at+2] for at in selectedatoms],[])
@@ -1212,6 +1336,7 @@ class Constrain(Treatment):
         Treatment.__init__(self)
 
     def compute_zeros(self, molecule, do_modes):
+        """See Treatment.compute_zeros"""
         # Number of zeros for Constrain:
         #- If nonperiodic system:
         # 6 zeros if atoms of subsystem are non-collinear
@@ -1232,6 +1357,7 @@ class Constrain(Treatment):
                 self.external_basis = self.external_basis = molecule.external_basis[:3,:]  # three translations
 
     def compute_hessian(self, molecule, do_modes):
+        """See Treatment.compute_hessian"""
 
         # make constraint matrix
         constrmat = numpy.zeros((3*molecule.size,len(self.constraints)))

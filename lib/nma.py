@@ -205,7 +205,6 @@ class NMA(object):
                     components = numpy.dot(treatment.external_basis, self.modes[:,i])
                     overlaps[counter] = numpy.linalg.norm(components)
                 self.zeros = to_try[overlaps.argsort()[-treatment.num_zeros:]]
-                print self.zeros
             else:
                 self.zeros = abs(self.freqs).argsort()[:treatment.num_zeros]
 

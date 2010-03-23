@@ -396,7 +396,7 @@ class Transform(object):
         if self.atom_division is None:
             return numpy.dot(self.matrix, modes)
         else:
-            result = numpy.zeros((self.atom_division.num_cartesian, modes.shape[1]), float)
+            result = numpy.zeros((self.atom_division.num_cartesian, modes.shape[1]), float)  # 3NxM
             i1 = 3*len(self.atom_division.transformed)
             i2 = i1 + 3*len(self.atom_division.free)
             result[:i1] = numpy.dot(self.matrix, modes[:self.matrix.shape[1]])
@@ -410,7 +410,7 @@ class Transform(object):
             return tmp
 
     def make_weighted(self, mass_matrix):
-        """Include mass-weighting into the transformation
+        """Include mass-weighting into the transformation.
 
            The original transformation is from non-mass-weighted new coordinates
            to non-mass-weighted Cartesian coordinates and becomes a transform
@@ -418,8 +418,10 @@ class Transform(object):
            coordinates.
 
            Argument:
-            | mass_matrix  --  A MassMatrix instance
+            | mass_matrix  --  A MassMatrix instance for the new coordinates
         """
+        # modifies the transformation matrix in place:
+        # the transformation matrix always transforms to non-mass-weighted Cartesian coords
         if self.weighted:
             raise Exception("The transformation is already weighted.")
         self.matrix = numpy.dot(self.matrix, mass_matrix.mass_block_inv_sqrt)
@@ -430,12 +432,10 @@ class Transform(object):
 class MassMatrix(object):
     """A clever mass matrix object. It is sparse when atom coordinates remain
        Cartesian in the reduced coordinates.
-
     """
 
     def __init__(self, *args):
-        """Initialize the mass matrix object
-
+        """
            Arguments, if one is given and it is a two-dimensional matrix:
              | mass_block -- the mass matrix associated with the transformed
                              coordinates
@@ -572,14 +572,20 @@ class Full(Treatment):
         # TODO: this will fail if the molecule is displaced far from the origin
         # TODO: keep it simple and just analyze the inertia tensor
         # TODO: make ext_dof a molecule property
-        U, W, Vt = numpy.linalg.svd(molecule.external_basis, full_matrices=False)
-        rank = (abs(W) > abs(W[0])*self.svd_threshold).sum()
-        self.num_zeros = rank
+
+        self.num_zeros, external_basis = rank_linearity(molecule.coordinates,
+            svd_threshold=self.svd_threshold, masses3=molecule.masses3)
         if do_modes:
-            self.external_basis = Vt[:rank]
+            self.external_basis = external_basis
 
     def compute_hessian(self, molecule, do_modes):
-        """See :meth:`Treatment.compute_hessian`"""
+        """See :meth:`Treatment.compute_hessian`.
+
+        The Hessian is the full 3Nx3N Hessian matrix: ``H``.
+        The mass matrix is the full 3Nx3N mass matrix: ``M``.
+        The mass matrix is diagonal, so it is assumed that the coordinates are
+        Cartesian coordinates.
+        """
         self.hessian_small = molecule.hessian
         self.mass_matrix_small = MassMatrix(molecule.masses3)
         if do_modes:
@@ -611,11 +617,22 @@ class ConstrainExt(Treatment):
         Treatment.__init__(self)
 
     def compute_zeros(self, molecule, do_modes):
-        """See :meth:`Treatment.compute_zeros`"""
+        """See :meth:`Treatment.compute_zeros`.
+
+        The number of zeros is set to 0, because the global translations
+        and rotations are already projected out.
+        """
         self.num_zeros = 0
 
     def compute_hessian(self, molecule, do_modes):
-        """See :meth:`Treatment.compute_hessian`"""
+        """See :meth:`Treatment.compute_hessian`
+
+        First a basis is constructed for the internal coordinates. The 3N-6
+        basis vectors of length 3N (matrix B is (3N-6)x3N) are mass-weighted.
+        The ConstrainExt Hessian is then: ``B^T H B``.
+        This matrix is already mass weigthed, such that no ConstrainExt mass
+        matrix needs to be specified.
+        """
         if abs(molecule.gradient).max() > self.gradient_threshold:
             raise ValueError(
                 "Some components of the gradient exceed the threshold "
@@ -650,13 +667,14 @@ class PHVA(Treatment):
 
        See references:
 
-       - TODO Head
-       - TODO Head
+       - J.D. Head, Int. J. Quantum Chem. 65, 827 (1997)
+       - J.D. Head and Y. Shi, Int. J. Quantum Chem. 75, 81 (1999)
+       - J.D. Head, Int. J. Quantum Chem. 77, 350 (2000)
+       - H. Li and J. Jensen, Theor. Chem. Acc. 107, 211 (2002)
 
     """
     def __init__(self, fixed, svd_threshold=1e-5):
-        """Initialize the PHVA treatment.
-
+        """
            Argument:
              | fixed  --  a list with fixed atoms, counting starts from zero.
 
@@ -674,13 +692,14 @@ class PHVA(Treatment):
         Treatment.__init__(self)
 
     def compute_zeros(self, molecule, do_modes):
-        """See :meth:`Treatment.compute_zeros`"""
-        # This is a bit tricky. Most of the times the number of zero eigenvalues
-        # is zero, but there are a few exceptions. When there is one fixed
-        # point, there are in general three zeros. When there are two (or more
-        # colinear fixed atoms), there is in general one zero. When both the
-        # fixed and the free atoms are colinear, there are no zeros.
-        #
+        """See :meth:`Treatment.compute_zeros`.
+
+        This is a bit tricky. Most of the times the number of zero eigenvalues
+        is zero, but there are a few exceptions. When there is one fixed
+        point, there are in general three zeros. When there are two (or more
+        colinear fixed atoms), there is in general one zero. When both the
+        fixed and the free atoms are colinear, there are no zeros.
+        """
         # An unambigous way to define the 'external' degrees of freedom is as
         # follows: first construct an external basis of the entire systems,
         # TODO: this will fail if the molecule is displaced far from the origin
@@ -710,13 +729,13 @@ class PHVA(Treatment):
     def compute_hessian(self, molecule, do_modes):
         """See :meth:`Treatment.compute_hessian`.
 
-        - The Hessian matrix for the PHVA is the submatrix of the full (3Nx3N)
-          Hessian, corresponding with the non-fixed atoms.
-
-        - The mass matrix for the PHVA is the (diagonal) submatrix of the
-          full (3Nx3N) mass matrix, corresponding with the non-fixed atoms.
-          So it is a diagonal matrix with the masses of the non-fixed atoms on
-          the diagonal.
+        The Hessian matrix for the PHVA is the submatrix of the full (3Nx3N)
+        Hessian, corresponding with the non-fixed atoms: ``H_nonfixed``.
+        The mass matrix for the PHVA is the (diagonal) submatrix of the
+        full (3Nx3N) mass matrix, corresponding with the non-fixed atoms:
+        ``M_nonfixed``.
+        So it is a diagonal matrix with the masses of the non-fixed atoms on
+        the diagonal.
         """
         free = numpy.zeros(molecule.size - len(self.fixed), int)
         free3 = numpy.zeros(len(free)*3, int)
@@ -747,16 +766,16 @@ class VSA(Treatment):
     Frequencies and modes are computed with the VSA approach, as described in
     the references:
 
-    - Zheng and Brooks, ... (2006) TODO add reference
-    - Woodcock, ... (2008)
+    - W. Zheng, B.R. Brooks, J. Biophys. 89, 167 (2006)
+    - H.L. Woodcock, W. Zheng, A. Ghysels, Y. Shao, J. Kong, B.R. Brooks,
+      J. Chem. Phys. 129 (21), Art. No. 214109 (2008)
 
     The system is partitioned into a subsystem and an environment. The subsystem
     atoms are allowed to vibrate, while the environment atoms follow the motions
     of the subsystem atoms. The environment atoms are force free.
     """
     def __init__(self, subs, svd_threshold=1e-5):
-        """Initialize the VSA treatment.
-
+        """
            One argument:
              | subs  --  a list with the subsystem atoms, counting starts from zero.
 
@@ -803,14 +822,8 @@ class VSA(Treatment):
     def compute_hessian(self, molecule, do_modes):
         """See :meth:`Treatment.compute_hessian`.
 
-        The VSA Hessian reads::
-
-            H_ss - H_se (H_ee)**(-1) H_es
-
-        The VSA mass matrix reads::
-
-            M_s - H_se (H_ee)**(-1) M_e (H_ee)**(-1) H_es
-
+        The VSA Hessian reads: ``H_ss - H_se (H_ee)**(-1) H_es``,
+        the VSA mass matrix reads: ``M_s - H_se (H_ee)**(-1) M_e (H_ee)**(-1) H_es``,
         where the indices ``s`` and ``e`` refer to the subsystem and environment
         atoms respectively.
         """
@@ -856,23 +869,23 @@ class VSANoMass(Treatment):
     Perform a Vibrational Subsystem Analysis, without taking into account the
     mass of the environment.
 
-    Frequencies and modes are computed as described in the references:
+    Frequencies and modes are computed as described in the reference:
 
-    - Zheng and Brooks, ... (2006) TODO add reference
-    - Woodcock, ... (2008)
-    - Ghysels, 2010
+    - W. Zheng, B.R. Brooks, Journal of Biophysics 89, 167 (2006)
+    - A. Ghysels, V. Van Speybroeck, E. Pauwels, S. Catak, B.R. Brooks,
+      D. Van Neck, M. Waroquier, Journal of Computational Chemistry 31 (5),
+      94-1007 (2010)
 
     The system is partitioned into a subsystem and an environment. The subsystem
     atoms are allowed to vibrate, while the environment atoms follow the motions
     of the subsystem atoms. The environment atoms are force free.
     Moreover, the VSA is performed according to the original version of 2006:
     no mass correction for the environment is included.
-    The version of VSA corresponds to the approximation
+    This version of VSA corresponds to the approximation
     of zero mass for all environment atoms.
     """
     def __init__(self, subs, svd_threshold=1e-5):
-        """Initialize the VSA treatment.
-
+        """
            One argument:
              | subs  --  a list with the subsystem atoms, counting starts from zero.
 
@@ -919,14 +932,8 @@ class VSANoMass(Treatment):
     def compute_hessian(self, molecule, do_modes):
         """See :meth:`Treatment.compute_hessian`.
 
-        The VSANoMass Hessian reads::
-
-            H_ss - H_se (H_ee)**(-1) H_es
-
-        The VSANoMass mass matrix reads::
-
-            M_s
-
+        The VSANoMass Hessian reads: ``H_ss - H_se (H_ee)**(-1) H_es``.
+        and the VSANoMass mass matrix reads: ``M_s``,
         where the indices ``s`` and ``e`` refer to the subsystem and environment
         atoms respectively.
         """
@@ -963,13 +970,13 @@ class MBH(Treatment):
     Frequencies and modes are computed with the MBH approach, as described in
     the refences:
 
-           -  J. Chem. Phys. 126 (22): Art. No. 224102, 2007
-           -  J. Chem. Phys. 127 (16), Art. No. 164108, 2007
+    * Journal of Chem. Phys. 126 (22), Art. No. 224102, 2007
+    * Journal of Chem. Phys. 127 (16), Art. No. 164108, 2007
 
     or the Mobile Block Hessian method with linked blocks:
 
-           -  J. Chem. Theory Comput. 5 (5), 1203-1215, 2009
-           -  J. Chem. Phys. 130 (18), Art. No. 084107, 2009
+    * Journal of Chem. Theory Comput. 5 (5), 1203-1215, 2009
+    * Journal of Chem. Phys. 130 (18), Art. No. 084107, 2009
 
     The system is partitioned into blocks which are only allowed to move as
     rigid bodies during the vibrational analysis. Atoms that are not part of a
@@ -980,8 +987,7 @@ class MBH(Treatment):
     NMA in partially optimized structures.
     """
     def __init__(self, blocks, do_gradient_correction=True, svd_threshold=1e-5):
-        """Initialize the MBH treatment.
-
+        """
            One argument:
              | blocks  --  a list of blocks, each block is a list of atoms,
                            counting starts from zero.
@@ -999,7 +1005,7 @@ class MBH(Treatment):
         self.svd_threshold = svd_threshold
         if type(do_gradient_correction).__name__ == 'bool':
             self.do_gradient_correction = do_gradient_correction
-        else: raise TypeError("Optional argument do_grad_correction should be boolean.")
+        else: raise TypeError("Optional argument do_gradient_correction should be boolean.")
         Treatment.__init__(self)
 
     def compute_zeros(self, molecule, do_modes):
@@ -1044,15 +1050,25 @@ class MBH(Treatment):
             self.external_basis = Vt[:rank]
 
     def compute_hessian(self, molecule, do_modes):
-        """See :meth:`Treatment.compute_hessian`"""
-        if do_modes:
-            self.hessian_small,self.mass_matrix_small,self.transform = \
-                     self.compute_matrices_small(molecule,do_modes)
-        else:
-            self.hessian_small,self.mass_matrix_small = \
-                     self.compute_matrices_small(molecule,do_modes)
+        """See :meth:`Treatment.compute_hessian`.
 
-    def compute_matrices_small(self, molecule, do_modes):
+        Gather all information about the block choice in the
+        blkinfo attribute. If adjoined blocks (blocks with common atoms)
+        are present, an extra STRICT block choice is defined: the partitioning
+        where each atom belongs to only one block.
+
+        First, the 3Nxd matrix U is constructed from the column vectors describing
+        the block motions. At this point, the strict partitioning is used.
+        The Hessian is equal to: ``Hp = U^T H U` + G:C`. The term ``G:C`` is the
+        gradient correction. The mass matrix is equal to: ``Mp = U^T M U``.
+
+        Second, impose the link constraints between blocks, if any of the blocks
+        are adjoined. The matrix K constains the linking constraints. If
+        nullspace is the null space of K, then the final Mobile block Hessian
+        reads: ``Hy = nullspace^T Hp nullspace + Gp:Cp``. The term ``Gp:Cp``
+        is the gradient correction. The Mobile Block mass matrix is equal to:
+        ``My = nullspace^T Mp nullspace``.
+        """
         # Notation: b,b0,b1   --  a block index
         #           block  --  a list of atoms, e.g. [at1,at4,at6]
         #           alphas  --  the 6 block parameter indices (or 5 for linear block)
@@ -1062,7 +1078,7 @@ class MBH(Treatment):
         mbhdim1 = 6*blkinfo.nb_nlin + 5*blkinfo.nb_lin + 3*len(blkinfo.free)
 
         # TRANSFORM from CARTESIAN to BLOCK PARAMETERS
-        U = self.construct_U(molecule,mbhdim1,blkinfo)
+        U = self._construct_U(molecule,mbhdim1,blkinfo)
 
         # Construct Hessian in block parameters: Hp = U**T . H . U + correction
         Hp = numpy.dot(numpy.dot( U.transpose(), molecule.hessian) , U)
@@ -1109,7 +1125,7 @@ class MBH(Treatment):
         if blkinfo.is_linked:
             # SECOND TRANSFORM: from BLOCK PARAMETERS to Y VARIABLES
             # Necessary if blocks are linked to each other.
-            nullspace = self.construct_nullspace_K(molecule,mbhdim1,blkinfo)
+            nullspace = self._construct_nullspace_K(molecule,mbhdim1,blkinfo)
 
             My = numpy.dot(nullspace.transpose(), numpy.dot( Mp,nullspace) )
             Hy = numpy.dot(nullspace.transpose(), numpy.dot( Hp,nullspace) )
@@ -1117,18 +1133,25 @@ class MBH(Treatment):
             # TODO
             # gradient correction of the second transform...
 
+
         if do_modes:
             if not blkinfo.is_linked:
-                return Hp, MassMatrix(Mp), Transform(U)
+                self.hessian_small = Hp
+                self.mass_matrix_small = MassMatrix(Mp)
+                self.transform = Transform(U)
             else:
-                return Hy, MassMatrix(My), Transform(numpy.dot(U, nullspace))
+                self.hessian_small = Hy
+                self.mass_matrix_small = MassMatrix(My)
+                self.transform = Transform(numpy.dot(U, nullspace))
         else:
             if not blkinfo.is_linked:
-                return Hp, MassMatrix(Mp)
+                self.hessian_small = Hp
+                self.mass_matrix_small = MassMatrix(Mp)
             else:
-                return Hy, MassMatrix(My)
+                self.hessian_small = Hy
+                self.mass_matrix_small = MassMatrix(My)
 
-    def construct_U(self,molecule,mbhdim1,blkinfo):
+    def _construct_U(self,molecule,mbhdim1,blkinfo):
         # Construct first transformation matrix
         D = transrot_basis(molecule.coordinates)   # is NOT mass-weighted
 
@@ -1151,7 +1174,7 @@ class MBH(Treatment):
                 U[3*at+mu, 6*blkinfo.nb_nlin+5*blkinfo.nb_lin+3*i +mu] = 1.0
         return U
 
-    def construct_nullspace_K(self,molecule,mbhdim1,blkinfo):
+    def _construct_nullspace_K(self,molecule,mbhdim1,blkinfo):
         # SECOND TRANSFORM: from BLOCK PARAMETERS to Y VARIABLES
         # Necessary if blocks are linked to each other.
             # Construct K matrix, with constraints
@@ -1210,17 +1233,16 @@ class MBH(Treatment):
 
 
 class Blocks(object):
+    """Object that extracts all information from a block choice."""
     def __init__(self,blocks,molecule,svd_threshold):
         """
-        initialization:  Blocks(blocks,N) with
-
         Arguments:
           | blocks --   a list of lists of atoms
                        [ [at1,at5,at3], [at4,at5], ...]
                        with a list of atoms for each block
           | molecule -- Molecule object, necessary for N (total nb
                         of atoms) and positions (linearity of blocks).
-          | svd_trheshold -- XXXX TODO
+          | svd_trheshold -- threshold for zero singular values in svd
         """
         N = molecule.size
         # check for empty blocks and single-atom-blocks
@@ -1335,15 +1357,30 @@ class Blocks(object):
 
 
 class PHVA_MBH(MBH):
-    def __init__(self, fixed, blocks, svd_threshold=1e-5):
-        """Initialize the PHVA_MBH treatment.
+    """
+    The Mobile Block Hessian combined with the Partial Hessian Vibrational Analysis.
 
+    The system is partitioned into
+
+    - blocks which are only allowed to move as rigid bodies (the MBH concept,
+      see :class:`PHVA`),
+    - fixed atoms which are not allowed to move at all (the PHVA concept, see
+      :class:`MBH`).
+    - single atoms which are allowed to vibrate individually
+
+    The internal geometry of the blocks does not have to be optimized. The
+    positions of the fixed atoms also do not have to be optimized.
+    This make the PHVA_MBH an appropriate method to perform NMA in partially
+    optimized structures.
+    """
+    def __init__(self, fixed, blocks, svd_threshold=1e-5):
+        """
            Two arguments:
              | fixed  --  a list with fixed atoms, counting starts from zero.
              | blocks  --  a list of blocks, each block is a list of atoms
 
            An optional argument:
-             | svd_threshold  --  XX TODO
+             | svd_threshold  --  threshold for zero singular values in svd
         """
         # QA:
         if len(fixed) == 0:
@@ -1376,8 +1413,15 @@ class PHVA_MBH(MBH):
             #self.exernal_basis = ...
             raise NotImplementedError
 
-    def compute_hessian(self,molecule,do_modes):
-        """See :meth:`Treatment.compute_hessian`"""
+    def compute_hessian(self, molecule,do_modes):
+        """See :meth:`Treatment.compute_hessian`.
+
+        First, the non-fixed atoms are cut out of the molecular system, i.e.
+        the single atoms and the atoms belonging to the blocks and stored in a
+        *submolecule*.
+        Next, the regular MBH concept is applied on this submolecule.
+        """
+
         # Make submolecule
         selectedatoms = [at for at in xrange(molecule.size) if at not in self.fixed]
         selectedcoords = sum([[3*at,3*at+1,3*at+2] for at in selectedatoms],[])
@@ -1403,19 +1447,26 @@ class PHVA_MBH(MBH):
             for at,atom in enumerate(block):
                 self.blocks[bl][at] = atom - shifts[atom]
 
-        if do_modes:
-            self.hessian_small, self.mass_matrix_small, transform = self.compute_matrices_small(submolecule, do_modes)
-            transf = numpy.zeros((3*molecule.size, transform.matrix.shape[1]),float)
-            transf[selectedcoords,:] = transform.matrix
-            self.transform = Transform(transf)
-        else:
-            self.hessian_small, self.mass_matrix_small = self.compute_matrices_small(submolecule, do_modes)
+        MBH.compute_hessian(self, molecule, do_modes)
+       # if do_modes:
+        #    self.hessian_small, self.mass_matrix_small, transform = self.compute_matrices_small(submolecule, do_modes)
+         #   transf = numpy.zeros((3*molecule.size, transform.matrix.shape[1]),float)
+          #  transf[selectedcoords,:] = transform.matrix
+          #  self.transform = Transform(transf)
+       # else:
+         #   self.hessian_small, self.mass_matrix_small = self.compute_matrices_small(submolecule, do_modes)
 
 
 class Constrain(Treatment):
-    def __init__(self, constraints, do_grad_correction=True, svd_threshold=1e-5):
-        """Initialize the Constrain treatment.
+    """Perform a normal mode analysis where part of the internal coordinates are
+       constrained to a fixed value.
 
+       The gradient corrections are taken into account correctly. At present, only
+       distance constraints are implemented. In principle, the routine can be
+       adapted to angle and dihedral angle constraints.
+    """
+    def __init__(self, constraints, do_gradient_correction=True, svd_threshold=1e-5):
+        """
            One argument:
              | constraints  --  a list with constraints of internal coordinates:
                                 [at1,at2] to constrain a distance,
@@ -1423,7 +1474,7 @@ class Constrain(Treatment):
                                 [at1,at2,at3,at4] to constrain a dihedral angle.
 
            Optional:
-             | do_grad_correction  --  whether gradient correction should be applied
+             | do_gradient_correction  --  whether gradient correction should be applied
              | svd_threshold  --  threshold for singular value decomposition
         """
         # QA:
@@ -1431,7 +1482,7 @@ class Constrain(Treatment):
             raise ValueError("At least one constraint is required.")
         # Rest of init:
         self.constraints = constraints
-        self.do_grad_correction = do_grad_correction
+        self.do_gradient_correction = do_gradient_correction
         self.svd_threshold = svd_threshold
         Treatment.__init__(self)
 
@@ -1486,22 +1537,14 @@ class Constrain(Treatment):
         # check if gradient is small enough in this complement: overlap with nullspace should be small enough
         # print  numpy.sum(numpy.dot(nullspace.transpose(), numpy.ravel(molecule.gradient))**2)
 
-        if self.do_grad_correction:
-            self.do_the_gradient_correction(constrmat.transpose(), U,W,Vt, rank, nullspace, molecule.gradient)
+        if self.do_gradient_correction:
+            self._do_the_gradient_correction(constrmat.transpose(), U,W,Vt, rank, nullspace, molecule.gradient)
 
         if do_modes:
             self.transform = Transform(nullspace)
 
 
-    def do_the_gradient_correction(self, K,u,s,vh, rank, nullspace, gradient):
-
-
-#         print "Cart grad", self.gradient
-#         print "W grad", G_W
-#         print "orthogonal?",numpy.dot(nullspace.transpose(),G_W)
-#         print "G_W, sum", sum(abs(G_W))
-#         print "grad, sum", sum(abs(self.gradient.ravel()))
-
+    def _do_the_gradient_correction(self, K,u,s,vh, rank, nullspace, gradient):
 
         # GRADIENT CORRECTION
         # construct generalized inverse L of K

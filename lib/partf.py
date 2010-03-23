@@ -783,6 +783,23 @@ class PCMCorrection(Info, StatFys):
 
 
 def helper0_vibrations(temp, n, freqs, classical=False, freq_scaling=1, zp_scaling=1):
+    """Helper 0 function for a set of harmonic oscillators
+
+       Returns T^n ln(Z), where Z is the partition function
+
+       Arguments:
+        | temp  --  the temperature
+        | n  --  the power for the temperature factor
+        | freqs  --  an array with frequencies
+
+       Optional arguments:
+        | classical  --  When True, the classical partition function is used
+                         [default=False]
+        | freq_scaling  --  Scale the frequencies with the given factor
+                            [default=1]
+        | freq_zp  --  Scale the zero-point energy correction with the given
+                       factor [default=1]
+    """
     # this is defined as a function because multiple classes need it
     if classical:
         if temp == 0:
@@ -805,6 +822,23 @@ def helper0_vibrations(temp, n, freqs, classical=False, freq_scaling=1, zp_scali
         #return -numpy.log(1-numpy.exp(exp_arg*freq_scaling))
 
 def helper1_vibrations(temp, n, freqs, classical=False, freq_scaling=1, zp_scaling=1):
+    """Helper 1 function for a set of harmonic oscillators
+
+       Returns T^n (d ln(Z) / dT), where Z is the partition function
+
+       Arguments:
+        | temp  --  the temperature
+        | n  --  the power for the temperature factor
+        | energy_levels  --  an array with energy levels
+
+       Optional arguments:
+        | classical  --  When True, the classical partition function is used
+                         [default=False]
+        | freq_scaling  --  Scale the frequencies with the given factor
+                            [default=1]
+        | freq_zp  --  Scale the zero-point energy correction with the given
+                       factor [default=1]
+    """
     # this is defined as a function because multiple classes need it
     if classical:
         if temp == 0:
@@ -819,6 +853,23 @@ def helper1_vibrations(temp, n, freqs, classical=False, freq_scaling=1, zp_scali
             return pfb*temp**(n-2)*(zp_scaling - 2*freq_scaling/(1 - numpy.exp(2*freq_scaling*pfb/temp)))
 
 def helper2_vibrations(temp, n, freqs, classical=False, freq_scaling=1, zp_scaling=1):
+    """Helper 2 function for a set of harmonic oscillators
+
+       Returns T^n (d^2 ln(Z) / dT^2), where Z is the partition function
+
+       Arguments:
+        | temp  --  the temperature
+        | n  --  the power for the temperature factor
+        | energy_levels  --  an array with energy levels
+
+       Optional arguments:
+        | classical  --  When True, the classical partition function is used
+                         [default=False]
+        | freq_scaling  --  Scale the frequencies with the given factor
+                            [default=1]
+        | freq_zp  --  Scale the zero-point energy correction with the given
+                       factor [default=1]
+    """
     # this is defined as a function because multiple classes need it
     if classical:
         if temp == 0:
@@ -842,7 +893,8 @@ class Vibrations(Info, StatFysTerms):
          | classical  --  When True, the vibrations are treated classically
                           [default=False]
          | freq_scaling  --  Scale factor for the frequencies [default=1]
-         | zp_scaling  --  Scale factor for the zero-point energy [default=1]
+         | zp_scaling  --  Scale factor for the zero-point energy correction
+                           [default=1]
         """
         self.classical = classical
         self.freq_scaling = freq_scaling
@@ -876,18 +928,21 @@ class Vibrations(Info, StatFysTerms):
         print >> f, "    Free energy contribution at T=0 [kJ/mol]: %.7f" % (self.free_energy(0.0)/kjmol)
 
     def helper0_terms(self, temp, n):
+        """See :meth:`StatFysTerms.helper0_terms`"""
         return helper0_vibrations(
             temp, n, self.positive_freqs, self.classical, self.freq_scaling,
             self.zp_scaling
         )
 
     def helper1_terms(self, temp, n, cp=False):
+        """See :meth:`StatFysTerms.helper1_terms`"""
         return helper1_vibrations(
             temp, n, self.positive_freqs, self.classical, self.freq_scaling,
             self.zp_scaling
         )
 
     def helper2_terms(self, temp, n, cp=False):
+        """See :meth:`StatFysTerms.helper2_terms`"""
         return helper2_vibrations(
             temp, n, self.positive_freqs, self.classical, self.freq_scaling,
             self.zp_scaling
@@ -964,15 +1019,27 @@ class PartFun(Info, StatFys):
         return sum(term.helper2(temp, n, cp) for term in self.terms)
 
     def internal_energy(self, temp):
-        """Computes the internal energy"""
+        """Compute the internal energy
+
+           Arguments:
+            | temp  --  the temperature
+        """
         return StatFys.internal_energy(self, temp) + self.energy
 
     def enthalpy(self, temp):
-        """Compute the enthalpy"""
+        """Compute the enthalpy
+
+           Arguments:
+            | temp  --  the temperature
+        """
         return self.internal_energy(temp) + self.gaslaw.pv(temp)
 
     def entropy(self, temp):
-        """Compute the total entropy"""
+        """Compute the total entropy
+
+           Arguments:
+            | temp  --  the temperature
+        """
         # This is a bit tricky: There is a contribution to the total entropy
         # that can not be associated with one of the factors in the partition
         # function. It is purely related to the N factorial in the denominator
@@ -981,10 +1048,27 @@ class PartFun(Info, StatFys):
         return StatFys.entropy(self, temp) + boltzmann
 
     def free_energy(self, temp):
+        """This will raise an error. Use helmholtz_free_energy or gibbs_free_energy.
+
+           At this level 'The Free Energy' is an ambiguous concept. The
+           Helmholtz Free Energy and the Gibbs Free Energy are clearly defined.
+
+           When one wants to compute a cobtribution to the Helmholtz or Gibbs
+           Free Energy from a specific factor in the partition function, then
+           one must use the method ``free_energy`` of that contribution::
+
+           >>> pf = PartFun(...)
+           >>> print pf.vibrations.free_energy(300)
+           >>> print pf.gibbs_free_energy(300)
+        """
         raise NotImplementedError("Please use helmholtz_free_energy or gibbs_free_energy.")
 
     def helmholtz_free_energy(self, temp):
-        """Computes the Helmholtz free energy"""
+        """Computes the Helmholtz free energy
+
+           Arguments:
+            | temp  --  the temperature
+        """
         # Similar to the extra term in the entropy, there is also an extra term
         # here due to the N factorial in the denominator of the partition
         # function.
@@ -993,7 +1077,13 @@ class PartFun(Info, StatFys):
         return StatFys.free_energy(self, temp) - boltzmann*temp + self.energy
 
     def gibbs_free_energy(self, temp):
-        """Compute the Gibbs free energy"""
+        """Compute the Gibbs free energy
+
+           Arguments:
+            | temp  --  the temperature
+
+           This quantity is also known as the Gibbs energy or the Free enthalpy.
+        """
         return self.helmholtz_free_energy(temp) + self.gaslaw.pv(temp)
 
     def dump(self, f):
@@ -1006,6 +1096,11 @@ class PartFun(Info, StatFys):
             term.dump(f)
 
     def write_to_file(self, filename):
+        """Write an extensive description of the parition function to a file
+
+           Argument:
+            | filename  --  The name of the file to write to.
+        """
         f = file(filename, 'w')
         self.dump(f)
         f.close()

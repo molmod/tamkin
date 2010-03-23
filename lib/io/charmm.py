@@ -153,8 +153,9 @@ def load_molecule_charmm(charmmfile_cor, charmmfile_hess,
         atomicnumbers[i] = mass_table.searchsorted(mass)
 
     return Molecule(
-        atomicnumbers, positions, masses, energy, gradient,
-        hessian, 1, 0, is_periodic
+        atomicnumbers, positions, masses, energy, gradient, hessian, 
+        1, # multiplicity
+        symmetry_number=1, periodic=is_periodic, symbols=symbols
     )
 
 

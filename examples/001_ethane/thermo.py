@@ -73,7 +73,7 @@ pf = PartFun(nma, [ExtTrans(), ExtRot()])
 # Write some general information about the molecule and the partition function
 # to a file.
 pf.write_to_file("partfun.txt")
-print pf.free_energy(300)/(kjmol)
+print pf.gibbs_free_energy(300)/(kjmol)
 # Write an extensive overview of the thermodynamic properties to a file:
 ta = ThermoAnalysis(pf, [300,400,500,600])
 ta.write_to_file("thermo.csv")

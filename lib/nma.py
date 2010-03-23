@@ -205,6 +205,7 @@ class NMA(object):
                     components = numpy.dot(treatment.external_basis, self.modes[:,i])
                     overlaps[counter] = numpy.linalg.norm(components)
                 self.zeros = to_try[overlaps.argsort()[-treatment.num_zeros:]]
+                print self.zeros
             else:
                 self.zeros = abs(self.freqs).argsort()[:treatment.num_zeros]
 
@@ -641,6 +642,18 @@ class ConstrainExt(Treatment):
 
 
 class PHVA(Treatment):
+    """Perform the partial Hessian vibrational analysis.
+
+       Part of the system is fixed during the vibrational analysis: the fixed
+       atoms are kept at their reference positions. The rest of the atoms can
+       still vibrate.
+
+       See references:
+
+       - TODO Head
+       - TODO Head
+
+    """
     def __init__(self, fixed, svd_threshold=1e-5):
         """Initialize the PHVA treatment.
 
@@ -695,7 +708,16 @@ class PHVA(Treatment):
             raise NotImplementedError
 
     def compute_hessian(self, molecule, do_modes):
-        """See :meth:`Treatment.compute_hessian`"""
+        """See :meth:`Treatment.compute_hessian`.
+
+        - The Hessian matrix for the PHVA is the submatrix of the full (3Nx3N)
+          Hessian, corresponding with the non-fixed atoms.
+
+        - The mass matrix for the PHVA is the (diagonal) submatrix of the
+          full (3Nx3N) mass matrix, corresponding with the non-fixed atoms.
+          So it is a diagonal matrix with the masses of the non-fixed atoms on
+          the diagonal.
+        """
         free = numpy.zeros(molecule.size - len(self.fixed), int)
         free3 = numpy.zeros(len(free)*3, int)
         counter_fixed = 0
@@ -719,16 +741,28 @@ class PHVA(Treatment):
 
 
 class VSA(Treatment):
+    """
+    Perform a Vibrational Subsystem Analysis.
+
+    Frequencies and modes are computed with the VSA approach, as described in
+    the references:
+
+    - Zheng and Brooks, ... (2006) TODO add reference
+    - Woodcock, ... (2008)
+
+    The system is partitioned into a subsystem and an environment. The subsystem
+    atoms are allowed to vibrate, while the environment atoms follow the motions
+    of the subsystem atoms. The environment atoms are force free.
+    """
     def __init__(self, subs, svd_threshold=1e-5):
         """Initialize the VSA treatment.
 
-           Frequencies and modes are computed with the VSA approach:
-           Vibrational Subsystem Analysis
-           - Zheng and Brooks, ... (2006) TODO add reference
-           - Woodcock, ... (2008)
-
            One argument:
              | subs  --  a list with the subsystem atoms, counting starts from zero.
+
+           Optional argument:
+             | svd_threshold  --  threshold for detection of deviations for
+                                  linearity
         """
         # QA:
         if len(subs) == 0:
@@ -767,8 +801,19 @@ class VSA(Treatment):
                 raise ValueError("Number of zeros is expected to be 3, 5 or 6, but found %i." % self.num_zeros)
 
     def compute_hessian(self, molecule, do_modes):
-        """See :meth:`Treatment.compute_hessian`"""
+        """See :meth:`Treatment.compute_hessian`.
 
+        The VSA Hessian reads::
+
+            H_ss - H_se (H_ee)**(-1) H_es
+
+        The VSA mass matrix reads::
+
+            M_s - H_se (H_ee)**(-1) M_e (H_ee)**(-1) H_es
+
+        where the indices ``s`` and ``e`` refer to the subsystem and environment
+        atoms respectively.
+        """
         # fill lists with subsystem/environment atoms/coordinates
         subs = self.subs.tolist()
         envi = sum([[at] for at in xrange(molecule.size) if at not in subs],[])
@@ -807,21 +852,33 @@ class VSA(Treatment):
 
 
 class VSANoMass(Treatment):
+    """
+    Perform a Vibrational Subsystem Analysis, without taking into account the
+    mass of the environment.
+
+    Frequencies and modes are computed as described in the references:
+
+    - Zheng and Brooks, ... (2006) TODO add reference
+    - Woodcock, ... (2008)
+    - Ghysels, 2010
+
+    The system is partitioned into a subsystem and an environment. The subsystem
+    atoms are allowed to vibrate, while the environment atoms follow the motions
+    of the subsystem atoms. The environment atoms are force free.
+    Moreover, the VSA is performed according to the original version of 2006:
+    no mass correction for the environment is included.
+    The version of VSA corresponds to the approximation
+    of zero mass for all environment atoms.
+    """
     def __init__(self, subs, svd_threshold=1e-5):
         """Initialize the VSA treatment.
 
-           Frequencies and modes are computed with the VSA approach:
-           Vibrational Subsystem Analysis
-           - Zheng and Brooks, ... (2006)  TODO ADD REFERENCE
-           - Woodcock, ... (2008)
-
-           VSA is performed according to the original version of 2006:
-           no mass correction for the environment is included.
-           The version of VSA corresponds to the approximation
-           of zero mass for all environment atoms.
-
            One argument:
              | subs  --  a list with the subsystem atoms, counting starts from zero.
+
+           Optional argument:
+             | svd_threshold  --  threshold for detection of deviations for
+                                  linearity
         """
         # QA:
         if len(subs) == 0:
@@ -860,8 +917,19 @@ class VSANoMass(Treatment):
                 raise ValueError("Number of zeros is expected to be 3, 5 or 6, but found %i." % self.num_zeros)
 
     def compute_hessian(self, molecule, do_modes):
-        """See :meth:`Treatment.compute_hessian`"""
+        """See :meth:`Treatment.compute_hessian`.
 
+        The VSANoMass Hessian reads::
+
+            H_ss - H_se (H_ee)**(-1) H_es
+
+        The VSANoMass mass matrix reads::
+
+            M_s
+
+        where the indices ``s`` and ``e`` refer to the subsystem and environment
+        atoms respectively.
+        """
         # fill lists with subsystem/environment atoms/coordinates
         subs = self.subs.tolist()
         envi = sum([[at] for at in xrange(molecule.size) if at not in subs],[])
@@ -889,24 +957,37 @@ class VSANoMass(Treatment):
 
 
 class MBH(Treatment):
-    def __init__(self, blocks, do_gradient_correction=True, svd_threshold=1e-5):
-        """Initialize the MBH treatment.
+    """
+    The Mobile Block Hessian approach.
 
-           Frequencies and modes are computed with the MBH approach:
-           Mobile Block Hessian method
+    Frequencies and modes are computed with the MBH approach, as described in
+    the refences:
+
            -  J. Chem. Phys. 126 (22): Art. No. 224102, 2007
            -  J. Chem. Phys. 127 (16), Art. No. 164108, 2007
-           Mobile Block Hessian method with linked blocks
+
+    or the Mobile Block Hessian method with linked blocks:
+
            -  J. Chem. Theory Comput. 5 (5), 1203-1215, 2009
            -  J. Chem. Phys. 130 (18), Art. No. 084107, 2009
 
-           MBH is ...  # TODO fill in
+    The system is partitioned into blocks which are only allowed to move as
+    rigid bodies during the vibrational analysis. Atoms that are not part of a
+    block can still move individually. The internal geometry of the blocks need
+    not be optimized, because the MBH method performs a gradient correction to
+    account for the internal forces. Only the position and orientation of each
+    block should be optimized. This make MBH an appropriate method to perform
+    NMA in partially optimized structures.
+    """
+    def __init__(self, blocks, do_gradient_correction=True, svd_threshold=1e-5):
+        """Initialize the MBH treatment.
 
            One argument:
              | blocks  --  a list of blocks, each block is a list of atoms,
                            counting starts from zero.
+
            Optional arguments:
-             | do_gradient_correction  --  logical, whether gradient correction
+             | do_gradient_correction  --  boolean, whether gradient correction
                                            to MBH should be added
              | svd_threshold  --  threshold for zero singular values in svd
         """
@@ -947,6 +1028,20 @@ class MBH(Treatment):
                 self.external_basis = molecule.external_basis
             else:
                 raise ValueError("Number of zeros is expected to be 3, 5 or 6, but found %i." % self.num_zeros)
+
+        # TODO the above does not work ANYMORE, so what changed??? does the change
+        # affect other pieces of code???
+
+        # An unambiguous way to define the 'external' degrees of freedom is as
+        # follows: first construct an external basis of the entire systems,
+        # TODO: this will fail if the molecule is displaced far from the origin
+        # TODO: keep it simple and just analyze the inertia tensor
+        # TODO: make ext_dof a molecule property
+        U, W, Vt = numpy.linalg.svd(molecule.external_basis, full_matrices=False)
+        rank = (abs(W) > abs(W[0])*self.svd_threshold).sum()
+        self.num_zeros = rank
+        if do_modes:
+            self.external_basis = Vt[:rank]
 
     def compute_hessian(self, molecule, do_modes):
         """See :meth:`Treatment.compute_hessian`"""
@@ -1125,6 +1220,7 @@ class Blocks(object):
                        with a list of atoms for each block
           | molecule -- Molecule object, necessary for N (total nb
                         of atoms) and positions (linearity of blocks).
+          | svd_trheshold -- XXXX TODO
         """
         N = molecule.size
         # check for empty blocks and single-atom-blocks
@@ -1245,6 +1341,9 @@ class PHVA_MBH(MBH):
            Two arguments:
              | fixed  --  a list with fixed atoms, counting starts from zero.
              | blocks  --  a list of blocks, each block is a list of atoms
+
+           An optional argument:
+             | svd_threshold  --  XX TODO
         """
         # QA:
         if len(fixed) == 0:
@@ -1322,6 +1421,7 @@ class Constrain(Treatment):
                                 [at1,at2] to constrain a distance,
                                 [at1,at2,at3] to constrain an angle,
                                 [at1,at2,at3,at4] to constrain a dihedral angle.
+
            Optional:
              | do_grad_correction  --  whether gradient correction should be applied
              | svd_threshold  --  threshold for singular value decomposition

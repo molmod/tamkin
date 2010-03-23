@@ -363,7 +363,11 @@ class Transform(object):
         self.scalars = None
         self._weighted = False
 
-    weighted = property(lambda self: self._weighted, doc="True when the transform is already mass-weighted")
+    def get_weighted(self):
+        """Return True when the transform is already mass-weighted"""
+        return self._weighted
+
+    weighted = property(get_weighted)
 
     def __call__(self, modes):
         """Transform small displacement vectors from new to Cartesian coordinates.

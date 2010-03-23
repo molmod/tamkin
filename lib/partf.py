@@ -616,12 +616,10 @@ class ExtTrans(Info, StatFys):
         self.gaslaw = None
         Info.__init__(self, "translational")
 
-    def set_gaslaw(self, gaslaw):
-        self.gaslaw = gaslaw
-
     def init_part_fun(self, nma, partf):
         """See :meth:`StatFys.init_part_fun`"""
         self.mass = nma.mass
+        self.gaslaw = partf.gaslaw
 
     def dump(self, f):
         """See :meth:`Info.dump`"""
@@ -946,9 +944,6 @@ class PartFun(Info, StatFys):
             self.terms.append(self.electronic)
 
         self.terms.sort(key=(lambda t: t.name))
-
-        if hasattr(self, "translational"):
-            self.translational.set_gaslaw(self.gaslaw)
 
         for term in self.terms:
             term.init_part_fun(nma, self)

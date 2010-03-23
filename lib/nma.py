@@ -801,23 +801,32 @@ class VSA(Treatment):
         # 3 zeros if subsystem contains 1 atom
         #- If periodic system:
         # 3 zeros in all cases
-        if not molecule.periodic:
-            self.num_zeros = rank_linearity(numpy.take(molecule.coordinates,self.subs,0), svd_threshold = self.svd_threshold)
-        else:
-            self.num_zeros = 3
-        if do_modes and self.num_zeros > 0:
-            if self.num_zeros == 3:
-                self.external_basis = molecule.external_basis[:3,:]  # three translations
-            elif self.num_zeros == 5:
-                # Compute direction of the linear SUBSystem (with two atoms) and check for highest alignment with one of the axes.
-                diff = molecule.coordinates[self.subs[0]] - molecule.coordinates[self.subs[1]]
-                axis = 3+abs(diff).tolist().index(max(abs(diff)))   # axis to be skipped
-                alphas = [i for i in range(6) if i is not axis]
-                self.external_basis = numpy.take(molecule.external_basis,alphas,0)
-            elif self.num_zeros == 6:
-                self.external_basis = molecule.external_basis
-            else:
-                raise ValueError("Number of zeros is expected to be 3, 5 or 6, but found %i." % self.num_zeros)
+        #if not molecule.periodic:
+        #    self.num_zeros = rank_linearity(numpy.take(molecule.coordinates,self.subs,0), svd_threshold = self.svd_threshold)
+        #else:
+        #    self.num_zeros = 3
+        #if do_modes and self.num_zeros > 0:
+        #    if self.num_zeros == 3:
+        #        self.external_basis = molecule.external_basis[:3,:]  # three translations
+        #    elif self.num_zeros == 5:
+        #        # Compute direction of the linear SUBSystem (with two atoms) and check for highest alignment with one of the axes.
+        #        diff = molecule.coordinates[self.subs[0]] - molecule.coordinates[self.subs[1]]
+        #        axis = 3+abs(diff).tolist().index(max(abs(diff)))   # axis to be skipped
+        #        alphas = [i for i in range(6) if i is not axis]
+        #        self.external_basis = numpy.take(molecule.external_basis,alphas,0)
+        #    elif self.num_zeros == 6:
+        #        self.external_basis = molecule.external_basis
+        #    else:
+        #        raise ValueError("Number of zeros is expected to be 3, 5 or 6, but found %i." % self.num_zeros)
+        #if molecule.periodic:
+        #    rank = 3
+        subs3 = sum([[3*at, 3*at+1, 3*at+2] for at in self.subs],[])
+        U, W, Vt = numpy.linalg.svd(numpy.take(molecule.external_basis,subs3,1), full_matrices=False)
+        rank = (abs(W) > abs(W[0])*self.svd_threshold).sum()
+        self.num_zeros = rank
+        if do_modes:
+            foo = numpy.dot(U.transpose(), molecule.external_basis)
+            self.external_basis = foo[:rank]/W[:rank].reshape((-1,1))
 
     def compute_hessian(self, molecule, do_modes):
         """See :meth:`Treatment.compute_hessian`.
@@ -911,23 +920,33 @@ class VSANoMass(Treatment):
         # 3 zeros if subsystem contains 1 atom
         #- If periodic system:
         # 3 zeros in all cases
-        if not molecule.periodic:
-            self.num_zeros = rank_linearity(numpy.take(molecule.coordinates,self.subs,0), svd_threshold = self.svd_threshold)
-        else:
-            self.num_zeros = 3
-        if do_modes and self.num_zeros > 0:
-            if self.num_zeros == 3:
-                self.external_basis = molecule.external_basis[:3,:]  # three translations
-            elif self.num_zeros == 5:
-                # Compute direction of the linear SUBSystem (with two atoms) and check for highest alignment with one of the axes.
-                diff = molecule.coordinates[self.subs[0]] - molecule.coordinates[self.subs[1]]
-                axis = 3+abs(diff).tolist().index(max(abs(diff)))   # axis to be skipped
-                alphas = [i for i in range(6) if i is not axis]
-                self.external_basis = numpy.take(molecule.external_basis,alphas,0)
-            elif self.num_zeros == 6:
-                self.external_basis = molecule.external_basis
-            else:
-                raise ValueError("Number of zeros is expected to be 3, 5 or 6, but found %i." % self.num_zeros)
+        #if not molecule.periodic:
+        #    self.num_zeros = rank_linearity(numpy.take(molecule.coordinates,self.subs,0), svd_threshold = self.svd_threshold)
+        #else:
+        #    self.num_zeros = 3
+        #if do_modes and self.num_zeros > 0:
+        #    if self.num_zeros == 3:
+        #        self.external_basis = molecule.external_basis[:3,:]  # three translations
+        #    elif self.num_zeros == 5:
+        #        # Compute direction of the linear SUBSystem (with two atoms) and check for highest alignment with one of the axes.
+        #        diff = molecule.coordinates[self.subs[0]] - molecule.coordinates[self.subs[1]]
+        #        axis = 3+abs(diff).tolist().index(max(abs(diff)))   # axis to be skipped
+        #        alphas = [i for i in range(6) if i is not axis]
+        #        self.external_basis = numpy.take(molecule.external_basis,alphas,0)
+        #    elif self.num_zeros == 6:
+        #        self.external_basis = molecule.external_basis
+        #    else:
+        #        raise ValueError("Number of zeros is expected to be 3, 5 or 6, but found %i." % self.num_zeros)
+        #if molecule.periodic:
+        #    rank = 3
+        subs3 = sum([[3*at, 3*at+1, 3*at+2] for at in self.subs],[])
+        U, W, Vt = numpy.linalg.svd(numpy.take(molecule.external_basis,subs3,1), full_matrices=False)
+        rank = (abs(W) > abs(W[0])*self.svd_threshold).sum()
+        self.num_zeros = rank
+        if do_modes:
+            self.external_basis = numpy.zeros((rank, molecule.size*3), float)
+            self.external_basis[:,subs3] = Vt[:rank]
+
 
     def compute_hessian(self, molecule, do_modes):
         """See :meth:`Treatment.compute_hessian`.
@@ -1017,23 +1036,23 @@ class MBH(Treatment):
         # 3 zeros if system contains just 1 atom
         #- If periodic system:
         # 3 zeros in all cases
-        if not molecule.periodic:
-            self.num_zeros = rank_linearity(molecule.coordinates, svd_threshold = self.svd_threshold)
-        else:
-            self.num_zeros = 3
-        if do_modes and self.num_zeros > 0:
-            if self.num_zeros == 3:
-                self.external_basis = molecule.external_basis[:3,:]
-            elif self.num_zeros == 5:
-                # Compute direction of the linear SYSTEM (with two atoms) and check for highest alignment with one of the axes.
-                diff = molecule.coordinates[0,:] - molecule.coordinates[1,:]
-                axis = 3+abs(diff).tolist().index(max(abs(diff)))   # axis to be skipped
-                alphas = [i for i in range(6) if i is not axis]
-                self.external_basis = numpy.take(molecule.external_basis,alphas,0)
-            elif self.num_zeros == 6:
-                self.external_basis = molecule.external_basis
-            else:
-                raise ValueError("Number of zeros is expected to be 3, 5 or 6, but found %i." % self.num_zeros)
+        #if not molecule.periodic:
+        #    self.num_zeros = rank_linearity(molecule.coordinates, svd_threshold = self.svd_threshold)
+        #else:
+        #    self.num_zeros = 3
+        #if do_modes and self.num_zeros > 0:
+        #    if self.num_zeros == 3:
+        #        self.external_basis = molecule.external_basis[:3,:]
+        #    elif self.num_zeros == 5:
+        #        # Compute direction of the linear SYSTEM (with two atoms) and check for highest alignment with one of the axes.
+        #        diff = molecule.coordinates[0,:] - molecule.coordinates[1,:]
+        #        axis = 3+abs(diff).tolist().index(max(abs(diff)))   # axis to be skipped
+        #        alphas = [i for i in range(6) if i is not axis]
+        #        self.external_basis = numpy.take(molecule.external_basis,alphas,0)
+        #    elif self.num_zeros == 6:
+        #        self.external_basis = molecule.external_basis
+        #    else:
+        #        raise ValueError("Number of zeros is expected to be 3, 5 or 6, but found %i." % self.num_zeros)
 
         # TODO the above does not work ANYMORE, so what changed??? does the change
         # affect other pieces of code???
@@ -1043,11 +1062,15 @@ class MBH(Treatment):
         # TODO: this will fail if the molecule is displaced far from the origin
         # TODO: keep it simple and just analyze the inertia tensor
         # TODO: make ext_dof a molecule property
-        U, W, Vt = numpy.linalg.svd(molecule.external_basis, full_matrices=False)
-        rank = (abs(W) > abs(W[0])*self.svd_threshold).sum()
+        if molecule.periodic:
+            rank = 3
+        else:
+            U, W, Vt = numpy.linalg.svd(molecule.external_basis, full_matrices=False)
+            rank = (abs(W) > abs(W[0])*self.svd_threshold).sum()
         self.num_zeros = rank
         if do_modes:
             self.external_basis = Vt[:rank]
+
 
     def compute_hessian(self, molecule, do_modes):
         """See :meth:`Treatment.compute_hessian`.
@@ -1271,7 +1294,7 @@ class Blocks(object):
         indices_blocks_nlin = []    # nonlinear blocks
         indices_blocks_lin  = []    # linear blocks
         for b,block in enumerate(blocks):
-            rank = rank_linearity(numpy.take(molecule.coordinates,block,0), svd_threshold=svd_threshold)
+            rank = rank_linearity(numpy.take(molecule.coordinates,block,0), svd_threshold=svd_threshold)[0]
             if rank==6:    indices_blocks_nlin.append(b)
             elif rank==5:  indices_blocks_lin.append(b)
             else:          raise ValueError("In principle rank should have been 5 or 6, found "+str(rank))

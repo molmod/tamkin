@@ -84,8 +84,9 @@ of freedom::
 >>> nma = NMA(molecule, ConstrainExt())
 
 The second argument is an instance of a class that derives from the
-``Treatment`` class. Other treatments include: ``Full`` (the default),
-``PHVA``, ``VSA``, ``VSANoMass``, ``MBH``, ``PHVA_MBH``, and ``Constrain``.
+:clas:`Treatment` class. Other treatments include: :class:`Full` (the default),
+:class:`PHVA`, :class:`VSA`, :class:`VSANoMass`, :class:`MBH`,
+:class:`PHVA_MBH`, and :class:`Constrain`.
 """
 
 # A few conventions for the variables names:
@@ -134,6 +135,15 @@ class NMA(object):
             | do_modes  --  When False, only the frequencies are computed. When
                             True, also the normal modes are computed.
                             [default=True]
+
+           Referenced attributes of molecule:
+            | mass, masses, masses3, numbers, coordinates, inertia_tensor,
+              multiplicity, symmetry_number, periodic, energy
+
+           Extra attributes:
+            | freqs  --  array of frequencies
+            | modes  --  array of mass-weighted Cartesian modes
+            | zeros  --  list of indices of zero frequencies
 
         """
         if treatment == None:
@@ -320,8 +330,8 @@ class Transform(object):
        It is assumed that the reduced coordinates are always split into two
        parts (in order):
 
-         1) the coordinates that are non-Cartesian
-         2) the free coordinates that are Cartesian
+       1) the coordinates that are non-Cartesian
+       2) the free coordinates that are Cartesian
 
     """
 
@@ -550,7 +560,7 @@ class Treatment(object):
            * ``treatment.num_zeros``: the number of zero eigenvalues to expect
            * ``treatment.external_basis``: (None if ``do_modes=False``) the
              basis of external degrees of freedom. number of basis vectors
-             matches the number of zeros.
+             matches the number of zeros. These basis vectors are mass-weighted.
         """
         raise NotImplementedError
 
@@ -569,25 +579,37 @@ class Full(Treatment):
         Treatment.__init__(self)
 
     def compute_zeros(self, molecule, do_modes):
-        """See :meth:`Treatment.compute_zeros`"""
-        # An unambiguous way to define the 'external' degrees of freedom is as
-        # follows: first construct an external basis of the entire systems,
-        # TODO: this will fail if the molecule is displaced far from the origin
-        # TODO: keep it simple and just analyze the inertia tensor
-        # TODO: make ext_dof a molecule property
+        """See :meth:`Treatment.compute_zeros`.
 
-        self.num_zeros, external_basis = rank_linearity(molecule.coordinates,
-            svd_threshold=self.svd_threshold, masses3=molecule.masses3)
+        The number of zeros should be:
+
+        - 3 for a single atom, nonperiodic calculation
+        - 5 for a linear molecule, nonperiodic calculation
+        - 6 for a nonlinear molecule, nonperiodic calculation
+        - 3 in periodic calculations
+        """
+        # determine nb of zeros
+        U, W, Vt = numpy.linalg.svd(molecule.external_basis, full_matrices=False)
+        rank = (abs(W) > abs(W[0])*self.svd_threshold).sum()
+        self.num_zeros = rank
+
+        # check
+        if self.num_zeros not in [3,5,6] and not molecule.periodic :
+            raise ValueError("Number of zeros is expected to be 3, 5 or 6, but found %i." % self.num_zeros)
+        if self.num_zeros != 3 and molecule.periodic :
+            raise ValueError("Number of zeros is expected to be 3 (periodic calculation), but found %i." % self.num_zeros)
+
+        # return mass-weighted basis vectors for external degrees of freedom
         if do_modes:
-            self.external_basis = external_basis
+            self.external_basis = Vt[:rank]
 
     def compute_hessian(self, molecule, do_modes):
         """See :meth:`Treatment.compute_hessian`.
 
-        The Hessian is the full 3Nx3N Hessian matrix: ``H``.
-        The mass matrix is the full 3Nx3N mass matrix: ``M``.
-        The mass matrix is diagonal, so it is assumed that the coordinates are
-        Cartesian coordinates.
+        The Hessian is the full 3Nx3N Hessian matrix ``H``.
+        The mass matrix is the full 3Nx3N mass matrix ``M``.
+        It is assumed that the coordinates are Cartesian coordinates, so the
+        mass matrix is diagonal.
         """
         self.hessian_small = molecule.hessian
         self.mass_matrix_small = MassMatrix(molecule.masses3)
@@ -796,14 +818,33 @@ class VSA(Treatment):
         Treatment.__init__(self)
 
     def compute_zeros(self, molecule, do_modes):
-        """See :meth:`Treatment.compute_zeros`"""
-        # Number of zeros for VSA:
-        #- If nonperiodic system:
-        # 6 zeros if atoms of subsystem are non-collinear
-        # 5 zeros if atoms of subsystem are collinear, e.g. when the subsystem contains only 2 atoms
-        # 3 zeros if subsystem contains 1 atom
-        #- If periodic system:
-        # 3 zeros in all cases
+        """See :meth:`Treatment.compute_zeros`.
+
+        The number of zeros should be:
+
+        - 3 for subsystem = a single atom, nonperiodic calculation
+        - 5 for subsystem = a linear molecule, nonperiodic calculation
+        - 6 for subsystem = a nonlinear molecule, nonperiodic calculation
+        - 3 in periodic calculations
+        """
+        # determine nb of zeros
+        subs3 = sum([[3*at, 3*at+1, 3*at+2] for at in self.subs],[])
+        U, W, Vt = numpy.linalg.svd(numpy.take(molecule.external_basis,subs3,1), full_matrices=False)
+        rank = (abs(W) > abs(W[0])*self.svd_threshold).sum()
+        self.num_zeros = rank
+
+        # check
+        if self.num_zeros not in [3,5,6] and not molecule.periodic :
+            raise ValueError("Number of zeros is expected to be 3, 5 or 6, but found %i." % self.num_zeros)
+        if self.num_zeros != 3 and molecule.periodic :
+            raise ValueError("Number of zeros is expected to be 3 (periodic calculation), but found %i." % self.num_zeros)
+
+        # return mass-weighted basis vectors for external degrees of freedom
+        if do_modes:
+            foo = numpy.dot(U.transpose(), molecule.external_basis)
+            self.external_basis = foo[:rank]/W[:rank].reshape((-1,1))
+
+        #---- other implementation ----
         #if not molecule.periodic:
         #    self.num_zeros = rank_linearity(numpy.take(molecule.coordinates,self.subs,0), svd_threshold = self.svd_threshold)
         #else:
@@ -821,15 +862,7 @@ class VSA(Treatment):
         #        self.external_basis = molecule.external_basis
         #    else:
         #        raise ValueError("Number of zeros is expected to be 3, 5 or 6, but found %i." % self.num_zeros)
-        #if molecule.periodic:
-        #    rank = 3
-        subs3 = sum([[3*at, 3*at+1, 3*at+2] for at in self.subs],[])
-        U, W, Vt = numpy.linalg.svd(numpy.take(molecule.external_basis,subs3,1), full_matrices=False)
-        rank = (abs(W) > abs(W[0])*self.svd_threshold).sum()
-        self.num_zeros = rank
-        if do_modes:
-            foo = numpy.dot(U.transpose(), molecule.external_basis)
-            self.external_basis = foo[:rank]/W[:rank].reshape((-1,1))
+
 
     def compute_hessian(self, molecule, do_modes):
         """See :meth:`Treatment.compute_hessian`.
@@ -915,14 +948,34 @@ class VSANoMass(Treatment):
         Treatment.__init__(self)
 
     def compute_zeros(self, molecule, do_modes):
-        """See :meth:`Treatment.compute_zeros`"""
-        # Number of zeros for VSANoMass:
-        #- If nonperiodic system:
-        # 6 zeros if atoms of subsystem are non-collinear
-        # 5 zeros if atoms of subsystem are collinear, e.g. when the subsystem contains only 2 atoms
-        # 3 zeros if subsystem contains 1 atom
-        #- If periodic system:
-        # 3 zeros in all cases
+
+        """See :meth:`Treatment.compute_zeros`.
+
+        The number of zeros should be:
+
+        - 3 for subsystem = a single atom, nonperiodic calculation
+        - 5 for subsystem = a linear molecule, nonperiodic calculation
+        - 6 for subsystem = a nonlinear molecule, nonperiodic calculation
+        - 3 in periodic calculations
+        """
+        # determine nb of zeros
+        subs3 = sum([[3*at, 3*at+1, 3*at+2] for at in self.subs],[])
+        U, W, Vt = numpy.linalg.svd(numpy.take(molecule.external_basis,subs3,1), full_matrices=False)
+        rank = (abs(W) > abs(W[0])*self.svd_threshold).sum()
+        self.num_zeros = rank
+
+        # check
+        if self.num_zeros not in [3,5,6] and not molecule.periodic :
+            raise ValueError("Number of zeros is expected to be 3, 5 or 6, but found %i." % self.num_zeros)
+        if self.num_zeros != 3 and molecule.periodic :
+            raise ValueError("Number of zeros is expected to be 3 (periodic calculation), but found %i." % self.num_zeros)
+
+        # return mass-weighted basis vectors for external degrees of freedom
+        if do_modes:
+            self.external_basis = numpy.zeros((rank, molecule.size*3), float)
+            self.external_basis[:,subs3] = Vt[:rank]
+
+        #---- other implementation ----
         #if not molecule.periodic:
         #    self.num_zeros = rank_linearity(numpy.take(molecule.coordinates,self.subs,0), svd_threshold = self.svd_threshold)
         #else:
@@ -940,15 +993,6 @@ class VSANoMass(Treatment):
         #        self.external_basis = molecule.external_basis
         #    else:
         #        raise ValueError("Number of zeros is expected to be 3, 5 or 6, but found %i." % self.num_zeros)
-        #if molecule.periodic:
-        #    rank = 3
-        subs3 = sum([[3*at, 3*at+1, 3*at+2] for at in self.subs],[])
-        U, W, Vt = numpy.linalg.svd(numpy.take(molecule.external_basis,subs3,1), full_matrices=False)
-        rank = (abs(W) > abs(W[0])*self.svd_threshold).sum()
-        self.num_zeros = rank
-        if do_modes:
-            self.external_basis = numpy.zeros((rank, molecule.size*3), float)
-            self.external_basis[:,subs3] = Vt[:rank]
 
 
     def compute_hessian(self, molecule, do_modes):
@@ -1031,14 +1075,31 @@ class MBH(Treatment):
         Treatment.__init__(self)
 
     def compute_zeros(self, molecule, do_modes):
-        """See :meth:`Treatment.compute_zeros`"""
-        # Number of zeros for MBH:
-        #- If nonperiodic system:
-        # 6 zeros if atoms of system are non-collinear
-        # 5 zeros if atoms of system are collinear, e.g. when the subsystem contains only 2 atoms
-        # 3 zeros if system contains just 1 atom
-        #- If periodic system:
-        # 3 zeros in all cases
+        """See :meth:`Treatment.compute_zeros`.
+
+        The number of zeros should be:
+
+        - 3 for a single atom, nonperiodic calculation
+        - 5 for a linear molecule, nonperiodic calculation
+        - 6 for a nonlinear molecule, nonperiodic calculation
+        - 3 in periodic calculations
+        """
+        # determine nb of zeros
+        U, W, Vt = numpy.linalg.svd(molecule.external_basis, full_matrices=False)
+        rank = (abs(W) > abs(W[0])*self.svd_threshold).sum()
+        self.num_zeros = rank
+
+        # check
+        if self.num_zeros not in [3,5,6] and not molecule.periodic :
+            raise ValueError("Number of zeros is expected to be 3, 5 or 6, but found %i." % self.num_zeros)
+        if self.num_zeros != 3 and molecule.periodic :
+            raise ValueError("Number of zeros is expected to be 3 (periodic calculation), but found %i." % self.num_zeros)
+
+        # return mass-weighted basis vectors for external degrees of freedom
+        if do_modes:
+            self.external_basis = Vt[:rank]
+
+        #---- other implementation ----
         #if not molecule.periodic:
         #    self.num_zeros = rank_linearity(molecule.coordinates, svd_threshold = self.svd_threshold)
         #else:
@@ -1057,22 +1118,12 @@ class MBH(Treatment):
         #    else:
         #        raise ValueError("Number of zeros is expected to be 3, 5 or 6, but found %i." % self.num_zeros)
 
-        # TODO the above does not work ANYMORE, so what changed??? does the change
-        # affect other pieces of code???
-
-        # An unambiguous way to define the 'external' degrees of freedom is as
-        # follows: first construct an external basis of the entire systems,
-        # TODO: this will fail if the molecule is displaced far from the origin
-        # TODO: keep it simple and just analyze the inertia tensor
-        # TODO: make ext_dof a molecule property
-        if molecule.periodic:
-            rank = 3
-        else:
-            U, W, Vt = numpy.linalg.svd(molecule.external_basis, full_matrices=False)
-            rank = (abs(W) > abs(W[0])*self.svd_threshold).sum()
-        self.num_zeros = rank
-        if do_modes:
-            self.external_basis = Vt[:rank]
+        #---- other implementation ----
+        #U, W, Vt = numpy.linalg.svd(molecule.external_basis, full_matrices=False)
+        #rank = (abs(W) > abs(W[0])*self.svd_threshold).sum()
+        #self.num_zeros = rank
+        #if do_modes:
+        #    self.external_basis = Vt[:rank]
 
 
     def compute_hessian(self, molecule, do_modes):
@@ -1474,13 +1525,6 @@ class PHVA_MBH(MBH):
                 self.blocks[bl][at] = atom - shifts[atom]
 
         MBH.compute_hessian(self, molecule, do_modes)
-       # if do_modes:
-        #    self.hessian_small, self.mass_matrix_small, transform = self.compute_matrices_small(submolecule, do_modes)
-         #   transf = numpy.zeros((3*molecule.size, transform.matrix.shape[1]),float)
-          #  transf[selectedcoords,:] = transform.matrix
-          #  self.transform = Transform(transf)
-       # else:
-         #   self.hessian_small, self.mass_matrix_small = self.compute_matrices_small(submolecule, do_modes)
 
 
 class Constrain(Treatment):
@@ -1513,25 +1557,30 @@ class Constrain(Treatment):
         Treatment.__init__(self)
 
     def compute_zeros(self, molecule, do_modes):
-        """See :meth:`Treatment.compute_zeros`"""
-        # Number of zeros for Constrain:
-        #- If nonperiodic system:
-        # 6 zeros if atoms of subsystem are non-collinear
-        # 5 zeros if atoms of subsystem are collinear, e.g. when the subsystem contains only 2 atoms
-        #- If periodic system:
-        # 3 zeros in all cases
+        """See :meth:`Treatment.compute_zeros`.
 
-        if not molecule.periodic:
-            #self.num_zeros = rank_linearity(numpy.take(molecule.coordinates,self.subs,0), svd_threshold = self.svd_threshold)
-            U, W, Vt = numpy.linalg.svd(molecule.external_basis, full_matrices=False)
-            rank = (abs(W) > abs(W[0])*self.svd_threshold).sum()
-            self.num_zeros = rank
-            if do_modes:
-                self.external_basis = Vt[:rank]
-        else:
-            self.num_zeros = 3
-            if do_modes:
-                self.external_basis = self.external_basis = molecule.external_basis[:3,:]  # three translations
+        The number of zeros should be:
+
+        - 3 for a single atom, nonperiodic calculation
+        - 5 for a linear molecule, nonperiodic calculation
+        - 6 for a nonlinear molecule, nonperiodic calculation
+        - 3 in periodic calculations
+        """
+        # determine nb of zeros
+        U, W, Vt = numpy.linalg.svd(molecule.external_basis, full_matrices=False)
+        rank = (abs(W) > abs(W[0])*self.svd_threshold).sum()
+        self.num_zeros = rank
+
+        # check
+        if self.num_zeros not in [3,5,6] and not molecule.periodic :
+            raise ValueError("Number of zeros is expected to be 3, 5 or 6, but found %i." % self.num_zeros)
+        if self.num_zeros != 3 and molecule.periodic :
+            raise ValueError("Number of zeros is expected to be 3 (periodic calculation), but found %i." % self.num_zeros)
+
+        # return mass-weighted basis vectors for external degrees of freedom
+        if do_modes:
+            self.external_basis = Vt[:rank]
+
 
     def compute_hessian(self, molecule, do_modes):
         """See :meth:`Treatment.compute_hessian`"""

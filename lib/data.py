@@ -125,6 +125,17 @@ class Molecule(BaseMolecule):
     @cached
     def external_basis(self):
         """The basis for small displacements in the external degrees of freedom.
+
+           The result depends on the periodicity of the system:
+
+           * When the system is periodic, only the translation external degrees
+             are included. The result is an array with shape (3,3N)
+           * When the system is not periodic, only the translation external
+             degrees are included. The result is an array with shape (6,3N). The
+             first three rows correspond to translation, the latter three rows
+             correspond to rotation.
+
+           The basis is expressed in mass-weighted Cartesian coordinates.
         """
         result = transrot_basis(self.coordinates, not self.periodic)
         result *= numpy.sqrt(self.masses3) # transform basis to mass weighted coordinates
@@ -132,6 +143,11 @@ class Molecule(BaseMolecule):
 
     @cached
     def masses3(self):
+        """An array with the diagonal of the mass matrix in Cartesian coordinates.
+
+           Each atom mass is repeated three times. The total length of the
+           array is 3N.
+        """
         return numpy.array([self.masses, self.masses, self.masses]).transpose().ravel()
 
 

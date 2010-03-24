@@ -56,9 +56,9 @@
 # --
 """Data containers for input from QM or MM simulation codes
 
-   Most IO routines in ``molmod.io`` return instances of the classes defined
-   here. These objects are just read-only containers for the QM or MM output
-   with a standardized interface.
+   Most IO routines in :mod:`tamkin.io` return instances of the classes
+   defined here. These objects are just read-only containers for the QM or MM
+   output with a standardized interface.
 """
 
 from tamkin.geom import transrot_basis

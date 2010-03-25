@@ -70,18 +70,16 @@ __all__ = [
 ]
 
 
-def load_molecule_charmm(charmmfile_cor, charmmfile_hess,
-                  is_periodic = False):
-    """Units: CHARMM gradient in kcal/mol/angstrom, TAMkin internally all in atomic units
+def load_molecule_charmm(charmmfile_cor, charmmfile_hess, is_periodic=False):
+    """Read from Hessian-CHARMM-file format
 
-    Read from Hessian-CHARMM-file
-    format:
+       Arguments:
+        | charmmfile_cor  --  the filename of the .cor file
+        | charmmfile_hess  --  the filename of the Hessian file
 
-    - nb of atoms = N
-    - energy
-    - gradient (N lines, 3 elements on each line)
-    - Hessian  (upper triangular form, 1 element on each line)
-    - coordinates (N lines, 3 elements on each line)
+       Optional argument:
+        | is_periodic  --  True when the system is periodic in three dimensions.
+                           False when the systen is aperiodic. [default=True]
     """
     f = file(charmmfile_hess)
 

@@ -98,6 +98,7 @@ class PFToolsTestCase(unittest.TestCase):
         ra.monte_carlo()
         ra.write_to_file("output/reaction_mat1.txt")
         ra.plot_parameters("output/parameters_mat1.png")
+        self.assertAlmostEqual(ra.compute_rate_coeff(456), compute_rate_coeff([pf_react], pf_trans, 456))
 
         wigner = Wigner(pf_trans) # Blind test of the wigner correction and
         # the corrected reaction analysis.
@@ -106,6 +107,7 @@ class PFToolsTestCase(unittest.TestCase):
         ra.monte_carlo()
         ra.write_to_file("output/reaction_mat1w.txt")
         ra.plot_parameters("output/parameters_mat1w.png")
+        self.assertAlmostEqual(ra.compute_rate_coeff(354), wigner(354)*compute_rate_coeff([pf_react], pf_trans, 354))
 
         ra = ReactionAnalysis([pf_react], pf_trans, 670, 770)
         # not a very accurate check because the fit is carried out differently

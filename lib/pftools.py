@@ -297,7 +297,10 @@ class ReactionAnalysis(object):
            Arguments:
             | temp  -- the temperature
         """
-        return compute_rate_coeff(self.pfs_react, self.pf_trans, temp, self.cp)
+        result = compute_rate_coeff(self.pfs_react, self.pf_trans, temp, self.cp)
+        if self.tunneling is not None:
+            result *= self.tunneling(temp)
+        return result
 
     def compute_delta_G(self, temp):
         """Compute the Gibbs free energy barrier of the reaction in this analysis

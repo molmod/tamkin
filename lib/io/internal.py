@@ -67,6 +67,17 @@ __all__ = [
 
 
 def load_chk(filename):
+    """Load a TAMKin checkpoint file
+
+       Argument:
+        | filename  --  the file to load from
+
+       The return value is a dictionary whose keys are field labels and the
+       values can be string, integer, float, or an array of integers or floats.
+
+       The file format is similar to the Gaussian fchk format, but has one extra
+       feature, i.e. the shape of an array is also stored.
+    """
     f = file(filename)
     result = {}
     while True:
@@ -114,6 +125,16 @@ def load_chk(filename):
 
 
 def dump_chk(filename, data):
+    """Dump a TAMKin checkpoint file
+
+       Argument:
+        | filename  --  the file to write to
+        | data  -- a dictionary whose keys are field labels and the values can
+                   be string, integer, float, or an array of integers or floats.
+
+       The file format is similar to the Gaussian fchk format, but has one extra
+       feature, i.e. the shape of an array is also stored.
+    """
     f = file(filename, "w")
     for key, value in sorted(data.iteritems()):
         if not isinstance(key, str):
@@ -209,6 +230,13 @@ def dump_indices(filename, indices, shift=1, compact=True):
        Optional arguments:
          | indices  --  a list of atom indices or a list of lists of atom indices
                         (the latter is used to define blocks of atoms)
+         | shift  --  A constant shift applied to all atom indexes to convert
+                      between numbers starting from zero and numbers starting
+                      from one.
+         | compact  --  When True, the numbers belonging to the same block are
+                        put on one line, otherwise they are separated by a
+                        newline character. Different blocks are separated by an
+                        empty line. [default=True]
     """
 
     if len(indices) > 0 and not hasattr(indices[0], "__len__"):

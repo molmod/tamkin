@@ -68,6 +68,22 @@ __all__ = ["load_molecule_cpmd"]
 
 
 def load_molecule_cpmd(fn_out, fn_geometry, fn_hessian, multiplicity=1, is_periodic=True):
+    """Load a molecule with the Hessian from a CPMD computation
+
+       Arguments:
+        | fn_out  --  The filename of the output containing the total energy.
+        | fn_geometry   --  The filename of geometry and the gradient of the
+                            (partially) optimized system. (This filename is
+                            typically GEOMETRY.xyz.)
+        | fn_hessian  --  The filename of the of the file containing the
+                          Hessian. (This filename is typically MOLVIB.)
+
+       Optional arguments:
+        | multiplicity  --  The spin multiplicity of the electronic system
+                            [default=1]
+        | is_periodic  --  True when the system is periodic in three dimensions.
+                           False when the system is aperiodic. [default=True]
+    """
     # go through the output file: grep the total energy
     energy = None
     f = file(fn_out)
@@ -87,6 +103,7 @@ def load_molecule_cpmd(fn_out, fn_geometry, fn_hessian, multiplicity=1, is_perio
             break
     f.close()
 
+    # load the optimal geometry
     f = file(fn_geometry)
     num_atoms = int(f.readline())
     numbers = numpy.zeros(num_atoms, int)

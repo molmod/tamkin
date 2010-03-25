@@ -68,6 +68,22 @@ __all__ = ["load_molecule_cp2k"]
 
 
 def load_molecule_cp2k(fn_xyz, fn_sp, fn_freq, multiplicity=1, is_periodic=True):
+    """Load a molecule with the Hessian from a CP2K computation
+
+       Arguments:
+        | fn_xyz  --  The filename of the xyz file containing the (partially)
+                      optimized geometry.
+        | fn_sp   --  The filename of the single point .out file containing the
+                      energy.
+        | fn_freq  --  The filename of the frequency .out file containing the
+                       hessian
+
+       Optional arguments:
+        | multiplicity  --  The spin multiplicity of the electronic system
+                            [default=1]
+        | is_periodic  --  True when the system is periodic in three dimensions.
+                           False when the systen is aperiodic. [default=True]
+    """
     molecule = BaseMolecule.from_file(fn_xyz)
     masses = numpy.array([periodic[number].mass for number in molecule.numbers])
 

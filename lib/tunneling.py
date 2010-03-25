@@ -54,7 +54,15 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
-"""Tunneling models to approximate QM behavior in reaction coordinate."""
+"""Tunneling models to approximate QM behavior in reaction coordinate.
+
+   Instances of the classes :class:`Eckart` or :class:`Wigner` act as functions
+   that take one argument, the temperature, and return a correction factor
+   for the rate coefficient. Such an object can be given as an optional
+   argument to the constructor of a :class:`tamkin.pftools.ReactionAnalysis`
+   object to take tunneling corrections into account for the estimation of
+   kinetic parameters.
+"""
 
 
 from molmod.constants import boltzmann
@@ -67,31 +75,41 @@ __all__ = ["Eckart", "Wigner"]
 
 
 class TunnelingCorrection(object):
+    """Abstract base class for the implementation of a Tunneling correction
+
+       This class merely defines the interface and holds some docstrings.
+    """
     def __call__(self, temps):
-        # temps is an array with temperatures in Kelvin.
-        # Derived classes must override this method with a function that
-        # computes the correction factors for the rate constant at the given
-        # temperatures.
+        """Compute a the tunneling correction as function of the temperature
+
+           Argument:
+            | temps  --  a numpy array of temperatures
+
+           Derived classes must override this method with a function that
+           computes the correction factors for the rate constant at the given
+           temperatures.
+        """
         raise NotImplementedError
 
 
 class Eckart(TunnelingCorrection):
-    """Implements the Eckart tunneling correction factor
-    """
+    """Implements the Eckart tunneling correction factor"""
 
     def __init__(self, pfs_react, pf_trans, pfs_prod):
-        """Initialize the Eckart correction
-
-           Arguments:
-             pfs_react  --  a list with partition functions of the reactants
-             pf_trans  --  the partition function of the transition state
-             pfs_prod  --  a list with partition functions of the products
         """
-        # Just compute the quantities of interest and do not keep the partition
-        # function objects as attributes:
-        #  self.Ef: forward energy barrier
-        #  self.Er: reverse energy barrier
-        #  self.nu: the imaginary frequency (as a real number)
+           Arguments:
+            | pfs_react  --  a list with partition functions of the reactants
+            | pf_trans  --  the partition function of the transition state
+            | pfs_prod  --  a list with partition functions of the products
+
+           Attributes derived from these arguments:
+            | self.Ef  --  forward energy barrier
+            | self.Er  --  reverse energy barrier
+            | self.nu  --  the imaginary frequency (as a real number)
+
+           Note that this correction is only defined for transition states
+           with only one imaginary frequency.
+        """
         if len(pf_trans.vibrational.negative_freqs) != 1:
             raise ValueError("The partition function of the transition state must have exactly one negative frequency, found %i" % len(pf_prod.negative_freqs))
         if len(pfs_react) == 0:
@@ -110,7 +128,12 @@ class Eckart(TunnelingCorrection):
     def _from_parameters(cls, Ef, Er, nu):
         """An alternative constructor used for testing purposes.
 
-           It should not be used in normal situations.
+           Arguments:
+            | Ef  --  The forward barrier
+            | Er  --  The reverse barrier
+            | nu  --  The imaginary frequency (as a real number)
+
+           The constructor should not be used in normal situations.
         """
         if Ef < 0:
             raise ValueError("The forward barrier is negative. Can not apply Eckart tunneling.")
@@ -123,7 +146,11 @@ class Eckart(TunnelingCorrection):
         return result
 
     def _compute_one_temp(self, temp):
-        """Computes the correction for one temperature"""
+        """Computes the correction for one temperature
+
+           Arguments:
+            | temp  --  the temperature (scalar)
+        """
         from scipy.integrate import quad
 
         h = 2*numpy.pi # the Planck constant in atomic units
@@ -167,7 +194,7 @@ class Eckart(TunnelingCorrection):
         return integral*factor
 
     def __call__(self, temps):
-        """Compute the correction for an array of temperatures"""
+        """See :meth:TunnelingCorrection.__call__"""
         result = numpy.zeros(len(temps))
         for i, temp in enumerate(temps):
             result[i] = self._compute_one_temp(temp)
@@ -175,17 +202,18 @@ class Eckart(TunnelingCorrection):
 
 
 class Wigner(TunnelingCorrection):
-    """Implements the Wigner tunneling correction factor
-    """
+    """Implements the Wigner tunneling correction factor"""
     def __init__(self, pf_trans):
-        """Initialize the Wigner correction
-
-           Arguments:
-             pf_trans  --  the partition function of the transition state
         """
-        # Just compute the quantities of interest and do not keep the partition
-        # function objects as attributes:
-        #  self.nu: the imaginary frequency (as a real number)
+           Arguments:
+            | pf_trans  --  the partition function of the transition state
+
+           Attribute derived from these argument:
+            | self.nu  --  the imaginary frequency (as a real number)
+
+           Note that this correction is only defined for transition states
+           with only one imaginary frequency.
+        """
         if len(pf_trans.vibrational.negative_freqs) != 1:
             raise ValueError("The partition function of the transition state must have exactly one negative frequency, found %i" % len(pf_prod.negative_freqs))
         self.nu = pf_trans.vibrational.negative_freqs
@@ -194,14 +222,17 @@ class Wigner(TunnelingCorrection):
     def _from_parameters(cls, nu):
         """An alternative constructor used for testing purposes.
 
-           It should not be used in normal situations.
+           Arguments:
+            | nu  --  The imaginary frequency (as a real number)
+
+           This method should not be used in normal situations.
         """
         result = cls.__new__(cls)
         result.nu = nu
         return result
 
     def __call__(self, temps):
-        """Compute the correction for an array of temperatures"""
+        """See :meth:TunnelingCorrection.__call__"""
         temps = numpy.array(temps)   # assure type array
         h = 2*numpy.pi # the Planck constant in atomic units
         return 1+(h*self.nu/(boltzmann*temps))**2/24

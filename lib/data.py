@@ -127,7 +127,10 @@ class Molecule(BaseMolecule):
         """The basis for small displacements in the external degrees of freedom.
 
            The basis is expressed in mass-weighted Cartesian coordinates.
-           The result depends on the periodicity of the system:
+           The three translations are along the x, y, and z-axis. The three
+           rotations are about an axis parallel to the x, y, and z-axis
+           through the center of mass.
+           The returned result depends on the periodicity of the system:
 
            * When the system is periodic, only the translation external degrees
              are included. The result is an array with shape (3,3N)
@@ -136,8 +139,10 @@ class Molecule(BaseMolecule):
              first three rows correspond to translation, the latter three rows
              correspond to rotation.
         """
-        result = transrot_basis(self.coordinates, not self.periodic)
+        center = (self.coordinates*self.masses3.reshape((-1,3))).sum(0)/self.mass  # center of mass
+        result = transrot_basis(self.coordinates - center, not self.periodic)
         result *= numpy.sqrt(self.masses3) # transform basis to mass weighted coordinates
+
         return result
 
     @cached

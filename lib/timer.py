@@ -56,31 +56,43 @@
 # --
 """Timer to keep track of wall and cpu time"""
 
+
 import time, sys
+
 
 __all__ = ["Timer"]
 
+
 class Timer(object):
-    """ Timer object which serves to keep track of timings.
-    When sampling:
-    - CPU times are obtained with time.time()
-    - WALL times are obtained with time.clock()
-    - a label can be added
+    """Timer object to keep track of the time spent in several parts of TAMKin.
+
+       This timer works like a stopwatch. Each time the :meth:`sample` method is
+       called the current cpu and wall times are recorded toghether with a label
+
+       The methods :meth:`dump` and :meth:`write_to_file` can be used to
+       generate a report.
     """
+
     def __init__(self):
         self.cpu_times = []
         self.wall_times = []
         self.labels = []
 
-    def sample(self,label):
+    def sample(self, label):
+        """Record the current timings and associate them with the given label
+
+           Argument:
+            | label  --  A string describing this point in the code.
+        """
         self.cpu_times.append(time.clock())
         self.wall_times.append(time.time())
         self.labels.append(label)
 
     def dump(self, f=sys.stdout):
         """Dump the logfile with timing information, to screen or to a file stream.
-        Optional argument:
-             f  --  the stream to write to. [default=sys.stdout]
+
+           Optional argument:
+            | f  --  the stream to write to. [default=sys.stdout]
         """
         print >> f, "-------------------"
         print >> f, "Printing LOG jobtimer"
@@ -97,7 +109,11 @@ class Timer(object):
         print >> f, "-------------------"
 
     def write_to_file(self, filename):
-        """Write the logfile with timing information to filename."""
+        """Write the logfile with timing information to filename.
+
+           Argument:
+            | filename  --  the file to write to.
+        """
         f = file(filename, 'w')
         self.dump(f)
         f.close()

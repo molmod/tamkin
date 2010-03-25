@@ -72,6 +72,14 @@ __all__ = [
 
 
 def load_fixed_g03com(filename):
+    """Load fixed atoms from a gaussian input file
+
+       Argument:
+        | filename  --  The gaussian input file
+
+       A fixed atom is recognized by the '-1' after the atom symbol in the
+       molecule specification. The '-1' is the second word in the line.
+    """
     f = file(filename)
     for line in f:
         # iterate until we reach the title line
@@ -109,7 +117,8 @@ def load_molecule_g03fchk(fn_freq, fn_ener=None, fn_vdw=None, energy=None):
 
        Optional arguments:
          | fn_ener  --  the formatted checkpoint file of a single point
-                        computation for the energy
+                        computation for the energy. When not given, the energy
+                        is taken from the frequency job.
          | fn_vdw  --  An orca output file containing a Van der Waals correction
                        for the energy
          | energy  --  override the energy from the formatted checkpoint file with
@@ -166,15 +175,26 @@ g98_masses = numpy.array([
 ])*amu
 
 
-def load_molecule_g98fchk(filename_freq, filename_ener=None):
-    fchk_freq = FCHKFile(filename_freq, ignore_errors=True, field_labels=[
+def load_molecule_g98fchk(fn_freq, fn_ener=None):
+    """Load a molecule from Gaussian98 formatted checkpoint files
+
+       Arguments:
+         | fn_freq  --  the formatted checkpoint file of the frequency job
+
+       Optional arguments:
+         | fn_ener  --  the formatted checkpoint file of a single point
+                        computation for the energy. When not given, the energy
+                        is taken from the frequency job.
+    """
+
+    fchk_freq = FCHKFile(fn_freq, ignore_errors=True, field_labels=[
         "Cartesian Force Constants", "Total Energy",
         "Multiplicity", "Cartesian Gradient"
     ])
-    if filename_ener is None:
+    if fn_ener is None:
         fchk_ener = fchk_freq
     else:
-        fchk_ener = FCHKFile(filename_ener, ignore_errors=True, field_labels=[
+        fchk_ener = FCHKFile(fn_ener, ignore_errors=True, field_labels=[
             "Total Energy"
         ])
     masses = numpy.array([g98_masses[n-1] for n in fchk_freq.molecule.numbers])
@@ -193,6 +213,18 @@ def load_molecule_g98fchk(filename_freq, filename_ener=None):
 
 
 def load_rotscan_g03log(fn_log, top_indexes=None):
+    """Load the torsional potential from a Gaussian 03 log/output file
+
+       Argument:
+        | fn_log  --  The filename of the gaussian output
+
+       Optional argument:
+        | top_indexes  --  The atom indexes that define the rotor. These do not
+                           have to include the atoms that define the rotational
+                           axis. When not given, an attempt is made to derive
+                           this information from the dihedral angle used for the
+                           scan.
+    """
     # find the line that specifies the dihedral angle
     f = file(fn_log)
 
@@ -260,7 +292,8 @@ def load_rotscan_g03log(fn_log, top_indexes=None):
         raise IOError("Cold not find any stationary point")
 
     if top_indexes is None:
-        # figure out what the two parts of the molecule are
+        # Define the molecular geometry that is used in the constructor of
+        # RotScan to detect the top.
         from molmod.molecules import Molecule as BaseMolecule
         molecule = BaseMolecule(numbers, geometries[0])
     else:

@@ -97,7 +97,14 @@ class HarmonicBasis(object):
        >>> energies, wfns = hb.solve(mass, v_coeffs, evecs=True) # solve problem
     """
     def __init__(self, nmax, a):
-        """The basis functions are:
+        """
+           Arguments:
+            | nmax  --  The maximum index used for the gaussian basis. Hence the
+                        the number of basis functions is 2*nmax+1
+            | a  --  The length of the periodic system
+
+
+           The basis functions are:
             | 1/sqrt(a/2)
             | cos(2*pi*x/a)/sqrt(a/2)
             | sin(2*pi*x/a)/sqrt(a/2)
@@ -175,6 +182,10 @@ class HarmonicBasis(object):
            Arguments:
             | mass  --  the mass of the particle
             | potential  --  the expansion coefficients of the potential energy
+
+           Optional argument:
+            | evecs  --  When True, also the eigenstates are returned.
+                         [default=False]
         """
         H = self.get_hamiltonian_op(mass, potential)
         if evecs:
@@ -238,7 +249,8 @@ class HarmonicBasis(object):
                           included
 
            Optional arguments:
-            | rotsym  --  impose this rotational symmetry [default=1]
+            | rotsym  --  impose this rotational symmetry [default=1], must be
+                          an integer and is least 1.
             | even  --  only fit even functions, i.e. cosines [default=False]
             | rcond  --  the cutoff for the singular values in the least squares
                          fit [default=1e-10]
@@ -246,6 +258,10 @@ class HarmonicBasis(object):
                                expansion and the data points of the scan.
                                [default=0.01]. Absolute errors smaller than 1
                                kJ/mol are always ignored.
+
+           In case the Fourier expansion represents a poor fit (determined by
+           v_threshold), a ValueError is raised. It means that you have to
+           check your torsional scan datapoints for errors.
         """
         if rotsym < 1:
             raise ValueError("rotsym must be at least 1.")
@@ -289,6 +305,9 @@ class HarmonicBasis(object):
 
 
 class RotorError(Exception):
+    """This exception is raised when :class:`Rotor` specific errors are
+       encountered.
+    """
     pass
 
 
@@ -317,6 +336,25 @@ def compute_cancel_frequency_mbh(molecule, dihedral, top_indexes):
 
 
 def compute_moments(coordinates, masses3, center, axis, indexes):
+    """Computes the absolute and the relative moment of an internal rotor
+
+       Arguments:
+        | coordinates  --  The coordinates of all atoms, float numpy array with
+                           shape (N,3)
+        | masses3  --  The diagonal of the mass matrix, each mass is repeated
+                       three tines, float numpy array with shape 3N
+        | center  --  A point on the rotation axis, float numpy array with shape
+                      3
+        | axis  --  A unit vector with the direction of the rotation axis, float
+                    numpy array with shape 3
+        | indexes  --  the indexes of the atoms that belong to the rotor
+
+       The implementation is based on the transformation of the mass-matrix to
+       the internal rotation coordinate. The derivative of the internal
+       coordinate towards cartesian coordinates represents a small displacement
+       of the atoms. This displacement is constrained to show no external
+       linear or rotational moment.
+    """
     # the derivative of the cartesian coordinates towards the rotation
     # angle of the top:
     rot_tangent = numpy.zeros((len(coordinates)*3), float)
@@ -350,7 +388,8 @@ class Rotor(Info, StatFysTerms):
     def __init__(self, rot_scan, molecule=None, cancel_freq='mbh', suffix=None,
                  rotsym=1, even=False, num_levels=50, dofmax=5,
                  v_threshold=0.01):
-        """Arguments:
+        """
+           Arguments:
             | rot_scan  --  A rotational scan object (free or hindered rotor
                            information)
 
@@ -380,6 +419,10 @@ class Rotor(Info, StatFysTerms):
                                expansion and the data points of the scan.
                                [default=0.01]. Absolute errors smaller than 1
                                kJ/mol are always ignored.
+
+           In case the Fourier expansion of the potential represents a poor fit
+           (determined by v_threshold), a ValueError is raised. It means that
+           you have to check your torsional scan datapoints for errors.
         """
         self.rot_scan = rot_scan
         self.cancel_freq = cancel_freq
@@ -414,14 +457,7 @@ class Rotor(Info, StatFysTerms):
         StatFysTerms.__init__(self, 2) # two terms
 
     def init_part_fun(self, nma, partf):
-        """Compute all the partition function parameters based on the nma
-
-           This method is part of the PartFun API. It should never be called
-           directly.
-
-           Arguments:
-            | nma  --  An NMA object (see nma.py)
-        """
+        """See :meth:`StatFys.init_part_fun`"""
         if nma.periodic:
             raise NotImplementedError("Rotors in periodic systems are not supported yet")
 
@@ -529,6 +565,10 @@ class Rotor(Info, StatFysTerms):
            Optional argument:
             | num  --  the number of energy levels and wavefunctions to be
                       plotted (default=10)
+            | do_levels  --  When True, the energy levels are plotted
+                             [default=True]
+            | do_data  --  When True, the data points are plotted
+                           [default=True]
 
            One image will be generated:
             | ${prefix}.png  --  the potential and the energy levels
@@ -566,6 +606,7 @@ class Rotor(Info, StatFysTerms):
         pylab.savefig(prefix)
 
     def helper0_terms(self, temp, n):
+        """See :meth:`StatFysTerms.helper0_terms`"""
         return numpy.array([
             -helper0_vibrations(temp, n, self.cancel_freq, self.classical,
                                  self.freq_scaling, self.zp_scaling),
@@ -573,6 +614,7 @@ class Rotor(Info, StatFysTerms):
         ])
 
     def helper1_terms(self, temp, n, cp=False):
+        """See :meth:`StatFysTerms.helper1_terms`"""
         return numpy.array([
             -helper1_vibrations(temp, n, self.cancel_freq, self.classical,
                                   self.freq_scaling, self.zp_scaling),
@@ -580,6 +622,7 @@ class Rotor(Info, StatFysTerms):
         ])
 
     def helper2_terms(self, temp, n, cp=False):
+        """See :meth:`StatFysTerms.helper2_terms`"""
         return numpy.array([
             -helper2_vibrations(temp, n, self.cancel_freq, self.classical,
                                    self.freq_scaling, self.zp_scaling),

@@ -222,7 +222,7 @@ class StatFys(object):
            This method is called by the PartFun object and should not be called
            by the user. When the PartFun object is initialized, each
            contribution can further initialize its parameters based on the
-           information available in the nma and partf objects.s
+           information available in the nma and partf objects.
         """
         pass
 

@@ -119,7 +119,8 @@ class HarmonicBasis(object):
         self.nmax = nmax
         self.a = a
 
-    size = property(lambda self: 2*self.nmax+1)
+    size = property(lambda self: 2*self.nmax+1,
+        doc="The size of the basis set. (read-only attribute)")
 
     def get_empty_op(self):
         """Returns an empty operator (zero)"""
@@ -457,7 +458,7 @@ class Rotor(Info, StatFysTerms):
         StatFysTerms.__init__(self, 2) # two terms
 
     def init_part_fun(self, nma, partf):
-        """See :meth:`StatFys.init_part_fun`"""
+        """See :meth:`tamkin.partf.StatFys.init_part_fun`"""
         if nma.periodic:
             raise NotImplementedError("Rotors in periodic systems are not supported yet")
 
@@ -606,7 +607,7 @@ class Rotor(Info, StatFysTerms):
         pylab.savefig(prefix)
 
     def helper0_terms(self, temp, n):
-        """See :meth:`StatFysTerms.helper0_terms`"""
+        """See :meth:`tamkin.partf.StatFysTerms.helper0_terms`"""
         return numpy.array([
             -helper0_vibrations(temp, n, self.cancel_freq, self.classical,
                                  self.freq_scaling, self.zp_scaling),
@@ -614,7 +615,7 @@ class Rotor(Info, StatFysTerms):
         ])
 
     def helper1_terms(self, temp, n, cp=False):
-        """See :meth:`StatFysTerms.helper1_terms`"""
+        """See :meth:`tamkin.partf.StatFysTerms.helper1_terms`"""
         return numpy.array([
             -helper1_vibrations(temp, n, self.cancel_freq, self.classical,
                                   self.freq_scaling, self.zp_scaling),
@@ -622,7 +623,7 @@ class Rotor(Info, StatFysTerms):
         ])
 
     def helper2_terms(self, temp, n, cp=False):
-        """See :meth:`StatFysTerms.helper2_terms`"""
+        """See :meth:`tamkin.partf.StatFysTerms.helper2_terms`"""
         return numpy.array([
             -helper2_vibrations(temp, n, self.cancel_freq, self.classical,
                                    self.freq_scaling, self.zp_scaling),

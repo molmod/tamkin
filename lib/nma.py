@@ -1337,10 +1337,14 @@ class Blocks(object):
         for i in range(len(to_remove)):
             del blocks[to_remove[len(to_remove)-i-1]]   #remove starting from largests b
 
-        #checking
-        fixed = set(sum(blocks,[]))
-        free  = [atom for atom in range(N) if atom not in fixed] #list of N_E integers or empty list
-        fixed = [atom for atom in range(N) if atom in fixed]
+        # define fixed atoms (in one or more blocks) and free atoms (not in blocks)
+        fixed = set([])
+        for block in blocks:
+            fixed.update(block)
+        free  = set(range(N)) - fixed
+        # turn them into lists and sort them
+        fixed = sorted(fixed)
+        free = sorted(free)
 
         # check for linearity and fill in dimensions
         #D = molecule.external_basis

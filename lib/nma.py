@@ -84,7 +84,7 @@ of freedom::
 >>> nma = NMA(molecule, ConstrainExt())
 
 The second argument is an instance of a class that derives from the
-:clas:`Treatment` class. Other treatments include: :class:`Full` (the default),
+:class:`Treatment` class. Other treatments include: :class:`Full` (the default),
 :class:`PHVA`, :class:`VSA`, :class:`VSANoMass`, :class:`MBH`,
 :class:`PHVA_MBH`, and :class:`Constrain`.
 """

@@ -164,8 +164,8 @@ where the ``WRITe SECOnd`` command will write the Hessian to the file
 
     SCALar MASS SHOW
 
- should be called before writing the coordinates to a coordinate file,
- such that the atomic masses will be included in the coordinate file.
+should be called before writing the coordinates to a coordinate file,
+such that the atomic masses will be included in the coordinate file.
 
 
 CP2K

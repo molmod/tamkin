@@ -323,8 +323,8 @@ def compute_cancel_frequency_mbh(molecule, dihedral, top_indexes):
         | molecule  --  A Molecule object (see data.py)
         | top_indexes  --  the indexes of the rotor atoms
     """
-    axis = list(dihedral[1:3])
-    other_top_indexes = list(set(xrange(molecule.size)) - set(top_indexes) - set(axis))
+    axis = tuple(dihedral[1:3])
+    other_top_indexes = tuple(set(xrange(molecule.size)) - set(top_indexes) - set(axis))
     blocks = [
         axis + top_indexes,
         axis + other_top_indexes,
@@ -435,7 +435,7 @@ class Rotor(Info, StatFysTerms):
             )
             self.cancel_method = 'computed with mbh'
         elif self.cancel_freq == 'scan':
-            if self.rot_scan.potential is None:
+            if not hasattr(self.rot_scan, "potential"):
                 raise RotorError("The option cancel_freq='scan' can only be used with hindered rotors.")
             self.cancel_method = 'derived from the torsional potential'
             # the actual computation is performed later
@@ -451,10 +451,10 @@ class Rotor(Info, StatFysTerms):
         self.num_levels = num_levels
         self.dofmax = dofmax
         self.v_threshold = v_threshold
-        if rot_scan.potential is None:
-            Info.__init__(self, "free_rotor_%s" % self.suffix)
-        else:
+        if hasattr(rot_scan, "potential"):
             Info.__init__(self, "hindered_rotor_%s" % self.suffix)
+        else:
+            Info.__init__(self, "free_rotor_%s" % self.suffix)
         StatFysTerms.__init__(self, 2) # two terms
 
     def init_part_fun(self, nma, partf):
@@ -469,20 +469,11 @@ class Rotor(Info, StatFysTerms):
             nma.coordinates, nma.masses3, self.center, self.axis, self.rot_scan.top_indexes
         )
         # the energy levels
-        if self.rot_scan.potential is None:
-            # free rotor
-            self.energy_levels = numpy.zeros(self.num_levels, float)
-            for i in xrange(self.num_levels-1):
-                index = i/2+1
-                self.energy_levels[i+1] = index**2/(2*self.reduced_moment)
-            self.hb = None
-            self.v_coeffs = None
-            self.v_ref = 0.0
-        else:
+        if hasattr(self.rot_scan, "potential"):
             # hindered rotor
             a = 2*numpy.pi
             self.hb = HarmonicBasis(self.num_levels, a)
-            angles, energies = self.rot_scan.potential
+            angles, energies = self.rot_scan.potential.copy()
             # apply periodic boundary conditions
             angles -= numpy.floor(angles/a)*a
             # set reference energy, which is take to be the energy of the geometry
@@ -507,6 +498,15 @@ class Rotor(Info, StatFysTerms):
                 self.rotsym, self.even, self.v_threshold)
             self.energy_levels = self.hb.solve(self.reduced_moment, self.v_coeffs)
             self.energy_levels = self.energy_levels[:self.num_levels]
+        else:
+            # free rotor
+            self.energy_levels = numpy.zeros(self.num_levels, float)
+            for i in xrange(self.num_levels-1):
+                index = i/2+1
+                self.energy_levels[i+1] = index**2/(2*self.reduced_moment)
+            self.hb = None
+            self.v_coeffs = None
+            self.v_ref = 0.0
 
         # the cancelation frequency based on the scan
         if self.cancel_freq == 'scan':
@@ -533,15 +533,15 @@ class Rotor(Info, StatFysTerms):
         print >> f, "    Indexes: %s" % " ".join(str(i) for i in self.rot_scan.top_indexes)
         print >> f, "    Rotational symmetry: %i" % self.rotsym
         print >> f, "    Even potential: %s" % self.even
-        if self.rot_scan.potential is None:
-            print >> f, "    This is a free rotor"
-        else:
+        if hasattr(self.rot_scan, "potential"):
             angles, energies = self.rot_scan.potential
             print >> f, "    This is a hindered rotor"
             print >> f, "    Maximum number of cosines in the fit: %i" % self.dofmax
             print >> f, "    Potential: Angle [deg]    Energy [kJ/mol]"
             for i in xrange(len(angles)):
                 print >> f, "              % 7.2f         %6.1f" % (angles[i]/deg, energies[i]/kjmol)
+        else:
+            print >> f, "    This is a free rotor"
         print >> f, "    Number of QM energy levels: %i" % self.num_levels
         # derived quantities
         print >> f, "    Center [A]: % 8.2f % 8.2f % 8.2f" % tuple(self.center/angstrom)
@@ -578,7 +578,7 @@ class Rotor(Info, StatFysTerms):
         pylab.clf()
         if do_data:
             # plot the original potential data
-            if self.rot_scan.potential is not None:
+            if hasattr(self.rot_scan, "potential"):
                 angles, energies = self.rot_scan.potential
                 pylab.plot(angles/deg, energies/kjmol, "rx", mew=2)
         # plot the fitted potential
@@ -596,7 +596,7 @@ class Rotor(Info, StatFysTerms):
                 e = (self.energy_levels[i])/kjmol
                 pylab.axhline(e, color="b", linewidth=0.5)
                 pylab.axhline(e, xmax=bfs[i], color="b", linewidth=2)
-        if self.rot_scan.potential is not None:
+        if hasattr(self.rot_scan, "potential"):
             pylab.ylim(
                 self.rot_scan.potential[1].min()/kjmol,
                 1.5*self.rot_scan.potential[1].max()/kjmol

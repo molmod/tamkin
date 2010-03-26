@@ -185,7 +185,7 @@ class Proton(BareNucleus):
         BareNucleus.__init__(self, 1, mass)
 
 
-class RotScan(object):
+class RotScan(ReadOnly):
     """A container for rotational scan data"""
 
     def __init__(self, dihedral, molecule=None, top_indexes=None, potential=None):
@@ -204,9 +204,12 @@ class RotScan(object):
                              and the corresponding energies.
 
         """
+        dihedral = tuple(dihedral)
         if len(dihedral) != 4:
-            raise ValueError("The first argument must be a list of 4 integers")
-        self.dihedral = dihedral
+            raise TypeError("The first argument must be a list of 4 integers")
+        for i in dihedral:
+            if not isinstance(i, int):
+                raise TypeError("The first argument must be a list of 4 integers")
         if top_indexes is None:
             # try to deduce the top indexes
             if molecule is None:
@@ -220,11 +223,23 @@ class RotScan(object):
             else:
                 top_indexes = half1
                 top_indexes.discard(atom1)
-            self.top_indexes = list(top_indexes)
-        else:
-            self.top_indexes = top_indexes
-        if len(self.top_indexes) < 1:
-            raise ValueError("A rotational scan must have at least one atom rotating")
-        self.potential = potential
+            top_indexes = tuple(top_indexes)
+        for i in top_indexes:
+            if not isinstance(i, int):
+                raise TypeError("The top_indexes must contain only integers")
+        if len(top_indexes) < 1:
+            raise TypeError("A rotational scan must have at least one atom rotating")
+        if potential is not None:
+            potential = numpy.array(potential, float)
+
+        ReadOnly.__init__(self)
+        mandatory = {
+            "dihedral": dihedral,
+            "top_indexes": top_indexes,
+        }
+        optional = {
+            "potential": potential,
+        }
+        self._init_attributes(mandatory, optional)
 
 

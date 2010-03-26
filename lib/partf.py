@@ -172,6 +172,10 @@ class IdealGasLaw(object):
 class Info(object):
     """An object that has a name and that can dump info to a file."""
     def __init__(self, name):
+        """
+           Arguments:
+            | name  --  the name used for this object in the output
+        """
         self.name = name
 
     def dump(self, f):

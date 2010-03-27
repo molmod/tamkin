@@ -120,7 +120,7 @@ class Molecule(BaseMolecule):
             "graph": graph,
             "symbols": symbols,
         }
-        self._init_attributes(mandatory, optional)
+        self.init_attributes(mandatory, optional)
 
     @cached
     def external_basis(self):
@@ -240,6 +240,6 @@ class RotScan(ReadOnly):
         optional = {
             "potential": potential,
         }
-        self._init_attributes(mandatory, optional)
+        self.init_attributes(mandatory, optional)
 
 

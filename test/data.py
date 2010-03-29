@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # TAMkin is a post-processing toolkit for thermochemistry and kinetics analysis.
 # Copyright (C) 2008-2010 Toon Verstraelen <Toon.Verstraelen@UGent.be>,
 # Matthias Vandichel <Matthias.Vandichel@UGent.be> and
@@ -57,26 +56,57 @@
 # --
 
 
-import sys, os, unittest, glob
+from tamkin import *
 
-retcode = os.system("(cd ..; python setup.py build)")
-if retcode != 0: sys.exit(retcode)
-lib_dir = glob.glob(os.path.join("../build/lib*"))[0]
-sys.path.insert(0, lib_dir)
+from molmod.periodic import periodic
+from molmod.units import angstrom, amu, calorie, avogadro, electronvolt
+from molmod.constants import lightspeed
 
-if not os.path.isdir("output"):
-    os.mkdir("output")
+import unittest, numpy
 
-from io import *
-from data import *
-from partf import *
-from pftools import *
-from meta import *
-from nma import *
-from nmatools import *
-from tunneling import *
-from rotor import *
-from timer import *
-unittest.main()
+
+__all__ = ["DataTestCase"]
+
+
+class DataTestCase(unittest.TestCase):
+
+    def test_get_submolecule(self):
+        molecule = load_molecule_charmm("input/an/ethanol.cor","input/an/ethanol.hess.full")
+        select = [3,4,2]
+        molecule2 = molecule.get_submolecule(select)
+        for i,at in enumerate(select):
+            self.assertAlmostEqual(molecule.numbers[at], molecule2.numbers[i])
+            self.assertAlmostEqual(molecule.masses[at], molecule2.masses[i])
+            self.assertEqual(molecule.symbols[at], molecule2.symbols[i])
+            for mu in range(3):
+                self.assertAlmostEqual(molecule.coordinates[at,mu],molecule2.coordinates[i,mu])
+                self.assertAlmostEqual(molecule.gradient[at,mu],molecule2.gradient[i,mu])
+                for j,at2 in enumerate(select):
+                    for nu in range(3):
+                        self.assertAlmostEqual(molecule.hessian[3*at+mu,3*at2+nu],molecule2.hessian[3*i+mu,3*j+nu])
+        self.assertEqual(molecule.multiplicity, molecule2.multiplicity)
+        self.assertEqual(molecule.symmetry_number, molecule2.symmetry_number)
+        self.assertEqual(molecule.periodic, molecule2.periodic)
+        self.assertEqual(molecule.energy, molecule2.energy)
+
+    def test_get_submolecule_cp2k(self):
+        molecule = load_molecule_cp2k("input/cp2k/pentane/opt.xyz", "input/cp2k/pentane/sp.out", "input/cp2k/pentane/freq.out")
+        select = range(5)+[9,11,14]
+        molecule2 = molecule.get_submolecule(select, title="this is submol", energy=5., periodic=False, symmetry_number=6)  # just trying out something
+        for i,at in enumerate(select):
+            self.assertAlmostEqual(molecule.numbers[at], molecule2.numbers[i])
+            self.assertAlmostEqual(molecule.masses[at], molecule2.masses[i])
+            for mu in range(3):
+                self.assertAlmostEqual(molecule.coordinates[at,mu],molecule2.coordinates[i,mu])
+                self.assertAlmostEqual(molecule.gradient[at,mu],molecule2.gradient[i,mu])
+                for j,at2 in enumerate(select):
+                    for nu in range(3):
+                        self.assertAlmostEqual(molecule.hessian[3*at+mu,3*at2+nu],molecule2.hessian[3*i+mu,3*j+nu])
+        self.assertEqual(molecule.multiplicity, molecule2.multiplicity)
+        self.assertEqual(molecule2.symmetry_number, 6)
+        self.assertEqual(molecule2.periodic, False)
+        self.assertEqual(molecule2.energy, 5.)
+
+
 
 

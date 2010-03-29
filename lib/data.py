@@ -157,6 +157,59 @@ class Molecule(BaseMolecule):
         return numpy.array([self.masses, self.masses, self.masses]).transpose().ravel()
 
 
+    def get_submolecule(self, selected, energy=None, multiplicity=None, symmetry_number=None, periodic=None, graph=None, title=None, symbols=None):
+        """Create a submolecule with a selection of atoms
+
+           Argument:
+            | selected  --  list of atom indices, numbering starts at 0
+
+           Optional arguments:
+            | energy  --  Molecular electronic energy
+            | multiplicity  --  The spin multiplicity of the electronic system
+            | symmetry_number  --  The rotational symmetry number. Inherited, 0 when not
+                                   known or computed [default=0]
+            | periodic  --  True when the system is periodic in three dimensions
+                            [default=False]
+            | title  --  The title of the system
+            | graph  --  The molecular graph of the system
+            | symbols  --  A list with atom symbols
+
+           The function returns a Molecule object consisting of the
+           atoms in the selected list. The numbers, coordinates, masses, gradient,
+           and Hessian are reduced in size.
+           The energy, multiplicity, symmetry_number, periodic and symbols
+           attributes are copies of the original molecule attributes, except if
+           they are explicitly specified as optional arguments, then they are
+           overwritten.
+        """
+        selected = numpy.array(selected)
+        selected3 = numpy.array( sum( [[3*at, 3*at+1, 3*at+2] for at in selected] ,[]) )
+
+        # if the following are none, then use the attributes of the original molecule
+        if energy is None: energy = self.energy
+        if multiplicity is None: multiplicity = self.multiplicity
+        if symmetry_number is None: symmetry_number = self.symmetry_number
+        if periodic is None: periodic = self.periodic
+        if symbols is None and hasattr(self,"symbols"): # check if attribute exists
+            if self.symbols is None: symbols = self.symbols
+            else: symbols = sum( [ [self.symbols[at]] for at in selected] ,[])
+
+        return Molecule(
+            self.numbers[selected],
+            self.coordinates[selected,:],
+            self.masses[selected],
+            energy,
+            self.gradient[selected,:],
+            self.hessian[selected3,:][:,selected3],
+            multiplicity,
+            symmetry_number = symmetry_number,
+            periodic = periodic,
+            title = title,
+            graph = graph,
+            symbols = symbols,
+        )
+
+
 class BareNucleus(Molecule):
     """A molecule object for bare nuclei"""
 

@@ -62,7 +62,7 @@ from tamkin.io.charmm import load_peptide_info_charmm
 
 from molmod import lightspeed, angstrom, amu, centimeter
 
-import numpy, pylab
+import numpy
 
 
 __all__ = [
@@ -455,6 +455,7 @@ def plot_spectrum_lines(filename, all_freqs, low=None, high=None, title=None):
          | high  --  maximum on x-axis, in atomic units
          | title  --  title for plot (a string)
     """
+    import pylab
     pylab.clf()
     for i, freqs in enumerate(all_freqs):
         for freq in freqs:
@@ -491,6 +492,7 @@ def plot_spectrum_dos(filename, all_freqs, low=None, high=None, imax=None,
                          amplitude for each individual frequency
          | title  --  title for plot (a string)
     """
+    import pylab
 
     def plot_single_dos(freqs, low, high, step, width, amps):
         if low is None:

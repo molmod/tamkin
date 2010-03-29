@@ -62,7 +62,7 @@ from tamkin.partf import compute_rate_coeff, PartFun
 from molmod.units import kjmol, second, meter, mol, kelvin, joule, centimeter
 from molmod.constants import boltzmann, lightspeed
 
-import sys, numpy, pylab, types
+import sys, numpy, types
 
 
 __all__ = ["ThermoAnalysis", "ThermoTable", "ReactionAnalysis"]
@@ -419,6 +419,8 @@ class ReactionAnalysis(object):
                        [default="red"]. Common color names, html codes and RGB
                        tuples are accepted. (See matplotlib docs for more info.)
         """
+        import pylab
+
         temps_inv_line = numpy.linspace(self.temps_inv.min(),self.temps_inv.max(),100)
         ln_rate_coeffs_line = self.parameters[0] - self.parameters[1]/boltzmann*temps_inv_line
 
@@ -544,6 +546,8 @@ class ReactionAnalysis(object):
             | error -- A boolean that determines whether the monte carlo results
                        are plotted when they are available. [default=True]
         """
+        import pylab
+
         if filename is not None:
             pylab.clf()
             pylab.title("Parameter plot: A [%s] = %.3e    Ea [kJ/mol] = %.2f" % (

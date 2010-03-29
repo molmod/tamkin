@@ -60,7 +60,7 @@ from tamkin import *
 
 from molmod import lightspeed, centimeter
 
-import unittest, numpy,pylab
+import unittest, numpy
 
 
 __all__ = ["NMAToolsTestCase"]

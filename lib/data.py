@@ -104,6 +104,7 @@ class Molecule(BaseMolecule):
             | symbols  --  A list with atom symbols
         """
         ReadOnly.__init__(self)
+        # Mandatory means that the attributes can not be None.
         mandatory = {
             "numbers": numpy.array(numbers, int),
             "coordinates": numpy.array(coordinates, float),
@@ -115,6 +116,7 @@ class Molecule(BaseMolecule):
             "symmetry_number": symmetry_number,
             "periodic": periodic,
         }
+        # Can be None. If foo is None, hasattr(self, "foo") will return False.
         optional = {
             "title": title,
             "graph": graph,

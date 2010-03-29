@@ -67,8 +67,23 @@ import numpy
 __all__ = ["load_molecule_vasp", "load_fixed_vasp"]
 
 
-def load_molecule_vasp(vaspfile_xyz, vaspfile_out, is_periodic=True):
-    """ reading molecule from VASP outputfile"""
+def load_molecule_vasp(vaspfile_xyz, vaspfile_out, energy = 0.0, multiplicity=1, is_periodic=True):
+    """Load a molecule from VASP output files
+
+       Arguments:
+        | vaspfile_xyz  --  Filename of xyz-file containing the (partially)
+                            optimized structure.
+        | vaspfile_out  --  Filename of VASP output file (OUTCAR) containing
+                            eg the Hessian.
+
+       Optional arguments:
+        | energy  --  The electronic energy. [default=0.0].
+        | multiplicity  --  The spin multiplicity of the electronic system
+                            [default=1]
+        | is_periodic  --  True when the system is periodic in three dimensions.
+                           False when the systen is nonperiodic. [default=True].
+    """
+    # TODO: read energy from VASP file?
     # Units: VASP gradient in eV/angstrom, TAMkin internally all in atomic units
 
     # Read atomtypes from xyz-VASP-file
@@ -170,16 +185,22 @@ def load_molecule_vasp(vaspfile_xyz, vaspfile_out, is_periodic=True):
         if row >= 3*Nfree: break
     f.close()
 
-    is_periodic = True
-    multiplicity = 1
-    energy = 0.0
     return Molecule(
         atomicnumbers, positions, masses, energy, gradient,
-        hessian, multiplicity, 0, is_periodic )
+        hessian, multiplicity, periodic=is_periodic )
 
 
 def load_fixed_vasp(filename):
-    """ reading molecule from VASP outputfile"""
+    """ Load list of fixed atoms from VASP output file
+
+    Argument:
+     | filename  --  Filename of VASP output file (OUTCAR)
+
+    VASP can calculate partial Hessians: only a submatrix of the complete Hessian
+    is computed with numerical differentiation. The rest of the Hessian elements
+    is put to zero. This function determines which atoms have zero rows/cols in
+    the Hessian, or, in other words, which were fixed.
+    """
     # Read data from out-VASP-file OUTCAR
     f = open(filename)
 

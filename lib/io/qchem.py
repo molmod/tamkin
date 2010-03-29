@@ -66,7 +66,32 @@ import numpy
 __all__ = ["load_molecule_qchem"]
 
 def load_molecule_qchem(qchemfile, hessfile = None, multiplicity=1, is_periodic = False):
-    """reading molecule from Q-Chem frequency run"""
+    """Load a molecule from a Q-Chem frequency run
+
+       Arguments:
+        | qchemfile  --  Filename of the Q-Chem computation output.
+
+       Optional arguments:
+        | hessfile  --  Filename of a separate Hessian file.
+        | multiplicity  --  The spin multiplicity of the electronic system
+                            [default=1]
+        | is_periodic  --  True when the system is periodic in three dimensions.
+                           False when the systen is nonperiodic. [default=False]
+
+       Whether the Hessian is printed to a separate Hessian file, depends on the
+       used version of Q-Chem. The use of the separate Hessian file is slightly
+       more accurate, because the number of printed digits is higher than in the
+       Q-Chem output file.
+
+       **Warning**
+
+       At present, the gradient is set to a Nx3 array of zero values, since the
+       gradient is not printed out in the Q-Chem output file in general. This
+       means that the value of the gradient should be checked before applying
+       methods designed for partially optimized structures (currently PHVA,
+       MBH and PHVA_MBH).
+    """
+    # TODO fill in keyword for printing hessian
     f = file(qchemfile)
     # get coords
     for line in f:
@@ -160,6 +185,5 @@ def load_molecule_qchem(qchemfile, hessfile = None, multiplicity=1, is_periodic 
         numbers, positions, masses, energy, gradient, hessian, multiplicity,
         symmetry_number, is_periodic
     )
-
 
 

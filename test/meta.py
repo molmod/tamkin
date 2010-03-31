@@ -1,4 +1,3 @@
-#!/usr/bin/env python
 # TAMkin is a post-processing toolkit for thermochemistry and kinetics analysis.
 # Copyright (C) 2008-2010 Toon Verstraelen <Toon.Verstraelen@UGent.be>,
 # Matthias Vandichel <Matthias.Vandichel@UGent.be> and
@@ -57,25 +56,63 @@
 # --
 
 
-import sys, os, unittest, glob
+from tamkin import *
 
-retcode = os.system("(cd ..; python setup.py build)")
-if retcode != 0: sys.exit(retcode)
-lib_dir = glob.glob(os.path.join("../build/lib*"))[0]
-sys.path.insert(0, lib_dir)
-
-if not os.path.isdir("output"):
-    os.mkdir("output")
-
-from io import *
-from partf import *
-from pftools import *
-from meta import *
-from nma import *
-from nmatools import *
-from tunneling import *
-from rotor import *
-from timer import *
-unittest.main()
+import unittest, os, glob
 
 
+__all__ = ["MetaTestCase"]
+
+
+class MetaTestCase(unittest.TestCase):
+    def check_example(self, dirname, fn_py):
+        root = "../examples"
+        self.assert_(os.path.isdir(root))
+        retcode = os.system("cd %s; cd %s; ./%s 1> /dev/null 2> /dev/null" % (root, dirname, fn_py))
+        self.assertEqual(retcode, 0)
+    
+    def test_example_001(self):
+        self.check_example("001_ethane", "./thermo.py")
+
+    def test_example_002(self):
+        self.check_example("002_linear_co2", "./thermo.py")
+
+    def test_example_003(self):
+        self.check_example("003_pentane", "./thermo.py")
+
+    def test_example_005(self):
+        self.check_example("005_acrylamide_reaction", "./reaction.py")
+
+    def test_example_006(self):
+        self.check_example("006_5T_ethene_reaction", "./reaction.py")
+
+    def test_example_007(self):
+        self.check_example("007_mfi_propene_reaction", "./reaction.py")
+
+    def test_example_008(self):
+        self.check_example("008_ethane_rotor", "./thermo.py")
+
+    def test_example_009(self):
+        self.check_example("009_ethyl_ethene", "./reaction.py")
+
+    def test_example_012(self):
+        self.check_example("012_ethyl_ethene_scaling", "./reaction.py")
+
+    def test_example_013(self):
+        self.check_example("013_butane", "./thermo.py")
+
+    def test_example_014(self):
+        self.check_example("014_pentane_mbh", "./thermo.py")
+
+    def test_example_015(self):
+        self.check_example("015_kie", "./reaction.py")
+        
+    def test_code_quality(self):
+        root = "../lib"
+        self.assert_(os.path.isdir(root))
+        white = (" ", "\t")
+        for fn in glob.glob("%s/*.py") + glob.glob("%s/io/*.py"):
+            f = file(fn)
+            for line in f:
+                if line[-2] in white:
+                    self.fail("Trailing whitespace in %s." % fn)

@@ -80,7 +80,7 @@ nma_ts_gauche = NMA(mol_ts_gauche, ConstrainExt())
 nma_ts_trans = NMA(mol_ts_trans, ConstrainExt())
 # Construct the rotors
 print "begin"
-rotor_ethyl = load_rotor(mol_ethyl, "ethyl/scan/new/smaller.log", 6, True)
+rotor_ethyl = load_rotor(mol_ethyl, "ethyl/scan/gaussian.log", 6, True)
 print "end"
 rotor1_ts_gauche = load_rotor(mol_ts_gauche, "ts_ad1/scan1/gaussian.log", 3, False)
 rotor2_ts_gauche = load_rotor(mol_ts_gauche, "ts_ad1/scan2/gaussian.log", 1, True)

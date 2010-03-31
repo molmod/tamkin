@@ -79,7 +79,9 @@ nma_ethene = NMA(mol_ethene, ConstrainExt())
 nma_ts_gauche = NMA(mol_ts_gauche, ConstrainExt())
 nma_ts_trans = NMA(mol_ts_trans, ConstrainExt())
 # Construct the rotors
-rotor_ethyl = load_rotor(mol_ethyl, "ethyl/scan/gaussian.log", 6, True)
+print "begin"
+rotor_ethyl = load_rotor(mol_ethyl, "ethyl/scan/new/smaller.log", 6, True)
+print "end"
 rotor1_ts_gauche = load_rotor(mol_ts_gauche, "ts_ad1/scan1/gaussian.log", 3, False)
 rotor2_ts_gauche = load_rotor(mol_ts_gauche, "ts_ad1/scan2/gaussian.log", 1, True)
 rotor1_ts_trans = load_rotor(mol_ts_trans, "ts_ad1/scan1/gaussian.log", 3, False)
@@ -143,8 +145,8 @@ pylab.savefig("arrhenius.png")
 #  1) freq_error: the absolute stochastic error on the frequencies (default=1*invcm)
 #  2) energy_error: the absolute error on the energy (default=0.0)
 #  3) num_iter: the number of monte carlo samples (default=100)
-ra_gauche.monte_carlo(num_iter=1000)
-ra_trans.monte_carlo(num_iter=1000)
+ra_gauche.monte_carlo(num_iter=10)
+ra_trans.monte_carlo(num_iter=10)
 # plot the parameters, this includes the monte carlo results
 pylab.clf()
 ra_gauche.plot_parameters(label="gauche", color="red")

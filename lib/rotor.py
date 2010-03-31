@@ -69,8 +69,8 @@ from tamkin.partf import Info, StatFysTerms, helper0_vibrations, \
 from tamkin.nma import NMA, MBH
 from tamkin.geom import transrot_basis
 
-from molmod.units import deg, kjmol, angstrom, centimeter, amu
-from molmod.constants import boltzmann, lightspeed
+from molmod import deg, kjmol, angstrom, centimeter, amu, boltzmann, \
+    lightspeed, cached
 
 import numpy
 
@@ -468,31 +468,18 @@ class Rotor(Info, StatFysTerms):
         self.moment, self.reduced_moment = compute_moments(
             nma.coordinates, nma.masses3, self.center, self.axis, self.rot_scan.top_indexes
         )
+        from molmod.ic import dihed_angle
+        self.nma_angle = dihed_angle(
+            nma.coordinates[self.rot_scan.dihedral[0]],
+            nma.coordinates[self.rot_scan.dihedral[1]],
+            nma.coordinates[self.rot_scan.dihedral[2]],
+            nma.coordinates[self.rot_scan.dihedral[3]],
+        )[0]
         # the energy levels
         if hasattr(self.rot_scan, "potential"):
             # hindered rotor
-            a = 2*numpy.pi
-            self.hb = HarmonicBasis(self.num_levels, a)
-            angles, energies = self.rot_scan.potential.copy()
-            # apply periodic boundary conditions
-            angles -= numpy.floor(angles/a)*a
-            # set reference energy, which is take to be the energy of the geometry
-            # with a dihedral angle closest to the dihedral angle of the reference
-            # geometry in the nma object. We can not take the nma energy because
-            # the rotational energy barriers may be computed at another level
-            # that the nma energy.
-            from molmod.ic import dihed_angle
-            self.nma_angle = dihed_angle(
-                nma.coordinates[self.rot_scan.dihedral[0]],
-                nma.coordinates[self.rot_scan.dihedral[1]],
-                nma.coordinates[self.rot_scan.dihedral[2]],
-                nma.coordinates[self.rot_scan.dihedral[3]],
-            )[0]
-            deltas = angles - self.nma_angle
-            # apply periodic boundary conditions
-            deltas -= numpy.floor(deltas/a)*a
-            # get the right energy
-            energies -= energies[deltas.argmin()]
+            self.hb = HarmonicBasis(self.num_levels, 2*numpy.pi)
+            angles, energies = self.potential
 
             self.v_coeffs = self.hb.fit_fn(angles, energies, self.dofmax,
                 self.rotsym, self.even, self.v_threshold)
@@ -517,6 +504,33 @@ class Rotor(Info, StatFysTerms):
         self.freq_scaling = partf.vibrational.freq_scaling
         self.zp_scaling = partf.vibrational.zp_scaling
         self.classical = partf.vibrational.classical
+
+    @cached
+    def potential(self):
+        """A tuple with angles and potential energies (hindered only)
+
+           If the rotor is free, the result is None. The reference for the
+           potential energy is the energy of the reference geometry used in the
+           partition function.
+        """
+        if hasattr(self.rot_scan, "potential"):
+            a = 2*numpy.pi
+            angles, energies = self.rot_scan.potential.copy()
+            # apply periodic boundary conditions
+            angles -= numpy.floor(angles/a)*a
+            # set reference energy, which is take to be the energy of the geometry
+            # with a dihedral angle closest to the dihedral angle of the reference
+            # geometry in the nma object. We can not take the nma energy because
+            # the rotational energy barriers may be computed at another level
+            # that the nma energy.
+            deltas = angles - self.nma_angle
+            # apply periodic boundary conditions
+            deltas -= numpy.floor(deltas/a)*a
+            # get the right energy
+            energies -= energies[deltas.argmin()]
+            return angles, energies
+        else:
+            return None
 
     def dump(self, f):
         """Write all the information about the rotor to a file
@@ -579,8 +593,9 @@ class Rotor(Info, StatFysTerms):
         if do_data:
             # plot the original potential data
             if hasattr(self.rot_scan, "potential"):
-                angles, energies = self.rot_scan.potential
+                angles, energies = self.potential
                 pylab.plot(angles/deg, energies/kjmol, "rx", mew=2)
+            pylab.axvline(self.nma_angle/deg, color="silver")
         # plot the fitted potential
         if self.hb is not None:
             step = 0.001
@@ -597,9 +612,10 @@ class Rotor(Info, StatFysTerms):
                 pylab.axhline(e, color="b", linewidth=0.5)
                 pylab.axhline(e, xmax=bfs[i], color="b", linewidth=2)
         if hasattr(self.rot_scan, "potential"):
+            angles, energies = self.potential
             pylab.ylim(
-                self.rot_scan.potential[1].min()/kjmol,
-                1.5*self.rot_scan.potential[1].max()/kjmol
+                energies.min()/kjmol,
+                1.5*energies.max()/kjmol
             )
         pylab.xlim(0,360)
         pylab.ylabel("Energy [kJ/mol]")

@@ -259,7 +259,8 @@ def load_rotscan_g03log(fn_log, top_indexes=None):
     geometries = []
     while len(line) > 0:
         line = f.readline()
-        if line.startswith("                          Input orientation:"):
+        if line.startswith("                          Input orientation:") or \
+           line.startswith("                         Standard orientation:"):
             # read the molecule
             numbers = []
             last_coordinates = []

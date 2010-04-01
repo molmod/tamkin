@@ -388,7 +388,7 @@ class Rotor(Info, StatFysTerms):
     """
     def __init__(self, rot_scan, molecule=None, cancel_freq='mbh', suffix=None,
                  rotsym=1, even=False, num_levels=50, dofmax=5,
-                 v_threshold=0.01):
+                 v_threshold=0.01, large_fixed=False):
         """
            Arguments:
             | rot_scan  --  A rotational scan object (free or hindered rotor
@@ -420,6 +420,10 @@ class Rotor(Info, StatFysTerms):
                                expansion and the data points of the scan.
                                [default=0.01]. Absolute errors smaller than 1
                                kJ/mol are always ignored.
+            | large_fixed  --  When True, assume that the large part of the
+                               system is fixed in space while the small part
+                               rotates. (this means that the absolute moment of
+                               the rotor is used instead of the relative moment)
 
            In case the Fourier expansion of the potential represents a poor fit
            (determined by v_threshold), a ValueError is raised. It means that
@@ -451,6 +455,7 @@ class Rotor(Info, StatFysTerms):
         self.num_levels = num_levels
         self.dofmax = dofmax
         self.v_threshold = v_threshold
+        self.large_fixed = large_fixed
         if hasattr(rot_scan, "potential"):
             Info.__init__(self, "hindered_rotor_%s" % self.suffix)
         else:
@@ -468,6 +473,10 @@ class Rotor(Info, StatFysTerms):
         self.moment, self.reduced_moment = compute_moments(
             nma.coordinates, nma.masses3, self.center, self.axis, self.rot_scan.top_indexes
         )
+        if self.large_fixed:
+            moment = self.moment
+        else:
+            moment = self.reduced_moment
         from molmod.ic import dihed_angle
         self.nma_angle = dihed_angle(
             nma.coordinates[self.rot_scan.dihedral[0]],
@@ -483,14 +492,14 @@ class Rotor(Info, StatFysTerms):
 
             self.v_coeffs = self.hb.fit_fn(angles, energies, self.dofmax,
                 self.rotsym, self.even, self.v_threshold)
-            self.energy_levels = self.hb.solve(self.reduced_moment, self.v_coeffs)
+            self.energy_levels = self.hb.solve(moment, self.v_coeffs)
             self.energy_levels = self.energy_levels[:self.num_levels]
         else:
             # free rotor
             self.energy_levels = numpy.zeros(self.num_levels, float)
             for i in xrange(self.num_levels-1):
                 index = i/2+1
-                self.energy_levels[i+1] = index**2/(2*self.reduced_moment)
+                self.energy_levels[i+1] = index**2/(2*moment)
             self.hb = None
             self.v_coeffs = None
             self.v_ref = 0.0
@@ -498,7 +507,7 @@ class Rotor(Info, StatFysTerms):
         # the cancelation frequency based on the scan
         if self.cancel_freq == 'scan':
             force_constant = self.hb.eval_deriv2(numpy.array([self.nma_angle]), self.v_coeffs)[0]
-            self.cancel_freq = numpy.sqrt(force_constant/self.reduced_moment)/(2*numpy.pi)
+            self.cancel_freq = numpy.sqrt(force_constant/moment)/(2*numpy.pi)
 
         # scaling factors
         self.freq_scaling = partf.vibrational.freq_scaling

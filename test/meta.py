@@ -70,7 +70,7 @@ class MetaTestCase(unittest.TestCase):
         self.assert_(os.path.isdir(root))
         retcode = os.system("cd %s; cd %s; ./%s 1> /dev/null 2> /dev/null" % (root, dirname, fn_py))
         self.assertEqual(retcode, 0)
-    
+
     def test_example_001(self):
         self.check_example("001_ethane", "./thermo.py")
 
@@ -106,7 +106,7 @@ class MetaTestCase(unittest.TestCase):
 
     def test_example_015(self):
         self.check_example("015_kie", "./reaction.py")
-        
+
     def test_code_quality(self):
         root = "../lib"
         self.assert_(os.path.isdir(root))

@@ -232,6 +232,7 @@ def load_fixed_vasp(filename):
         row+=1
         if mu >= 3: mu=0
         if row >= 3*Nfree: break
+    f.close()
 
     fixed_atoms = [at for at in xrange(N) if at not in atoms_free]
     return numpy.array(fixed_atoms)

@@ -743,7 +743,7 @@ class PHVA(Treatment):
         system = external_basis[:,fixed3].transpose()
         # The homogenuous solutions of the system corresponds to remaining
         # degrees of freedom. The number of homogenuous solutions is equal to
-        # the nullity of the system, i.e. the number of zero singual values.
+        # the nullity of the system, i.e. the number of zero singular values.
         U, W, Vt = numpy.linalg.svd(system, full_matrices=False)
         self.num_zeros = (abs(W) < abs(W[0])*self.svd_threshold).sum()
         if do_modes and self.num_zeros > 0:
@@ -1517,7 +1517,7 @@ class PHVA_MBH(MBH):
             numpy.take(numpy.take(molecule.hessian,selectedcoords,0),selectedcoords,1),
             molecule.multiplicity,
             0, # undefined molecule.symmetry_number
-            False # molecule.is_periodic
+            molecule.periodic
         )
 
         # adapt numbering in blocks
@@ -1528,7 +1528,12 @@ class PHVA_MBH(MBH):
             for at,atom in enumerate(block):
                 self.blocks[bl][at] = atom - shifts[atom]
 
-        MBH.compute_hessian(self, molecule, do_modes)
+        MBH.compute_hessian(self, submolecule, do_modes)
+
+        if do_modes:   # adapt self.transform to include the fixed atom rows/cols
+            transf = numpy.zeros((3*molecule.size, self.transform.matrix.shape[1]),float)
+            transf[selectedcoords,:] = self.transform.matrix
+            self.transform = Transform(transf)
 
 
 class Constrain(Treatment):

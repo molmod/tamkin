@@ -535,6 +535,14 @@ class NMATestCase(unittest.TestCase):
         blocks = load_indices("input/an/fixed.07.txt", groups=True)
         fixed = load_indices("input/an/fixed.06.txt")
         nma = NMA(molecule, PHVA_MBH(fixed,blocks))
+        expected_freqs = numpy.array([214.28936269,   596.97481532,   663.5290044,    787.84964637,
+                 859.68400023, 1096.26899018,  1160.4094257, 1224.87768013,  1310.51036299,
+                 1411.62142706, 1509.02056509,  2218.9706113,  2762.11931539,  2942.89826034,
+                 3173.07796648])
+        self.check_freqs(expected_freqs, nma, 6, check_zeros=True)
+        self.check_ortho(nma.modes)
+        self.assertEqual(nma.modes.shape[0],27)
+        self.assertEqual(nma.modes.shape[1],15)
 
     def test_constrain(self):
         molecule = load_molecule_charmm("input/an/ethanol.cor","input/an/ethanol.hess.full")
@@ -543,11 +551,17 @@ class NMATestCase(unittest.TestCase):
         fixed = [[1,2]]
         nma = NMA(molecule, Constrain(fixed))
         #print nma.freqs/lightspeed*centimeter
+        self.check_ortho(nma.modes)
+        self.assertEqual(nma.modes.shape[0],27)
+        self.assertEqual(nma.modes.shape[1],26)
         dump_modes_molden("output/ethanol.constr.molden.1.log", nma)
 
         fixed = [[1,2], [0,4], [0,5],[2,8],[3,4],[4,5],[5,6],[6,7],[7,8],[7,1],[7,3]]
         nma = NMA(molecule, Constrain(fixed))
         #print nma.freqs/lightspeed*centimeter
+        self.check_ortho(nma.modes)
+        self.assertEqual(nma.modes.shape[0],27)
+        self.assertEqual(nma.modes.shape[1],16)
         dump_modes_molden("output/ethanol.constr.molden.2.log", nma)
 
 

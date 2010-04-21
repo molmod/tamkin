@@ -363,7 +363,7 @@ class ReactionAnalysis(object):
         print >> f, "Number of temperatures = %i" % len(self.temps)
         print >> f
         print >> f, "Reaction rate coefficients"
-        symbol = {True: "G", False: "A"}
+        symbol = {True: "G", False: "A"}[self.cp]
         if self.tunneling is None:
             print >> f, "    T [K]     Delta %s [kJ/mol]       k(T) [%s]" % (symbol, self.unit_name)
         else:

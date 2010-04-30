@@ -1454,7 +1454,7 @@ class PHVA_MBH(MBH):
     This make the PHVA_MBH an appropriate method to perform NMA in partially
     optimized structures.
     """
-    def __init__(self, fixed, blocks, svd_threshold=1e-5):
+    def __init__(self, fixed, blocks, do_gradient_correction=True, svd_threshold=1e-5):
         """
            Two arguments:
              | fixed  --  a list with fixed atoms, counting starts from zero.
@@ -1473,7 +1473,7 @@ class PHVA_MBH(MBH):
                     raise ValueError("Atoms in blocks can not be part of fixed atom region: atom "+str(at)+" is in both regions.")
         # Rest of init:
         self.fixed = numpy.array(fixed)
-        MBH.__init__(self, blocks, svd_threshold=svd_threshold)
+        MBH.__init__(self, blocks, do_gradient_correction=do_gradient_correction, svd_threshold=svd_threshold)
 
     def compute_zeros(self, molecule, do_modes):
         """See :meth:`Treatment.compute_zeros`"""

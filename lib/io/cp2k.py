@@ -87,7 +87,7 @@ def load_molecule_cp2k(fn_xyz, fn_sp, fn_freq, multiplicity=1, is_periodic=True)
     molecule = BaseMolecule.from_file(fn_xyz)
     masses = numpy.array([periodic[number].mass for number in molecule.numbers])
 
-    # go trhough the single point file: energy and gradient
+    # go through the single point file: energy and gradient
     energy = None
     gradient = None
     f = file(fn_sp)
@@ -140,6 +140,7 @@ def load_molecule_cp2k(fn_xyz, fn_sp, fn_freq, multiplicity=1, is_periodic=True)
     if hessian is None:
         raise IOError("Could not read hessian from freq file.")
 
+    # symmetrize
     hessian = 0.5*(hessian+hessian.transpose())
     # cp2k prints a transformed hessian, here we convert it back to the normal
     # hessian in atomic units.

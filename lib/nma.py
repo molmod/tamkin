@@ -1460,8 +1460,10 @@ class PHVA_MBH(MBH):
              | fixed  --  a list with fixed atoms, counting starts from zero.
              | blocks  --  a list of blocks, each block is a list of atoms
 
-           An optional argument:
+           Optional arguments:
              | svd_threshold  --  threshold for zero singular values in svd
+             | do_gradient_correction  --  boolean, whether gradient correction
+                                           to MBH part should be added [default True]
         """
         # QA:
         if len(fixed) == 0:

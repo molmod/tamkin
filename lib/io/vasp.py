@@ -143,7 +143,7 @@ def load_molecule_vasp(vaspfile_xyz, vaspfile_out, energy = 0.0, multiplicity=1,
     for line in f:
         words = line.split()
         positions[row,:] = [ float(word)*angstrom for word in words[:3] ]
-        gradient[row,:] = [ float(word)*electronvolt/angstrom for word in words[3:6] ]
+        gradient[row,:] = [ -float(word)*electronvolt/angstrom for word in words[3:6] ]
         row += 1
         if row >= N: break
 

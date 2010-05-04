@@ -252,19 +252,18 @@ class ReactionAnalysis(object):
         self.tunneling = tunneling
 
         # make sure that the final temperature is included
-        self.temps = numpy.arange(self.temp_low,self.temp_high+0.5*self.temp_step,self.temp_step)
-        self.rate_coeffs = numpy.array([
-            compute_rate_coeff(pfs_react, pf_trans, temp, cp)
+        self.temps = numpy.arange(self.temp_low,self.temp_high+0.5*self.temp_step,self.temp_step,dtype=float)
+        self.temps_inv = 1/self.temps
+        self.ln_rate_coeffs = numpy.array([
+            self.compute_rate_coeff(temp, do_log=True)
             for temp in self.temps
         ])
+        self.rate_coeffs = numpy.exp(self.ln_rate_coeffs)
         if self.tunneling is None:
             self.corrections = None
         else:
             self.corrections = self.tunneling(self.temps)
-            self.rate_coeffs *= self.corrections
 
-        self.temps_inv = 1/numpy.array(self.temps,float)
-        self.ln_rate_coeffs = numpy.log(self.rate_coeffs)
 
         design_matrix = numpy.zeros((len(self.temps),2), float)
         design_matrix[:,0] = 1
@@ -291,15 +290,22 @@ class ReactionAnalysis(object):
 
         self.covariance = None # see monte_carlo method
 
-    def compute_rate_coeff(self, temp):
+    def compute_rate_coeff(self, temp, do_log=False):
         """Compute the rate coefficient of the reaction in this analysis
 
            Arguments:
             | temp  -- the temperature
+
+           Optional argument:
+             | do_log  --  Return the logarithm of the rate coefficient instead
+                           of just the rate coefficient itself.
         """
-        result = compute_rate_coeff(self.pfs_react, self.pf_trans, temp, self.cp)
+        result = compute_rate_coeff(self.pfs_react, self.pf_trans, temp, self.cp, do_log)
         if self.tunneling is not None:
-            result *= self.tunneling(temp)
+            if do_log:
+                result += numpy.log(self.tunneling(temp))
+            else:
+                result *= self.tunneling(temp)
         return result
 
     def compute_delta_G(self, temp):

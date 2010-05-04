@@ -83,7 +83,7 @@ class TunnelingCorrection(object):
         """Compute a the tunneling correction as function of the temperature
 
            Argument:
-            | temps  --  a numpy array of temperatures
+            | temps  --  a numpy array of temperatures or a single temperature
 
            Derived classes must override this method with a function that
            computes the correction factors for the rate constant at the given
@@ -122,7 +122,7 @@ class Eckart(TunnelingCorrection):
         self.Er = pf_trans.energy - sum(pf.energy for pf in pfs_prod)
         if self.Er < 0:
             raise ValueError("The reverse barrier is negative. Can not apply Eckart tunneling.")
-        self.nu = pf_trans.vibrational.negative_freqs
+        self.nu = pf_trans.vibrational.negative_freqs[0]
 
     @classmethod
     def _from_parameters(cls, Ef, Er, nu):
@@ -195,10 +195,13 @@ class Eckart(TunnelingCorrection):
 
     def __call__(self, temps):
         """See :meth:TunnelingCorrection.__call__"""
-        result = numpy.zeros(len(temps))
-        for i, temp in enumerate(temps):
-            result[i] = self._compute_one_temp(temp)
-        return result
+        if hasattr(temps, "__len__"):
+            result = numpy.zeros(len(temps))
+            for i, temp in enumerate(temps):
+                result[i] = self._compute_one_temp(temp)
+            return result
+        else:
+            return self._compute_one_temp(temps)
 
 
 class Wigner(TunnelingCorrection):
@@ -216,7 +219,7 @@ class Wigner(TunnelingCorrection):
         """
         if len(pf_trans.vibrational.negative_freqs) != 1:
             raise ValueError("The partition function of the transition state must have exactly one negative frequency, found %i" % len(pf_prod.negative_freqs))
-        self.nu = pf_trans.vibrational.negative_freqs
+        self.nu = pf_trans.vibrational.negative_freqs[0]
 
     @classmethod
     def _from_parameters(cls, nu):
@@ -233,7 +236,6 @@ class Wigner(TunnelingCorrection):
 
     def __call__(self, temps):
         """See :meth:TunnelingCorrection.__call__"""
-        temps = numpy.array(temps)   # assure type array
         h = 2*numpy.pi # the Planck constant in atomic units
         return 1+(h*self.nu/(boltzmann*temps))**2/24
 

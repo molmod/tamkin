@@ -96,6 +96,8 @@ class PartFunTestCase(unittest.TestCase):
         for i in xrange(len(temps)):
             k = compute_rate_coeff([pf_react], pf_trans, temps[i])
             self.assertAlmostEqual(numpy.log(k/(1/second)), numpy.log(expected_ks[i]),5)
+            logk = compute_rate_coeff([pf_react], pf_trans, temps[i], do_log=True)
+            self.assertAlmostEqual(numpy.log(k), logk)
 
     def test_gas_react_sterck(self):
         # Test both Full and ConstrainExt:
@@ -337,7 +339,9 @@ class PartFunTestCase(unittest.TestCase):
         pf_trans = PartFun(NMA(mol_trans), [ExtTrans(), ExtRot(1)])
 
         for temp in numpy.arange(100,1000,10.0):
-            log_K = compute_equilibrium_constant([pf_react1, pf_react2], [pf_comlex], temp)
+            log_K = compute_equilibrium_constant([pf_react1, pf_react2], [pf_comlex], temp, do_log=True)
+            K = compute_equilibrium_constant([pf_react1, pf_react2], [pf_comlex], temp)
+            self.assertAlmostEqual(numpy.log(K), log_K)
             k = compute_rate_coeff([pf_react1, pf_react2], pf_trans, temp)
             log_k = numpy.log(k)
             k_prime = compute_rate_coeff([pf_comlex], pf_trans, temp)

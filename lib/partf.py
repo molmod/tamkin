@@ -1110,7 +1110,7 @@ class PartFun(Info, StatFys):
         f.close()
 
 
-def compute_rate_coeff(pfs_react, pf_trans, temp, cp=True):
+def compute_rate_coeff(pfs_react, pf_trans, temp, cp=True, do_log=False):
     """Computes a (forward) rate coefficient
 
        The implementation is based on transition state theory.
@@ -1125,6 +1125,8 @@ def compute_rate_coeff(pfs_react, pf_trans, temp, cp=True):
          | cp  --  When True, the rate coefficient is compute at constant
                    pressure (default=True). When False, the rate coefficient
                    is computed at constant volume.
+         | do_log  --  Return the logarithm of the rate coefficient instead of
+                       just the rate coefficient itself.
     """
     if cp:
         delta_G = pf_trans.gibbs_free_energy(temp)
@@ -1136,10 +1138,13 @@ def compute_rate_coeff(pfs_react, pf_trans, temp, cp=True):
         log_result = -delta_A/(boltzmann*temp)
     log_result += sum(pf_react.gaslaw.helper0(temp,0) for pf_react in pfs_react)
     log_result -= pf_trans.gaslaw.helper0(temp,0)
-    return boltzmann*temp/(2*numpy.pi)*numpy.exp(log_result)
+    if do_log:
+        return numpy.log(boltzmann*temp/(2*numpy.pi)) + log_result
+    else:
+        return boltzmann*temp/(2*numpy.pi)*numpy.exp(log_result)
 
 
-def compute_equilibrium_constant(pfs_A, pfs_B, temp, cp=True):
+def compute_equilibrium_constant(pfs_A, pfs_B, temp, cp=True, do_log=False):
     """Computes the logarithm of equilibrium constant between some reactants and
        some products
 
@@ -1152,6 +1157,8 @@ def compute_equilibrium_constant(pfs_A, pfs_B, temp, cp=True):
          | cp  --  When True, the equilibrium constant is compute at constant
                    pressure (default=True). When False, the equilibrium constant
                    is computed at constant volume.
+         | do_log  --  Return the logarithm of the equilibrium constant instead
+                       of just the equilibrium constant itself.
     """
     if cp:
         delta_G = 0.0
@@ -1166,5 +1173,8 @@ def compute_equilibrium_constant(pfs_A, pfs_B, temp, cp=True):
 
     log_K += sum(pf_A.gaslaw.helper0(temp,0) for pf_A in pfs_A)
     log_K -= sum(pf_B.gaslaw.helper0(temp,0) for pf_B in pfs_B)
-    return log_K
+    if do_log:
+        return log_K
+    else:
+        return numpy.exp(log_K)
 

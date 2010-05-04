@@ -82,8 +82,11 @@ def load_molecule_charmm(charmmfile_cor, charmmfile_hess, is_periodic=False):
                            False when the systen is aperiodic. [default=True]
     """
     f = file(charmmfile_hess)
-
-    N = int(f.readline().split()[-1])   # nb of atoms
+    # skip lines if they start with a *
+    while True:
+        line = f.readline()
+        if not line.startswith("*"): break
+    N = int(line.split()[-1])
     assert N > 0   # nb of atoms should be > 0
 
     energy = float(f.readline().split()[-1]) * 1000*calorie/avogadro

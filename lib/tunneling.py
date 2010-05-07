@@ -65,13 +65,13 @@
 """
 
 
-from molmod.constants import boltzmann
+from molmod.constants import boltzmann, planck
 from molmod.units import kjmol
 
 import numpy
 
 
-__all__ = ["Eckart", "Wigner"]
+__all__ = ["Eckart", "Wigner", "Miller"]
 
 
 class TunnelingCorrection(object):
@@ -93,7 +93,11 @@ class TunnelingCorrection(object):
 
 
 class Eckart(TunnelingCorrection):
-    """Implements the Eckart tunneling correction factor"""
+    """Implements the Eckart tunneling correction factor
+
+       This correction is proposed in
+       C. Eckart, Phys. Rev. 35, 1303 (1930)
+    """
 
     def __init__(self, pfs_react, pf_trans, pfs_prod):
         """
@@ -205,7 +209,11 @@ class Eckart(TunnelingCorrection):
 
 
 class Wigner(TunnelingCorrection):
-    """Implements the Wigner tunneling correction factor"""
+    """Implements the Wigner tunneling correction factor
+
+       This correction is proposed in
+       E. Wigner, Z. Physik. Chern. B 19, 203 (1932)
+    """
     def __init__(self, pf_trans):
         """
            Arguments:
@@ -236,7 +244,46 @@ class Wigner(TunnelingCorrection):
 
     def __call__(self, temps):
         """See :meth:TunnelingCorrection.__call__"""
-        h = 2*numpy.pi # the Planck constant in atomic units
-        return 1+(h*self.nu/(boltzmann*temps))**2/24
+        return 1+(planck*self.nu/(boltzmann*temps))**2/24
+
+
+class Miller(TunnelingCorrection):
+    """Implements the Miller tunneling correction factor
+
+       This correction is proposed in
+       Miller, W. H. J. Chem. Phys. 1973, 61, 1823.
+    """
+    def __init__(self, pf_trans):
+        """
+           Arguments:
+            | pf_trans  --  the partition function of the transition state
+
+           Attribute derived from these argument:
+            | self.nu  --  the imaginary frequency (as a real number)
+
+           Note that this correction is only defined for transition states
+           with only one imaginary frequency.
+        """
+        if len(pf_trans.vibrational.negative_freqs) != 1:
+            raise ValueError("The partition function of the transition state must have exactly one negative frequency, found %i" % len(pf_prod.negative_freqs))
+        self.nu = pf_trans.vibrational.negative_freqs[0]
+
+    @classmethod
+    def _from_parameters(cls, nu):
+        """An alternative constructor used for testing purposes.
+
+           Arguments:
+            | nu  --  The imaginary frequency (as a real number)
+
+           This method should not be used in normal situations.
+        """
+        result = cls.__new__(cls)
+        result.nu = nu
+        return result
+
+    def __call__(self, temps):
+        """See :meth:TunnelingCorrection.__call__"""
+        x = 0.5*planck*self.nu/(boltzmann*temps)
+        return x/numpy.sin(x)
 
 

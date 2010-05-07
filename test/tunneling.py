@@ -150,6 +150,11 @@ class TunnelingTestCase(unittest.TestCase):
         pf_prod = PartFun(NMA(mol_prod))
 
         eckart = Eckart([pf_react1, pf_react2], pf_trans, [pf_prod])
-        eckart([620,770])
+        eckart(numpy.array([620,770]))
 
+    def test_miller_tugba(self):
+        mol_trans = load_molecule_g03fchk("input/tugba/ts.fchk")
+        pf_trans = PartFun(NMA(mol_trans))
+        miller = Miller(pf_trans)
+        miller(numpy.array([620,770]))
 

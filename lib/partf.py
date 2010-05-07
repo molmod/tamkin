@@ -271,7 +271,7 @@ class StatFys(object):
         """
         raise NotImplementedError
 
-    def log_eval(self, temp, helper0=None):
+    def log(self, temp, helper0=None):
         """The logarithm of the partition function
 
            Argument:
@@ -285,7 +285,7 @@ class StatFys(object):
             helper0 = self.helper0
         return helper0(temp, 0)
 
-    def log_deriv(self, temp, helper1=None, cp=False):
+    def dlog(self, temp, helper1=None, cp=False):
         """The derivative towards temperature of the logarithm of the partition function
 
            Argument:
@@ -301,7 +301,7 @@ class StatFys(object):
             helper1 = self.helper1
         return helper1(temp, 0, cp)
 
-    def log_deriv2(self, temp, helper2=None, cp=False):
+    def ddlog(self, temp, helper2=None, cp=False):
         """The second derivative towards temperature of the logarithm of the partition function
 
            Argument:
@@ -454,26 +454,26 @@ class StatFysTerms(StatFys):
         """
         raise NotImplementedError
 
-    def log_eval_terms(self, temp):
-        """Returns an array with log_eval results for the distinct terms.
+    def log_terms(self, temp):
+        """Returns an array with log results for the distinct terms.
 
-           This is just an array version of :meth:`StatFys.log_eval`.
+           This is just an array version of :meth:`StatFys.log`.
         """
-        return self.log_eval(temp, self.helper0_terms)
+        return self.log(temp, self.helper0_terms)
 
-    def log_deriv_terms(self, temp, cp=False):
-        """Returns an array with log_deriv results for the distinct terms.
+    def dlog_terms(self, temp, cp=False):
+        """Returns an array with dlog results for the distinct terms.
 
-           This is just an array version of :meth:`StatFys.log_deriv`.
+           This is just an array version of :meth:`StatFys.dlog`.
         """
-        return self.log_deriv(temp, self.helper1_terms, cp)
+        return self.dlog(temp, self.helper1_terms, cp)
 
-    def log_deriv2_terms(self, temp, cp=False):
-        """Returns an array with log_deriv2 results for the distinct terms.
+    def ddlog_terms(self, temp, cp=False):
+        """Returns an array with ddlog results for the distinct terms.
 
-           This is just an array version of :meth:`StatFys.log_deriv2`.
+           This is just an array version of :meth:`StatFys.ddlog`.
         """
-        return self.log_deriv2(temp, self.helper2_terms, cp)
+        return self.ddlog(temp, self.helper2_terms, cp)
 
     def internal_energy_terms(self, temp):
         """Returns an array with internal_energy results for the distinct terms.

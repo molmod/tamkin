@@ -96,9 +96,9 @@ class ThermoAnalysis(object):
             ThermoTable("Heat capacity (v)", "%.3f", joule/mol/kelvin, "J/(mol*K)", "heat_capacity_v", pf, temps),
             ThermoTable("Heat capacity (p)", "%.3f", joule/mol/kelvin, "J/(mol*K)", "heat_capacity_p", pf, temps),
             ThermoTable("Entropy", "%.5f",  joule/mol/kelvin, "J/(mol*K)", "entropy", pf, temps),
-            ThermoTable("log(q)", "%.1f", 1, "1", "log_eval", pf, temps),
-            ThermoTable("d log(q) / dT", "%.3e", 1/kelvin, "1/K", "log_deriv", pf, temps),
-            ThermoTable("d^2 log(q) / dT^2", "%.1e", 1/kelvin, "1//K", "log_deriv2", pf, temps)
+            ThermoTable("log(q)", "%.1f", 1, "1", "log", pf, temps),
+            ThermoTable("d log(q) / dT", "%.3e", 1/kelvin, "1/K", "dlog", pf, temps),
+            ThermoTable("d^2 log(q) / dT^2", "%.1e", 1/kelvin, "1//K", "ddlog", pf, temps)
         ]
 
     def write_to_file(self, filename):

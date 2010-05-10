@@ -184,6 +184,7 @@ class NMA(object):
 
         # frequencies
         self.freqs = numpy.sqrt(abs(evals))/(2*numpy.pi)
+        # turn imaginary frequencies into negative frequencies
         self.freqs *= (evals > 0)*2-1
 
         if do_modes:

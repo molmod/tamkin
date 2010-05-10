@@ -353,6 +353,31 @@ class NMATestCase(unittest.TestCase):
             ])
             self.check_mode(expected_eig_mode, molecule, nma, 10+shift)
 
+    def test_teller_redlich_gas_react_sterck(self):
+        for treatment, precision_wn, shift in (Full(), 0, 6), (ConstrainExt(), 3, 0):
+            mol1 = load_molecule_g03fchk("input/sterck/aa.fchk")
+            nma1 = NMA(mol1, treatment)
+            self.check_ortho(nma1.modes)
+
+            mol2 = mol1.copy_with(masses=mol1.masses*numpy.random.uniform(0.9,1.1,mol1.size))
+            nma2 = NMA(mol2, treatment)
+            self.check_ortho(nma2.modes)
+
+            ratio12 = 1.0
+            for i in xrange(len(nma1.freqs)):
+                if i not in nma1.zeros:
+                    ratio12 *= nma1.freqs[i]
+                if i not in nma2.zeros:
+                    ratio12 /= nma2.freqs[i]
+
+            check = (nma1.masses.sum()/nma2.masses.sum())**(1.5)
+            imoms1 = numpy.linalg.eigvalsh(nma1.inertia_tensor)
+            imoms2 = numpy.linalg.eigvalsh(nma2.inertia_tensor)
+            check *= (imoms1.prod()/imoms2.prod())**(0.5)
+            check /= (nma1.masses/nma2.masses).prod()**(1.5)
+            self.assertAlmostEqual(ratio12, check, 2)
+
+
     def test_gas_trans_sterck(self):
         # Test both Full and ConstrainExt:
         for treatment, precision_wn, shift in (Full(), 0, 6), (ConstrainExt(), 3, 0):

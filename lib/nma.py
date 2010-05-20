@@ -110,7 +110,7 @@ import numpy
 __all__ = [
     "NMA", "AtomDivision", "Transform", "MassMatrix", "Treatment",
     "Full", "ConstrainExt", "PHVA", "VSA", "VSANoMass", "MBH",
-    "PHVA_MBH", "Constrain",
+    "Blocks","PHVA_MBH", "Constrain",
 ]
 
 

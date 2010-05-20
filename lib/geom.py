@@ -72,8 +72,8 @@ def transrot_basis(coordinates, rot=True):
        Optional argument:
         | rot  --  When True the rotations are included [default=True]
 
-       The return value is a numpy array with 3*N rows and 6 (``rot==True``) or
-       3 (``rot==False``) columns. The columns are not mass weighted.
+       The return value is a numpy array with 3*N columns and 6 (``rot==True``)
+       or 3 (``rot==False``) rows. The rows are not mass weighted.
     """
     if not rot:
         result = numpy.zeros((3, coordinates.size), float)

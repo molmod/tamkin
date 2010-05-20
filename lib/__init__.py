@@ -58,6 +58,7 @@
 
 from tamkin.data import *
 from tamkin.io import *
+from tamkin.geom import *
 from tamkin.nma import *
 from tamkin.nmatools import *
 from tamkin.partf import *

@@ -107,6 +107,33 @@ class DataTestCase(unittest.TestCase):
         self.assertEqual(molecule2.periodic, False)
         self.assertEqual(molecule2.energy, 5.)
 
-
-
+    def test_translate_pbc(self):
+        molecule = load_molecule_cp2k("input/cp2k/pentane/opt.xyz", "input/cp2k/pentane/sp.out", "input/cp2k/pentane/freq.out")
+        self.assertAlmostEqual(molecule.unit_cell.matrix[1,1]/angstrom, 30.000,3)
+        self.assertAlmostEqual(molecule.unit_cell.matrix[0,1]/angstrom, 0.000,3)
+        self.assertAlmostEqual(molecule.coordinates[5,1]/angstrom, 13.9457396458)
+        selected = range(6)+[11,14]
+        molecule2 = translate_pbc(molecule, selected, [1,-1,0])
+        self.assertAlmostEqual(molecule2.coordinates[5,1]/angstrom, 13.9457396458-30.)
+        for i in range(molecule.size):
+            self.assertAlmostEqual(molecule.numbers[i], molecule2.numbers[i])
+            self.assertAlmostEqual(molecule.masses[i], molecule2.masses[i])
+            for mu in range(3):
+                if i not in selected:
+                    self.assertAlmostEqual(molecule.coordinates[i,mu],molecule2.coordinates[i,mu])
+                else:
+                    if mu is 0:
+                        self.assertAlmostEqual(molecule.coordinates[i,mu]+30.*angstrom,molecule2.coordinates[i,mu])
+                    if mu is 1:
+                        self.assertAlmostEqual(molecule.coordinates[i,mu]-30.*angstrom,molecule2.coordinates[i,mu])
+                    if mu is 2:
+                        self.assertAlmostEqual(molecule.coordinates[i,mu],molecule2.coordinates[i,mu])
+                self.assertAlmostEqual(molecule.gradient[i,mu],molecule2.gradient[i,mu])
+                for j in selected:
+                    for nu in range(3):
+                        self.assertAlmostEqual(molecule.hessian[3*i+mu,3*j+nu],molecule2.hessian[3*i+mu,3*j+nu])
+        self.assertEqual(molecule.multiplicity, molecule2.multiplicity)
+        self.assertEqual(molecule.symmetry_number, molecule2.symmetry_number)
+        self.assertAlmostEqual(molecule2.unit_cell.matrix[0,0]/angstrom, 30.000,3)
+        self.assertAlmostEqual(molecule2.unit_cell.matrix[1,2]/angstrom, 0.000,3)
 

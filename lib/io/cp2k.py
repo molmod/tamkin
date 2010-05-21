@@ -60,6 +60,8 @@ from tamkin.data import Molecule
 
 from molmod.molecules import Molecule as BaseMolecule
 from molmod.periodic import periodic
+from molmod.unit_cells import UnitCell
+from molmod.units import angstrom
 
 import numpy
 
@@ -83,6 +85,7 @@ def load_molecule_cp2k(fn_xyz, fn_sp, fn_freq, multiplicity=1, is_periodic=True)
                             [default=1]
         | is_periodic  --  True when the system is periodic in three dimensions.
                            False when the systen is aperiodic. [default=True]
+        | unit_cell  --  The unit cell vectors for periodic structures
     """
     molecule = BaseMolecule.from_file(fn_xyz)
     masses = numpy.array([periodic[number].mass for number in molecule.numbers])
@@ -113,8 +116,17 @@ def load_molecule_cp2k(fn_xyz, fn_sp, fn_freq, multiplicity=1, is_periodic=True)
         raise IOError("Could not read energy and/or gradient (forces) from single point file.")
     f.close()
 
-    # go through the freq file: hessian
+    # go through the freq file: lattic vectors and hessian
     f = file(fn_freq)
+    vectors = numpy.zeros((3,3),float)
+    while True:
+        line = f.readline()
+        if line.startswith(" CELL"): break
+    for axis in range(3):
+        line = f.readline()
+        vectors[:,axis] = numpy.array( [float(line[29:39]), float(line[39:49]), float(line[49:59])] )
+    unit_cell = UnitCell(vectors*angstrom)
+
     hessian = None
     while True:
         line = f.readline()
@@ -150,7 +162,7 @@ def load_molecule_cp2k(fn_xyz, fn_sp, fn_freq, multiplicity=1, is_periodic=True)
 
     return Molecule(
         molecule.numbers, molecule.coordinates, masses, energy, gradient,
-        hessian, multiplicity, 0, is_periodic
+        hessian, multiplicity, 0, is_periodic, unit_cell=unit_cell
     )
 
 

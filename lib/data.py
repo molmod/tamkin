@@ -70,13 +70,14 @@ from molmod.graphs import cached
 import numpy
 
 
-__all__ = ["Molecule", "BareNucleus", "Proton", "RotScan"]
+__all__ = ["Molecule", "BareNucleus", "Proton", "RotScan",
+           "translate_pbc"]
 
 
 class Molecule(BaseMolecule):
     """A container for a Hessian computation output from QM or MM codes."""
 
-    def __init__(self, numbers, coordinates, masses, energy, gradient, hessian, multiplicity, symmetry_number=0, periodic=False, title=None, graph=None, symbols=None):
+    def __init__(self, numbers, coordinates, masses, energy, gradient, hessian, multiplicity, symmetry_number=0, periodic=False, title=None, graph=None, symbols=None, unit_cell=None):
         """
            Arguments:
             | numbers  --  The atom numbers (integer numpy array with shape N)
@@ -102,6 +103,7 @@ class Molecule(BaseMolecule):
             | title  --  The title of the system
             | graph  --  The molecular graph of the system
             | symbols  --  A list with atom symbols
+            | unit_cell  --  The unit cell vectors for periodic structures
         """
         ReadOnly.__init__(self)
         # Mandatory means that the attributes can not be None.
@@ -121,6 +123,7 @@ class Molecule(BaseMolecule):
             "title": title,
             "graph": graph,
             "symbols": symbols,
+            "unit_cell":unit_cell,
         }
         self.init_attributes(mandatory, optional)
 
@@ -157,7 +160,7 @@ class Molecule(BaseMolecule):
         return numpy.array([self.masses, self.masses, self.masses]).transpose().ravel()
 
 
-    def get_submolecule(self, selected, energy=None, multiplicity=None, symmetry_number=None, periodic=None, graph=None, title=None, symbols=None):
+    def get_submolecule(self, selected, energy=None, multiplicity=None, symmetry_number=None, periodic=None, graph=None, title=None, symbols=None, unit_cell=None):
         """Create a submolecule with a selection of atoms
 
            Argument:
@@ -173,6 +176,7 @@ class Molecule(BaseMolecule):
             | title  --  The title of the system
             | graph  --  The molecular graph of the system
             | symbols  --  A list with atom symbols
+            | unit_cell  --  The unit cell vectors for periodic structures
 
            The function returns a Molecule object consisting of the
            atoms in the selected list. The numbers, coordinates, masses, gradient,
@@ -193,6 +197,8 @@ class Molecule(BaseMolecule):
         if symbols is None and hasattr(self,"symbols"): # check if attribute exists
             if self.symbols is None: symbols = self.symbols
             else: symbols = sum( [ [self.symbols[at]] for at in selected] ,[])
+        if unit_cell is None and hasattr(self,"unit_cell"): # check if attribute exists
+            if self.unit_cell is None: unit_cell = self.unit_cell
 
         return Molecule(
             self.numbers[selected],
@@ -207,6 +213,7 @@ class Molecule(BaseMolecule):
             title = title,
             graph = graph,
             symbols = symbols,
+            unit_cell = unit_cell,
         )
 
 
@@ -298,3 +305,56 @@ class RotScan(ReadOnly):
         self.init_attributes(mandatory, optional)
 
 
+def translate_pbc(molecule, selected, displ, vectors = None):
+    """Translate the structure along the lattice vectors
+    
+    This method is meant to be used in periodic structures, where periodic
+    boundary conditions apply (pbc).
+    
+    Arguments:
+    | molecule  --  a Molecule instance
+    | selected  --  a list of indices of the atoms that will be displaced
+    | displ  -- a list of 3 integers: [i0,i1,i2]. The selected atoms
+                will be displaced over i0 lattice distances in the 0-axis
+                direction, similarly for i1 and i2.
+
+    Optional argument:
+    | vectors  --  the lattice vectors, one in each column. If not specified,
+                   the vectors in the unit_cell attribute of the molecule is used.
+    """   
+    coords = molecule.coordinates.copy()
+    if vectors is None:
+        if hasattr(molecule,"unit_cell"):
+            vectors = molecule.unit_cell.matrix
+        else:
+            raise Error("No vectors for axes known")
+
+    # displace
+    for atom in selected:
+        for axis in range(3):
+            coords[atom,:] += displ[axis]*vectors[:,axis]
+    # optional arguments
+    if not hasattr(molecule,"title"):     title = None
+    else: title = molecule.title
+    if not hasattr(molecule,"graph"):     graph = None
+    else: title = molecule.graph
+    if not hasattr(molecule,"symbols"):   symbols = None
+    else: symbols = molecule.symbols
+    if not hasattr(molecule,"unit_cell"): unit_cell = None
+    else: unit_cell = molecule.unit_cell
+
+    return Molecule(
+            molecule.numbers,
+            coords,
+            molecule.masses,
+            molecule.energy,
+            molecule.gradient,
+            molecule.hessian,
+            molecule.multiplicity,
+            symmetry_number = molecule.symmetry_number,
+            periodic = molecule.periodic,
+            title = title,
+            graph = graph,
+            symbols = symbols,
+            unit_cell = unit_cell,
+        )

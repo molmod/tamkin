@@ -60,6 +60,7 @@ from tamkin.data import Molecule
 
 from molmod import electronvolt, angstrom, amu
 from molmod.periodic import periodic
+from molmod.unit_cells import UnitCell
 
 import numpy
 
@@ -110,6 +111,18 @@ def load_molecule_vasp(vaspfile_xyz, vaspfile_out, energy = 0.0, multiplicity=1,
         N = int(words[-1])
         break
 
+    # read lattice vectors: store in columns
+    vectors = numpy.ones((3,3),float)   
+    for line in f:
+        if line.startswith("      direct lattice vectors"): break
+    axis = 0
+    for line in f:
+        words = line.split()
+        vectors[:,axis] = numpy.array([ float(word)*angstrom for word in words[:3]])
+        axis += 1
+        if axis >= 3: break
+    unit_cell = UnitCell(vectors)
+
     # masses
     # TODO: should be made more general?
     masses = numpy.zeros((N),float)
@@ -143,7 +156,7 @@ def load_molecule_vasp(vaspfile_xyz, vaspfile_out, energy = 0.0, multiplicity=1,
     for line in f:
         words = line.split()
         positions[row,:] = [ float(word)*angstrom for word in words[:3] ]
-        gradient[row,:] = [ -float(word)*electronvolt/angstrom for word in words[3:6] ]
+        gradient[row,:]  = [-float(word)*electronvolt/angstrom for word in words[3:6] ]
         row += 1
         if row >= N: break
 
@@ -187,7 +200,7 @@ def load_molecule_vasp(vaspfile_xyz, vaspfile_out, energy = 0.0, multiplicity=1,
 
     return Molecule(
         atomicnumbers, positions, masses, energy, gradient,
-        hessian, multiplicity, periodic=is_periodic )
+        hessian, multiplicity, periodic=is_periodic, unit_cell=unit_cell )
 
 
 def load_fixed_vasp(filename):

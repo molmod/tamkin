@@ -112,7 +112,7 @@ def load_molecule_vasp(vaspfile_xyz, vaspfile_out, energy = 0.0, multiplicity=1,
         break
 
     # read lattice vectors: store in columns
-    vectors = numpy.ones((3,3),float)   
+    vectors = numpy.ones((3,3),float)
     for line in f:
         if line.startswith("      direct lattice vectors"): break
     axis = 0

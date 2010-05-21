@@ -307,10 +307,10 @@ class RotScan(ReadOnly):
 
 def translate_pbc(molecule, selected, displ, vectors = None):
     """Translate the structure along the lattice vectors
-    
+
     This method is meant to be used in periodic structures, where periodic
     boundary conditions apply (pbc).
-    
+
     Arguments:
     | molecule  --  a Molecule instance
     | selected  --  a list of indices of the atoms that will be displaced
@@ -321,7 +321,7 @@ def translate_pbc(molecule, selected, displ, vectors = None):
     Optional argument:
     | vectors  --  the lattice vectors, one in each column. If not specified,
                    the vectors in the unit_cell attribute of the molecule is used.
-    """   
+    """
     coords = molecule.coordinates.copy()
     if vectors is None:
         if hasattr(molecule,"unit_cell"):

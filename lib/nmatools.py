@@ -77,7 +77,7 @@ __all__ = [
 invcm = lightspeed/centimeter
 
 
-def compute_overlap(nma1, nma2, filename=None):
+def compute_overlap(nma1, nma2, filename=None, unit="au"):
     """Compute overlap of modes and print to file if requested
 
        Arguments:
@@ -87,6 +87,8 @@ def compute_overlap(nma1, nma2, filename=None):
        Optional argument:
          | filename  --  when given, the overlap is written to file by the
                        function write_overlap
+         | unit  --  unit in which frequencies should be printed in the
+                     file: au [default] or 1/centimeter [cm1]
 
        The nma arguments can have different formats:
 
@@ -121,11 +123,11 @@ def compute_overlap(nma1, nma2, filename=None):
     # compute overlap
     overlap = numpy.dot(numpy.transpose(modes1), modes2)
     if filename is not None:
-        write_overlap(freqs1, freqs2, overlap, filename=filename)
+        write_overlap(freqs1, freqs2, overlap, filename=filename, unit=unit)
     return overlap
 
 
-def write_overlap(freqs1, freqs2, overlap, filename="overlap.csv"):
+def write_overlap(freqs1, freqs2, overlap, filename="overlap.csv", unit="au"):
     """Write the overlap matrix to a csv file
 
        Arguments:
@@ -136,7 +138,9 @@ def write_overlap(freqs1, freqs2, overlap, filename="overlap.csv"):
         | overlap  --  the overlap matrix
 
        Optional arguments:
-         filename  --  the file to write to [default="overlap.csv"]
+        | filename  --  the file to write to [default="overlap.csv"]
+        | unit      --  unit in which frequencies are printed in file:
+                        1/centimeter (cm1) or au  [default]
 
        The table contains the following blocks:
 
@@ -154,12 +158,24 @@ def write_overlap(freqs1, freqs2, overlap, filename="overlap.csv"):
 
     [rows,cols] = overlap.shape
 
-    # 1. row of freqs2
-    print >> f, ";"+";".join(str(g) for g in freqs2)  #this is the same
+    if unit is "au":
+        # 1. row of freqs2
+        print >> f, ";"+";".join(str(g) for g in freqs2)  #this is the same
 
-    # 2. start each row with freq of freqs1 and continue with overlaps
-    for r in range(rows):
-        print >> f, str(freqs1[r])+";"+";".join(str(g) for g in overlap[r,:].tolist())
+        # 2. start each row with freq of freqs1 and continue with overlaps
+        for r in range(rows):
+            print >> f, str(freqs1[r])+";"+";".join(str(g) for g in overlap[r,:].tolist())
+
+    elif unit is "cm1":
+        # 1. row of freqs2
+        print >> f, ";"+";".join(str(g*centimeter/lightspeed) for g in freqs2)  #this is the same
+
+        # 2. start each row with freq of freqs1 and continue with overlaps
+        for r in range(rows):
+            print >> f, str(freqs1[r]*centimeter/lightspeed)+";"+";".join(str(g) for g in overlap[r,:].tolist())
+
+    else:
+        raise ImplementationError("this unit is not implemented/recognized")
     f.close()
 
 
@@ -445,7 +461,7 @@ def plot_spectrum_lines(filename, all_freqs, low=None, high=None, title=None):
     """Plot multiple spectra in a comparative line plot
 
        Arguments:
-         | filename  --  the filename to write the figure too (the extension and
+         | filename  --  the filename to write the figure to (the extension and
                          the matplotlib settings determine the file format)
          | all_freqs  --  a list with spectra, each item in the list is an array
                          with multiple frequencies that represent one spectrum

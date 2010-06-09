@@ -65,8 +65,8 @@
 """
 
 
-from molmod.constants import boltzmann, planck
-from molmod.units import kjmol
+#from molmod import boltzmann, planck
+from molmod import kjmol
 
 import numpy
 

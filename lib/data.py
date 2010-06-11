@@ -63,7 +63,7 @@
 
 from tamkin.geom import transrot_basis
 
-from molmod import Molecule as BaseMolecule, MolecularGraph, ReadOnly
+from molmod import Molecule as BaseMolecule, MolecularGraph, ReadOnly, UnitCell
 from molmod.periodic import periodic
 from molmod.graphs import cached
 
@@ -123,7 +123,7 @@ class Molecule(BaseMolecule):
             "title": title,
             "graph": graph,
             "symbols": symbols,
-            "unit_cell":unit_cell,
+            "unit_cell": unit_cell,
         }
         self.init_attributes(mandatory, optional)
 
@@ -158,7 +158,6 @@ class Molecule(BaseMolecule):
            array is 3N.
         """
         return numpy.array([self.masses, self.masses, self.masses]).transpose().ravel()
-
 
     def get_submolecule(self, selected, energy=None, multiplicity=None, symmetry_number=None, periodic=None, graph=None, title=None, symbols=None, unit_cell=None):
         """Create a submolecule with a selection of atoms
@@ -215,6 +214,67 @@ class Molecule(BaseMolecule):
             symbols = symbols,
             unit_cell = unit_cell,
         )
+
+    def write_to_file(self, filename):
+        """Write the molecule to a human-readable checkpoint file.
+
+           Argument:
+            | filename  --  the file to write to
+        """
+        from tamkin.io.internal import dump_chk
+        data = {}
+        for key in "numbers", "coordinates", "masses", "energy", "gradient", \
+                   "hessian", "multiplicity", "symmetry_number", "periodic", \
+                   "title", "symbols":
+            value = getattr(self, key, None)
+            if value is not None:
+                data[key] = value
+        if hasattr(self, "graph"):
+            data["edges"] = numpy.array([tuple(edge) for edge in self.graph.edges])
+        if hasattr(self, "unit_cell"):
+            data["cell_vectors"] = self.unit_cell.matrix
+            data["cell_active"] = self.unit_cell.active
+        dump_chk(filename, data)
+
+    @classmethod
+    def read_from_file(cls, filename):
+        """Construct a Molecule object from a previously saved checkpoint file
+
+           Arguments:
+            | filename  --  the file to load from
+
+           Usage::
+
+             >>> mol = Molecule.read_from_file("mol.chk")
+
+        """
+        from tamkin.io.internal import load_chk
+        # load the file
+        data = load_chk(filename)
+        # check the names of the fields:
+        mandatory_fields = set([
+            "numbers", "coordinates", "masses", "energy", "gradient", "hessian"
+        ])
+        if not set(data.iterkeys()).issuperset(mandatory_fields):
+            raise IOError("The Checkpoint file does not contain the mandatory fields.")
+        # take the mandatory fields
+        constructor_args = {}
+        for mfield in mandatory_fields:
+            constructor_args[mfield] = data[mfield]
+        # take the optional arguments if present
+        opt_fields = ["multiplicity", "symmetry_number", "periodic", "title", "symbols"]
+        for ofield in opt_fields:
+            if ofield in data:
+                constructor_args[ofield] = data[ofield]
+        # take the special optional arguments that need conversion
+        if "edges" in data:
+            graph = MolecularGraph(data["edges"], data["numbers"])
+            constructor_args["graph"] = graph
+        if "cell_vectors" in data:
+            unit_cell = UnitCell(data["cell_vectors"], data.get("cell_active"))
+            constructor_args["unit_cell"] = unit_cell
+        # construct the molecule object
+        return Molecule(**constructor_args)
 
 
 class BareNucleus(Molecule):

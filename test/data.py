@@ -59,8 +59,8 @@
 from tamkin import *
 
 from molmod.periodic import periodic
-from molmod.units import angstrom, amu, calorie, avogadro, electronvolt
-from molmod.constants import lightspeed
+from molmod import angstrom, amu, calorie, avogadro, electronvolt, lightspeed, \
+    UnitCell
 
 import unittest, numpy
 
@@ -136,4 +136,56 @@ class DataTestCase(unittest.TestCase):
         self.assertEqual(molecule.symmetry_number, molecule2.symmetry_number)
         self.assertAlmostEqual(molecule2.unit_cell.matrix[0,0]/angstrom, 30.000,3)
         self.assertAlmostEqual(molecule2.unit_cell.matrix[1,2]/angstrom, 0.000,3)
+
+    def test_molecule_checkpoint_basic(self):
+        mol1 = load_molecule_g03fchk("input/sterck/aa.fchk")
+        mol1.write_to_file("output/molecule_checkpoint_basic.chk")
+        mol2 = Molecule.read_from_file("output/molecule_checkpoint_basic.chk")
+
+        self.assertEqual(mol1.numbers.shape, mol2.numbers.shape)
+        self.assert_(abs(mol1.numbers - mol2.numbers).max() == 0)
+        self.assertEqual(mol1.coordinates.shape, mol2.coordinates.shape)
+        self.assert_(abs(mol1.coordinates - mol2.coordinates).max() < 1e-10)
+        self.assertEqual(mol1.masses.shape, mol2.masses.shape)
+        self.assert_(abs(mol1.masses - mol2.masses).max() < 1e-10)
+        self.assertAlmostEqual(mol1.energy, mol2.energy)
+        self.assertEqual(mol1.gradient.shape, mol2.gradient.shape)
+        self.assert_(abs(mol1.gradient - mol2.gradient).max() < 1e-10)
+        self.assertEqual(mol1.hessian.shape, mol2.hessian.shape)
+        self.assert_(abs(mol1.hessian - mol2.hessian).max() < 1e-10)
+        self.assertEqual(mol1.multiplicity, mol2.multiplicity)
+        self.assertEqual(mol1.symmetry_number, mol2.symmetry_number)
+        self.assertEqual(mol1.periodic, mol2.periodic)
+
+    def test_molecule_checkpoint_full(self):
+        mol1 = load_molecule_g03fchk("input/sterck/aa.fchk")
+        mol1.set_default_graph()
+        mol1.title = "Foobar"
+        mol1.unit_cell = UnitCell(numpy.identity(3, float)*25)
+        mol1.symbols = [periodic[n].symbol for n in mol1.numbers]
+        mol1.write_to_file("output/molecule_checkpoint_full.chk")
+        mol2 = Molecule.read_from_file("output/molecule_checkpoint_full.chk")
+
+        self.assertEqual(mol1.numbers.shape, mol2.numbers.shape)
+        self.assert_(abs(mol1.numbers - mol2.numbers).max() == 0)
+        self.assertEqual(mol1.coordinates.shape, mol2.coordinates.shape)
+        self.assert_(abs(mol1.coordinates - mol2.coordinates).max() < 1e-10)
+        self.assertEqual(mol1.masses.shape, mol2.masses.shape)
+        self.assert_(abs(mol1.masses - mol2.masses).max() < 1e-10)
+        self.assertAlmostEqual(mol1.energy, mol2.energy)
+        self.assertEqual(mol1.gradient.shape, mol2.gradient.shape)
+        self.assert_(abs(mol1.gradient - mol2.gradient).max() < 1e-10)
+        self.assertEqual(mol1.hessian.shape, mol2.hessian.shape)
+        self.assert_(abs(mol1.hessian - mol2.hessian).max() < 1e-10)
+        self.assertEqual(mol1.multiplicity, mol2.multiplicity)
+        self.assertEqual(mol1.symmetry_number, mol2.symmetry_number)
+        self.assertEqual(mol1.periodic, mol2.periodic)
+
+        self.assertEqual(mol1.graph.edges, mol2.graph.edges)
+        self.assertEqual(mol1.title, mol2.title)
+        self.assertEqual(mol1.unit_cell.matrix.shape, mol2.unit_cell.matrix.shape)
+        self.assert_(abs(mol1.unit_cell.matrix - mol2.unit_cell.matrix).max() < 1e-10)
+        self.assertEqual(mol1.unit_cell.active.shape, mol2.unit_cell.active.shape)
+        self.assert_((mol1.unit_cell.active == mol2.unit_cell.active).all())
+        self.assert_((mol1.symbols == mol2.symbols).all())
 

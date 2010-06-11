@@ -65,8 +65,7 @@
 """
 
 
-#from molmod import boltzmann, planck
-from molmod import kjmol
+from molmod import boltzmann, planck, kjmol
 
 import numpy
 

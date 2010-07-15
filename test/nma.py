@@ -69,6 +69,8 @@ __all__ = ["NMATestCase"]
 
 class NMATestCase(unittest.TestCase):
     def check_ortho(self, modes):
+        if len(modes) == 0:
+            return
         unit_matrix = numpy.dot(modes.transpose(), modes)
         error_max = abs(unit_matrix - numpy.identity(len(unit_matrix))).max()
         self.assert_(error_max < 1e-5)
@@ -589,4 +591,16 @@ class NMATestCase(unittest.TestCase):
         self.assertEqual(nma.modes.shape[1],16)
         dump_modes_molden("output/ethanol.constr.molden.2.log", nma)
 
-
+    def test_sandra(self):
+        cases = [
+            ("input/sandra/F_freq.fchk", []),
+            ("input/sandra/HF_freq.fchk", [4472.7168]),
+            ("input/sandra/ts_FHF_optfreq.fchk", [-4.1374, 2.0214, 13.3582, 106.6359]),
+        ]
+        for fn_fchk, expected_freqs in cases:
+            molecule = load_molecule_g03fchk(fn_fchk)
+            nma = NMA(molecule, ConstrainExt(gradient_threshold=1e-3))
+            self.check_ortho(nma.modes)
+            self.check_freqs(expected_freqs, nma, 2, check_zeros=False)
+            nma = NMA(molecule)
+            

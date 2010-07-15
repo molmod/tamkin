@@ -176,48 +176,53 @@ class NMA(object):
             hessian_small_mw = treatment.mass_matrix_small.get_weighted_hessian(treatment.hessian_small)
         del treatment.hessian_small # save memory
 
-        if do_modes:
-            evals, modes_small_mw = numpy.linalg.eigh(hessian_small_mw)
-        else:
-            evals = numpy.linalg.eigvalsh(hessian_small_mw)
-            modes_small_mw = None
-
-        # frequencies
-        self.freqs = numpy.sqrt(abs(evals))/(2*numpy.pi)
-        # turn imaginary frequencies into negative frequencies
-        self.freqs *= (evals > 0)*2-1
-
-        if do_modes:
-            # At this point the transform object transforms unweighted reduced
-            # coordinates into Cartesian coordinates. Now we will alter it, so that
-            # it transforms from weighted reduced coordinates to Cartesian
-            # coordinates.
-            if treatment.mass_matrix_small is not None:
-                treatment.transform.make_weighted(treatment.mass_matrix_small)
-            # transform the modes to unweighted Cartesian coordinates.
-            self.modes = treatment.transform(modes_small_mw)
-            # transform the modes to weighted Cartesian coordinates.
-            self.modes *= molecule.masses3.reshape((-1,1))**0.5
-        else:
-            self.modes = None
-
-        # guess which modes correspond to the zero frequencies
-        if treatment.num_zeros == 0:
-            # don't bother
+        if hessian_small_mw.size == 0:
+            self.freqs = numpy.array([])
+            self.modes = numpy.array([])
             self.zeros = []
         else:
             if do_modes:
-                # take the 20 lowest modes and compute the overlap with the
-                # external basis
-                num_try = 20
-                to_try = abs(self.freqs).argsort()[:num_try]   #indices of lowest 20 modes
-                overlaps = numpy.zeros(num_try, float)
-                for counter, i in enumerate(to_try):
-                    components = numpy.dot(treatment.external_basis, self.modes[:,i])
-                    overlaps[counter] = numpy.linalg.norm(components)
-                self.zeros = to_try[overlaps.argsort()[-treatment.num_zeros:]]
+                evals, modes_small_mw = numpy.linalg.eigh(hessian_small_mw)
             else:
-                self.zeros = abs(self.freqs).argsort()[:treatment.num_zeros]
+                evals = numpy.linalg.eigvalsh(hessian_small_mw)
+                modes_small_mw = None
+
+            # frequencies
+            self.freqs = numpy.sqrt(abs(evals))/(2*numpy.pi)
+            # turn imaginary frequencies into negative frequencies
+            self.freqs *= (evals > 0)*2-1
+
+            if do_modes:
+                # At this point the transform object transforms unweighted reduced
+                # coordinates into Cartesian coordinates. Now we will alter it, so that
+                # it transforms from weighted reduced coordinates to Cartesian
+                # coordinates.
+                if treatment.mass_matrix_small is not None:
+                    treatment.transform.make_weighted(treatment.mass_matrix_small)
+                # transform the modes to unweighted Cartesian coordinates.
+                self.modes = treatment.transform(modes_small_mw)
+                # transform the modes to weighted Cartesian coordinates.
+                self.modes *= molecule.masses3.reshape((-1,1))**0.5
+            else:
+                self.modes = None
+
+            # guess which modes correspond to the zero frequencies
+            if treatment.num_zeros == 0:
+                # don't bother
+                self.zeros = []
+            else:
+                if do_modes:
+                    # take the 20 lowest modes and compute the overlap with the
+                    # external basis
+                    num_try = 20
+                    to_try = abs(self.freqs).argsort()[:num_try]   #indices of lowest 20 modes
+                    overlaps = numpy.zeros(num_try, float)
+                    for counter, i in enumerate(to_try):
+                        components = numpy.dot(treatment.external_basis, self.modes[:,i])
+                        overlaps[counter] = numpy.linalg.norm(components)
+                    self.zeros = to_try[overlaps.argsort()[-treatment.num_zeros:]]
+                else:
+                    self.zeros = abs(self.freqs).argsort()[:treatment.num_zeros]
 
         # a few more attributes that are worth keeping
         self.mass = molecule.mass

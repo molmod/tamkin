@@ -113,5 +113,3 @@ for s, color in cases:
 pylab.legend(loc=0)
 # Write the figure to file.
 pylab.savefig("arrhenius.png")
-
-

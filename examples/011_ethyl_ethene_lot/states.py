@@ -181,5 +181,3 @@ states = [
         G03Job("scan_methyl", "opt(ts,calcfc,modredundant,noeigentest)", ["5 1 2 8 S 72 5.0", "1 2 3 5 B"]),
     ]),
 ]
-
-

@@ -55,5 +55,3 @@ print >> f, "<p>BSSE corrections on the transition state.</p>"
 html.print_table(f, rows)
 
 print >> f, html.footer
-
-

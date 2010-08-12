@@ -55,4 +55,3 @@ Tools to generate trajectories
 
 .. automodule:: tamkin.io.trajectory
    :members:
-

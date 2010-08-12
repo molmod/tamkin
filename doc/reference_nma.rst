@@ -20,4 +20,3 @@ Some additional tools are in the ``nmatools.py`` code.
 
 .. automodule:: tamkin.nmatools
    :members:
-

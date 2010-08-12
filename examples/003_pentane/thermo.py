@@ -99,5 +99,3 @@ pf2.write_to_file("partfun2.txt")
 # Write an extensive overview of the thermodynamic properties to a file:
 ta2 = ThermoAnalysis(pf2, arange(300,601,5))
 ta2.write_to_file("thermo2.csv")
-
-

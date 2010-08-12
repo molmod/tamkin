@@ -134,5 +134,3 @@ def get_basis(label):
     if result is None:
         raise KeyError("Could not find a basis set matching label=%s" % label)
     return result
-
-

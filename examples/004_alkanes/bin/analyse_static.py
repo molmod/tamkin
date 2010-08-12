@@ -104,5 +104,3 @@ f.close()
 # B) Generate a thermo analysis report
 ta = ThermoAnalysis(pf, [100, 200, 300, 400, 500, 600, 700, 800, 900, 100])
 ta.write_to_file(os.path.join(args[0], "static_thermo.csv"))
-
-

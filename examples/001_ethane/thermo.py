@@ -77,5 +77,3 @@ print pf.gibbs_free_energy(300)/(kjmol)
 # Write an extensive overview of the thermodynamic properties to a file:
 ta = ThermoAnalysis(pf, [300,400,500,600])
 ta.write_to_file("thermo.csv")
-
-

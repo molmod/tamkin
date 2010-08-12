@@ -42,4 +42,3 @@ to (quantum) tunneling through the reaction barrier.
 
 .. automodule:: tamkin.tunneling
    :members:
-

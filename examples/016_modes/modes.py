@@ -79,4 +79,3 @@ for i in xrange(len(nma.freqs)):
     print "Components:"
     print nma.modes[:,i]
     print
-

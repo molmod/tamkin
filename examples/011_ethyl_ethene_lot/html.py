@@ -18,4 +18,3 @@ def print_table(f, rows):
     for row in rows:
         print >> f, "<tr>%s</tr>" % ("".join(row).encode('UTF-8'))
     print >> f, "</table>"
-

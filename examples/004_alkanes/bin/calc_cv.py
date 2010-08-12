@@ -73,5 +73,3 @@ var = 4.67336041784e-06 # atomic units
 # Allen and Tildesley, page 53, formula 2.82
 Cv = 0.5*DOF*boltzmann/(1-var/(0.5*DOF*boltzmann**2*temp**2))
 print "Heat capacity [J/(mol*K)]: %.f " % (Cv/(J/mol/K))
-
-

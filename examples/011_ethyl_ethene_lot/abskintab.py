@@ -88,4 +88,3 @@ for do_rotor in False, True:
         html.print_table(f, rows)
 
 print >> f, html.footer
-

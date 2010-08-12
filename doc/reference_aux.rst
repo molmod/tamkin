@@ -23,4 +23,3 @@ Analysis of molecular geometries
 
 .. automodule:: tamkin.geom
    :members:
-

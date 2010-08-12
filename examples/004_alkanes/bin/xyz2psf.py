@@ -96,5 +96,3 @@ atom_types = [get_atom_type(index, graph) for index in xrange(molecule.size)]
 psf = PSFFile()
 psf.add_molecular_graph(graph, atom_types=atom_types)
 psf.write_to_file(args[0].replace(".xyz", ".psf"))
-
-

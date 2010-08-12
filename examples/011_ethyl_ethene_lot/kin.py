@@ -78,4 +78,3 @@ print "experimental_A: %e" % experimental_A
 print "experimental_Ea", experimental_Ea
 #sys.exit()
 # done fitting
-

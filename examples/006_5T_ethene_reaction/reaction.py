@@ -96,5 +96,3 @@ ra.monte_carlo()
 ra.plot_parameters("parameters.png")
 # write all results to a file.
 ra.write_to_file("reaction.txt") # summary of the analysis
-
-

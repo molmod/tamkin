@@ -167,6 +167,3 @@ rotor1_ts_gauche.plot_levels("rotor1_ts_gauche_energy_levels.png", 300)
 rotor2_ts_gauche.plot_levels("rotor2_ts_gauche_energy_levels.png", 300)
 rotor1_ts_trans.plot_levels("rotor1_ts_trans_energy_levels.png", 300)
 rotor2_ts_trans.plot_levels("rotor2_ts_trans_energy_levels.png", 300)
-
-
-

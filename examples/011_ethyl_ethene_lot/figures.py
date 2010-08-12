@@ -176,4 +176,3 @@ if __name__ == "__main__":
     figure2()
     figure3()
     figure4()
-

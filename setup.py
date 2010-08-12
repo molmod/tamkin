@@ -76,5 +76,3 @@ setup(name='TAMkin',
         'Programming Language :: Python',
     ],
 )
-
-

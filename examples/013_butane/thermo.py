@@ -92,6 +92,3 @@ for angle, energy in array(rot_scan.potential).transpose():
     print "Frequency in THz:", nu/hertz/1e12/(2*pi)
     print "Wavenumber in cm-1:", nu/(lightspeed/centimeter)/(2*pi)
     print
-
-
-

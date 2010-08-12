@@ -68,5 +68,3 @@ for i in range(len(freqs1)):
     print >> f, filenames[i]+";"+str(freqs1[i]/conv)+";"+str(freqs2[i]/conv)+";"+str(overlaps[i])
 f.close()
 print "file written:", filename_out
-
-

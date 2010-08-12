@@ -84,4 +84,3 @@ print >> f, "<p>Geometrical parameters related to the reactants.</p>"
 html.print_table(f, rows)
 
 print >> f, html.footer
-

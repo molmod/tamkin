@@ -80,5 +80,3 @@ ta.write_to_file("thermo.csv")
 # temperature argument is used to indicate the population of each level in the
 # plot.
 rotor.plot_levels("energy_levels.png", 300)
-
-

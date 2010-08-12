@@ -56,15 +56,31 @@
 # --
 
 
-from tamkin.io.charmm import *
-from tamkin.io.cp2k import *
-from tamkin.io.cpmd import *
-from tamkin.io.gamess import *
-from tamkin.io.gaussian import *
-from tamkin.io.internal import *
-from tamkin.io.qchem import *
-from tamkin.io.trajectory import *
-from tamkin.io.vasp import *
+from tamkin.data import Molecule
+
+from molmod.io import PunchFile
 
 
+__all__ = ["load_molecule_pcgamess_punch"]
 
+
+def load_molecule_pcgamess_punch(fn_freq, energy=None, multiplicity=1, symmetry_number=0):
+    """Load a molecule from a PCGAMESS punch file
+
+       Arguments:
+         | fn_freq  --  punch file of the frequency job
+    """
+
+    punch = PunchFile(fn_freq)
+    if energy is None:
+        energy = punch.energy
+    return Molecule(
+        punch.numbers,
+        punch.coordinates,
+        punch.masses,
+        energy,
+        punch.gradient,
+        punch.hessian,
+        multiplicity,
+        symmetry_number,
+    )

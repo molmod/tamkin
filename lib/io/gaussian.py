@@ -57,7 +57,6 @@
 
 
 from tamkin.data import Molecule, RotScan
-from tamkin.nma import NMA
 
 from molmod.io import FCHKFile
 from molmod import dihed_angle, amu, angstrom

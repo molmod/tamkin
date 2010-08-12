@@ -107,6 +107,9 @@ class MetaTestCase(unittest.TestCase):
     def test_example_015(self):
         self.check_example("015_kie", "./reaction.py")
 
+    def test_example_016(self):
+        self.check_example("016_modes", "./modes.py")
+
     def test_code_quality(self):
         root = "../lib"
         self.assert_(os.path.isdir(root))

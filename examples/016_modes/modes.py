@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # TAMkin is a post-processing toolkit for thermochemistry and kinetics analysis.
 # Copyright (C) 2008-2010 Toon Verstraelen <Toon.Verstraelen@UGent.be>,
 # Matthias Vandichel <Matthias.Vandichel@UGent.be> and
@@ -56,15 +57,26 @@
 # --
 
 
-from tamkin.io.charmm import *
-from tamkin.io.cp2k import *
-from tamkin.io.cpmd import *
-from tamkin.io.gamess import *
-from tamkin.io.gaussian import *
-from tamkin.io.internal import *
-from tamkin.io.qchem import *
-from tamkin.io.trajectory import *
-from tamkin.io.vasp import *
+# Import the tamkin libarary
+from tamkin import *
+# Import other libraries
+import numpy # numerical and array routines
+from molmod import * # for units
 
+# Load the gamess data
+molecule = load_molecule_pcgamess_punch("PUNCH")
+# Perform the normal mode analysis
+#nma = NMA(molecule, do_modes=True)
+nma = NMA(molecule, ConstrainExt(), do_modes=True)
 
+# Print modes and wavenumbers on screen
+invcm = lightspeed/centimeter
+for i in xrange(len(nma.freqs)):
+    print "Mode:", i
+    print "Wavenumber:", nma.freqs[i]/invcm
+    print "Is zero:", i in nma.zeros
+    print "Norm of eigenmode:", numpy.linalg.norm(nma.modes[:,i])
+    print "Components:"
+    print nma.modes[:,i]
+    print
 

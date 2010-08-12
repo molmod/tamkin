@@ -603,4 +603,4 @@ class NMATestCase(unittest.TestCase):
             self.check_ortho(nma.modes)
             self.check_freqs(expected_freqs, nma, 2, check_zeros=False)
             nma = NMA(molecule)
-            
+

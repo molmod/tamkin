@@ -654,5 +654,3 @@ class Rotor(Info, StatFysTerms):
                                    self.freq_scaling, self.zp_scaling),
             helper2_levels(temp, n, self.energy_levels),
         ])
-
-

@@ -164,5 +164,3 @@ def load_molecule_cp2k(fn_xyz, fn_sp, fn_freq, multiplicity=1, is_periodic=True)
         molecule.numbers, molecule.coordinates, masses, energy, gradient,
         hessian, multiplicity, 0, is_periodic, unit_cell=unit_cell
     )
-
-

@@ -313,6 +313,3 @@ def load_peptide_info_charmm(filename):
             nitrogen.append(int(words[0]))
     f.close()
     return N, calpha, proline, carbon, oxygen, nitrogen
-
-
-

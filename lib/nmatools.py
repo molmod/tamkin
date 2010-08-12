@@ -626,6 +626,3 @@ def create_enm_molecule(molecule, selected=None, numbers=None, masses=None,
         1, # rotational symmetry number
         periodic,
     )
-
-
-

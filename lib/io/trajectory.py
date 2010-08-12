@@ -334,5 +334,3 @@ Number     Number      Type              X           Y           Z
 #======================================
 #    (END) write logfile as Gaussian03 does
 #======================================
-
-

@@ -249,5 +249,3 @@ def load_fixed_vasp(filename):
 
     fixed_atoms = [at for at in xrange(N) if at not in atoms_free]
     return numpy.array(fixed_atoms)
-
-

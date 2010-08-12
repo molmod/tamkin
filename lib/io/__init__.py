@@ -65,6 +65,3 @@ from tamkin.io.internal import *
 from tamkin.io.qchem import *
 from tamkin.io.trajectory import *
 from tamkin.io.vasp import *
-
-
-

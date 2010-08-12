@@ -117,4 +117,3 @@ class Timer(object):
         f = file(filename, 'w')
         self.dump(f)
         f.close()
-

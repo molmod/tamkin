@@ -284,5 +284,3 @@ class Miller(TunnelingCorrection):
         """See :meth:TunnelingCorrection.__call__"""
         x = 0.5*planck*self.nu/(boltzmann*temps)
         return x/numpy.sin(x)
-
-

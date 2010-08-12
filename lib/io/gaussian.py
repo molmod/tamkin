@@ -304,4 +304,3 @@ def load_rotscan_g03log(fn_log, top_indexes=None):
     )
     result.geometries = numpy.array(geometries)
     return result
-

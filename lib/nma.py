@@ -1679,5 +1679,3 @@ class Constrain(Treatment):
 
                 self.hessian_small[i,j] += numpy.sum( numpy.ravel(gradient)*X[:,count] )
                 count += 1
-
-

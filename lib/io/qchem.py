@@ -185,5 +185,3 @@ def load_molecule_qchem(qchemfile, hessfile = None, multiplicity=1, is_periodic 
         numbers, positions, masses, energy, gradient, hessian, multiplicity,
         symmetry_number, is_periodic
     )
-
-

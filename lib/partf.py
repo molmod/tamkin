@@ -1177,4 +1177,3 @@ def compute_equilibrium_constant(pfs_A, pfs_B, temp, cp=True, do_log=False):
         return log_K
     else:
         return numpy.exp(log_K)
-

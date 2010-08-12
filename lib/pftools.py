@@ -598,5 +598,3 @@ class ReactionAnalysis(object):
             pylab.legend(loc=0, numpoints=1, scatterpoints=1)
         if filename is not None:
             pylab.savefig(filename)
-
-

@@ -276,4 +276,3 @@ def dump_indices(filename, indices, shift=1, compact=True):
         print >> f, group_str
         print >> f
     f.close()
-

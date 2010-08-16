@@ -656,9 +656,10 @@ class ExtTrans(Info, StatFys):
            partition per particle (optionally multiplied by a power of the
            temperature, omitted here for clarity):
 
-           .. math:: \text{result} = \frac{\ln(Z_{N,\text{trans}})}{N} = \frac{\ln(\frac{1}{N!}Z_{1,\text{trans}}^N)}{N}.
+           .. math:: \text{result} = \frac{\ln(Z_{N,\text{trans}})}{N} = \frac{\ln(\frac{1}{N!}Z_{1,\text{trans}}^N)}{N},
 
-           Using Stirlings approximation, this leads to:
+           where N is the total number of particles. Using Stirlings
+           approximation, this leads to:
 
            .. math:: \text{result} = \frac{-N \ln(N) + N}{N} + \ln(Z_{1,\text{trans}}).
 

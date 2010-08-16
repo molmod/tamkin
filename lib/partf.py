@@ -83,7 +83,8 @@
 """
 
 
-from molmod import boltzmann, lightspeed, atm, bar, amu, centimeter, kjmol
+from molmod import boltzmann, lightspeed, atm, bar, amu, centimeter, kjmol, \
+    planck
 
 import numpy
 
@@ -233,7 +234,8 @@ class StatFys(object):
     def helper0(self, temp, n):
         """Helper function zero
 
-           Returns T^n ln(Z), where Z is the partition function
+           Returns T^n ln(Z_N)/N, where Z_N is (the contribution to) the many
+           body partition function and N is the total number of particles.
 
            Arguments:
             | temp  --  the temperature
@@ -244,7 +246,8 @@ class StatFys(object):
     def helper1(self, temp, n, cp=False):
         """Helper function one
 
-           Returns T^n (d ln(Z) / dT), where Z is the partition function
+           Returns T^n (d ln(Z) / dT), where Z_N is (the contribution to) the
+           many body partition function and N is the total number of particles.
 
            Arguments:
             | temp  --  the temperature
@@ -259,7 +262,9 @@ class StatFys(object):
     def helper2(self, temp, n, cp=False):
         """Helper function two
 
-           Returns T^n (d^2 ln(Z) / dT^2), where Z is the partition function
+           Returns T^n (d^2 ln(Z) / dT^2), where Z_N is (the contribution to)
+           the many body partition function and N is the total number of
+           particles.
 
            Arguments:
             | temp  --  the temperature
@@ -631,7 +636,43 @@ class ExtTrans(Info, StatFys):
         print >> f, "    Mass [amu]: %f" % (self.mass/amu)
 
     def helper0(self, temp, n):
-        """See :meth:`StatFys.helper0`"""
+        r"""See :meth:`StatFys.helper0`
+
+           In the translational contribution, we take into account the terms
+           that are typical for the classical limit of the many body partition
+           function. Strictly speaking, these additions are not due to the fact
+           that there is translational freedom, so this is to some extent an
+           ugly hack, but a very common and convenient one.
+
+           The translational partition function of one particle reads
+
+           .. math:: Z_{1,\text{trans}} = \left(\frac{2\pi m k_B T}{h^2}\right)^{\frac{3}{2}}V,
+
+           and the logarithm is
+
+           .. math:: \ln(Z_{1,\text{trans}}) = \frac{3}{2}\ln\left(\frac{2\pi m k_B T}{h^2}\right) + \ln(V).
+
+           This routine computes the logarithm of the many-body translational
+           partition per particle (optionally multiplied by a power of the
+           temperature, omitted here for clarity):
+
+           .. math:: \text{result} = \frac{\ln(Z_{N,\text{trans}})}{N} = \frac{\ln(\frac{1}{N!}Z_{1,\text{trans}}^N)}{N}.
+
+           Using Stirlings approximation, this leads to:
+
+           .. math:: \text{result} = \frac{-N \ln(N) + N}{N} + \ln(Z_{1,\text{trans}}).
+
+           The first term is split into two terms, :math:`-\ln(N)` and
+           :math:`1`. The former is pushed into the expression of the
+           translational partition function, while the latter is just remains
+           where it is. The final expression is:
+
+           .. math:: \text{result} = 1+\frac{3}{2}\ln\left(\frac{2\pi m k_B T}{h^2}\right) + \ln\left(\frac{V}{N}\right).
+
+           From this derivation it is clear that the many-body effects and the
+           translational part must be done together, because the separate
+           contributions depend on the number of particles, which is annoying.
+        """
         if temp == 0:
             if n > 0:
                 return 0.0
@@ -639,8 +680,9 @@ class ExtTrans(Info, StatFys):
                 raise NotImplementedError
         else:
             return (
-                temp**n*1.5*numpy.log(0.5*self.mass*boltzmann*temp/numpy.pi) +
-                self.gaslaw.helper0(temp, n)
+                temp**n + # This is due to the 1/N!
+                temp**n*1.5*numpy.log(2*numpy.pi*self.mass*boltzmann*temp/planck**2) +
+                self.gaslaw.helper0(temp, n) # this is the T^n*ln(V/N), the /N is due to 1/N!
             )
 
     def helper1(self, temp, n, cp=False):
@@ -1044,12 +1086,7 @@ class PartFun(Info, StatFys):
            Arguments:
             | temp  --  the temperature
         """
-        # This is a bit tricky: There is a contribution to the total entropy
-        # that can not be associated with one of the factors in the partition
-        # function. It is purely related to the N factorial in the denominator
-        # of the partition function. This controbution is one boltzmann constant
-        # per partical (or one universal gas constant per mol)
-        return StatFys.entropy(self, temp) + boltzmann
+        return StatFys.entropy(self, temp)
 
     def free_energy(self, temp):
         """This will raise an error. Use helmholtz_free_energy or gibbs_free_energy.
@@ -1073,12 +1110,9 @@ class PartFun(Info, StatFys):
            Arguments:
             | temp  --  the temperature
         """
-        # Similar to the extra term in the entropy, there is also an extra term
-        # here due to the N factorial in the denominator of the partition
-        # function.
-        # The molecular ground state energy is also added here. It is tempting
+        # The molecular ground state energy is added here. It is tempting
         # to include it in the electronic part of partition function.
-        return StatFys.free_energy(self, temp) - boltzmann*temp + self.energy
+        return StatFys.free_energy(self, temp) + self.energy
 
     def gibbs_free_energy(self, temp):
         """Compute the Gibbs free energy
@@ -1139,9 +1173,9 @@ def compute_rate_coeff(pfs_react, pf_trans, temp, cp=True, do_log=False):
     log_result += sum(pf_react.gaslaw.helper0(temp,0) for pf_react in pfs_react)
     log_result -= pf_trans.gaslaw.helper0(temp,0)
     if do_log:
-        return numpy.log(boltzmann*temp/(2*numpy.pi)) + log_result
+        return numpy.log(boltzmann*temp/planck) + log_result
     else:
-        return boltzmann*temp/(2*numpy.pi)*numpy.exp(log_result)
+        return boltzmann*temp/planck*numpy.exp(log_result)
 
 
 def compute_equilibrium_constant(pfs_A, pfs_B, temp, cp=True, do_log=False):

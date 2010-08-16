@@ -108,7 +108,7 @@ class PartFunTestCase(unittest.TestCase):
             pf = PartFun(nma, [ExtTrans(), ExtRot(1)])
 
             # check partition function, values from aa.log
-            self.assertAlmostEqual(16.973928, pf.translational.log(298.150), 6)
+            self.assertAlmostEqual(16.973928, pf.translational.log(298.150)-1, 6)
             self.assertEqual(pf.rotational.count, 3)
             self.assertAlmostEqual(11.225093, pf.rotational.log(298.150), 6)
             vib_contribs = pf.vibrational.log_terms(298.150)
@@ -118,14 +118,14 @@ class PartFunTestCase(unittest.TestCase):
             ])
             for i in xrange(len(expected_vib_contribs)):
                 self.assertAlmostEqual(vib_contribs[i], expected_vib_contribs[i], 2)
-            self.assertAlmostEqual(-53.068692, pf.log(298.150), 2)
+            self.assertAlmostEqual(-53.068692, pf.log(298.150)-1, 2)
 
             ## aa.fchk, rotational symmetry number is computed by molmod
             pf = PartFun(nma, [ExtTrans(), ExtRot()])
             self.assertEqual(pf.rotational.symmetry_number, 1)
 
             # check partition function, values from aa.log
-            self.assertAlmostEqual(16.973928, pf.translational.log(298.150), 6)
+            self.assertAlmostEqual(16.973928, pf.translational.log(298.150)-1, 6)
             self.assertEqual(pf.rotational.count, 3)
             self.assertAlmostEqual(11.225093, pf.rotational.log(298.150), 6)
             vib_contribs = pf.vibrational.log_terms(298.150)
@@ -135,7 +135,7 @@ class PartFunTestCase(unittest.TestCase):
             ])
             for i in xrange(len(expected_vib_contribs)):
                 self.assertAlmostEqual(vib_contribs[i], expected_vib_contribs[i], 2)
-            self.assertAlmostEqual(-53.068692, pf.log(298.150), 2)
+            self.assertAlmostEqual(-53.068692, pf.log(298.150)-1, 2)
 
             ## aarad.fchk
             molecule = load_molecule_g03fchk("input/sterck/aarad.fchk")
@@ -143,7 +143,7 @@ class PartFunTestCase(unittest.TestCase):
             pf = PartFun(nma, [ExtTrans(), ExtRot(1)])
 
             # check partition function, values taken from aarad.log
-            self.assertAlmostEqual(16.995059, pf.translational.log(298.150), 6)
+            self.assertAlmostEqual(16.995059, pf.translational.log(298.150)-1, 6)
             self.assertEqual(pf.rotational.count, 3)
             self.assertAlmostEqual(11.319073, pf.rotational.log(298.150), 6)
             vib_contribs = pf.vibrational.log_terms(298.150)
@@ -153,7 +153,7 @@ class PartFunTestCase(unittest.TestCase):
             ])
             for i in xrange(len(expected_vib_contribs)):
                 self.assertAlmostEqual(vib_contribs[i], expected_vib_contribs[i], 2+precision_wn)
-            self.assertAlmostEqual(-61.738525, pf.log(298.150), 1+precision_wn)
+            self.assertAlmostEqual(-61.738525, pf.log(298.150)-1, 1+precision_wn)
 
     def test_gas_trans_sterck(self):
         # Test both Full and ConstrainExt:
@@ -165,7 +165,7 @@ class PartFunTestCase(unittest.TestCase):
 
             # check the natural logarithm partition function (split contributions):
             # (values taken from paats.log)
-            self.assertAlmostEqual(18.024251, pf.translational.log(298.150), 5)
+            self.assertAlmostEqual(18.024251, pf.translational.log(298.150)-1, 5)
             self.assertEqual(pf.rotational.count, 3)
             self.assertAlmostEqual(13.615243, pf.rotational.log(298.150), 6)
             vib_contribs = pf.vibrational.log_terms(298.150)
@@ -176,7 +176,7 @@ class PartFunTestCase(unittest.TestCase):
             ])
             for i in xrange(len(expected_vib_contribs)):
                 self.assertAlmostEqual(vib_contribs[i], expected_vib_contribs[i], 2+precision_wn)
-            self.assertAlmostEqual(-139.302816, pf.log(298.150), 1+precision_wn)
+            self.assertAlmostEqual(-139.302816, pf.log(298.150)-1, 1+precision_wn)
 
     def test_gas_rate_coeff_sterck(self):
         mol_react1 = load_molecule_g03fchk("input/sterck/aa.fchk")
@@ -254,7 +254,7 @@ class PartFunTestCase(unittest.TestCase):
         # translational
         self.assertAlmostEqual(pf.translational.internal_energy(298.15)/(kcalmol), 0.889, 2)
         self.assertAlmostEqual(pf.translational.heat_capacity_v(298.15)/(calmolK), 2.981, 2)
-        self.assertAlmostEqual(pf.translational.entropy(298.15)/(calmolK), 38.699-R, 2) # corrected
+        self.assertAlmostEqual(pf.translational.entropy(298.15)/(calmolK), 38.699, 2)
         # rotational
         self.assertAlmostEqual(pf.rotational.internal_energy(298.15)/(kcalmol), 0.889, 2)
         self.assertAlmostEqual(pf.rotational.heat_capacity_v(298.15)/(calmolK), 2.981, 2)
@@ -293,7 +293,7 @@ class PartFunTestCase(unittest.TestCase):
         # translational
         self.assertAlmostEqual(pf.translational.internal_energy(298.15)/(kcalmol), 0.889, 2)
         self.assertAlmostEqual(pf.translational.heat_capacity_v(298.15)/(calmolK), 2.981, 2)
-        self.assertAlmostEqual(pf.translational.entropy(298.15)/(calmolK), 38.699-R, 2) # corrected
+        self.assertAlmostEqual(pf.translational.entropy(298.15)/(calmolK), 38.699, 2)
 
         molecule = load_molecule_g03fchk("input/sterck/aa.fchk")
         pf = PartFun(NMA(molecule, ConstrainExt()), [ExtRot(1)])
@@ -362,7 +362,7 @@ class PartFunTestCase(unittest.TestCase):
         )
         self.assertAlmostEqual(
             pf.translational.helper0(temp, 0),
-            1.5*numpy.log(mol.masses[0]*boltzmann*temp/(2*numpy.pi)) +
+            1 + 1.5*numpy.log(mol.masses[0]*boltzmann*temp/(2*numpy.pi)) +
             numpy.log(boltzmann*temp/(1*atm))
         )
         self.assertAlmostEqual(

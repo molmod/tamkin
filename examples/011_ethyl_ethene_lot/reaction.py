@@ -187,20 +187,25 @@ def run(do_rotor, do_counterpoise, load_sp):
     ta_ts_trans = ThermoAnalysis(pf_ts_trans, [300,400,500,600])
     ta_ts_trans.write_to_file("%s_thermo_ts_trans.csv" % prefix)
 
-    # Analyze the chemical reaction. These are the arguments:
+    # Define kinetic models for the chemical reaction. These are the mandatory arguments:
     #  1) a list of reactant partition functions
     #     (one for unimolecular, two for bimolecular, ...)
     #  2) the transition state partition function
-    #  3) the starting temperature for the fit
-    #  4) the final temperature for the fit
-    # The following are optional arguments:
-    #  6) temp_step: The interval on the temperature grid in Kelvin, 10 is default
-    #  5) mol_volume: a function that returns the molecular volume (inverse of the
-    #     concentration) for a given temperature. If not given, it assumes that
-    #     this is given: FixedVolume(temp=298.15*K, pressure=1*atm)
-    #  7) tunneling: a tunneling correction object
-    ra_gauche = ReactionAnalysis([pf_ethyl, pf_ethene], pf_ts_gauche, 300, 600, 10)
-    ra_trans = ReactionAnalysis([pf_ethyl, pf_ethene], pf_ts_trans, 300, 600, 10)
+    # There are two more optional arguments
+    #  3) cp: model at constant pressure, default=True
+    #  4) tunneling: a model for the tunelling correction
+    km_gauche = KineticModel([pf_ethyl, pf_ethene], pf_ts_gauche)
+    km_trans = KineticModel([pf_ethyl, pf_ethene], pf_ts_trans)
+
+    # Analyze the chemical reactions. These are the arguments:
+    #  1) A kinetic model
+    #  2) the starting temperature for the fit
+    #  3) the final temperature for the fit
+    # The following argument is optional:
+    #  4) temp_step: The interval on the temperature grid in Kelvin, 10 is default
+    ra_gauche = ReactionAnalysis(km_gauche, 300, 600)
+    ra_trans = ReactionAnalysis(km_trans, 300, 600)
+
 
     # make the Arrhenius plots
     pylab.clf()

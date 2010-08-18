@@ -85,29 +85,32 @@ cases = [ #(freq_scaling, color)
 pylab.clf()
 
 for s, color in cases:
-   # For each scaling factor, a new curve is plotted on the Arrhenius plot
+    # For each scaling factor, a new curve is plotted on the Arrhenius plot
 
-   # Construct the partition functions.
-   pf_ethyl = PartFun(nma_ethyl, [ExtTrans(), ExtRot(), Electronic(2), Vibrations(freq_scaling=s)])
-   pf_ethene = PartFun(nma_ethene, [ExtTrans(), ExtRot(), Vibrations(freq_scaling=s)])
-   pf_ts_gauche = PartFun(nma_ts_gauche, [ExtTrans(), ExtRot(), Electronic(2), Vibrations(freq_scaling=s)])
+    # Construct the partition functions.
+    pf_ethyl = PartFun(nma_ethyl, [ExtTrans(), ExtRot(), Electronic(2), Vibrations(freq_scaling=s)])
+    pf_ethene = PartFun(nma_ethene, [ExtTrans(), ExtRot(), Vibrations(freq_scaling=s)])
+    pf_ts_gauche = PartFun(nma_ts_gauche, [ExtTrans(), ExtRot(), Electronic(2), Vibrations(freq_scaling=s)])
 
-   # Analyze the chemical reaction. These are the arguments:
-   #  1) a list of reactant partition functions
-   #     (one for unimolecular, two for bimolecular, ...)
-   #  2) the transition state partition function
-   #  3) the starting temperature for the fit
-   #  4) the final temperature for the fit
-   # The following are optional arguments:
-   #  6) temp_step: The interval on the temperature grid in Kelvin, 10 is default
-   #  5) mol_volume: a function that returns the molecular volume (inverse of the
-   #     concentration) for a given temperature. If not given, it assumes that
-   #     this is given: FixedVolume(temp=298.15*K, pressure=1*atm)
-   #  7) tunneling: a tunneling correction object
-   ra_gauche = ReactionAnalysis([pf_ethyl, pf_ethene], pf_ts_gauche, 300, 600, 10)
+    # Define a kinetic model for the chemical reaction. These are the mandatory arguments:
+    #  1) a list of reactant partition functions
+    #     (one for unimolecular, two for bimolecular, ...)
+    #  2) the transition state partition function
+    # There are two more optional arguments
+    #  3) cp: model at constant pressure, default=True
+    #  4) tunneling: a model for the tunelling correction
+    km_gauche = KineticModel([pf_ethyl, pf_ethene], pf_ts_gauche)
 
-   # Add a line to the Arrhenius plots
-   ra_gauche.plot_arrhenius(label="gauche %.2f" % s, color=color)
+    # Analyze the chemical reaction. These are the arguments:
+    #  1) A kinetic model
+    #  2) the starting temperature for the fit
+    #  3) the final temperature for the fit
+    # The following argument is optional:
+    #  4) temp_step: The interval on the temperature grid in Kelvin, 10 is default
+    ra_gauche = ReactionAnalysis(km_gauche, 300, 600)
+
+    # Add a line to the Arrhenius plots
+    ra_gauche.plot_arrhenius(label="gauche %.2f" % s, color=color)
 
 # Add a legend (loc=0 means that the legend is put on an empty place in the plot)
 pylab.legend(loc=0)

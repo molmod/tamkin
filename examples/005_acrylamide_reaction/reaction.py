@@ -70,19 +70,22 @@ pf_react1 = PartFun(nma_react1, [ExtTrans(), ExtRot()])
 pf_react2 = PartFun(nma_react2, [ExtTrans(), ExtRot()])
 pf_trans = PartFun(nma_trans, [ExtTrans(), ExtRot()])
 
-# Analyze the chemical reaction. These are the arguments:
+# Define a kinetic model for the chemical reaction. These are the mandatory arguments:
 #  1) a list of reactant partition functions
 #     (one for unimolecular, two for bimolecular, ...)
 #  2) the transition state partition function
-#  3) the starting temperature for the fit
-#  4) the final temperature for the fit
-# The following are optional arguments:
-#  6) temp_step: The interval on the temperature grid in Kelvin, 10 is default
-#  5) mol_volume: a function that returns the molecular volume (inverse of the
-#     concentration) for a given temperature. If not given, it assumes that
-#     this is given: FixedVolume(temp=298.15*K, pressure=1*atm)
-#  7) tunneling: a tunneling correction object
-ra = ReactionAnalysis([pf_react1, pf_react2], pf_trans, 280, 360, 10)
+# There are two more optional arguments:
+#  3) cp: model at constant pressure, default=True
+#  4) tunneling: a model for the tunelling correction
+km = KineticModel([pf_react1, pf_react2], pf_trans, cp=True, tunneling=None)
+
+# Analyze the chemical reaction. These are the arguments:
+#  1) A kinetic model
+#  2) the starting temperature for the fit
+#  3) the final temperature for the fit
+# The following argument is optional:
+#  4) temp_step: The interval on the temperature grid in Kelvin, 10 is default
+ra = ReactionAnalysis(km, 280, 360, temp_step=10)
 ra.plot_arrhenius("arrhenius.png") # make the Arrhenius plot
 
 # Estimate the error on the kinetic parameters due to level of theory artifacts

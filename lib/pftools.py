@@ -206,10 +206,10 @@ class ReactionAnalysis(object):
     def __init__(self, kinetic_model, temp_low, temp_high, temp_step=10*kelvin):
         """
            Arguments:
-            | kinetic_model  --  TODO
-            | temp_low  --  the lower bound of the temperature interval in Kelvin
-            | temp_high  --  the upper bound of the temperature interval in
-                             Kelvin
+            | kinetic_model  --  A kinetic model object. See mod:`tamkin.chemmod`.
+            | temp_low  --  The lower bound of the temperature interval in Kelvin.
+            | temp_high  --  The upper bound of the temperature interval in
+                             Kelvin.
 
            Optional arguments:
             | temp_step  --  The resolution of the temperature grid.

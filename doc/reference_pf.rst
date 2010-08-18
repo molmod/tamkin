@@ -13,13 +13,20 @@ The molecular partion function
    :members:
    :show-inheritance:
 
-Tools to analyze partition functions
-------------------------------------
+Chemical models based on partition functions
+--------------------------------------------
 
-For instance, a thermodynamical analysis, the
-calculation of the equilibrium constant of a
-reaction, the reaction rate constant, the reaction
-parameters of the Arrhenius plot, ...
+The term `chemical models` is used as a group name for thermodynamic models of
+chemical equilibria and kinetic models of chemical reactions.
+
+.. inheritance-diagram:: tamkin.chemmod
+   :parts: 1
+
+.. automodule:: tamkin.chemmod
+   :members:
+
+Tools to analyze partition functions and kinetic models
+-------------------------------------------------------
 
 .. automodule:: tamkin.pftools
    :members:

@@ -57,9 +57,9 @@
 """High level utilities for partition functions"""
 
 
-from tamkin.partf import compute_rate_coeff, PartFun
+from tamkin.partf import PartFun
 
-from molmod.units import kjmol, second, meter, mol, kelvin, joule, centimeter
+from molmod.units import kjmol, mol, kelvin, joule, centimeter
 from molmod.constants import boltzmann, lightspeed
 
 import sys, numpy, types
@@ -203,11 +203,10 @@ class ThermoTable(object):
 class ReactionAnalysis(object):
     """A Reaction analysis object."""
 
-    def __init__(self, pfs_react, pf_trans, temp_low, temp_high, temp_step=10*kelvin, cp=True, tunneling=None):
+    def __init__(self, kinetic_model, temp_low, temp_high, temp_step=10*kelvin):
         """
            Arguments:
-            | pfs_react  --  a list of partition functions for the reactants
-            | pf_trans  --  the partition function of the transition state
+            | kinetic_model  --  TODO
             | temp_low  --  the lower bound of the temperature interval in Kelvin
             | temp_high  --  the upper bound of the temperature interval in
                              Kelvin
@@ -215,11 +214,6 @@ class ReactionAnalysis(object):
            Optional arguments:
             | temp_step  --  The resolution of the temperature grid.
                              [default=10K]
-            | cp  --  When True, the rate coefficients are compute at constant
-                      pressure [default=True]. When False, the rate coefficients
-                      are computed at constant volume.
-            | tunneling  --  A tunneling correction object. If not given, no
-                             tunneling correction is applied.
 
            The rate coefficients are computed on the specified temperature grid
            and afterwards the kinetic parameters are fitted to these data. All
@@ -230,40 +224,26 @@ class ReactionAnalysis(object):
 
            The following attributes may be useful:
             | A and Ea  --  The kinetic parameters in atomic units.
-            | unit_name  --  A string describing the conventional unit of
-                             self.A
-            | unit  --  The conversion factor to transform self.A into
-                        conventional units (self.A/self.unit)
             | R2  --  The Pearson R^2 of the fit.
             | temps  --  An array with the temperature grid in Kelvin
             | temps_inv  --  An array with the inverse temperatures
             | ln_rate_coeffs  -- the logarithm of 'the rate coefficients in
                                  atomic units'
         """
-        if len(pfs_react) == 0:
-            raise ValueError("At least one reactant must be given.")
-        self.pfs_react = pfs_react
-        self.pf_trans = pf_trans
+        self.kinetic_model = kinetic_model
         self.temp_low = float(temp_low)
         self.temp_high = float(temp_high)
         self.temp_step = float(temp_step)
         self.temp_high = numpy.ceil((self.temp_high-self.temp_low)/self.temp_step)*self.temp_step+self.temp_low
-        self.cp = cp
-        self.tunneling = tunneling
 
         # make sure that the final temperature is included
         self.temps = numpy.arange(self.temp_low,self.temp_high+0.5*self.temp_step,self.temp_step,dtype=float)
         self.temps_inv = 1/self.temps
         self.ln_rate_coeffs = numpy.array([
-            self.compute_rate_coeff(temp, do_log=True)
+            self.kinetic_model.compute_rate_coeff(temp, do_log=True)
             for temp in self.temps
         ])
         self.rate_coeffs = numpy.exp(self.ln_rate_coeffs)
-        if self.tunneling is None:
-            self.corrections = None
-        else:
-            self.corrections = self.tunneling(self.temps)
-
 
         design_matrix = numpy.zeros((len(self.temps),2), float)
         design_matrix[:,0] = 1
@@ -280,60 +260,7 @@ class ReactionAnalysis(object):
         self.A = numpy.exp(self.parameters[0])
         self.Ea = self.parameters[1]
 
-        self.unit = (meter**3/mol)**(len(self.pfs_react)-1)/second
-        if len(self.pfs_react)==1:
-            self.unit_name = "1/s"
-        elif len(self.pfs_react)==2:
-            self.unit_name = "(m**3/mol)/s"
-        else:
-            self.unit_name = "(m**3/mol)**%i/s" % (len(self.pfs_react)-1)
-
         self.covariance = None # see monte_carlo method
-
-    def compute_rate_coeff(self, temp, do_log=False):
-        """Compute the rate coefficient of the reaction in this analysis
-
-           Arguments:
-            | temp  -- the temperature
-
-           Optional argument:
-             | do_log  --  Return the logarithm of the rate coefficient instead
-                           of just the rate coefficient itself.
-        """
-        result = compute_rate_coeff(self.pfs_react, self.pf_trans, temp, self.cp, do_log)
-        if self.tunneling is not None:
-            if do_log:
-                result += numpy.log(self.tunneling(temp))
-            else:
-                result *= self.tunneling(temp)
-        return result
-
-    def compute_delta_G(self, temp):
-        """Compute the Gibbs free energy barrier of the reaction in this analysis
-
-           Arguments:
-            | temp  -- the temperature
-        """
-        return self.pf_trans.gibbs_free_energy(temp) - \
-               sum(pf_react.gibbs_free_energy(temp) for pf_react in self.pfs_react)
-
-    def compute_delta_A(self, temp):
-        """Compute the Helmholtz free energy barrier of the reaction in this analysis
-
-           Arguments:
-            | temp  -- the temperature
-        """
-        return self.pf_trans.helmholtz_free_energy(temp) - \
-               sum(pf_react.helmholtz_free_energy(temp) for pf_react in self.pfs_react)
-
-    def compute_delta_E(self):
-        """Compute the classical (microscopic) energy barrier of the reaction in this analysis
-
-           Arguments:
-            | temp  -- the temperature
-        """
-        return self.pf_trans.energy - \
-               sum(pf_react.energy for pf_react in self.pfs_react)
 
     def dump(self, f):
         """Write the results in text format on screen or to another stream.
@@ -342,14 +269,9 @@ class ReactionAnalysis(object):
             | f  --  the file object to write to.
         """
         print >> f, "Summary"
-        print >> f, "number of reactants: %i" % len(self.pfs_react)
-        print >> f, "A [%s] = %.5e" % (self.unit_name, self.A/self.unit)
+        print >> f, "A [%s] = %.5e" % (self.kinetic_model.unit_name, self.A/self.kinetic_model.unit)
         print >> f, "ln(A [a.u.]) = %.2f" % (self.parameters[0])
         print >> f, "Ea [kJ/mol] = %.2f" % (self.Ea/kjmol)
-        delta_E = self.compute_delta_E()
-        print >> f, "Delta E at T=0K [kJ/mol] = %.1f" % (delta_E/kjmol)
-        delta_A0K = self.compute_delta_A(0.0)
-        print >> f, "Delta E0 at T=0K (with zero-point if QM vibrations) [kJ/mol] = %.1f" % (delta_A0K/kjmol)
         print >> f, "R2 (Pearson) = %.2f%%" % (self.R2*100)
         print >> f
         if self.covariance is not None:
@@ -357,7 +279,7 @@ class ReactionAnalysis(object):
             print >> f, "Number of Monte Carlo iterations = %i" % self.monte_carlo_iter
             print >> f, "Relative systematic error on the frequencies = %.2f" % self.freq_error
             print >> f, "Relative systematic error on the energy = %.2f" % self.energy_error
-            print >> f, "Error on A [%s] = %10.5e" % (self.unit_name, numpy.sqrt(self.covariance[0,0])*self.A/self.unit)
+            print >> f, "Error on A [%s] = %10.5e" % (self.kinetic_model.unit_name, numpy.sqrt(self.covariance[0,0])*self.A/self.kinetic_model.unit)
             print >> f, "Error on ln(A [a.u.]) = %.2f" % numpy.sqrt(self.covariance[0,0])
             print >> f, "Error on Ea [kJ/mol] = %.2f" % (numpy.sqrt(self.covariance[1,1])/kjmol)
             print >> f, "Parameter correlation = %.2f" % (self.covariance[0,1]/numpy.sqrt(self.covariance[0,0]*self.covariance[1,1]))
@@ -369,35 +291,16 @@ class ReactionAnalysis(object):
         print >> f, "Number of temperatures = %i" % len(self.temps)
         print >> f
         print >> f, "Reaction rate coefficients"
-        symbol = {True: "G", False: "A"}[self.cp]
-        if self.tunneling is None:
-            print >> f, "    T [K]     Delta %s [kJ/mol]       k(T) [%s]" % (symbol, self.unit_name)
-        else:
-            print >> f, "    T [K]     Delta %s [kJ/mol]       k(T) [%s]         cor(T) [1]         k_tun(T) [%s]" % (symbol, self.unit_name, self.unit_name)
+        symbol = self.kinetic_model.get_free_energy_symbol()
+        print >> f, "    T [K]     Delta %s [kJ/mol]       k(T) [%s]" % (symbol, self.kinetic_model.unit_name)
         for i in xrange(len(self.temps)):
             temp = self.temps[i]
-            if self.cp:
-                delta_free = self.compute_delta_G(temp)
-            else:
-                delta_free = self.compute_delta_A(temp)
-            if self.tunneling is None:
-                print >> f, "% 10.2f      %8.1f             % 10.5e" % (
-                    temp, delta_free/kjmol, self.rate_coeffs[i]/self.unit
-                )
-            else:
-                print >> f, "% 10.2f      %8.1f             % 10.5e       % 10.5e       % 10.5e" % (
-                    temp, delta_free/kjmol,
-                    self.rate_coeffs[i]/self.unit/self.corrections[i], # division undoes the correction
-                    self.corrections[i], # the correction factor
-                    self.rate_coeffs[i]/self.unit, # with correction
-                )
+            delta_free = self.kinetic_model.compute_delta_free_energy(temp)
+            print >> f, "% 10.2f      %8.1f             % 10.5e" % (
+                temp, delta_free/kjmol, self.rate_coeffs[i]/self.kinetic_model.unit
+            )
         print >> f
-        for counter, pf_react in enumerate(self.pfs_react):
-            print >> f, "Reactant %i partition function" % counter
-            pf_react.dump(f)
-            print >> f
-        print >> f, "Transition state partition function"
-        self.pf_trans.dump(f)
+        self.kinetic_model.dump(f)
         print >> f
 
     def write_to_file(self, filename):
@@ -433,10 +336,10 @@ class ReactionAnalysis(object):
         if filename is not None:
             pylab.clf()
             pylab.title("Arrhenius plot: A [%s] = %.3e    Ea [kJ/mol] = %.2f" % (
-                self.unit_name, self.A/self.unit, self.Ea/kjmol
+                self.kinetic_model.unit_name, self.A/self.kinetic_model.unit, self.Ea/kjmol
             ))
         pylab.xlabel("1/T [1/K]")
-        pylab.ylabel("Rate coefficient [%s]" % self.unit_name)
+        pylab.ylabel("Rate coefficient [%s]" % self.kinetic_model.unit_name)
         if label is None:
             label_fit = "Fitted line"
             label_data = "Computed values"
@@ -444,11 +347,11 @@ class ReactionAnalysis(object):
             label_fit = label
             label_data = "_nolegend_"
         pylab.plot(
-            temps_inv_line,numpy.exp(ln_rate_coeffs_line)/self.unit,
+            temps_inv_line,numpy.exp(ln_rate_coeffs_line)/self.kinetic_model.unit,
             color=color, linestyle="-", marker="None",label=label_fit
         )
         pylab.plot(
-            self.temps_inv,numpy.exp(self.ln_rate_coeffs)/self.unit,
+            self.temps_inv,numpy.exp(self.ln_rate_coeffs)/self.kinetic_model.unit,
             color=color, linestyle="None", marker="o",label=label_data
         )
         pylab.semilogy()
@@ -485,43 +388,16 @@ class ReactionAnalysis(object):
         self.energy_error = energy_error
         self.monte_carlo_iter = num_iter
 
-        def backup_freqs(pf):
-            pf.vibrational.positive_freqs_orig = pf.vibrational.positive_freqs.copy()
-            pf.vibrational.negative_freqs_orig = pf.vibrational.negative_freqs.copy()
-            pf.energy_backup = pf.energy
 
-        def alter_freqs(pf, scale_energy):
-            N = len(pf.vibrational.positive_freqs)
-            freq_shift = numpy.random.normal(0, freq_error, N)
-            pf.vibrational.positive_freqs = pf.vibrational.positive_freqs_orig + freq_shift
-            pf.vibrational.positive_freqs[pf.vibrational.positive_freqs<=0] = 0.01
-            N = len(pf.vibrational.negative_freqs)
-            freq_shift = numpy.random.normal(0, freq_error, N)
-            pf.vibrational.negative_freqs = pf.vibrational.negative_freqs_orig + freq_shift
-            pf.vibrational.negative_freqs[pf.vibrational.negative_freqs>=0] = -0.01
-            pf.energy = pf.energy_backup*scale_energy
-
-        def restore_freqs(pf):
-            pf.vibrational.positive_freqs = pf.vibrational.positive_freqs_orig
-            pf.vibrational.negative_freqs = pf.vibrational.negative_freqs_orig
-            pf.energy = pf.energy_backup
-            del pf.vibrational.positive_freqs_orig
-            del pf.vibrational.negative_freqs_orig
-            del pf.energy_backup
-
-        for pf_react in self.pfs_react:
-            backup_freqs(pf_react)
-        backup_freqs(self.pf_trans)
+        self.kinetic_model.backup_freqs()
 
         solutions = numpy.zeros((num_iter, 2), float)
         for i in xrange(num_iter):
             scale_energy = 1.0 + numpy.random.normal(0.0, 1.0)*energy_error
-            for pf_react in self.pfs_react:
-                alter_freqs(pf_react, scale_energy)
-            alter_freqs(self.pf_trans, scale_energy)
+            self.kinetic_model.alter_freqs(freq_error, scale_energy)
             altered_ra = ReactionAnalysis(
-                self.pfs_react, self.pf_trans, self.temp_low, self.temp_high,
-                self.temp_step, self.cp, self.tunneling
+                self.kinetic_model, self.temp_low, self.temp_high,
+                self.temp_step
             )
             solutions[i] = altered_ra.parameters
 
@@ -529,9 +405,7 @@ class ReactionAnalysis(object):
         solutions -= self.parameters
         self.covariance = numpy.dot(solutions.transpose(), solutions)/num_iter
 
-        for pf_react in self.pfs_react:
-            restore_freqs(pf_react)
-        restore_freqs(self.pf_trans)
+        self.kinetic_model.restore_freqs()
 
     def plot_parameters(self, filename=None, label=None, color="red", marker="o", error=True):
         """Plot the kinetic parameters.
@@ -557,10 +431,10 @@ class ReactionAnalysis(object):
         if filename is not None:
             pylab.clf()
             pylab.title("Parameter plot: A [%s] = %.3e    Ea [kJ/mol] = %.2f" % (
-                self.unit_name, self.A/self.unit, self.Ea/kjmol
+                self.kinetic_model.unit_name, self.A/self.kinetic_model.unit, self.Ea/kjmol
             ))
         pylab.xlabel("E_a [kJ/mol]")
-        pylab.ylabel("ln(A) [ln(%s)]" % self.unit_name)
+        pylab.ylabel("ln(A) [ln(%s)]" % self.kinetic_model.unit_name)
         if label is None:
             label_point = "Optimal parameters"
             label_error = "Relative uncertainty"
@@ -583,16 +457,16 @@ class ReactionAnalysis(object):
                    numpy.outer(evecs[:,1],numpy.sin(angles))*numpy.sqrt(evals[1])
             pylab.plot(
                 (self.Ea + data[1])/kjmol,
-                self.parameters[0] + data[0] - numpy.log(self.unit),
+                self.parameters[0] + data[0] - numpy.log(self.kinetic_model.unit),
                 color=color, linestyle="-", marker="None",label=label_error
             )
             pylab.plot(
                 self.monte_carlo_samples[:,1]/kjmol,
-                self.monte_carlo_samples[:,0] - numpy.log(self.unit),
+                self.monte_carlo_samples[:,0] - numpy.log(self.kinetic_model.unit),
                 color=color, marker=".", label=label_scatter, linestyle="None",
                 markersize=1.2
             )
-        pylab.plot([self.Ea/kjmol],[numpy.log(self.A/self.unit)], color=color,
+        pylab.plot([self.Ea/kjmol],[numpy.log(self.A/self.kinetic_model.unit)], color=color,
                    marker=marker, label=label_point, mew=2, mec="white", ms=10)
         if label is None:
             pylab.legend(loc=0, numpoints=1, scatterpoints=1)

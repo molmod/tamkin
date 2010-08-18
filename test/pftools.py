@@ -74,11 +74,12 @@ class PFToolsTestCase(unittest.TestCase):
         pf_react2 = PartFun(NMA(load_molecule_g03fchk("input/sterck/aarad.fchk")), [ExtTrans(), ExtRot(1)])
         pf_trans = PartFun(NMA(load_molecule_g03fchk("input/sterck/paats.fchk")), [ExtTrans(), ExtRot(1)])
 
-        ra = ReactionAnalysis([pf_react1, pf_react2], pf_trans, 280, 360)
+        km = KineticModel([pf_react1, pf_react2], pf_trans)
+        ra = ReactionAnalysis(km, 280, 360)
         # not a very accurate check because the fit is carried out differently
         # in the fancy excel file where these numbers come from.
         self.assertAlmostEqual(ra.Ea/kjmol, 25.96, 1)
-        self.assertAlmostEqual(numpy.log(ra.A/ra.unit), numpy.log(2.29E+02), 1)
+        self.assertAlmostEqual(numpy.log(ra.A/km.unit), numpy.log(2.29E+02), 1)
 
         ra.plot_arrhenius("output/arrhenius_aa.png")
         ra.monte_carlo()
@@ -89,31 +90,34 @@ class PFToolsTestCase(unittest.TestCase):
         pf_react = PartFun(NMA(load_molecule_g03fchk("input/mat/5Te_etheen_react_deel2.fchk")), [ExtTrans(), ExtRot(1)])
         pf_trans = PartFun(NMA(load_molecule_g03fchk("input/mat/5Te_etheen_ts_deel2_punt108_freq.fchk")), [ExtTrans(), ExtRot(1)])
 
-        ra = ReactionAnalysis([pf_react], pf_trans, 100, 1200, temp_step=50)
+        km = KineticModel([pf_react], pf_trans)
+        ra = ReactionAnalysis(km, 100, 1200, temp_step=50)
         # not a very accurate check because the fit is carried out differently
         # in the fancy excel file where these numbers come from.
         self.assertAlmostEqual(ra.Ea/kjmol, 160.6, 0)
-        self.assertAlmostEqual(numpy.log(ra.A/ra.unit), numpy.log(3.33e10), 0)
+        self.assertAlmostEqual(numpy.log(ra.A/km.unit), numpy.log(3.33e10), 0)
         ra.plot_arrhenius("output/arrhenius_mat1.png")
         ra.monte_carlo()
         ra.write_to_file("output/reaction_mat1.txt")
         ra.plot_parameters("output/parameters_mat1.png")
-        self.assertAlmostEqual(ra.compute_rate_coeff(456), compute_rate_coeff([pf_react], pf_trans, 456))
+        self.assertAlmostEqual(km.compute_rate_coeff(456), compute_rate_coeff([pf_react], pf_trans, 456))
 
         wigner = Wigner(pf_trans) # Blind test of the wigner correction and
         # the corrected reaction analysis.
-        ra = ReactionAnalysis([pf_react], pf_trans, 100, 1200, temp_step=50, tunneling=wigner)
+        km = KineticModel([pf_react], pf_trans, tunneling=wigner)
+        ra = ReactionAnalysis(km, 100, 1200, temp_step=50)
         ra.plot_arrhenius("output/arrhenius_mat1w.png")
         ra.monte_carlo()
         ra.write_to_file("output/reaction_mat1w.txt")
         ra.plot_parameters("output/parameters_mat1w.png")
-        self.assertAlmostEqual(ra.compute_rate_coeff(354), wigner(354)*compute_rate_coeff([pf_react], pf_trans, 354))
+        self.assertAlmostEqual(km.compute_rate_coeff(354), wigner(354)*compute_rate_coeff([pf_react], pf_trans, 354))
 
-        ra = ReactionAnalysis([pf_react], pf_trans, 670, 770)
+        km = KineticModel([pf_react], pf_trans)
+        ra = ReactionAnalysis(km, 670, 770)
         # not a very accurate check because the fit is carried out differently
         # in the fancy excel file where these numbers come from.
         self.assertAlmostEqual(ra.Ea/kjmol, 161.9, 1)
-        self.assertAlmostEqual(numpy.log(ra.A/ra.unit), numpy.log(4.08e10), 0)
+        self.assertAlmostEqual(numpy.log(ra.A/km.unit), numpy.log(4.08e10), 0)
         ra.plot_arrhenius("output/arrhenius_mat2.png")
         ra.monte_carlo()
         ra.write_to_file("output/reaction_mat2.txt")

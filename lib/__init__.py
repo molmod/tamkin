@@ -56,6 +56,7 @@
 # --
 """TAMkin is a post-processing toolkit for normal mode, thermochemistry and kinetics."""
 
+from tamkin.chemmod import *
 from tamkin.data import *
 from tamkin.io import *
 from tamkin.geom import *

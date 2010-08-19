@@ -161,6 +161,9 @@ class ThermodynamicModel(BaseModel):
         self.pfs_react = pfs_react
         self.pfs_prod = pfs_prod
         self.cp = cp
+
+        self.unit = (meter**3/mol)**(len(self.pfs_react)-len(self.pfs_prod))
+        self.unit_name = "(m**3/mol)**%i" % (len(self.pfs_react)-len(self.pfs_prod))
         BaseModel.__init__(self, pfs_react + pfs_prod)
 
     def get_free_energy_symbol(self):
@@ -357,6 +360,18 @@ class ActivationKineticModel(BaseKineticModel):
         self.tm = tm
         self.km = km
         assert(km.cp==tm.cp)
+
+        # akm
+        self.unit = tm.unit*km.unit
+        if len(tm.pfs_react)==len(tm.pfs_prod):
+            self.unit_name = km.unit_name
+        elif len(tm.pfs_react)-len(tm.pfs_prod)+len(km.pfs_react)-1==0:
+            self.unit_name = "1/s"
+        elif len(tm.pfs_react)-len(tm.pfs_prod)+len(km.pfs_react)-1==1:
+            self.unit_name = "(m**3/mol)/s"
+        else:
+            self.unit_name = "(m**3/mol)**%i/s" % (len(tm.pfs_react)-len(tm.pfs_prod)+len(km.pfs_react)-1)
+
         BaseKineticModel.__init__(self, tm.pfs_all + km.pfs_all)
 
     def get_free_energy_symbol(self):

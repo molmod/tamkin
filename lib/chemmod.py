@@ -131,6 +131,16 @@ class BaseModel(object):
         """
         raise NotImplementedError
 
+    def write_to_file(self, filename):
+        """Write the model to a text file.
+
+           One argument:
+            | filename  --  the file to write the output.
+        """
+        f = file(filename, "w")
+        self.dump(f)
+        f.close()
+
     def dump(self, f):
         """Write all info about the model to a file."""
         raise NotImplementedError
@@ -372,8 +382,8 @@ class ActivationKineticModel(BaseKineticModel):
     def compute_rate_coeff(self, temp, do_log=False):
         """See :meth:`BaseKineticModel.compute_rate_coeff`"""
         if do_log:
-            return self.tm.compute_rate_coeff(temp, True) + \
+            return self.tm.compute_equilibrium_constant(temp, True) + \
                    self.km.compute_rate_coeff(temp, True)
         else:
-            return self.tm.compute_rate_coeff(temp, False)* \
+            return self.tm.compute_equilibrium_constant(temp, False)* \
                    self.km.compute_rate_coeff(temp, False)

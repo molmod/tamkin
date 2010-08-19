@@ -115,5 +115,4 @@ ra.write_to_file("reaction.txt") # summary of the analysis
 # Or one can determine a global k value and fit this within a temperature region by making use of the class ActivationKineticModel
 akm = ActivationKineticModel(tm,km)
 print akm.compute_rate_coeff(323.0), akm.compute_delta_free_energy(323.0)/kjmol
-#akm.dump("activation_model.txt")
-
+akm.write_to_file("activation_model.txt")

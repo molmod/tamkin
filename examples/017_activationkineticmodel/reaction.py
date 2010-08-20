@@ -117,6 +117,10 @@ ra.write_to_file("reaction.txt") # summary of the analysis
 
 # Or one can determine a global k value and fit this within a temperature region by making use of the class ActivationKineticModel
 akm = ActivationKineticModel(tm,km)
+rakm = ReactionAnalysis(akm,273,373.1,temp_step=10)
+rakm.plot_arrhenius("arrhenius_akm.png")
+rakm.monte_carlo()
+rakm.plot_parameters("parameters_akm.png")
 print "Activation kinetic model:"
 print "global rate coefficient and global gibbs free energy difference"
 print akm.compute_rate_coeff(323.0)/akm.unit, "%s" % akm.unit_name,"    ", akm.compute_delta_free_energy(323.0)/kjmol, "kJ/mol"

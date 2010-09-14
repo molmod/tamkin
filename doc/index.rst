@@ -1,10 +1,12 @@
-.. tamkindocs documentation master file, created by
-   sphinx-quickstart on Fri Mar 19 01:07:36 2010.
-   You can adapt this file completely to your liking, but it should at least
-   contain the root `toctree` directive.
 
-Welcome to TAMkin's documentation!
-======================================
+The TAMkin Manual
+=================
+
+TAMkin is a toolkit of normal mode analysis and the computation of thermodynamic
+and kinetic properties. It is conceived as a post-processing package for several
+popular computational chemistry codes such as: CHARMM, CP2K, CPMD, GAMESS,
+Gaussian, QChem and VASP.
+
 
 Tutorial
 --------
@@ -12,19 +14,21 @@ Tutorial
 .. toctree::
    :maxdepth: 2
 
-   tutorial
+   tutorial/install.rst
+   tutorial/getting_started.rst
+   tutorial/gendata.rst
+   tutorial/development.rst
 
-Reference
----------
+Library Reference
+-----------------
 
 .. toctree::
    :maxdepth: 2
 
-   reference_io
-   reference_nma
-   reference_pf
-   reference_aux
-
+   reference/io.rst
+   reference/nma.rst
+   reference/pf.rst
+   reference/aux.rst
 
 
 Indices and tables

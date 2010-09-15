@@ -655,7 +655,7 @@ class Electronic(Info, StatFys):
 class ExtTrans(Info, StatFys):
     """The contribution from the external translation"""
 
-    def __init__(self, cp=True, gaslaw=None, dim=3):
+    def __init__(self, cp=True, gaslaw=None, dim=3, mobile=None):
         """
           Optional arguments:
            | cp  --  When True, an additional factor is included in the
@@ -669,6 +669,10 @@ class ExtTrans(Info, StatFys):
                          pressure (required for the heat capacity at constant
                          pressure). By default, the ideal gas law is used.
            | dim  --  The dimensionality of the ideal gas.
+           | mobile  --  A list of atom indexes that are free to translate. In
+                         case of a mobile molecule adsorbed on a surface, only
+                         include atom indexes of the adsorbate. The default is
+                         that all atoms are mobile.
 
            Note that the dimensionality determines the unit of the partition
            function as follows::
@@ -684,11 +688,15 @@ class ExtTrans(Info, StatFys):
             self.gaslaw = gaslaw
             assert self.gaslaw.dim == dim
         self.dim = dim
+        self.mobile = mobile
         Info.__init__(self, "translational")
 
     def init_part_fun(self, nma, partf):
         """See :meth:`StatFys.init_part_fun`"""
-        self.mass = nma.mass
+        if self.mobile is None:
+            self.mass = nma.mass
+        else:
+            self.mass = nma.masses[self.mobile].sum()
 
     def dump(self, f):
         """See :meth:`Info.dump`"""

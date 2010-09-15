@@ -103,20 +103,89 @@ __all__ = [
 class IdealGasLaw(object):
     """Bundles several functions related to the ideal gas law."""
 
-    def __init__(self, pressure=1*atm):
+    def __init__(self, pressure=None, dim=3):
         """
            Optional argument:
-             | pressure  --  the external pressure of the systen [default=1*atm]
+             | pressure  --  the external pressure of the system. The default is
+                             1 atm for 3D gases. There is no default for gases
+                             in other dimensions.
+             | dim  --  The dimensionality of the gas.
         """
+        if pressure is None:
+            if dim == 3:
+                pressure = 1*atm
+            else:
+                raise TypeError("The pressure is not given and the system is not three-dimensional.")
         self.pressure = pressure
+        self.dim = dim
+        # decide on the units
+        if dim == 3:
+            self.p_unit = bar
+            self.p_unit_name = "bar"
+        else:
+            self.p_unit = 1.0
+            self.p_unit_name = "a.u."
 
     def pv(self, temp):
         """Returns the product of pressure and volume.
 
-           Note that in SI units this is RT. The internal units of this module
-           are atomic units and per molecule, so the return value becomes kT.
+           Arguments:
+            | temp  --  The temperature
+
+           Note that in SI units this is RT. The internal units of
+           this module are atomic units and per molecule, so the return value
+           becomes kT.
         """
         return boltzmann*temp
+
+    def pv0(self, temp, n):
+        """PV function 0
+
+           Arguments:
+            | temp  --  The temperature
+            | n  --  A power for the additional temperature factor.
+
+           This is an auxiliary function for the translational partition
+           function. It returns the product of pressure and volume multiplied by
+           a power of the temperature.
+        """
+        if temp == 0:
+            if n > -1:
+                return 0.0
+            elif n == -1:
+                return boltzmann
+            else:
+                raise NotImplementedError
+        else:
+            return boltzmann*temp**(n+1)
+
+    def pv1(self, temp, n):
+        """PV function 1
+
+           Arguments:
+            | temp  --  The temperature
+            | n  --  A power for the additional temperature factor.
+
+           This is an auxiliary function for the translational partition
+           function. It returns the derivative towards the temperature product
+           of pressure and volume, multiplied by a power of the temperature.
+           (Derivation is performed prior to multiplication with T)
+        """
+        return 0.0
+
+    def pv2(self, temp, n):
+        """PV function 2.
+
+           Arguments:
+            | temp  --  The temperature
+            | n  --  A power for the additional temperature factor.
+
+           This is an auxiliary function for the translational partition
+           function. It returns the derivative towards the temperature product
+           of pressure and volume, multiplied by a power of the temperature.
+           (Derivation is performed prior to multiplication with T)
+        """
+        return 0.0
 
     def helper0(self, temp, n):
         """Helper function zero
@@ -165,7 +234,9 @@ class IdealGasLaw(object):
 
     def _get_description(self):
         """A one-line summary of the gas law"""
-        return "Ideal gas law, external pressure [bar] = %.5f" % (self.pressure/bar)
+        return "Ideal gas law, dimension = %i, pressure [%s] = %.5f" % (
+            self.dim, self.p_unit_name, self.pressure/self.p_unit
+        )
 
     description = property(_get_description)
 
@@ -243,7 +314,7 @@ class StatFys(object):
         """
         raise NotImplementedError
 
-    def helper1(self, temp, n, cp=False):
+    def helper1(self, temp, n):
         """Helper function one
 
            Returns T^n (d ln(Z) / dT), where Z_N is (the contribution to) the
@@ -252,14 +323,10 @@ class StatFys(object):
            Arguments:
             | temp  --  the temperature
             | n  --  the power for the temperature factor
-
-           Optional argument:
-            | cp  --  When True, the derivative is taken at constant pressure,
-                      otherwise it is taken at constant volume. [default=False]
         """
         raise NotImplementedError
 
-    def helper2(self, temp, n, cp=False):
+    def helper2(self, temp, n):
         """Helper function two
 
            Returns T^n (d^2 ln(Z) / dT^2), where Z_N is (the contribution to)
@@ -269,10 +336,6 @@ class StatFys(object):
            Arguments:
             | temp  --  the temperature
             | n  --  the power for the temperature factor
-
-           Optional argument:
-            | cp  --  When True, the derivative is taken at constant pressure,
-                      otherwise it is taken at constant volume. [default=False]
         """
         raise NotImplementedError
 
@@ -290,7 +353,7 @@ class StatFys(object):
             helper0 = self.helper0
         return helper0(temp, 0)
 
-    def dlog(self, temp, helper1=None, cp=False):
+    def dlog(self, temp, helper1=None):
         """The derivative towards temperature of the logarithm of the partition function
 
            Argument:
@@ -299,14 +362,12 @@ class StatFys(object):
            Optional arguments:
             | helper1  --  an alternative implementation of helper1
                            [default=self.helper1]
-            | cp  --  When True, the derivative is taken at constant pressure,
-                      otherwise it is taken at constant volume. [default=False]
         """
         if helper1 is None:
             helper1 = self.helper1
-        return helper1(temp, 0, cp)
+        return helper1(temp, 0)
 
-    def ddlog(self, temp, helper2=None, cp=False):
+    def ddlog(self, temp, helper2=None):
         """The second derivative towards temperature of the logarithm of the partition function
 
            Argument:
@@ -315,12 +376,10 @@ class StatFys(object):
            Optional arguments:
             | helper2  --  an alternative implementation of helper2
                            [default=self.helper2]
-            | cp  --  When True, the derivative is taken at constant pressure,
-                      otherwise it is taken at constant volume. [default=False]
         """
         if helper2 is None:
             helper2 = self.helper2
-        return helper2(temp, 0, cp)
+        return helper2(temp, 0)
 
     def internal_energy(self, temp, helper1=None):
         """Computes the internal energy per molecule
@@ -336,7 +395,7 @@ class StatFys(object):
             helper1 = self.helper1
         return boltzmann*helper1(temp, 2)
 
-    def heat_capacity_v(self, temp, helper1=None, helper2=None):
+    def heat_capacity(self, temp, helper1=None, helper2=None):
         """Computes the heat capacity per molecule at constant pressure
 
            Argument:
@@ -353,24 +412,6 @@ class StatFys(object):
         if helper2 is None:
             helper2 = self.helper2
         return boltzmann*(2*helper1(temp, 1) + helper2(temp, 2))
-
-    def heat_capacity_p(self, temp, helper1=None, helper2=None):
-        """Computes the heat capacity per molecule at constant pressure
-
-           Argument:
-            | temp  --  the temperature
-
-           Optional arguments:
-            | helper1  --  an alternative implementation of helper1
-                           [default=self.helper1]
-            | helper2  --  an alternative implementation of helper2
-                           [default=self.helper2]
-        """
-        if helper1 is None:
-            helper1 = self.helper1
-        if helper2 is None:
-            helper2 = self.helper2
-        return boltzmann*(2*helper1(temp, 1, cp=True) + helper2(temp, 2, cp=True))
 
     def entropy(self, temp, helper0=None, helper1=None):
         """Computes the entropy contribution per molecule
@@ -430,11 +471,11 @@ class StatFysTerms(StatFys):
         """See :meth:`StatFys.helper0`"""
         return self.helper0_terms(temp, n).sum()
 
-    def helper1(self, temp, n, cp=False):
+    def helper1(self, temp, n):
         """See :meth:`StatFys.helper1`"""
-        return self.helper1_terms(temp, n, cp).sum()
+        return self.helper1_terms(temp, n).sum()
 
-    def helper2(self, temp, n, cp=False):
+    def helper2(self, temp, n):
         """See :meth:`StatFys.helper2`"""
         return self.helper2_terms(temp, n).sum()
 
@@ -445,14 +486,14 @@ class StatFysTerms(StatFys):
         """
         raise NotImplementedError
 
-    def helper1_terms(self, temp, n, cp=False):
+    def helper1_terms(self, temp, n):
         """Returns an array with all the helper1 results for the distinct terms.
 
            This is just an array version of :meth:`StatFys.helper1`.
         """
         raise NotImplementedError
 
-    def helper2_terms(self, temp, n, cp=False):
+    def helper2_terms(self, temp, n):
         """Returns an array with all the helper2 results for the distinct terms.
 
            This is just an array version of :meth:`StatFys.helper2`.
@@ -466,19 +507,19 @@ class StatFysTerms(StatFys):
         """
         return self.log(temp, self.helper0_terms)
 
-    def dlog_terms(self, temp, cp=False):
+    def dlog_terms(self, temp):
         """Returns an array with dlog results for the distinct terms.
 
            This is just an array version of :meth:`StatFys.dlog`.
         """
-        return self.dlog(temp, self.helper1_terms, cp)
+        return self.dlog(temp, self.helper1_terms)
 
-    def ddlog_terms(self, temp, cp=False):
+    def ddlog_terms(self, temp):
         """Returns an array with ddlog results for the distinct terms.
 
            This is just an array version of :meth:`StatFys.ddlog`.
         """
-        return self.ddlog(temp, self.helper2_terms, cp)
+        return self.ddlog(temp, self.helper2_terms)
 
     def internal_energy_terms(self, temp):
         """Returns an array with internal_energy results for the distinct terms.
@@ -487,19 +528,12 @@ class StatFysTerms(StatFys):
         """
         return self.internal_energy(temp, self.helper1_terms)
 
-    def heat_capacity_v_terms(self, temp):
-        """Returns an array with heat_capacity_v results for the distinct terms.
+    def heat_capacity_terms(self, temp):
+        """Returns an array with heat_capacity results for the distinct terms.
 
-           This is just an array version of :meth:`StatFys.heat_capacity_v`.
+           This is just an array version of :meth:`StatFys.heat_capacity`.
         """
-        return self.heat_capacity_v(temp, self.helper1_terms, self.helper2_terms)
-
-    def heat_capacity_p_terms(self, temp):
-        """Returns an array with heat_capacity_p results for the distinct terms.
-
-           This is just an array version of :meth:`StatFys.heat_capacity_v`.
-        """
-        return self.heat_capacity_p(temp, self.helper1_terms, self.helper2_terms)
+        return self.heat_capacity(temp, self.helper1_terms, self.helper2_terms)
 
     def entropy_terms(self, temp):
         """Returns an array with entropy results for the distinct terms.
@@ -609,11 +643,11 @@ class Electronic(Info, StatFys):
         """See :meth:`StatFys.helper0`"""
         return temp**n*numpy.log(self.multiplicity)
 
-    def helper1(self, temp, n, cp=False):
+    def helper1(self, temp, n):
         """See :meth:`StatFys.helper1`"""
         return 0.0
 
-    def helper2(self, temp, n, cp=False):
+    def helper2(self, temp, n):
         """See :meth:`StatFys.helper2`"""
         return 0.0
 
@@ -621,18 +655,57 @@ class Electronic(Info, StatFys):
 class ExtTrans(Info, StatFys):
     """The contribution from the external translation"""
 
-    def __init__(self):
-        self.gaslaw = None
+    def __init__(self, cp=True, gaslaw=None, dim=3):
+        """
+          Optional arguments:
+           | cp  --  When True, an additional factor is included in the
+                     partition function to model a constant pressure (or
+                     constant surface tension) ensemble instead of a constant
+                     volume (or constant surface) ensemble.
+           | gaslaw  --  the gas law that the system under study obeys. This is
+                         used to evaluation the PV term in the enthalpy and the
+                         Gibbs free energy, and also to compute the derivative
+                         of the volume towards the temperature under constant
+                         pressure (required for the heat capacity at constant
+                         pressure). By default, the ideal gas law is used.
+           | dim  --  The dimensionality of the ideal gas.
+
+           Note that the dimensionality determines the unit of the partition
+           function as follows::
+
+               unit = bohr**dim/particle
+
+           In 3D it is a volume per particle, or an inverse concentration.
+        """
+        self.cp = cp
+        if gaslaw is None:
+            self.gaslaw = IdealGasLaw(dim=dim)
+        else:
+            self.gaslaw = gaslaw
+            assert self.gaslaw.dim == dim
+        self.dim = dim
         Info.__init__(self, "translational")
 
     def init_part_fun(self, nma, partf):
         """See :meth:`StatFys.init_part_fun`"""
         self.mass = nma.mass
-        self.gaslaw = partf.gaslaw
 
     def dump(self, f):
         """See :meth:`Info.dump`"""
         Info.dump(self, f)
+        print >> f, "    Gas law: %s" % self.gaslaw.description
+        print >> f, "    Dimension: %i" % self.dim
+        print >> f, "    Constant pressure: %s" % self.cp
+        if self.cp:
+            print >> f, "      BIG FAT WARNING!!!"
+            print >> f, "      This is an NpT partition function."
+            print >> f, "      Internal energy contains a PV term (and is therefore the enthalpy)."
+            print >> f, "      Free energy contains a PV term (and is therefore the Gibbs free energy)."
+        else:
+            print >> f, "      BIG FAT WARNING!!!"
+            print >> f, "      This is an NVT partition function."
+            print >> f, "      Internal energy does NOT contain a PV term."
+            print >> f, "      Free energy does NOT contain a PV term (and is therefore the Helmholtz free energy)."
         print >> f, "    Mass [amu]: %f" % (self.mass/amu)
 
     def helper0(self, temp, n):
@@ -673,6 +746,12 @@ class ExtTrans(Info, StatFys):
            From this derivation it is clear that the many-body effects and the
            translational part must be done together, because the separate
            contributions depend on the number of particles, which is annoying.
+
+           Not that in the case of constant pressure, there is an extra term
+
+           .. math:: -\frac{PV}{kT}
+
+           which is trivial in the case of ideal gases.
         """
         if temp == 0:
             if n > 0:
@@ -680,32 +759,36 @@ class ExtTrans(Info, StatFys):
             else:
                 raise NotImplementedError
         else:
-            return (
+            result = (
                 temp**n + # This is due to the 1/N!
-                temp**n*1.5*numpy.log(2*numpy.pi*self.mass*boltzmann*temp/planck**2) +
+                temp**n*0.5*self.dim*numpy.log(2*numpy.pi*self.mass*boltzmann*temp/planck**2) +
                 self.gaslaw.helper0(temp, n) # this is the T^n*ln(V/N), the /N is due to 1/N!
             )
+            if self.cp:
+                result -= self.gaslaw.pv0(temp, n-1)/boltzmann
+            return result
 
-    def helper1(self, temp, n, cp=False):
+    def helper1(self, temp, n):
         """See :meth:`StatFys.helper1`"""
         if temp == 0:
             raise NotImplementedError
         else:
-            result = 1.5*temp**(n-1)
-            if cp:
+            result = 0.5*self.dim*temp**(n-1)
+            if self.cp:
                 result += self.gaslaw.helper1(temp, n)
+                result -= self.gaslaw.pv1(temp, n-1)/boltzmann
             return result
 
-    def helper2(self, temp, n, cp=False):
+    def helper2(self, temp, n):
         """See :meth:`StatFys.helper2`"""
         if temp == 0:
             raise NotImplementedError
         else:
-            result = -1.5*temp**(n-2)
-            if cp:
+            result = -0.5*self.dim*temp**(n-2)
+            if self.cp:
                 result += self.gaslaw.helper2(temp, n)
+                result -= self.gaslaw.pv2(temp, n-1)/boltzmann
             return result
-
 
 
 class ExtRot(Info, StatFys):
@@ -751,11 +834,11 @@ class ExtRot(Info, StatFys):
         else:
             return temp**n*(numpy.log(temp)*0.5*self.count + numpy.log(self.factor))
 
-    def helper1(self, temp, n, cp=False):
+    def helper1(self, temp, n):
         """See :meth:`StatFys.helper1`"""
         return temp**(n-1)*0.5*self.count
 
-    def helper2(self, temp, n, cp=False):
+    def helper2(self, temp, n):
         """See :meth:`StatFys.helper2`"""
         return -temp**(n-2)*0.5*self.count
 
@@ -818,12 +901,12 @@ class PCMCorrection(Info, StatFys):
         F, Fp, Fpp = self._eval_free(temp)
         return -F*temp**(n-1)/boltzmann
 
-    def helper1(self, temp, n, cp=False):
+    def helper1(self, temp, n):
         """See :meth:`StatFys.helper1`"""
         F, Fp, Fpp = self._eval_free(temp)
         return (F*temp**(n-2) - Fp*temp**(n-1))/boltzmann
 
-    def helper2(self, temp, n, cp=False):
+    def helper2(self, temp, n):
         """See :meth:`StatFys.helper2`"""
         F, Fp, Fpp = self._eval_free(temp)
         return (-Fpp*temp**(n-1) + 2*(Fp*temp**(n-2) - F*temp**(n-3)))/boltzmann
@@ -981,14 +1064,14 @@ class Vibrations(Info, StatFysTerms):
             self.zp_scaling
         )
 
-    def helper1_terms(self, temp, n, cp=False):
+    def helper1_terms(self, temp, n):
         """See :meth:`StatFysTerms.helper1_terms`"""
         return helper1_vibrations(
             temp, n, self.positive_freqs, self.classical, self.freq_scaling,
             self.zp_scaling
         )
 
-    def helper2_terms(self, temp, n, cp=False):
+    def helper2_terms(self, temp, n):
         """See :meth:`StatFysTerms.helper2_terms`"""
         return helper2_vibrations(
             temp, n, self.positive_freqs, self.classical, self.freq_scaling,
@@ -1006,27 +1089,17 @@ class PartFun(Info, StatFys):
     """
     __reserved_names__ = set(["terms"])
 
-    def __init__(self, nma, terms=None, gaslaw=None):
+    def __init__(self, nma, terms=None):
         """
         Arguments:
           | nma  --  NMA object
         Optional arguments:
           | terms  --  list to select the contributions to the partition function
                        e.g. [Vibrations(classical=True), ExtRot(1)]
-          | gaslaw  --  the gas law that the system under study obeys. This is
-                        used to evaluation the PV term in the enthalpy and the
-                        Gibbs free energy, and also to compute the derivative of
-                        the volume towards the temperature under constant
-                        pressure (required for the heat capacity at constant
-                        pressure). By default, the ideal gas law is used.
         """
         if terms is None:
             terms = []
         self.terms = terms
-        if gaslaw is None:
-            self.gaslaw = IdealGasLaw()
-        else:
-            self.gaslaw = gaslaw
         # perform a sanity check on the names of the contributions:
         for term in self.terms:
             if term.name in self.__reserved_names__:
@@ -1057,29 +1130,25 @@ class PartFun(Info, StatFys):
         """See :meth:`StatFys.helper0`"""
         return sum(term.helper0(temp, n) for term in self.terms)
 
-    def helper1(self, temp, n, cp=False):
+    def helper1(self, temp, n):
         """See :meth:`StatFys.helper1`"""
-        return sum(term.helper1(temp, n, cp) for term in self.terms)
+        return sum(term.helper1(temp, n) for term in self.terms)
 
-    def helper2(self, temp, n, cp=False):
+    def helper2(self, temp, n):
         """See :meth:`StatFys.helper2`"""
-        return sum(term.helper2(temp, n, cp) for term in self.terms)
+        return sum(term.helper2(temp, n) for term in self.terms)
 
     def internal_energy(self, temp):
         """Compute the internal energy
+
+           If self is a constant pressure ensemble of a regular 3D gas, the
+           return value is the enthalpy. If self is a constant volume ensemble
+           of a regular 3D gas, the return value is the internal energy.
 
            Arguments:
             | temp  --  the temperature
         """
         return StatFys.internal_energy(self, temp) + self.energy
-
-    def enthalpy(self, temp):
-        """Compute the enthalpy
-
-           Arguments:
-            | temp  --  the temperature
-        """
-        return self.internal_energy(temp) + self.gaslaw.pv(temp)
 
     def entropy(self, temp):
         """Compute the total entropy
@@ -1090,23 +1159,12 @@ class PartFun(Info, StatFys):
         return StatFys.entropy(self, temp)
 
     def free_energy(self, temp):
-        """This will raise an error. Use helmholtz_free_energy or gibbs_free_energy.
+        """Computes the free energy
 
-           At this level 'The Free Energy' is an ambiguous concept. The
-           Helmholtz Free Energy and the Gibbs Free Energy are clearly defined.
-
-           When one wants to compute a cobtribution to the Helmholtz or Gibbs
-           Free Energy from a specific factor in the partition function, then
-           one must use the method ``free_energy`` of that contribution::
-
-           >>> pf = PartFun(...)
-           >>> print pf.vibrations.free_energy(300)
-           >>> print pf.gibbs_free_energy(300)
-        """
-        raise NotImplementedError("Please use helmholtz_free_energy or gibbs_free_energy.")
-
-    def helmholtz_free_energy(self, temp):
-        """Computes the Helmholtz free energy
+           If self is a constant pressure ensemble of a regular 3D gas, the
+           return value is the Gibbs free energy. If self is a constant volume
+           ensemble of a regular 3D gas, the return value is the Helmholtz free
+           energy.
 
            Arguments:
             | temp  --  the temperature
@@ -1115,21 +1173,10 @@ class PartFun(Info, StatFys):
         # to include it in the electronic part of partition function.
         return StatFys.free_energy(self, temp) + self.energy
 
-    def gibbs_free_energy(self, temp):
-        """Compute the Gibbs free energy
-
-           Arguments:
-            | temp  --  the temperature
-
-           This quantity is also known as the Gibbs energy or the Free enthalpy.
-        """
-        return self.helmholtz_free_energy(temp) + self.gaslaw.pv(temp)
-
     def dump(self, f):
         """See :meth:`Info.dump`"""
         print >> f, "Energy at T=0K [au]: %.5f" % self.energy
-        print >> f, "Energy at T=0K with zero-point if QM vibrations [au]: %.5f" % self.helmholtz_free_energy(0.0)
-        print >> f, self.gaslaw.description
+        print >> f, "Zero-point corrected energy [au]: %.5f" % self.free_energy(0.0)
         print >> f, "Contributions to the partition function:"
         for term in self.terms:
             term.dump(f)
@@ -1145,7 +1192,7 @@ class PartFun(Info, StatFys):
         f.close()
 
 
-def compute_rate_coeff(pfs_react, pf_trans, temp, cp=True, do_log=False):
+def compute_rate_coeff(pfs_react, pf_trans, temp, do_log=False):
     """Computes a (forward) rate coefficient
 
        The implementation is based on transition state theory.
@@ -1157,29 +1204,24 @@ def compute_rate_coeff(pfs_react, pf_trans, temp, cp=True, do_log=False):
          | temp  --  the temperature
 
        Optional argument:
-         | cp  --  When True, the rate coefficient is compute at constant
-                   pressure (default=True). When False, the rate coefficient
-                   is computed at constant volume.
          | do_log  --  Return the logarithm of the rate coefficient instead of
                        just the rate coefficient itself.
     """
-    if cp:
-        delta_G = pf_trans.gibbs_free_energy(temp)
-        delta_G -= sum(pf_react.gibbs_free_energy(temp) for pf_react in pfs_react)
-        log_result = -delta_G/(boltzmann*temp)
-    else:
-        delta_A = pf_trans.helmholtz_free_energy(temp)
-        delta_A -= sum(pf_react.helmholtz_free_energy(temp) for pf_react in pfs_react)
-        log_result = -delta_A/(boltzmann*temp)
-    log_result += sum(pf_react.gaslaw.helper0(temp,0) for pf_react in pfs_react)
-    log_result -= pf_trans.gaslaw.helper0(temp,0)
+    delta_A = pf_trans.free_energy(temp)
+    delta_A -= sum(pf_react.free_energy(temp) for pf_react in pfs_react)
+    log_result = -delta_A/(boltzmann*temp)
+    for pf_react in pfs_react:
+        if hasattr(pf_react, "translational"):
+            log_result += pf_react.translational.gaslaw.helper0(temp,0)
+    if hasattr(pf_trans, "translational"):
+        log_result -= pf_trans.translational.gaslaw.helper0(temp,0)
     if do_log:
         return numpy.log(boltzmann*temp/planck) + log_result
     else:
         return boltzmann*temp/planck*numpy.exp(log_result)
 
 
-def compute_equilibrium_constant(pfs_A, pfs_B, temp, cp=True, do_log=False):
+def compute_equilibrium_constant(pfs_A, pfs_B, temp, do_log=False):
     """Computes the logarithm of equilibrium constant between some reactants and
        some products
 
@@ -1189,25 +1231,20 @@ def compute_equilibrium_constant(pfs_A, pfs_B, temp, cp=True, do_log=False):
          | temp  --  the temperature
 
        Optional argument:
-         | cp  --  When True, the equilibrium constant is compute at constant
-                   pressure (default=True). When False, the equilibrium constant
-                   is computed at constant volume.
          | do_log  --  Return the logarithm of the equilibrium constant instead
                        of just the equilibrium constant itself.
     """
-    if cp:
-        delta_G = 0.0
-        delta_G -= sum(pf_A.gibbs_free_energy(temp) for pf_A in pfs_A)
-        delta_G += sum(pf_B.gibbs_free_energy(temp) for pf_B in pfs_B)
-        log_K = -delta_G/(boltzmann*temp)
-    else:
-        delta_A = 0.0
-        delta_A -= sum(pf_A.helmholtz_free_energy(temp) for pf_A in pfs_A)
-        delta_A += sum(pf_B.helmholtz_free_energy(temp) for pf_B in pfs_B)
-        log_K = -delta_A/(boltzmann*temp)
+    delta_A = 0.0
+    delta_A -= sum(pf_A.free_energy(temp) for pf_A in pfs_A)
+    delta_A += sum(pf_B.free_energy(temp) for pf_B in pfs_B)
+    log_K = -delta_A/(boltzmann*temp)
 
-    log_K += sum(pf_A.gaslaw.helper0(temp,0) for pf_A in pfs_A)
-    log_K -= sum(pf_B.gaslaw.helper0(temp,0) for pf_B in pfs_B)
+    for pf_A in pfs_A:
+        if hasattr(pf_A, "translational"):
+            log_K += pf_A.translational.gaslaw.helper0(temp,0)
+    for pf_B in pfs_B:
+        if hasattr(pf_B, "translational"):
+            log_K -= pf_B.translational.gaslaw.helper0(temp,0)
     if do_log:
         return log_K
     else:

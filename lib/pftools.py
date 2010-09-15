@@ -90,11 +90,9 @@ class ThermoAnalysis(object):
         self.temps = temps
         self.tables = [
             ThermoTable("Energy", "%.5f", kjmol, "kJ/mol", "internal_energy", pf, temps),
-            ThermoTable("Etnhalpy", "%.5f", kjmol, "kJ/mol", "internal_energy", pf, temps, pf_method_name="enthalpy"),
-            ThermoTable("Helmholtz Free energy", "%.5f", kjmol, "kJ/mol", "free_energy", pf, temps, pf_method_name="helmholtz_free_energy"),
-            ThermoTable("Gibbs Free energy", "%.5f", kjmol, "kJ/mol", "free_energy", pf, temps, pf_method_name="gibs_free_energy"),
-            ThermoTable("Heat capacity (v)", "%.3f", joule/mol/kelvin, "J/(mol*K)", "heat_capacity_v", pf, temps),
-            ThermoTable("Heat capacity (p)", "%.3f", joule/mol/kelvin, "J/(mol*K)", "heat_capacity_p", pf, temps),
+            ThermoTable("Etnhalpy", "%.5f", kjmol, "kJ/mol", "internal_energy", pf, temps),
+            ThermoTable("Free energy", "%.5f", kjmol, "kJ/mol", "free_energy", pf, temps),
+            ThermoTable("Heat capacity (v)", "%.3f", joule/mol/kelvin, "J/(mol*K)", "heat_capacity", pf, temps),
             ThermoTable("Entropy", "%.5f",  joule/mol/kelvin, "J/(mol*K)", "entropy", pf, temps),
             ThermoTable("log(q)", "%.1f", 1, "1", "log", pf, temps),
             ThermoTable("d log(q) / dT", "%.3e", 1/kelvin, "1/K", "dlog", pf, temps),
@@ -291,11 +289,10 @@ class ReactionAnalysis(object):
         print >> f, "Number of temperatures = %i" % len(self.temps)
         print >> f
         print >> f, "Reaction rate coefficients"
-        symbol = self.kinetic_model.get_free_energy_symbol()
-        print >> f, "    T [K]     Delta %s [kJ/mol]       k(T) [%s]" % (symbol, self.kinetic_model.unit_name)
+        print >> f, "    T [K]     Delta A [kJ/mol]       k(T) [%s]" % (self.kinetic_model.unit_name)
         for i in xrange(len(self.temps)):
             temp = self.temps[i]
-            delta_free = self.kinetic_model.compute_delta_free_energy(temp)
+            delta_free = self.kinetic_model.compute_free_energy_barrier(temp)
             print >> f, "% 10.2f      %8.1f             % 10.5e" % (
                 temp, delta_free/kjmol, self.rate_coeffs[i]/self.kinetic_model.unit
             )

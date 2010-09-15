@@ -119,18 +119,6 @@ class BaseModel(object):
             del pf.vibrational.negative_freqs_orig
             del pf.energy_backup
 
-    def get_free_energy_symbol(self):
-        """Return the symbol for the free energy."""
-        raise NotImplementedError
-
-    def compute_delta_free_energy(self, temp):
-        """Compute the free energy difference for this chemical model.
-
-           Arguments:
-            | temp  -- The temperature.
-        """
-        raise NotImplementedError
-
     def write_to_file(self, filename):
         """Write the model to a text file.
 
@@ -148,27 +136,17 @@ class BaseModel(object):
 
 class ThermodynamicModel(BaseModel):
     """A model for a thermodynamic equilibrium."""
-    def __init__(self, pfs_react, pfs_prod, cp=True):
+    def __init__(self, pfs_react, pfs_prod):
         """
            Arguments:
             | pfs_react  --  A list with reactant partition functions.
             | pfs_prod  --  A list with product partition functions.
-
-           Optional argument:
-            | cp  --  When True, the equilibrium is modeled at constant pressure,
-                      otherwise at constant volume.
         """
         self.pfs_react = pfs_react
         self.pfs_prod = pfs_prod
-        self.cp = cp
-
         self.unit = (meter**3/mol)**(len(self.pfs_react)-len(self.pfs_prod))
         self.unit_name = "(m**3/mol)**%i" % (len(self.pfs_react)-len(self.pfs_prod))
         BaseModel.__init__(self, pfs_react + pfs_prod)
-
-    def get_free_energy_symbol(self):
-        """Return the symbol for the free energy."""
-        return {True: "G", False: "A"}[self.cp]
 
     def compute_equilibrium_constant(self, temp, do_log=False):
         """Compute the equilibrium constant at the given temperature.
@@ -181,48 +159,29 @@ class ThermodynamicModel(BaseModel):
                           is returned instead of just the equilibrium constant
                           itself. [default=False]
         """
-        return compute_equilibrium_constant(self.pfs_react, self.pfs_prod, temp, self.cp, do_log)
+        return compute_equilibrium_constant(self.pfs_react, self.pfs_prod, temp, do_log)
 
-    def compute_delta_free_energy(self, temp):
+    def compute_reaction_free_energy(self, temp):
         """Compute the free energy difference between (+) products and (-) reactants.
 
            Arguments:
             | temp  --  The temperature.
         """
-        if self.cp:
-            return self._compute_delta_G(temp)
-        else:
-            return self._compute_delta_A(temp)
+        return sum(pf_prod.free_energy(temp) for pf_prod in self.pfs_prod) - \
+               sum(pf_react.free_energy(temp) for pf_react in self.pfs_react)
 
-    def _compute_delta_G(self, temp):
-        """Compute the Gibbs free energy difference between (+) products and (-) reactants.
-
-           Arguments:
-            | temp  --  The temperature.
-        """
-        return sum(pf_prod.gibbs_free_energy(temp) for pf_prod in self.pfs_prod) - \
-               sum(pf_react.gibbs_free_energy(temp) for pf_react in self.pfs_react)
-
-    def _compute_delta_A(self, temp):
-        """Compute the Helmholts free energy difference between (+) products and (-) reactants.
-
-           Arguments:
-            | temp  --  The temperature.
-        """
-        return sum(pf_prod.helmholtz_free_energy(temp) for pf_prod in self.pfs_prod) - \
-               sum(pf_react.helmholtz_free_energy(temp) for pf_react in self.pfs_react)
-
-    def _compute_delta_E(self):
+    def compute_delta_E(self):
         """Compute the classical (microscopic) energy difference between (+) products and (-) reactants."""
         return sum(pf_prod.energy for pf_prod in self.pfs_prod) - \
                sum(pf_react.energy for pf_react in self.pfs_react)
 
     def dump(self, f):
         """Write all info about the thermodynamic model to a file."""
-        delta_E = self._compute_delta_E()
-        print >> f, "Delta E at T=0K [kJ/mol] = %.1f" % (delta_E/kjmol)
-        delta_A0K = self._compute_delta_A(0.0)
-        print >> f, "Delta E0 at T=0K (with zero-point if QM vibrations) [kJ/mol] = %.1f" % (delta_A0K/kjmol)
+        delta_E = self.compute_delta_E()
+        print >> f, "Energy difference = %.1f" % (delta_E/kjmol)
+        delta_A0K = self.compute_reaction_free_energy(0.0)
+        print >> f, "Zero-point corrected energy difference [kJ/mol] = %.1f" % (delta_A0K/kjmol)
+        print >> f
         for counter, pf_react in enumerate(self.pfs_react):
             print >> f, "Reactant %i partition function" % counter
             pf_react.dump(f)
@@ -235,6 +194,14 @@ class ThermodynamicModel(BaseModel):
 
 class BaseKineticModel(BaseModel):
     """A generic model for the rate of a chemical reaction."""
+    def compute_free_energy_barrier(self, temp):
+        """Compute the free energy barrier of the reaction.
+
+           Arguments:
+            | temp  -- the temperature
+        """
+        raise NotImplementedError
+
     def compute_rate_coeff(self, temp, do_log=False):
         """Compute the rate coefficient of the reaction in this analysis
 
@@ -251,16 +218,13 @@ class BaseKineticModel(BaseModel):
 
 class KineticModel(BaseKineticModel):
     """A model for the rate of a single-step chemical reaction."""
-    def __init__(self, pfs_react, pf_trans, cp=True, tunneling=None):
+    def __init__(self, pfs_react, pf_trans, tunneling=None):
         """
            Arguments:
             | pfs_react  --  a list of partition functions for the reactants
             | pf_trans  --  the partition function of the transition state
 
            Optional arguments:
-            | cp  --  When True, the rate coefficients are compute at constant
-                      pressure [default=True]. When False, the rate coefficients
-                      are computed at constant volume.
             | tunneling  --  A tunneling correction object. If not given, no
                              tunneling correction is applied.
 
@@ -275,7 +239,6 @@ class KineticModel(BaseKineticModel):
             raise ValueError("At least one reactant must be given.")
         self.pfs_react = pfs_react
         self.pf_trans = pf_trans
-        self.cp = cp
         self.tunneling = tunneling
 
         self.unit = (meter**3/mol)**(len(self.pfs_react)-1)/second
@@ -287,13 +250,9 @@ class KineticModel(BaseKineticModel):
             self.unit_name = "(m**3/mol)**%i/s" % (len(self.pfs_react)-1)
         BaseKineticModel.__init__(self, pfs_react + [pf_trans])
 
-    def get_free_energy_symbol(self):
-        """Return the symbol for the free energy."""
-        return {True: "G", False: "A"}[self.cp]
-
     def compute_rate_coeff(self, temp, do_log=False):
         """See :meth:`BaseKineticModel.compute_rate_coeff`"""
-        result = compute_rate_coeff(self.pfs_react, self.pf_trans, temp, self.cp, do_log)
+        result = compute_rate_coeff(self.pfs_react, self.pf_trans, temp, do_log)
         if self.tunneling is not None:
             if do_log:
                 result += numpy.log(self.tunneling(temp))
@@ -301,46 +260,27 @@ class KineticModel(BaseKineticModel):
                 result *= self.tunneling(temp)
         return result
 
-    def compute_delta_free_energy(self, temp):
+    def compute_free_energy_barrier(self, temp):
         """Compute the free energy barrier of the reaction.
 
            Arguments:
             | temp  -- the temperature
         """
-        if self.cp:
-            return self._compute_delta_G(temp)
-        else:
-            return self._compute_delta_A(temp)
+        return self.pf_trans.free_energy(temp) - \
+               sum(pf_react.free_energy(temp) for pf_react in self.pfs_react)
 
-    def _compute_delta_G(self, temp):
-        """Compute the Gibbs free energy barrier of the reaction.
-
-           Arguments:
-            | temp  -- the temperature
-        """
-        return self.pf_trans.gibbs_free_energy(temp) - \
-               sum(pf_react.gibbs_free_energy(temp) for pf_react in self.pfs_react)
-
-    def _compute_delta_A(self, temp):
-        """Compute the Helmholtz free energy barrier of the reaction.
-
-           Arguments:
-            | temp  -- the temperature
-        """
-        return self.pf_trans.helmholtz_free_energy(temp) - \
-               sum(pf_react.helmholtz_free_energy(temp) for pf_react in self.pfs_react)
-
-    def _compute_delta_E(self):
+    def compute_delta_E(self):
         """Compute the classical (microscopic) energy barrier of the reaction."""
         return self.pf_trans.energy - \
                sum(pf_react.energy for pf_react in self.pfs_react)
 
     def dump(self, f):
         """Write all info about the kinetic model to a file."""
-        delta_E = self._compute_delta_E()
-        print >> f, "Delta E at T=0K [kJ/mol] = %.1f" % (delta_E/kjmol)
-        delta_A0K = self._compute_delta_A(0.0)
-        print >> f, "Delta E0 at T=0K (with zero-point if QM vibrations) [kJ/mol] = %.1f" % (delta_A0K/kjmol)
+        delta_E = self.compute_delta_E()
+        print >> f, "Energy barrier [kJ/mol] = %.1f" % (delta_E/kjmol)
+        delta_A0K = self.compute_free_energy_barrier(0.0)
+        print >> f, "Zero-point corrected energy barrier [kJ/mol] = %.1f" % (delta_A0K/kjmol)
+        print >> f
         for counter, pf_react in enumerate(self.pfs_react):
             print >> f, "Reactant %i partition function" % counter
             pf_react.dump(f)
@@ -359,7 +299,6 @@ class ActivationKineticModel(BaseKineticModel):
         """
         self.tm = tm
         self.km = km
-        assert(km.cp==tm.cp)
 
         # akm
         self.unit = tm.unit*km.unit
@@ -374,11 +313,7 @@ class ActivationKineticModel(BaseKineticModel):
 
         BaseKineticModel.__init__(self, tm.pfs_all + km.pfs_all)
 
-    def get_free_energy_symbol(self):
-        """Return the symbol for the free energy."""
-        return self.km.get_free_energy_symbol()
-
-    def compute_delta_free_energy(self, temp):
+    def compute_free_energy_barrier(self, temp):
         """Compute the free energy barrier of the entire reaction.
 
            Arguments:
@@ -391,18 +326,9 @@ class ActivationKineticModel(BaseKineticModel):
         """Write all info about the kinetic model to a file."""
         print >> f, "Thermodynamic model"
         self.tm.dump(f)
+        print >> f
         print >> f, "Kinetic model"
         self.km.dump(f)
-
-    #def compute_rate_coeff(self, temp, do_log=False):
-    #    """See :meth:`BaseKineticModel.compute_rate_coeff`"""
-    #    result = compute_rate_coeff(self.pfs_react, self.pf_trans, temp, self.cp, do_log)
-    #    if self.tunneling is not None:
-    #        if do_log:
-    #            result += numpy.log(self.tunneling(temp))
-    #        else:
-    #            result *= self.tunneling(temp)
-    #    return result
 
     def compute_rate_coeff(self, temp, do_log=False):
         """See :meth:`BaseKineticModel.compute_rate_coeff`"""

@@ -639,7 +639,7 @@ class Rotor(Info, StatFysTerms):
             helper0_levels(temp, n, self.energy_levels) - temp**n*numpy.log(self.rotsym),
         ])
 
-    def helper1_terms(self, temp, n, cp=False):
+    def helper1_terms(self, temp, n):
         """See :meth:`tamkin.partf.StatFysTerms.helper1_terms`"""
         return numpy.array([
             -helper1_vibrations(temp, n, self.cancel_freq, self.classical,
@@ -647,7 +647,7 @@ class Rotor(Info, StatFysTerms):
             helper1_levels(temp, n, self.energy_levels),
         ])
 
-    def helper2_terms(self, temp, n, cp=False):
+    def helper2_terms(self, temp, n):
         """See :meth:`tamkin.partf.StatFysTerms.helper2_terms`"""
         return numpy.array([
             -helper2_vibrations(temp, n, self.cancel_freq, self.classical,

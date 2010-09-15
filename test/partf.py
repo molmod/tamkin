@@ -232,14 +232,39 @@ class PartFunTestCase(unittest.TestCase):
                     a, b, 8,
                     "error in second partial derivative (%s): %s!=%s" % (stat_fys.name, a, b)
                 )
-                # check the first derivative towards number of particles
-                self.assertAlmostEqual(pf.helpern(temp, 0), -1)
-                self.assertAlmostEqual(pf.chemical_potential(temp), pf.free_energy(temp) - pf.energy + boltzmann*temp)
                 # check the helper functions temperature argument
                 self.assertAlmostEqual(stat_fys.helper(temp,1), stat_fys.helper(temp,0)*temp)
                 self.assertAlmostEqual(stat_fys.helpert(temp,1), stat_fys.helpert(temp,0)*temp)
                 self.assertAlmostEqual(stat_fys.helpertt(temp,1), stat_fys.helpertt(temp,0)*temp)
 
+    def test_chemical_potential(self):
+        for cp in False, True:
+            molecule = load_molecule_g03fchk("input/ethane/gaussian.fchk")
+            nma = NMA(molecule)
+            pf = PartFun(nma, [ExtTrans(cp=cp), ExtRot()])
+            N0 = 1.0
+            p0 = pf.translational.gaslaw.pressure
+            N1 = 1.001
+            p1 = p0*N1/N0
+            self.assertEqual(pf.rotational.symmetry_number, 6)
+            temps = numpy.array([300.0,400.0,500.0,600.0,700.0])
+            for temp in temps:
+                # compare the derivative of the free energy at N=1 with its
+                # finit difference approximation.
+                if not cp:
+                    pf.translational.gaslaw.pressure = p0
+                A0 = (pf.free_energy(temp))*N0
+                if not cp:
+                    pf.translational.gaslaw.pressure = p1
+                A1 = (pf.free_energy(temp))*N1
+                mu = pf.chemical_potential(temp)
+                #print cp, temp, A1 - A0, (N1-N0)*mu, (A1 - A0 - (N1-N0)*mu)/kjmol
+                error = abs(A1 - A0 - (N1-N0)*mu)
+                self.assert_(error < 1e-3)
+                # check the helper function and the definition of the chemical
+                # potential in an ideal gas
+                self.assertAlmostEqual(pf.helpern(temp, 0), -1)
+                self.assertAlmostEqual(pf.chemical_potential(temp), pf.free_energy(temp) + boltzmann*temp)
 
     def test_derived_quantities(self):
         # internal energy, heat capacity and entropy

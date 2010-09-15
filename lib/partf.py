@@ -1240,6 +1240,8 @@ class PartFun(Info, StatFys):
            Arguments:
             | temp  --  the temperature
         """
+        # The molecular ground state energy is added here. It is tempting
+        # to include it in the electronic part of partition function.
         return StatFys.internal_energy(self, temp) + self.energy
 
     def entropy(self, temp):
@@ -1264,6 +1266,19 @@ class PartFun(Info, StatFys):
         # The molecular ground state energy is added here. It is tempting
         # to include it in the electronic part of partition function.
         return StatFys.free_energy(self, temp) + self.energy
+
+    def chemical_potential(self, temp):
+        """Computes the chemical potential
+
+           Argument:
+            | temp  --  the temperature
+
+           Note: as opposed to most other methods, this is an intensive
+           function!
+        """
+        # The molecular ground state energy is added here. It is tempting
+        # to include it in the electronic part of partition function.
+        return StatFys.chemical_potential(self, temp) + self.energy
 
     def dump(self, f):
         """See :meth:`Info.dump`"""

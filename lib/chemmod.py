@@ -113,7 +113,7 @@ class BaseModel(object):
            The methods in the base class are mainly used by the Monte Carlo
            routine in the ReactionAnalysis class.
         """
-        self.pfs_all = pfs_all
+        self.pfs_all = set(pfs_all)
 
     def backup_freqs(self):
         """Keep a backup copy of the frequencies and the energy of each partition function."""
@@ -202,14 +202,14 @@ class ThermodynamicModel(BaseModel):
         return sum(pf_prod.free_energy(temp) for pf_prod in self.pfs_prod) - \
                sum(pf_react.free_energy(temp) for pf_react in self.pfs_react)
 
-    def compute_delta_E(self):
+    def compute_reaction_energy(self):
         """Compute the classical (microscopic) energy difference between (+) products and (-) reactants."""
         return sum(pf_prod.energy for pf_prod in self.pfs_prod) - \
                sum(pf_react.energy for pf_react in self.pfs_react)
 
     def dump(self, f):
         """Write all info about the thermodynamic model to a file."""
-        delta_E = self.compute_delta_E()
+        delta_E = self.compute_reaction_energy()
         print >> f, "Energy difference = %.1f" % (delta_E/kjmol)
         delta_A0K = self.compute_reaction_free_energy(0.0)
         print >> f, "Zero-point corrected energy difference [kJ/mol] = %.1f" % (delta_A0K/kjmol)
@@ -294,14 +294,14 @@ class KineticModel(BaseKineticModel):
         return self.pf_trans.free_energy(temp) - \
                sum(pf_react.free_energy(temp) for pf_react in self.pfs_react)
 
-    def compute_delta_E(self):
+    def compute_energy_barrier(self):
         """Compute the classical (microscopic) energy barrier of the reaction."""
         return self.pf_trans.energy - \
                sum(pf_react.energy for pf_react in self.pfs_react)
 
     def dump(self, f):
         """Write all info about the kinetic model to a file."""
-        delta_E = self.compute_delta_E()
+        delta_E = self.compute_energy_barrier()
         print >> f, "Energy barrier [kJ/mol] = %.1f" % (delta_E/kjmol)
         delta_A0K = self.compute_free_energy_barrier(0.0)
         print >> f, "Zero-point corrected energy barrier [kJ/mol] = %.1f" % (delta_A0K/kjmol)
@@ -336,7 +336,7 @@ class ActivationKineticModel(BaseKineticModel):
         else:
             self.unit_name = "(m**3/mol)**%i/s" % (len(tm.pfs_react)-len(tm.pfs_prod)+len(km.pfs_react)-1)
 
-        BaseKineticModel.__init__(self, tm.pfs_all + km.pfs_all)
+        BaseKineticModel.__init__(self, tm.pfs_all | km.pfs_all)
 
     def compute_free_energy_barrier(self, temp):
         """Compute the free energy barrier of the entire reaction.
@@ -344,8 +344,8 @@ class ActivationKineticModel(BaseKineticModel):
            Arguments:
             | temp  -- the temperature
         """
-        return self.tm.compute_delta_free_energy(temp) + \
-               self.km.compute_delta_free_energy(temp)
+        return self.tm.compute_reaction_free_energy(temp) + \
+               self.km.compute_free_energy_barrier(temp)
 
     def dump(self, f):
         """Write all info about the kinetic model to a file."""

@@ -76,10 +76,9 @@ pf_trans = PartFun(NMA(mol_trans, PHVA(fixed_trans)))
 #  1) a list of reactant partition functions
 #     (one for unimolecular, two for bimolecular, ...)
 #  2) the transition state partition function
-# There are two more optional arguments
-#  3) cp: model at constant pressure, default=True
-#  4) tunneling: a model for the tunelling correction
-km = KineticModel([pf_react], pf_trans, cp=True, tunneling=None)
+# There is one more optional argument:
+#  3) tunneling: a model for the tunelling correction
+km = KineticModel([pf_react], pf_trans, tunneling=None)
 
 # Analyze the chemical reaction. These are the arguments:
 #  1) A kinetic model

@@ -86,8 +86,7 @@ molecule = load_molecule_cp2k(
 nma = NMA(molecule, ConstrainExt())
 pf = PartFun(
     nma,
-    [ExtTrans(), ExtRot(), Vibrations(classical=False)],
-    gaslaw=IdealGasLaw(pressure)
+    [ExtTrans(gaslaw=IdealGasLaw(pressure)), ExtRot(), Vibrations(classical=False)],
 )
 
 

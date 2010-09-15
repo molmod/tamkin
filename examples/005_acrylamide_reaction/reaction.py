@@ -65,7 +65,7 @@ from tamkin import *
 nma_react1 = NMA(load_molecule_g03fchk("aa.fchk"), ConstrainExt())
 nma_react2 = NMA(load_molecule_g03fchk("aarad.fchk"), ConstrainExt())
 nma_trans = NMA(load_molecule_g03fchk("paats.fchk"), ConstrainExt())
-# Construct the three partition functions.
+# Construct the three partition functions. Constant pressure is the default.
 pf_react1 = PartFun(nma_react1, [ExtTrans(), ExtRot()])
 pf_react2 = PartFun(nma_react2, [ExtTrans(), ExtRot()])
 pf_trans = PartFun(nma_trans, [ExtTrans(), ExtRot()])
@@ -74,10 +74,9 @@ pf_trans = PartFun(nma_trans, [ExtTrans(), ExtRot()])
 #  1) a list of reactant partition functions
 #     (one for unimolecular, two for bimolecular, ...)
 #  2) the transition state partition function
-# There are two more optional arguments:
-#  3) cp: model at constant pressure, default=True
-#  4) tunneling: a model for the tunelling correction
-km = KineticModel([pf_react1, pf_react2], pf_trans, cp=True, tunneling=None)
+# There is one more optional argument:
+#  3) tunneling: a model for the tunelling correction
+km = KineticModel([pf_react1, pf_react2], pf_trans, tunneling=None)
 
 # Analyze the chemical reaction. These are the arguments:
 #  1) A kinetic model

@@ -88,16 +88,16 @@ pf_cyclohexene = PartFun(nma_cyclohexene, [ExtTrans(), ExtRot(1),Vibrations(freq
 # One can compute the equilibrium coefficient for the activation reaction and the forward coefficient for the reaction separately:
 
 # Thermodynamic model
-tm = ThermodynamicModel([pf_VO_AA_OH_H2O,pf_TBHP],[pf_VO_AA_OOtBu,pf_H2O,pf_H2O],cp=True)
+tm = ThermodynamicModel([pf_VO_AA_OH_H2O,pf_TBHP],[pf_VO_AA_OOtBu,pf_H2O,pf_H2O])
 print "Thermodynamic model:"
 print "equilibrium constant and gibbs free energy difference"
-print tm.compute_equilibrium_constant(323.0,do_log=False)/tm.unit, tm.unit_name,"    " ,tm.compute_delta_free_energy(323.0)/kjmol, "kJ/mol"
+print tm.compute_equilibrium_constant(323.0,do_log=False)/tm.unit, tm.unit_name,"    " ,tm.compute_reaction_free_energy(323.0)/kjmol, "kJ/mol"
 print
 # Kinetic model
-km = KineticModel([pf_VO_AA_OOtBu,pf_cyclohexene],pf_TS,cp=True,tunneling=None)
+km = KineticModel([pf_VO_AA_OOtBu,pf_cyclohexene],pf_TS,tunneling=None)
 print "Kinetic model:"
 print "rate coefficient and gibbs free energy difference"
-print km.compute_rate_coeff(323.0,do_log=False)/km.unit, "%s" % km.unit_name,"   " , km.compute_delta_free_energy(323.0)/kjmol, "kJ/mol"
+print km.compute_rate_coeff(323.0,do_log=False)/km.unit, "%s" % km.unit_name,"   " , km.compute_free_energy_barrier(323.0)/kjmol, "kJ/mol"
 print
 ra = ReactionAnalysis(km, 273, 373.1, temp_step=10)
 ra.plot_arrhenius("arrhenius.png") # make the Arrhenius plot
@@ -123,5 +123,5 @@ rakm.monte_carlo()
 rakm.plot_parameters("parameters_akm.png")
 print "Activation kinetic model:"
 print "global rate coefficient and global gibbs free energy difference"
-print akm.compute_rate_coeff(323.0)/akm.unit, "%s" % akm.unit_name,"    ", akm.compute_delta_free_energy(323.0)/kjmol, "kJ/mol"
+print akm.compute_rate_coeff(323.0)/akm.unit, "%s" % akm.unit_name,"    ", akm.compute_free_energy_barrier(323.0)/kjmol, "kJ/mol"
 akm.write_to_file("activation_model.txt")

@@ -75,8 +75,7 @@ rot_scan = load_rotscan_g03log("scan/gaussian.log")
 nma = NMA(molecule, ConstrainExt())
 rotor = Rotor(rot_scan, molecule, rotsym=1, even=True)
 pf = PartFun(nma, [ExtTrans(), ExtRot(), rotor])
-print "Heat capacity at 300K, constant volume [J/(mol*K)]:", pf.heat_capacity_v(300*kelvin)/(joule/mol/kelvin)
-print "Heat capacity at 300K, constant pressure [J/(mol*K)]:", pf.heat_capacity_p(300*kelvin)/(joule/mol/kelvin)
+print "Heat capacity at 300K, constant pressure [J/(mol*K)]:", pf.heat_capacity(300*kelvin)/(joule/mol/kelvin)
 # Write some general information about the molecule and the partition function
 # to a file.
 pf.write_to_file("partfun.txt")

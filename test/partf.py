@@ -217,7 +217,7 @@ class PartFunTestCase(unittest.TestCase):
         for stat_fys in sfs:
             for temp in temps:
                 # check the first derivative with finite differences
-                a = stat_fys.dlog(temp)
+                a = stat_fys.logt(temp)
                 b = (stat_fys.log(temp+eps) -
                      stat_fys.log(temp-eps))/(2*eps)
                 self.assertAlmostEqual(
@@ -225,17 +225,17 @@ class PartFunTestCase(unittest.TestCase):
                     "error in partial derivative (%s): %s!=%s" % (stat_fys.name, a, b)
                 )
                 # check the second derivative with finite differences
-                a = stat_fys.ddlog(temp)
-                b = (stat_fys.dlog(temp+eps) -
-                     stat_fys.dlog(temp-eps))/(2*eps)
+                a = stat_fys.logtt(temp)
+                b = (stat_fys.logt(temp+eps) -
+                     stat_fys.logt(temp-eps))/(2*eps)
                 self.assertAlmostEqual(
                     a, b, 8,
                     "error in second partial derivative (%s): %s!=%s" % (stat_fys.name, a, b)
                 )
                 # check the helper functions temperature argument
-                self.assertAlmostEqual(stat_fys.helper0(temp,1), stat_fys.helper0(temp,0)*temp)
-                self.assertAlmostEqual(stat_fys.helper1(temp,1), stat_fys.helper1(temp,0)*temp)
-                self.assertAlmostEqual(stat_fys.helper2(temp,1), stat_fys.helper2(temp,0)*temp)
+                self.assertAlmostEqual(stat_fys.helper(temp,1), stat_fys.helper(temp,0)*temp)
+                self.assertAlmostEqual(stat_fys.helpert(temp,1), stat_fys.helpert(temp,0)*temp)
+                self.assertAlmostEqual(stat_fys.helpertt(temp,1), stat_fys.helpertt(temp,0)*temp)
 
 
     def test_derived_quantities(self):
@@ -358,13 +358,13 @@ class PartFunTestCase(unittest.TestCase):
         self.assertAlmostEqual(pf.heat_capacity(temp), 1.5*boltzmann)
         self.assertAlmostEqual(pf.internal_energy(temp), 1.5*boltzmann*temp)
         qt = (mol.masses[0]*boltzmann*temp/(2*numpy.pi))**1.5 * boltzmann*temp/(1*atm)
-        self.assertAlmostEqual(pf.translational.helper1(temp, 1), 1.5)
+        self.assertAlmostEqual(pf.translational.helpert(temp, 1), 1.5)
         self.assertAlmostEqual(
-            pf.translational.gaslaw.helper0(temp, 0),
+            pf.translational.gaslaw.helper(temp, 0),
             numpy.log(boltzmann*temp/(1*atm))
         )
         self.assertAlmostEqual(
-            pf.translational.helper0(temp, 0),
+            pf.translational.helper(temp, 0),
             1 + 1.5*numpy.log(mol.masses[0]*boltzmann*temp/(2*numpy.pi)) +
             numpy.log(boltzmann*temp/(1*atm))
         )

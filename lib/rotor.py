@@ -63,9 +63,9 @@
    [1] Chemical Physics, Vol. 328 (1-3) 251 - 258, 2006
 """
 
-from tamkin.partf import Info, StatFysTerms, helper0_vibrations, \
-    helper1_vibrations, helper2_vibrations, helper0_levels, helper1_levels, \
-    helper2_levels
+from tamkin.partf import Info, StatFysTerms, helper_vibrations, \
+    helpert_vibrations, helpertt_vibrations, helper_levels, helpert_levels, \
+    helpertt_levels
 from tamkin.nma import NMA, MBH
 from tamkin.geom import transrot_basis
 
@@ -631,26 +631,26 @@ class Rotor(Info, StatFysTerms):
         pylab.xlabel("Dihedral angle [deg]")
         pylab.savefig(prefix)
 
-    def helper0_terms(self, temp, n):
-        """See :meth:`tamkin.partf.StatFysTerms.helper0_terms`"""
+    def helper_terms(self, temp, n):
+        """See :meth:`tamkin.partf.StatFysTerms.helper_terms`"""
         return numpy.array([
-            -helper0_vibrations(temp, n, self.cancel_freq, self.classical,
+            -helper_vibrations(temp, n, self.cancel_freq, self.classical,
                                  self.freq_scaling, self.zp_scaling),
-            helper0_levels(temp, n, self.energy_levels) - temp**n*numpy.log(self.rotsym),
+            helper_levels(temp, n, self.energy_levels) - temp**n*numpy.log(self.rotsym),
         ])
 
-    def helper1_terms(self, temp, n):
-        """See :meth:`tamkin.partf.StatFysTerms.helper1_terms`"""
+    def helpert_terms(self, temp, n):
+        """See :meth:`tamkin.partf.StatFysTerms.helpert_terms`"""
         return numpy.array([
-            -helper1_vibrations(temp, n, self.cancel_freq, self.classical,
+            -helpert_vibrations(temp, n, self.cancel_freq, self.classical,
                                   self.freq_scaling, self.zp_scaling),
-            helper1_levels(temp, n, self.energy_levels),
+            helpert_levels(temp, n, self.energy_levels),
         ])
 
-    def helper2_terms(self, temp, n):
-        """See :meth:`tamkin.partf.StatFysTerms.helper2_terms`"""
+    def helpertt_terms(self, temp, n):
+        """See :meth:`tamkin.partf.StatFysTerms.helpertt_terms`"""
         return numpy.array([
-            -helper2_vibrations(temp, n, self.cancel_freq, self.classical,
+            -helpertt_vibrations(temp, n, self.cancel_freq, self.classical,
                                    self.freq_scaling, self.zp_scaling),
-            helper2_levels(temp, n, self.energy_levels),
+            helpertt_levels(temp, n, self.energy_levels),
         ])

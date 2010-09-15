@@ -65,9 +65,42 @@ from tamkin.partf import compute_rate_coeff, compute_equilibrium_constant
 
 
 __all__ = [
-    "BaseModel", "ThermodynamicModel", "BaseKineticModel", "KineticModel",
-    "ActivationKineticModel"
+    "get_unit", "BaseModel", "ThermodynamicModel", "BaseKineticModel",
+    "KineticModel", "ActivationKineticModel"
 ]
+
+
+def get_unit(pfs_A, pfs_B, per_second=False):
+    """Return the unit of the equilibrium constant or pre-exponential factor.
+
+       Arguments:
+        | pfs_A  --  The partition functions in the numerator
+        | pfs_B  --  The partition functions in the denominator
+
+       Optional argument:
+        | per_second  -- Boolean, when True the unit is divided by second.
+    """
+    meter_power = 0
+    mol_power = 0
+    for pf_A in pfs_A:
+        if hasattr(pf_A, "translational"):
+            meter_power += pf_A.translational.dim
+        mol_power += 1
+    for pf_B in pfs_B:
+        if hasattr(pf_B, "translational"):
+            meter_power -= pf_B.translational.dim
+        mol_power -= 1
+    unit = meter**meter_power/mol**mol_power
+    unit_name = ""
+    if meter_power != 0:
+        unit_name += "m**%i" % meter_power
+    if mol_power != 0:
+        unit_name += "*mol**%i" % mol_power
+    if per_second:
+        unit /= second
+        unit_name += "/second"
+    return unit, unit_name
+
 
 
 class BaseModel(object):
@@ -144,8 +177,7 @@ class ThermodynamicModel(BaseModel):
         """
         self.pfs_react = pfs_react
         self.pfs_prod = pfs_prod
-        self.unit = (meter**3/mol)**(len(self.pfs_react)-len(self.pfs_prod))
-        self.unit_name = "(m**3/mol)**%i" % (len(self.pfs_react)-len(self.pfs_prod))
+        self.unit, self.unit_name = get_unit(pfs_react, pfs_prod)
         BaseModel.__init__(self, pfs_react + pfs_prod)
 
     def compute_equilibrium_constant(self, temp, do_log=False):
@@ -240,14 +272,7 @@ class KineticModel(BaseKineticModel):
         self.pfs_react = pfs_react
         self.pf_trans = pf_trans
         self.tunneling = tunneling
-
-        self.unit = (meter**3/mol)**(len(self.pfs_react)-1)/second
-        if len(self.pfs_react)==1:
-            self.unit_name = "1/s"
-        elif len(self.pfs_react)==2:
-            self.unit_name = "(m**3/mol)/s"
-        else:
-            self.unit_name = "(m**3/mol)**%i/s" % (len(self.pfs_react)-1)
+        self.unit, self.unit_name = get_unit(pfs_react, [pf_trans], per_second=True)
         BaseKineticModel.__init__(self, pfs_react + [pf_trans])
 
     def compute_rate_coeff(self, temp, do_log=False):

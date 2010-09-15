@@ -58,7 +58,7 @@
 
 from tamkin import *
 
-from molmod.units import kjmol, atm
+from molmod.units import kjmol, atm, meter, mol, second
 from molmod.constants import boltzmann
 
 import unittest
@@ -79,6 +79,7 @@ class PFToolsTestCase(unittest.TestCase):
         # not a very accurate check because the fit is carried out differently
         # in the fancy excel file where these numbers come from.
         self.assertAlmostEqual(ra.Ea/kjmol, 25.96, 1)
+        self.assertAlmostEqual(km.unit, meter**3/mol/second)
         self.assertAlmostEqual(numpy.log(ra.A/km.unit), numpy.log(2.29E+02), 1)
 
         ra.plot_arrhenius("output/arrhenius_aa.png")
@@ -95,6 +96,7 @@ class PFToolsTestCase(unittest.TestCase):
         # not a very accurate check because the fit is carried out differently
         # in the fancy excel file where these numbers come from.
         self.assertAlmostEqual(ra.Ea/kjmol, 160.6, 0)
+        self.assertAlmostEqual(km.unit, 1.0/second)
         self.assertAlmostEqual(numpy.log(ra.A/km.unit), numpy.log(3.33e10), 0)
         ra.plot_arrhenius("output/arrhenius_mat1.png")
         ra.monte_carlo()

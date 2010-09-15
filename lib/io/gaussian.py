@@ -146,16 +146,26 @@ def load_molecule_g03fchk(fn_freq, fn_ener=None, fn_vdw=None, energy=None):
                  break
          f.close()
 
+    if fchk_freq.molecule.size == 1 and \
+       "Cartesian Force Constants" not in fchk_freq.fields:
+        gradient = numpy.zeros((3,1), float)
+        hessian = numpy.zeros((3,3), float)
+    else:
+        gradient = fchk_freq.fields["Cartesian Gradient"].copy()
+        gradient.shape = (fchk_freq.molecule.size, 3)
+        hessian = fchk_freq.get_hessian()
+
     return Molecule(
         fchk_freq.molecule.numbers,
         fchk_freq.molecule.coordinates,
         fchk_freq.fields["Real atomic weights"]*amu,
         energy+vdw,
-        numpy.reshape(numpy.array(fchk_freq.fields["Cartesian Gradient"]), (len(fchk_freq.molecule.numbers),3)),
-        fchk_freq.get_hessian(),
+        gradient,
+        hessian,
         fchk_freq.fields["Multiplicity"],
         0, # gaussian is very poor at computing the rotational symmetry number
         False,
+        title=fchk_freq.title
     )
 
 

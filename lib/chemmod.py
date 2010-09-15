@@ -220,7 +220,7 @@ class ThermodynamicModel(BaseModel):
             print >> f
         for counter, pf_prod in enumerate(self.pfs_prod):
             print >> f, "Prodcut %i partition function" % counter
-            pf_react.dump(f)
+            pf_prod.dump(f)
             print >> f
 
 

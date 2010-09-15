@@ -160,7 +160,6 @@ class DataTestCase(unittest.TestCase):
     def test_molecule_checkpoint_full(self):
         mol1 = load_molecule_g03fchk("input/sterck/aa.fchk")
         mol1.set_default_graph()
-        mol1.title = "Foobar"
         mol1.unit_cell = UnitCell(numpy.identity(3, float)*25)
         mol1.symbols = [periodic[n].symbol for n in mol1.numbers]
         mol1.write_to_file("output/molecule_checkpoint_full.chk")

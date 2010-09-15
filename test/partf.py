@@ -216,7 +216,7 @@ class PartFunTestCase(unittest.TestCase):
         ]
         for stat_fys in sfs:
             for temp in temps:
-                # check the first derivative with finite differences
+                # check the first derivative towards temperature with finite differences
                 a = stat_fys.logt(temp)
                 b = (stat_fys.log(temp+eps) -
                      stat_fys.log(temp-eps))/(2*eps)
@@ -224,7 +224,7 @@ class PartFunTestCase(unittest.TestCase):
                     a, b, 8,
                     "error in partial derivative (%s): %s!=%s" % (stat_fys.name, a, b)
                 )
-                # check the second derivative with finite differences
+                # check the second derivative towards temperature with finite differences
                 a = stat_fys.logtt(temp)
                 b = (stat_fys.logt(temp+eps) -
                      stat_fys.logt(temp-eps))/(2*eps)
@@ -232,6 +232,9 @@ class PartFunTestCase(unittest.TestCase):
                     a, b, 8,
                     "error in second partial derivative (%s): %s!=%s" % (stat_fys.name, a, b)
                 )
+                # check the first derivative towards number of particles
+                self.assertAlmostEqual(pf.helpern(temp, 0), -1)
+                self.assertAlmostEqual(pf.chemical_potential(temp), pf.free_energy(temp) - pf.energy + boltzmann*temp)
                 # check the helper functions temperature argument
                 self.assertAlmostEqual(stat_fys.helper(temp,1), stat_fys.helper(temp,0)*temp)
                 self.assertAlmostEqual(stat_fys.helpert(temp,1), stat_fys.helpert(temp,0)*temp)

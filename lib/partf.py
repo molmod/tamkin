@@ -1226,6 +1226,10 @@ class PartFun(Info, StatFys):
         """See :meth:`StatFys.helpertt`"""
         return sum(term.helpertt(temp, n) for term in self.terms)
 
+    def helpern(self, temp, n):
+        """See :meth:`StatFys.helpern`"""
+        return sum(term.helpern(temp, n) for term in self.terms)
+
     def internal_energy(self, temp):
         """Compute the internal energy
 

@@ -126,19 +126,7 @@ class IdealGasLaw(object):
             self.p_unit = 1.0
             self.p_unit_name = "a.u."
 
-    def pv(self, temp):
-        """Returns the product of pressure and volume.
-
-           Arguments:
-            | temp  --  The temperature
-
-           Note that in SI units this is RT. The internal units of
-           this module are atomic units and per molecule, so the return value
-           becomes kT.
-        """
-        return boltzmann*temp
-
-    def pv0(self, temp, n):
+    def pv(self, temp, n):
         """PV function 0
 
            Arguments:
@@ -159,8 +147,8 @@ class IdealGasLaw(object):
         else:
             return boltzmann*temp**(n+1)
 
-    def pv1(self, temp, n):
-        """PV function 1
+    def pvt(self, temp, n):
+        """PV function T
 
            Arguments:
             | temp  --  The temperature
@@ -173,24 +161,28 @@ class IdealGasLaw(object):
         """
         return 0.0
 
-    def pv2(self, temp, n):
-        """PV function 2.
+    def pvtt(self, temp, n):
+        """PV function TT
 
            Arguments:
             | temp  --  The temperature
             | n  --  A power for the additional temperature factor.
 
            This is an auxiliary function for the translational partition
-           function. It returns the derivative towards the temperature product
-           of pressure and volume, multiplied by a power of the temperature.
-           (Derivation is performed prior to multiplication with T)
+           function. It returns the second derivative towards the temperature of
+           the product of pressure and volume, multiplied by a power of the
+           temperature. (Derivation is performed prior to multiplication with T)
         """
         return 0.0
 
     def helper(self, temp, n):
-        """Helper function zero
+        r"""Helper function
 
-           Returns T^n ln(V(T)), where V is the volume per molecule
+           Returns
+
+           .. math:: T^n \ln(V(T))
+
+           where :math:`V` is the volume per molecule.
 
            Arguments:
             | temp  --  the temperature
@@ -205,9 +197,14 @@ class IdealGasLaw(object):
             return temp**n*numpy.log(boltzmann*temp/self.pressure)
 
     def helpert(self, temp, n):
-        """Helper function one
+        r"""Helper function T
 
-           Returns T^n (d ln(V(T)))/(d T), where V is the volume per molecule
+           Returns
+
+           .. math:: T^n \frac{d \ln(V(T))}{d T}
+
+           where :math:`V` is the volume per molecule and the derivative is
+           taken at constant pressure.
 
            Arguments:
             | temp  --  the temperature
@@ -219,9 +216,14 @@ class IdealGasLaw(object):
             return temp**(n-1)
 
     def helpertt(self, temp, n):
-        """Helper function two
+        r"""Helper function TT
 
-           Returns T^n (d^2 ln(V(T)))/(d T^2), where V is the volume per molecule
+           Returns
+
+           .. math:: T^n \frac{d^2 \ln(V(T))}{d T^2}
+
+           where :math:`V` is the volume per molecule and the derivative is
+           taken at constant pressure.
 
            Arguments:
             | temp  --  the temperature
@@ -231,6 +233,20 @@ class IdealGasLaw(object):
             raise NotImplementedError
         else:
             return -temp**(n-2)
+
+    def helpern(self, temp, n):
+        r"""Helper function N
+
+           Returns
+
+           .. math:: T^n \left(\frac{N}{V}-\frac{P}{kT}\right)\frac{dV(T)}{dN}
+
+           where :math:`V` is the volume per molecule, :math:`N` is the number
+           of particles, :math:`P` is the pressure and the derivative is taken
+           at constant pressure. This is part of the computation of the chemical
+           potential at constant pressure and is non-zero for non-ideal gases.
+        """
+        return 0.0
 
     def _get_description(self):
         """A one-line summary of the gas law"""
@@ -303,10 +319,14 @@ class StatFys(object):
         pass
 
     def helper(self, temp, n):
-        """Helper function zero
+        r"""Helper function
 
-           Returns T^n ln(Z_N)/N, where Z_N is (the contribution to) the many
-           body partition function and N is the total number of particles.
+           Returns
+
+           .. math:: T^n \frac{\ln(Z_N)}{N}
+
+           where :math:`Z_N` is (the contribution to) the many body partition
+           function and :math:`N` is the total number of particles.
 
            Arguments:
             | temp  --  the temperature
@@ -315,10 +335,14 @@ class StatFys(object):
         raise NotImplementedError
 
     def helpert(self, temp, n):
-        """Helper function one
+        r"""Helper function T
 
-           Returns T^n (d ln(Z) / dT), where Z_N is (the contribution to) the
-           many body partition function and N is the total number of particles.
+           Returns
+
+           .. math:: T^n \frac{d \left(\frac{\ln(Z_N)}{N}\right)}{dT}
+
+           where :math:`Z_N` is (the contribution to) the many body partition
+           function and :math:`N` is the total number of particles.
 
            Arguments:
             | temp  --  the temperature
@@ -327,17 +351,40 @@ class StatFys(object):
         raise NotImplementedError
 
     def helpertt(self, temp, n):
-        """Helper function two
+        r"""Helper function TT
 
-           Returns T^n (d^2 ln(Z) / dT^2), where Z_N is (the contribution to)
-           the many body partition function and N is the total number of
-           particles.
+           Returns
+
+           .. math:: T^n \frac{d^2 \left(\frac{\ln(Z_N)}{N}\right)}{dT^2}
+
+           where :math:`Z_N` is (the contribution to) the many body partition
+           function and :math:`N` is the total number of particles.
 
            Arguments:
             | temp  --  the temperature
             | n  --  the power for the temperature factor
         """
         raise NotImplementedError
+
+    def helpern(self, temp, n):
+        r"""Helper function N
+
+           Returns
+
+           .. math:: T^n N \frac{d \left(\frac{\ln(Z_N)}{N}\right)}{dN}
+
+           where :math:`Z_N` is (the contribution to) the many body partition
+           function and :math:`N` is the total number of particles. This is used to
+           compute the chemical potential.
+
+           Arguments:
+            | temp  --  the temperature
+            | n  --  the power for the temperature factor
+        """
+        # Return zero by default as this is the proper behavior for most
+        # constributions to the partition function. The external translation is
+        # (for now) the only exception.
+        return 0.0
 
     def log(self, temp, helper=None):
         """The logarithm of the partition function
@@ -347,7 +394,7 @@ class StatFys(object):
 
            Optional argument:
             | helper  --  an alternative implementation of helper
-                           [default=self.helper]
+                          [default=self.helper]
         """
         if helper is None:
             helper = self.helper
@@ -375,7 +422,7 @@ class StatFys(object):
 
            Optional arguments:
             | helpertt  --  an alternative implementation of helpertt
-                           [default=self.helpertt]
+                            [default=self.helpertt]
         """
         if helpertt is None:
             helpertt = self.helpertt
@@ -396,7 +443,7 @@ class StatFys(object):
         return boltzmann*helpert(temp, 2)
 
     def heat_capacity(self, temp, helpert=None, helpertt=None):
-        """Computes the heat capacity per molecule at constant pressure
+        """Computes the heat capacity per molecule
 
            Argument:
             | temp  --  the temperature
@@ -405,7 +452,7 @@ class StatFys(object):
             | helpert  --  an alternative implementation of helpert
                            [default=self.helpert]
             | helpertt  --  an alternative implementation of helpertt
-                           [default=self.helpertt]
+                            [default=self.helpertt]
         """
         if helpert is None:
             helpert = self.helpert
@@ -421,7 +468,7 @@ class StatFys(object):
 
            Optional arguments:
             | helper  --  an alternative implementation of helper
-                           [default=self.helper]
+                          [default=self.helper]
             | helpert  --  an alternative implementation of helpert
                            [default=self.helpert]
         """
@@ -439,15 +486,32 @@ class StatFys(object):
 
            Optional argument:
             | helper  --  an alternative implementation of helper
-                           [default=self.helper]
-
-           Note: at this point there is no real distinction between Helmoholtz
-           and Gibbs free energy. This distinction is only introduced at the
-           level of the PartFun object.
+                          [default=self.helper]
         """
         if helper is None:
             helper = self.helper
         return -boltzmann*helper(temp, 1)
+
+    def chemical_potential(self, temp, helper=None, helpern=None):
+        """Computes the chemical potential
+
+           Argument:
+            | temp  --  the temperature
+
+           Optional argument:
+            | helper  --  an alternative implementation of helper
+                          [default=self.helper]
+            | helper  --  an alternative implementation of helpern
+                          [default=self.helpern]
+
+           Note: as opposed to most other methods, this is an intensive
+           function!
+        """
+        if helper is None:
+            helper = self.helper
+        if helpern is None:
+            helpern = self.helpern
+        return -boltzmann*(helper(temp, 1) + helpern(temp, 1))
 
 
 class StatFysTerms(StatFys):
@@ -709,11 +773,13 @@ class ExtTrans(Info, StatFys):
             print >> f, "      This is an NpT partition function."
             print >> f, "      Internal energy contains a PV term (and is therefore the enthalpy)."
             print >> f, "      Free energy contains a PV term (and is therefore the Gibbs free energy)."
+            print >> f, "      The heat capacity is computed at constant pressure."
         else:
             print >> f, "      BIG FAT WARNING!!!"
             print >> f, "      This is an NVT partition function."
             print >> f, "      Internal energy does NOT contain a PV term."
             print >> f, "      Free energy does NOT contain a PV term (and is therefore the Helmholtz free energy)."
+            print >> f, "      The heat capacity is computed at constant volume."
         print >> f, "    Mass [amu]: %f" % (self.mass/amu)
 
     def helper(self, temp, n):
@@ -773,7 +839,7 @@ class ExtTrans(Info, StatFys):
                 self.gaslaw.helper(temp, n) # this is the T^n*ln(V/N), the /N is due to 1/N!
             )
             if self.cp:
-                result -= self.gaslaw.pv0(temp, n-1)/boltzmann
+                result -= self.gaslaw.pv(temp, n-1)/boltzmann
             return result
 
     def helpert(self, temp, n):
@@ -784,7 +850,7 @@ class ExtTrans(Info, StatFys):
             result = 0.5*self.dim*temp**(n-1)
             if self.cp:
                 result += self.gaslaw.helpert(temp, n)
-                result -= self.gaslaw.pv1(temp, n-1)/boltzmann
+                result -= self.gaslaw.pvt(temp, n-1)/boltzmann
             return result
 
     def helpertt(self, temp, n):
@@ -795,8 +861,21 @@ class ExtTrans(Info, StatFys):
             result = -0.5*self.dim*temp**(n-2)
             if self.cp:
                 result += self.gaslaw.helpertt(temp, n)
-                result -= self.gaslaw.pv2(temp, n-1)/boltzmann
+                result -= self.gaslaw.pvtt(temp, n-1)/boltzmann
             return result
+
+    def helpern(self, temp, n):
+        """See :meth:`StatFys.helpern`"""
+        if temp==0:
+            if n > 0:
+                return 0.0
+            else:
+                raise NotImplementedError
+        else:
+            result = -temp**n
+        if self.cp:
+            result += self.gaslaw.helpern(temp, n)
+        return result
 
 
 class ExtRot(Info, StatFys):

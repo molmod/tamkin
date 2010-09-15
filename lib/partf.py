@@ -78,8 +78,8 @@
    300 Kelvin of a system in kJ/mol, use the molmod module to perform unit
    conversions. For example::
 
-     >>> pf = PartFun(...)
-     >>> print pf.gibss_free_energy(300)/kjmol
+     >>> pf = PartFun(..., [ExtTrans(cp=True)])
+     >>> print pf.free_energy(300)/kjmol
 """
 
 
@@ -883,7 +883,7 @@ class PCMCorrection(Info, StatFys):
             print >> f, "       Temperature [K]: %.2f" % (self.point2[1])
         else:
             print >> f, "       Not Defined!! Only rely on computations on temperature of point 1!!"
-        print >> f, "    Free energy contribution at T=0K [au]: %.7f" % self.free_energy(0.0)
+        print >> f, "    Zero-point contribution [kJ/mol]: %.7f" % (self.free_energy(0.0)/kjmol)
 
     def _eval_free(self, temp):
         if self.point2 is None:
@@ -1051,11 +1051,11 @@ class Vibrations(Info, StatFysTerms):
         print >> f, "    Number of real wavenumbers: %i " % (len(self.positive_freqs))
         print >> f, "    Number of imaginary wavenumbers: %i" % (len(self.negative_freqs))
         print >> f, "    Frequency scaling factor: %.4f" % self.freq_scaling
-        print >> f, "    Zero-Point scaling factor: %.4f" % self.zp_scaling
+        print >> f, "    Zero-point scaling factor: %.4f" % self.zp_scaling
         self.dump_values(f, "Zero Wavenumbers [1/cm]", self.zero_freqs/(lightspeed/centimeter), "% 8.1f", 8)
         self.dump_values(f, "Real Wavenumbers [1/cm]", self.positive_freqs/(lightspeed/centimeter), "% 8.1f", 8)
         self.dump_values(f, "Imaginary Wavenumbers [1/cm]", self.negative_freqs/(lightspeed/centimeter), "% 8.1f", 8)
-        print >> f, "    Free energy contribution at T=0 [kJ/mol]: %.7f" % (self.free_energy(0.0)/kjmol)
+        print >> f, "    Zero-point contribution [kJ/mol]: %.7f" % (self.free_energy(0.0)/kjmol)
 
     def helper0_terms(self, temp, n):
         """See :meth:`StatFysTerms.helper0_terms`"""
@@ -1124,6 +1124,7 @@ class PartFun(Info, StatFys):
             term.init_part_fun(nma, self)
 
         self.energy = nma.energy
+        self.title = nma.title
         Info.__init__(self, "total")
 
     def helper0(self, temp, n):
@@ -1175,8 +1176,10 @@ class PartFun(Info, StatFys):
 
     def dump(self, f):
         """See :meth:`Info.dump`"""
+        print >> f, "Title:", self.title
         print >> f, "Energy at T=0K [au]: %.5f" % self.energy
-        print >> f, "Zero-point corrected energy [au]: %.5f" % self.free_energy(0.0)
+        print >> f, "Zero-point contribution [kJ/mol]: %.7f" % ((self.free_energy(0.0) - self.energy)/kjmol)
+        print >> f, "Energy including zero-point contribution [au]: %.5f" % self.free_energy(0.0)
         print >> f, "Contributions to the partition function:"
         for term in self.terms:
             term.dump(f)

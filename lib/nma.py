@@ -235,6 +235,7 @@ class NMA(object):
         self.symmetry_number = molecule.symmetry_number
         self.periodic = molecule.periodic
         self.energy = molecule.energy
+        self.title = molecule.title
 
     def write_to_file(self, filename, fields='all'):
         """Write the NMA results to a human-readable checkpoint file.
@@ -252,12 +253,12 @@ class NMA(object):
         if fields == 'all':
             data = dict((key, val) for key, val in self.__dict__.iteritems())
         elif fields == 'modes':
-            keys = ["freqs", "modes", "masses", "numbers", "coordinates", "zeros"]
+            keys = ["freqs", "modes", "masses", "numbers", "coordinates", "zeros", "title"]
             data = dict((key, self.__dict__[key]) for key in keys)
         elif fields == 'partf':
             keys = [
                 "freqs", "mass", "masses3", "inertia_tensor", "multiplicity",
-                "symmetry_number", "periodic", "energy", "zeros"
+                "symmetry_number", "periodic", "energy", "zeros", "title",
             ]
             data = dict((key, self.__dict__[key]) for key in keys)
         dump_chk(filename, data)
@@ -282,7 +283,7 @@ class NMA(object):
         possible_fields = set([
             "freqs", "modes", "mass", "masses", "masses3", "numbers",
             "coordinates", "inertia_tensor", "multiplicity", "symmetry_number",
-            "periodic", "energy", "zeros",
+            "periodic", "energy", "zeros", "title",
         ])
         if not set(data.iterkeys()).issubset(possible_fields):
             raise IOError("The Checkpoint file does not contain the correct fields.")

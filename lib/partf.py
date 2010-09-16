@@ -791,13 +791,14 @@ class ExtTrans(Info, StatFys):
            that there is translational freedom, so this is to some extent an
            ugly hack, but a very common and convenient one.
 
-           The translational partition function of one particle reads
+           The translational partition function of a d-dimensional particle
+           reads
 
-           .. math:: Z_{1,\text{trans}} = \left(\frac{2\pi m k_B T}{h^2}\right)^{\frac{3}{2}}V,
+           .. math:: Z_{1,\text{trans}} = \left(\frac{2\pi m k_B T}{h^2}\right)^{\frac{d}{2}}V,
 
            and the logarithm is
 
-           .. math:: \ln(Z_{1,\text{trans}}) = \frac{3}{2}\ln\left(\frac{2\pi m k_B T}{h^2}\right) + \ln(V).
+           .. math:: \ln(Z_{1,\text{trans}}) = \frac{d}{2}\ln\left(\frac{2\pi m k_B T}{h^2}\right) + \ln(V).
 
            This routine computes the logarithm of the many-body translational
            partition per particle (optionally multiplied by a power of the
@@ -815,17 +816,17 @@ class ExtTrans(Info, StatFys):
            translational partition function, while the latter is just remains
            where it is. The final expression is:
 
-           .. math:: \text{result} = 1+\frac{3}{2}\ln\left(\frac{2\pi m k_B T}{h^2}\right) + \ln\left(\frac{V}{N}\right).
+           .. math:: \text{result} = 1+\frac{d}{2}\ln\left(\frac{2\pi m k_B T}{h^2}\right) + \ln\left(\frac{V}{N}\right).
 
            From this derivation it is clear that the many-body effects and the
            translational part must be done together, because the separate
            contributions depend on the number of particles, which is annoying.
 
-           Not that in the case of constant pressure, there is an extra term
+           Note that in the case of constant pressure, there is an extra term
 
-           .. math:: -\frac{PV}{kT}
+           .. math:: -\frac{PV}{k_BTN}
 
-           which is trivial in the case of ideal gases.
+           which becomes -1 in the case of an ideal gas.
         """
         if temp == 0:
             if n > 0:

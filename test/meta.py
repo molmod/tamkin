@@ -113,6 +113,9 @@ class MetaTestCase(unittest.TestCase):
     def test_example_017(self):
         self.check_example("017_activationkineticmodel", "./reaction.py")
 
+    def test_example_018(self):
+        self.check_example("018_physisorption", "./adsorption.py")
+
     def test_code_quality(self):
         root = "../lib"
         self.assert_(os.path.isdir(root))

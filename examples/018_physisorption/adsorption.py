@@ -29,7 +29,7 @@ nma_c = NMA(mol_c, PHVA(fixed)) # use PHVA to model the surface
 # correction, imperfections in the DFT functional. The first and the second
 # error will probably compensate partially. The benzene approximation is rather
 # dramatic because the Van der Waals sphere of Argon is larger than benzene.
-nma_c.energy += -1.25*kjmol
+nma_c.energy += -1.7*kjmol
 # Note that kT at 87K is about 0.723 kJ/mol. This is example a very sensitive
 # to the accuracy of the adsorption energy.
 
@@ -39,7 +39,7 @@ pf_a = PartFun(nma_a, [ExtTrans(cp=True)])
 pf_b = PartFun(nma_b, [])
 # setup an NVT partition function for the 2D gas. (The amount of surface is
 # constant.) Specify that atom with index 12 (Argon) is the mobile one.
-pf_c = PartFun(nma_c, [ExtTrans(cp=False, mobile=[12])])
+pf_c = PartFun(nma_c, [ExtTrans(cp=False, mobile=[12], dim=2)])
 # create a model for the thermodynamic equilibrium
 tm = ThermodynamicModel([pf_a, pf_b], [pf_c])
 tm.write_to_file("adsorption_%s.txt" % level)
@@ -217,9 +217,9 @@ pylab.clf()
 pylab.plot(exp_pressure/bar, exp_occupation, 'k-', lw=2, label='experiment')
 pylab.plot(exp_pressure/bar, mod_occupation, 'b-', lw=1, label='TAMkin ideal gas')
 pylab.plot(exp_pressure/bar, mod_occupation/(1+mod_occupation), 'g-', lw=1, label='TAMkin Langmuir')
-pylab.ylim(0,1)
+pylab.ylim(0,1.0)
 pylab.xlim(0,5e-3)
-pylab.ylabel("Argon occupation on graphite at T=87K")
+pylab.ylabel("Fraction of occupied mono-layer\nArgon sites on graphite at T=87K")
 pylab.xlabel("Pressure [bar]")
 pylab.legend(loc=0)
 pylab.savefig("adsorption_%s_isotherm.png" % level)

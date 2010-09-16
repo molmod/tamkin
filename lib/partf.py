@@ -107,15 +107,21 @@ class IdealGasLaw(object):
         """
            Optional argument:
              | pressure  --  the external pressure of the system. The default is
-                             1 atm for 3D gases. There is no default for gases
-                             in other dimensions.
+                             1 atm for 3D gases. The default for 2D systems is
+                             75.64 mili Newton per meter, i.e. the surface
+                             tension of water. For other dimensions, the default
+                             is 1.0.
              | dim  --  The dimensionality of the gas.
         """
         if pressure is None:
             if dim == 3:
                 pressure = 1*atm
+            elif dim == 2:
+                # approximately the surface tension of water in atomic units:
+                pressure = 4.86e-05
             else:
-                raise TypeError("The pressure is not given and the system is not three-dimensional.")
+                # whatever...
+                pressure = 1.0
         self.pressure = pressure
         self.dim = dim
         # decide on the units

@@ -63,7 +63,8 @@
 
 from tamkin.geom import transrot_basis
 
-from molmod import Molecule as BaseMolecule, MolecularGraph, ReadOnly, UnitCell
+from molmod import Molecule as BaseMolecule, MolecularGraph, ReadOnly, \
+    UnitCell, ReadOnlyAttribute
 from molmod.periodic import periodic
 from molmod.graphs import cached
 
@@ -77,7 +78,26 @@ __all__ = ["Molecule", "BareNucleus", "Proton", "RotScan",
 class Molecule(BaseMolecule):
     """A container for a Hessian computation output from QM or MM codes."""
 
-    def __init__(self, numbers, coordinates, masses, energy, gradient, hessian, multiplicity, symmetry_number=0, periodic=False, title=None, graph=None, symbols=None, unit_cell=None):
+    def check_gradient(self, gradient):
+        if len(gradient) != self.size:
+            raise TypeError("The size of the gradient does not match the "
+                "length of the atomic numbers array.")
+
+    def check_hessian(self, hessian):
+        if hessian.shape != (self.size*3, self.size*3):
+            raise TypeError("The Hessian must be a 3N by 3N matrix where N is "
+                "the number of atoms.")
+
+    energy = ReadOnlyAttribute(float, none=False)
+    gradient = ReadOnlyAttribute(numpy.ndarray, none=False,
+        check=check_gradient, npdim=2, npshape=(None, 3), npdtype=float)
+    hessian = ReadOnlyAttribute(numpy.ndarray, none=False,
+        check=check_hessian, npdim=2, npdtype=float)
+    multiplicity = ReadOnlyAttribute(int)
+    symmetry_number = ReadOnlyAttribute(int)
+    periodic = ReadOnlyAttribute(bool)
+
+    def __init__(self, numbers, coordinates, masses, energy, gradient, hessian, multiplicity=None, symmetry_number=None, periodic=False, title=None, graph=None, symbols=None, unit_cell=None):
         """
            Arguments:
             | numbers  --  The atom numbers (integer numpy array with shape N)
@@ -105,27 +125,13 @@ class Molecule(BaseMolecule):
             | symbols  --  A list with atom symbols
             | unit_cell  --  The unit cell vectors for periodic structures
         """
-        ReadOnly.__init__(self)
-        # Mandatory means that the attributes can not be None.
-        mandatory = {
-            "numbers": numpy.array(numbers, int),
-            "coordinates": numpy.array(coordinates, float),
-            "masses": numpy.array(masses, float),
-            "energy": energy,
-            "gradient": numpy.array(gradient, float),
-            "hessian": numpy.array(hessian, float),
-            "multiplicity": multiplicity,
-            "symmetry_number": symmetry_number,
-            "periodic": periodic,
-        }
-        # Can be None. If foo is None, hasattr(self, "foo") will return False.
-        optional = {
-            "title": title,
-            "graph": graph,
-            "symbols": symbols,
-            "unit_cell": unit_cell,
-        }
-        self.init_attributes(mandatory, optional)
+        BaseMolecule.__init__(self, numbers, coordinates, title, masses, graph, symbols, unit_cell)
+        self.energy = energy
+        self.gradient = gradient
+        self.hessian = hessian
+        self.multiplicity = multiplicity
+        self.symmetry_number = symmetry_number
+        self.periodic = periodic
 
     @cached
     def external_basis(self):
@@ -193,11 +199,10 @@ class Molecule(BaseMolecule):
         if multiplicity is None: multiplicity = self.multiplicity
         if symmetry_number is None: symmetry_number = self.symmetry_number
         if periodic is None: periodic = self.periodic
-        if symbols is None and hasattr(self,"symbols"): # check if attribute exists
-            if self.symbols is None: symbols = self.symbols
-            else: symbols = sum( [ [self.symbols[at]] for at in selected] ,[])
-        if unit_cell is None and hasattr(self,"unit_cell"): # check if attribute exists
-            if self.unit_cell is None: unit_cell = self.unit_cell
+        if symbols is None and self.symbols is not None:
+            symbols = [self.symbols[at] for at in selected]
+        if unit_cell is None:
+            unit_cell = self.unit_cell
 
         return Molecule(
             self.numbers[selected],
@@ -229,9 +234,9 @@ class Molecule(BaseMolecule):
             value = getattr(self, key, None)
             if value is not None:
                 data[key] = value
-        if hasattr(self, "graph"):
+        if self.graph is not None:
             data["edges"] = numpy.array([tuple(edge) for edge in self.graph.edges])
-        if hasattr(self, "unit_cell"):
+        if self.unit_cell is not None:
             data["cell_vectors"] = self.unit_cell.matrix
             data["cell_active"] = self.unit_cell.active
         dump_chk(filename, data)
@@ -310,6 +315,18 @@ class Proton(BareNucleus):
 class RotScan(ReadOnly):
     """A container for rotational scan data"""
 
+    def check_top_indexes(self, top_indexes):
+        if len(top_indexes) < 1:
+            raise TypeError("A rotational scan must have at least one atom "
+                "rotating")
+
+    dihedral = ReadOnlyAttribute(numpy.ndarray, none=False, npdim=1,
+        npshape=(4,), npdtype=int)
+    top_indexes = ReadOnlyAttribute(numpy.ndarray, none=False,
+        check=check_top_indexes, npdim=1, npdtype=int)
+    potential = ReadOnlyAttribute(numpy.ndarray, npdim=2, npshape=(2, None),
+        npdtype=float)
+
     def __init__(self, dihedral, molecule=None, top_indexes=None, potential=None):
         """
            Arguments
@@ -326,12 +343,7 @@ class RotScan(ReadOnly):
                              and the corresponding energies.
 
         """
-        dihedral = tuple(dihedral)
-        if len(dihedral) != 4:
-            raise TypeError("The first argument must be a list of 4 integers")
-        for i in dihedral:
-            if not isinstance(i, int):
-                raise TypeError("The first argument must be a list of 4 integers")
+        self.dihedral = dihedral
         if top_indexes is None:
             # try to deduce the top indexes
             if molecule is None:
@@ -346,75 +358,38 @@ class RotScan(ReadOnly):
                 top_indexes = half1
                 top_indexes.discard(atom1)
             top_indexes = tuple(top_indexes)
-        for i in top_indexes:
-            if not isinstance(i, int):
-                raise TypeError("The top_indexes must contain only integers")
-        if len(top_indexes) < 1:
-            raise TypeError("A rotational scan must have at least one atom rotating")
-        if potential is not None:
-            potential = numpy.array(potential, float)
-
-        ReadOnly.__init__(self)
-        mandatory = {
-            "dihedral": dihedral,
-            "top_indexes": top_indexes,
-        }
-        optional = {
-            "potential": potential,
-        }
-        self.init_attributes(mandatory, optional)
+        self.top_indexes = top_indexes
+        self.potential = potential
 
 
 def translate_pbc(molecule, selected, displ, vectors = None):
     """Translate the structure along the lattice vectors
 
-    This method is meant to be used in periodic structures, where periodic
-    boundary conditions apply (pbc).
+       This method is meant to be used in periodic structures, where periodic
+       boundary conditions apply (pbc).
 
-    Arguments:
-    | molecule  --  a Molecule instance
-    | selected  --  a list of indices of the atoms that will be displaced
-    | displ  -- a list of 3 integers: [i0,i1,i2]. The selected atoms
-                will be displaced over i0 lattice distances in the 0-axis
-                direction, similarly for i1 and i2.
+       Arguments:
+        | molecule  --  a Molecule instance
+        | selected  --  a list of indices of the atoms that will be displaced
+        | displ  -- a list of 3 integers: [i0,i1,i2]. The selected atoms will be
+                    displaced over i0 lattice distances in the 0-axis direction,
+                    similarly for i1 and i2.
 
-    Optional argument:
-    | vectors  --  the lattice vectors, one in each column. If not specified,
-                   the vectors in the unit_cell attribute of the molecule is used.
+       Optional argument:
+        | vectors  --  the lattice vectors, one in each column. If not
+                       specified, the vectors in the unit_cell attribute of the
+                       molecule is used.
     """
-    coords = molecule.coordinates.copy()
+    coordinates = molecule.coordinates.copy()
     if vectors is None:
-        if hasattr(molecule,"unit_cell"):
-            vectors = molecule.unit_cell.matrix
+        if molecule.unit_cell is None:
+            raise ValueError("No vectors for axes known")
         else:
-            raise Error("No vectors for axes known")
+            vectors = molecule.unit_cell.matrix
 
-    # displace
+    # translate
     for atom in selected:
         for axis in range(3):
-            coords[atom,:] += displ[axis]*vectors[:,axis]
-    # optional arguments
-    if not hasattr(molecule,"title"):     title = None
-    else: title = molecule.title
-    if not hasattr(molecule,"graph"):     graph = None
-    else: title = molecule.graph
-    if not hasattr(molecule,"symbols"):   symbols = None
-    else: symbols = molecule.symbols
-    if not hasattr(molecule,"unit_cell"): unit_cell = None
-    else: unit_cell = molecule.unit_cell
+            coordinates[atom,:] += displ[axis]*vectors[:,axis]
 
-    return Molecule(
-            molecule.numbers,
-            coords,
-            molecule.masses,
-            molecule.energy,
-            molecule.gradient,
-            molecule.hessian,
-            molecule.multiplicity,
-            symmetry_number = molecule.symmetry_number,
-            periodic = molecule.periodic,
-            title = title,
-            graph = graph,
-            symbols = symbols,
-            unit_cell = unit_cell,
-        )
+    return molecule.copy_with(coordinates=coordinates)

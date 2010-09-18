@@ -159,7 +159,7 @@ def load_molecule_qchem(qchemfile, hessfile = None, multiplicity=1, is_periodic 
     for line in f:
         if line.strip().startswith("Rotational Symmetry Number is"):
             break
-    symmetry_number = float(line.split()[-1])
+    symmetry_number = int(line.split()[-1])
     f.close()
 
     # or get Hessian from other file

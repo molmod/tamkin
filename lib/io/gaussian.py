@@ -289,7 +289,7 @@ def load_rotscan_g03log(fn_log, top_indexes=None):
             )[0])
 
     if len(energies) == 0:
-        raise IOError("Cold not find any stationary point")
+        raise IOError("Could not find any stationary point")
 
     if top_indexes is None:
         # Define the molecular geometry that is used in the constructor of
@@ -300,7 +300,7 @@ def load_rotscan_g03log(fn_log, top_indexes=None):
         molecule = None
     result = RotScan(
         dihedral, molecule, top_indexes,
-        (numpy.array(angles), numpy.array(energies))
+        numpy.array([angles, energies])
     )
     result.geometries = numpy.array(geometries)
     return result

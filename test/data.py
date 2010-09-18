@@ -187,5 +187,9 @@ class DataTestCase(unittest.TestCase):
         self.assert_(abs(mol1.unit_cell.matrix - mol2.unit_cell.matrix).max() < 1e-10)
         self.assertEqual(mol1.unit_cell.active.shape, mol2.unit_cell.active.shape)
         self.assert_((mol1.unit_cell.active == mol2.unit_cell.active).all())
-        self.assert_((mol1.symbols == mol2.symbols).all())
+        self.assert_(all((s1==s2 for s1, s2 in zip(mol1.symbols, mol2.symbols))))
 
+    def test_copy_with(self):
+        mol1 = load_molecule_g03fchk("input/sterck/aa.fchk")
+        mol2 = mol1.copy_with(title="foo")
+        self.assertEqual(mol2.title, "foo")

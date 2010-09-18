@@ -393,7 +393,7 @@ class ActivationKineticModel(BaseKineticModel):
         self.tm.dump(f)
         print >> f, "Kinetic model"
         self.km.dump(f)
-        
+
     #def compute_rate_coeff(self, temp, do_log=False):
     #    """See :meth:`BaseKineticModel.compute_rate_coeff`"""
     #    result = compute_rate_coeff(self.pfs_react, self.pf_trans, temp, self.cp, do_log)
@@ -403,7 +403,7 @@ class ActivationKineticModel(BaseKineticModel):
     #        else:
     #            result *= self.tunneling(temp)
     #    return result
-    
+
     def compute_rate_coeff(self, temp, do_log=False):
         """See :meth:`BaseKineticModel.compute_rate_coeff`"""
         if do_log:
@@ -412,4 +412,3 @@ class ActivationKineticModel(BaseKineticModel):
         else:
             return self.tm.compute_equilibrium_constant(temp, False)* \
                    self.km.compute_rate_coeff(temp, False)
-                   

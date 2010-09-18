@@ -95,7 +95,7 @@ def load_chk(filename):
         elif kind == 'int':
             result[key] = int(value)
         elif kind == 'bln':
-            result[key] = bool(value)
+            result[key] = value == "True"
         elif kind == 'flt':
             result[key] = float(value)
         elif kind[3:5] == 'ar':
@@ -158,14 +158,15 @@ def dump_chk(filename, data):
             if "\n" in value:
                 raise ValueError("The string can not contain new lines.")
             print >> f, "%40s  kind=str   %s" % (key.ljust(40), value)
-        elif isinstance(value, int):
-            print >> f, "%40s  kind=int   %i" % (key.ljust(40), value)
         elif isinstance(value, bool):
             print >> f, "%40s  kind=bln   %s" % (key.ljust(40), value)
+        elif isinstance(value, int):
+            print >> f, "%40s  kind=int   %i" % (key.ljust(40), value)
         elif isinstance(value, float):
             print >> f, "%40s  kind=flt   %22.15e" % (key.ljust(40), value)
-        elif isinstance(value, numpy.ndarray) or isinstance(value, list):
-            if isinstance(value, list):
+        elif isinstance(value, numpy.ndarray) or isinstance(value, list) or \
+             isinstance(value, tuple):
+            if isinstance(value, list) or isinstance(value, tuple):
                 value = numpy.array(value)
             if value.dtype.fields is not None:
                 raise TypeError("Arrays with fields are not supported.")

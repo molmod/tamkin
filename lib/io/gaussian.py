@@ -148,7 +148,7 @@ def load_molecule_g03fchk(fn_freq, fn_ener=None, fn_vdw=None, energy=None):
 
     if fchk_freq.molecule.size == 1 and \
        "Cartesian Force Constants" not in fchk_freq.fields:
-        gradient = numpy.zeros((3,1), float)
+        gradient = numpy.zeros((1,3), float)
         hessian = numpy.zeros((3,3), float)
     else:
         gradient = fchk_freq.fields["Cartesian Gradient"].copy()

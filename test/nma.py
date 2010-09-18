@@ -528,7 +528,7 @@ class NMATestCase(unittest.TestCase):
         self.assert_(len(nma.zeros)==5)
         expected_freqs = numpy.array([-6.07975753e-01,-3.47371852e-01,6.34080688e-02,
                 1.05589989e-01,1.68657446e-01,1.21704836e+03])
-        self.check_freqs(expected_freqs, nma, 0,  check_zeros=True)
+        self.check_freqs(expected_freqs, nma, -1, check_zeros=True)
 
         #  --- atoms of subsystem are not collinear
         subs = load_indices("input/an/fixed.03.txt")  # atom 1 to atom 7

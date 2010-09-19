@@ -133,12 +133,12 @@ class IdealGasLaw(object):
     def __init__(self, pressure=None, dim=3):
         """
            Optional argument:
-             | pressure  --  the external pressure of the system. The default is
-                             1 atm for 3D gases. The default for 2D systems is
-                             75.64 mili Newton per meter, i.e. the surface
-                             tension of water. For other dimensions, the default
-                             is 1.0.
-             | dim  --  The dimensionality of the gas.
+             | ``pressure`` -- the external pressure of the system. The default
+                               is 1 atm for 3D gases. The default for 2D systems
+                               is 75.64 mili Newton per meter, i.e. the surface
+                               tension of water. For other dimensions, the
+                               default is 1.0.
+             | ``dim`` -- The dimensionality of the gas.
         """
         if pressure is None:
             if dim == 3:
@@ -163,8 +163,8 @@ class IdealGasLaw(object):
         """PV function 0
 
            Arguments:
-            | temp  --  The temperature
-            | n  --  A power for the additional temperature factor.
+            | ``temp`` -- The temperature
+            | ``n`` -- A power for the additional temperature factor.
 
            This is an auxiliary function for the translational partition
            function. It returns the product of pressure and volume multiplied by
@@ -184,8 +184,8 @@ class IdealGasLaw(object):
         """PV function T
 
            Arguments:
-            | temp  --  The temperature
-            | n  --  A power for the additional temperature factor.
+            | ``temp`` -- The temperature
+            | ``n`` -- A power for the additional temperature factor.
 
            This is an auxiliary function for the translational partition
            function. It returns the derivative towards the temperature product
@@ -198,8 +198,8 @@ class IdealGasLaw(object):
         """PV function TT
 
            Arguments:
-            | temp  --  The temperature
-            | n  --  A power for the additional temperature factor.
+            | ``temp`` -- The temperature
+            | ``n`` -- A power for the additional temperature factor.
 
            This is an auxiliary function for the translational partition
            function. It returns the second derivative towards the temperature of
@@ -218,8 +218,8 @@ class IdealGasLaw(object):
            where :math:`V` is the volume per molecule.
 
            Arguments:
-            | temp  --  the temperature
-            | n  --  the power for the temperature factor
+            | ``temp`` -- the temperature
+            | ``n`` -- the power for the temperature factor
         """
         if temp == 0:
             if n > 0:
@@ -240,8 +240,8 @@ class IdealGasLaw(object):
            taken at constant pressure.
 
            Arguments:
-            | temp  --  the temperature
-            | n  --  the power for the temperature factor
+            | ``temp`` -- the temperature
+            | ``n`` -- the power for the temperature factor
         """
         if temp == 0:
             raise NotImplementedError
@@ -259,8 +259,8 @@ class IdealGasLaw(object):
            taken at constant pressure.
 
            Arguments:
-            | temp  --  the temperature
-            | n  --  the power for the temperature factor
+            | ``temp`` -- the temperature
+            | ``n`` -- the power for the temperature factor
         """
         if temp == 0:
             raise NotImplementedError
@@ -295,7 +295,7 @@ class Info(object):
     def __init__(self, name):
         """
            Arguments:
-            | name  --  the name used for this object in the output
+            | ``name`` -- the name used for this object in the output
         """
         self.name = name
 
@@ -303,7 +303,7 @@ class Info(object):
         """Write a description to file
 
            Arguments:
-            | f  --  the file object to write to
+            | ``f`` -- the file object to write to
         """
         print >> f, "  %s" % self.name.upper()
 
@@ -311,13 +311,13 @@ class Info(object):
         """Write a nicely formatted array of numbers to file
 
            Arguments:
-            | f  --  the file object to write to
-            | label  --  a label that explains the meaning of the numbers
-            | values  --  the array with numbers
-            | format  --  a Python format string for one number
+            | ``f`` -- the file object to write to
+            | ``label`` -- a label that explains the meaning of the numbers
+            | ``values`` -- the array with numbers
+            | ``format`` -- a Python format string for one number
 
            Optional argumet:
-            | num_col  --  the number of columns [default=8]
+            | ``num_col`` -- the number of columns [default=8]
         """
         parts = ["    "]
         for counter, value in enumerate(values):
@@ -341,8 +341,8 @@ class StatFys(object):
         """Compute parameters that depend on nma and partition function
 
            Arguments:
-            | nma  --  an NMA object
-            | partf  --  A PartFun object
+            | ``nma`` -- an NMA object
+            | ``partf`` -- A PartFun object
 
            This method is called by the PartFun object and should not be called
            by the user. When the PartFun object is initialized, each
@@ -362,8 +362,8 @@ class StatFys(object):
            function and :math:`N` is the total number of particles.
 
            Arguments:
-            | temp  --  the temperature
-            | n  --  the power for the temperature factor
+            | ``temp`` -- the temperature
+            | ``n`` -- the power for the temperature factor
         """
         raise NotImplementedError
 
@@ -378,8 +378,8 @@ class StatFys(object):
            function and :math:`N` is the total number of particles.
 
            Arguments:
-            | temp  --  the temperature
-            | n  --  the power for the temperature factor
+            | ``temp`` -- the temperature
+            | ``n`` -- the power for the temperature factor
         """
         raise NotImplementedError
 
@@ -394,8 +394,8 @@ class StatFys(object):
            function and :math:`N` is the total number of particles.
 
            Arguments:
-            | temp  --  the temperature
-            | n  --  the power for the temperature factor
+            | ``temp`` -- the temperature
+            | ``n`` -- the power for the temperature factor
         """
         raise NotImplementedError
 
@@ -411,8 +411,8 @@ class StatFys(object):
            compute the chemical potential.
 
            Arguments:
-            | temp  --  the temperature
-            | n  --  the power for the temperature factor
+            | ``temp`` -- the temperature
+            | ``n`` -- the power for the temperature factor
         """
         # Return zero by default as this is the proper behavior for most
         # constributions to the partition function. The external translation is
@@ -423,11 +423,11 @@ class StatFys(object):
         """The logarithm of the partition function
 
            Argument:
-            | temp  --  the temperature
+            | ``temp`` -- the temperature
 
            Optional argument:
-            | helper  --  an alternative implementation of helper
-                          [default=self.helper]
+            | ``helper`` -- an alternative implementation of helper
+                            [default=self.helper]
         """
         if helper is None:
             helper = self.helper
@@ -437,11 +437,11 @@ class StatFys(object):
         """The derivative towards temperature of the logarithm of the partition function
 
            Argument:
-            | temp  --  the temperature
+            | ``temp`` -- the temperature
 
            Optional arguments:
-            | helpert  --  an alternative implementation of helpert
-                           [default=self.helpert]
+            | ``helpert`` -- an alternative implementation of helpert
+                             [default=self.helpert]
         """
         if helpert is None:
             helpert = self.helpert
@@ -451,11 +451,11 @@ class StatFys(object):
         """The second derivative towards temperature of the logarithm of the partition function
 
            Argument:
-            | temp  --  the temperature
+            | ``temp`` -- the temperature
 
            Optional arguments:
-            | helpertt  --  an alternative implementation of helpertt
-                            [default=self.helpertt]
+            | ``helpertt`` -- an alternative implementation of helpertt
+                              [default=self.helpertt]
         """
         if helpertt is None:
             helpertt = self.helpertt
@@ -465,11 +465,11 @@ class StatFys(object):
         """Computes the internal energy per molecule
 
            Argument:
-            | temp  --  the temperature
+            | ``temp`` -- the temperature
 
            Optional argument:
-            | helpert  --  an alternative implementation of helpert
-                           [default=self.helpert]
+            | ``helpert`` -- an alternative implementation of helpert
+                             [default=self.helpert]
         """
         if helpert is None:
             helpert = self.helpert
@@ -479,13 +479,13 @@ class StatFys(object):
         """Computes the heat capacity per molecule
 
            Argument:
-            | temp  --  the temperature
+            | ``temp`` -- the temperature
 
            Optional arguments:
-            | helpert  --  an alternative implementation of helpert
-                           [default=self.helpert]
-            | helpertt  --  an alternative implementation of helpertt
-                            [default=self.helpertt]
+            | ``helpert`` -- an alternative implementation of helpert
+                             [default=self.helpert]
+            | ``helpertt`` -- an alternative implementation of helpertt
+                              [default=self.helpertt]
         """
         if helpert is None:
             helpert = self.helpert
@@ -497,13 +497,13 @@ class StatFys(object):
         """Computes the entropy contribution per molecule
 
            Argument:
-            | temp  --  the temperature
+            | ``temp`` -- the temperature
 
            Optional arguments:
-            | helper  --  an alternative implementation of helper
-                          [default=self.helper]
-            | helpert  --  an alternative implementation of helpert
-                           [default=self.helpert]
+            | ``helper`` -- an alternative implementation of helper
+                            [default=self.helper]
+            | ``helpert`` -- an alternative implementation of helpert
+                             [default=self.helpert]
         """
         if helper is None:
             helper = self.helper
@@ -515,11 +515,11 @@ class StatFys(object):
         """Computes the free energy per molecule
 
            Argument:
-            | temp  --  the temperature
+            | ``temp`` -- the temperature
 
            Optional argument:
-            | helper  --  an alternative implementation of helper
-                          [default=self.helper]
+            | ``helper`` -- an alternative implementation of helper
+                            [default=self.helper]
         """
         if helper is None:
             helper = self.helper
@@ -529,13 +529,13 @@ class StatFys(object):
         """Computes the chemical potential
 
            Argument:
-            | temp  --  the temperature
+            | ``temp`` -- the temperature
 
            Optional argument:
-            | helper  --  an alternative implementation of helper
-                          [default=self.helper]
-            | helper  --  an alternative implementation of helpern
-                          [default=self.helpern]
+            | ``helper`` -- an alternative implementation of helper
+                            [default=self.helper]
+            | ``helper`` -- an alternative implementation of helpern
+                            [default=self.helpern]
 
            Note: as opposed to most other methods, this is an intensive
            function!
@@ -560,7 +560,7 @@ class StatFysTerms(StatFys):
     def __init__(self, num_terms):
         """
            Arguments:
-             num_terms  --  the number of terms present in this contribution.
+             num_terms`` -- the number of terms present in this contribution.
         """
         self.num_terms = num_terms
 
@@ -653,9 +653,9 @@ def helper_levels(temp, n, energy_levels):
        Returns T^n ln(Z), where Z is the partition function
 
        Arguments:
-        | temp  --  the temperature
-        | n  --  the power for the temperature factor
-        | energy_levels  --  an array with energy levels
+        | ``temp`` -- the temperature
+        | ``n`` -- the power for the temperature factor
+        | ``energy_levels`` -- an array with energy levels
     """
     # this is defined as a function because multiple classes need it
     if temp == 0:
@@ -674,9 +674,9 @@ def helpert_levels(temp, n, energy_levels):
        Returns T^n (d ln(Z) / dT), where Z is the partition function
 
        Arguments:
-        | temp  --  the temperature
-        | n  --  the power for the temperature factor
-        | energy_levels  --  an array with energy levels
+        | ``temp`` -- the temperature
+        | ``n`` -- the power for the temperature factor
+        | ``energy_levels`` -- an array with energy levels
     """
     # this is defined as a function because multiple classes need it
     if temp == 0:
@@ -693,9 +693,9 @@ def helpertt_levels(temp, n, energy_levels):
        Returns T^n (d^2 ln(Z) / dT^2), where Z is the partition function
 
        Arguments:
-        | temp  --  the temperature
-        | n  --  the power for the temperature factor
-        | energy_levels  --  an array with energy levels
+        | ``temp`` -- the temperature
+        | ``n`` -- the power for the temperature factor
+        | ``energy_levels`` -- an array with energy levels
     """
     # this is defined as a function because multiple classes need it
     if temp == 0:
@@ -716,7 +716,7 @@ class Electronic(Info, StatFys):
     def __init__(self, multiplicity=None):
         """
            Optional argument:
-            | multiplicity  --  the spin multiplicity of the electronic system
+            | ``multiplicity`` -- the spin multiplicity of the electronic system
 
            When the optional argument is not given, it is determined when the
            PartFun object is constructed.
@@ -755,21 +755,20 @@ class ExtTrans(Info, StatFys):
     def __init__(self, cp=True, gaslaw=None, dim=3, mobile=None):
         """
           Optional arguments:
-           | cp  --  When True, an additional factor is included in the
-                     partition function to model a constant pressure (or
-                     constant surface tension) ensemble instead of a constant
-                     volume (or constant surface) ensemble.
-           | gaslaw  --  the gas law that the system under study obeys. This is
-                         used to evaluation the PV term in the enthalpy and the
-                         Gibbs free energy, and also to compute the derivative
-                         of the volume towards the temperature under constant
-                         pressure (required for the heat capacity at constant
-                         pressure). By default, the ideal gas law is used.
-           | dim  --  The dimensionality of the ideal gas.
-           | mobile  --  A list of atom indexes that are free to translate. In
-                         case of a mobile molecule adsorbed on a surface, only
-                         include atom indexes of the adsorbate. The default is
-                         that all atoms are mobile.
+           | ``cp`` -- When True, an additional factor is included in the
+                       partition function to model a constant pressure (or
+                       constant surface tension) ensemble instead of a constant
+                       volume (or constant surface) ensemble.
+           | ``gaslaw`` -- the gas law that the system under study obeys. This
+                           is used to evaluation the PV term, and also to
+                           compute the derivative of the volume towards the
+                           temperature under constant pressure. By default, the
+                           ideal gas law is used.
+           | ``dim`` -- The dimensionality of the ideal gas.
+           | ``mobile`` -- A list of atom indexes that are free to translate. In
+                           case of a mobile molecule adsorbed on a surface, only
+                           include atom indexes of the adsorbate. The default is
+                           that all atoms are mobile.
 
            Note that the dimensionality determines the unit of the partition
            function as follows::
@@ -974,15 +973,15 @@ class PCMCorrection(Info, StatFys):
     def __init__(self, point1, point2=None):
         """
         Argument:
-         | point1  --  A 2-tuple with free energy and a temperature. A
-                       correction for the free energy at the given temperature.
-                       (If no second point is given, the same correction is
-                       applied to all temperatures.)
+         | ``point1`` -- A 2-tuple with free energy and a temperature. A
+                         correction for the free energy at the given
+                         temperature. (If no second point is given, the same
+                         correction is applied to all temperatures.)
 
         Optional argument:
-         | point2  --  A 2-tuple with free energy and a temperature. In
-                       combination with point1, a linear free energy correction
-                       as function of the temperature is added.
+         | ``point2`` -- A 2-tuple with free energy and a temperature. In
+                         combination with point1, a linear free energy
+                         correction as function of the temperature is added.
         """
         if (not hasattr(point1, "__len__")) or len(point1) != 2:
             raise ValueError("The first argument must be a (delta_G, temp) pair.")
@@ -1039,17 +1038,17 @@ def helper_vibrations(temp, n, freqs, classical=False, freq_scaling=1, zp_scalin
        Returns T^n ln(Z), where Z is the partition function
 
        Arguments:
-        | temp  --  the temperature
-        | n  --  the power for the temperature factor
-        | freqs  --  an array with frequencies
+        | ``temp`` -- the temperature
+        | ``n`` -- the power for the temperature factor
+        | ``freqs`` -- an array with frequencies
 
        Optional arguments:
-        | classical  --  When True, the classical partition function is used
-                         [default=False]
-        | freq_scaling  --  Scale the frequencies with the given factor
-                            [default=1]
-        | freq_zp  --  Scale the zero-point energy correction with the given
-                       factor [default=1]
+        | ``classical`` -- When True, the classical partition function is used
+                           [default=False]
+        | ``freq_scaling`` -- Scale the frequencies with the given factor
+                              [default=1]
+        | ``freq_zp`` -- Scale the zero-point energy correction with the given
+                         factor [default=1]
     """
     # this is defined as a function because multiple classes need it
     if classical:
@@ -1078,17 +1077,17 @@ def helpert_vibrations(temp, n, freqs, classical=False, freq_scaling=1, zp_scali
        Returns T^n (d ln(Z) / dT), where Z is the partition function
 
        Arguments:
-        | temp  --  the temperature
-        | n  --  the power for the temperature factor
-        | energy_levels  --  an array with energy levels
+        | ``temp`` -- the temperature
+        | ``n`` -- the power for the temperature factor
+        | ``energy_levels`` -- an array with energy levels
 
        Optional arguments:
-        | classical  --  When True, the classical partition function is used
-                         [default=False]
-        | freq_scaling  --  Scale the frequencies with the given factor
-                            [default=1]
-        | freq_zp  --  Scale the zero-point energy correction with the given
-                       factor [default=1]
+        | ``classical`` -- When True, the classical partition function is used
+                           [default=False]
+        | ``freq_scaling`` -- Scale the frequencies with the given factor
+                              [default=1]
+        | ``freq_zp`` -- Scale the zero-point energy correction with the given
+                         factor [default=1]
     """
     # this is defined as a function because multiple classes need it
     if classical:
@@ -1109,17 +1108,17 @@ def helpertt_vibrations(temp, n, freqs, classical=False, freq_scaling=1, zp_scal
        Returns T^n (d^2 ln(Z) / dT^2), where Z is the partition function
 
        Arguments:
-        | temp  --  the temperature
-        | n  --  the power for the temperature factor
-        | energy_levels  --  an array with energy levels
+        | ``temp`` -- the temperature
+        | ``n`` -- the power for the temperature factor
+        | ``energy_levels`` -- an array with energy levels
 
        Optional arguments:
-        | classical  --  When True, the classical partition function is used
-                         [default=False]
-        | freq_scaling  --  Scale the frequencies with the given factor
-                            [default=1]
-        | freq_zp  --  Scale the zero-point energy correction with the given
-                       factor [default=1]
+        | ``classical`` -- When True, the classical partition function is used
+                           [default=False]
+        | ``freq_scaling`` -- Scale the frequencies with the given factor
+                              [default=1]
+        | ``freq_zp`` -- Scale the zero-point energy correction with the given
+                         factor [default=1]
     """
     # this is defined as a function because multiple classes need it
     if classical:
@@ -1141,11 +1140,11 @@ class Vibrations(Info, StatFysTerms):
     def __init__(self, classical=False, freq_scaling=1, zp_scaling=1):
         """
         Optional arguments:
-         | classical  --  When True, the vibrations are treated classically
-                          [default=False]
-         | freq_scaling  --  Scale factor for the frequencies [default=1]
-         | zp_scaling  --  Scale factor for the zero-point energy correction
-                           [default=1]
+         | ``classical`` -- When True, the vibrations are treated classically
+                            [default=False]
+         | ``freq_scaling`` -- Scale factor for the frequencies [default=1]
+         | ``zp_scaling`` -- Scale factor for the zero-point energy correction
+                             [default=1]
         """
         self.classical = classical
         self.freq_scaling = freq_scaling
@@ -1213,10 +1212,10 @@ class PartFun(Info, StatFys):
     def __init__(self, nma, terms=None):
         """
         Arguments:
-          | nma  --  NMA object
+          | ``nma`` -- NMA object
         Optional arguments:
-          | terms  --  list to select the contributions to the partition function
-                       e.g. [Vibrations(classical=True), ExtRot(1)]
+          | ``terms`` -- list to select the contributions to the partition
+                         function e.g. [Vibrations(classical=True), ExtRot(1)]
         """
         if terms is None:
             terms = []
@@ -1272,7 +1271,7 @@ class PartFun(Info, StatFys):
            of a regular 3D gas, the return value is the internal energy.
 
            Arguments:
-            | temp  --  the temperature
+            | ``temp`` -- the temperature
         """
         # The molecular ground state energy is added here. It is tempting
         # to include it in the electronic part of partition function.
@@ -1282,7 +1281,7 @@ class PartFun(Info, StatFys):
         """Compute the total entropy
 
            Arguments:
-            | temp  --  the temperature
+            | ``temp`` -- the temperature
         """
         return StatFys.entropy(self, temp)
 
@@ -1295,7 +1294,7 @@ class PartFun(Info, StatFys):
            energy.
 
            Arguments:
-            | temp  --  the temperature
+            | ``temp`` -- the temperature
         """
         # The molecular ground state energy is added here. It is tempting
         # to include it in the electronic part of partition function.
@@ -1305,7 +1304,7 @@ class PartFun(Info, StatFys):
         """Computes the chemical potential
 
            Argument:
-            | temp  --  the temperature
+            | ``temp`` -- the temperature
 
            Note: as opposed to most other methods, this is an intensive
            function!
@@ -1328,7 +1327,7 @@ class PartFun(Info, StatFys):
         """Write an extensive description of the parition function to a file
 
            Argument:
-            | filename  --  The name of the file to write to.
+            | ``filename`` -- The name of the file to write to.
         """
         f = file(filename, 'w')
         self.dump(f)
@@ -1341,14 +1340,14 @@ def compute_rate_coeff(pfs_react, pf_trans, temp, do_log=False):
        The implementation is based on transition state theory.
 
        Arguments:
-         | pfs_react  --  a list of partition functions objects, one for each
-                          reactant
-         | pf_trans  --  the partition function of the transition state
-         | temp  --  the temperature
+         | ``pfs_react`` -- a list of partition functions objects, one for each
+                            reactant
+         | ``pf_trans`` -- the partition function of the transition state
+         | ``temp`` -- the temperature
 
        Optional argument:
-         | do_log  --  Return the logarithm of the rate coefficient instead of
-                       just the rate coefficient itself.
+         | ``do_log`` -- Return the logarithm of the rate coefficient instead of
+                         just the rate coefficient itself.
     """
     delta_A = pf_trans.free_energy(temp)
     delta_A -= sum(pf_react.free_energy(temp) for pf_react in pfs_react)
@@ -1369,13 +1368,13 @@ def compute_equilibrium_constant(pfs_A, pfs_B, temp, do_log=False):
        some products
 
        Arguments:
-         | pfs_A  --  a list of reactant partition functions
-         | pfs_B  --  a list of product partition functions
-         | temp  --  the temperature
+         | ``pfs_A`` -- a list of reactant partition functions
+         | ``pfs_B`` -- a list of product partition functions
+         | ``temp`` -- the temperature
 
        Optional argument:
-         | do_log  --  Return the logarithm of the equilibrium constant instead
-                       of just the equilibrium constant itself.
+         | ``do_log`` -- Return the logarithm of the equilibrium constant
+                         instead of just the equilibrium constant itself.
     """
     delta_A = 0.0
     delta_A -= sum(pf_A.free_energy(temp) for pf_A in pfs_A)

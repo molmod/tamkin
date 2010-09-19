@@ -57,26 +57,53 @@
 """Partition functions based on the harmonic oscillator approximation & extensions
 
    The workhorse of this module is the **PartFun** class. A PartFun object
-   represents a partition function with a interface that does not depend on the
-   distinct contributions present in the partition function. PartFun objects
+   represents a partition function with a solid interface. PartFun objects
    can be used to study chemical equilibrium, rate coefficients and various
    thermodynamic properties.
 
    These are the other classes and functions present in this module:
 
-   * **Gas Laws:** IdealGasLaw
-   * **Abstract classes:** Info, StatFys, StatFysTerms
-   * **Contributions:** Electronic, ExtTrans, ExtRot, Vibrations, Rotor
-     (see rotor.py)
-   * **Helper functions:** helper_levels, helpert_levels, helpertt_levels,
-     helper_vibrations, helpert_vibrations, helpertt_vibrations
-   * **Applications:** compute_rate_coeff, compute_equilibrium_constant (see
-     pftools.py for a friendly interface to these functions)
+   * **Gas Laws:**
+       * IdealGasLaw
+   * **Abstract classes:**
+       * Info
+       * StatFys
+       * StatFysTerms
+   * **Contributions to the partition function:**
+       * Electronic
+       * ExtTrans
+       * ExtRot
+       * Vibrations
+       * Rotor (see rotor.py)
+   * **Helper functions:**
+       * helper_levels, helpert_levels, helpertt_levels,
+       * helper_vibrations, helpert_vibrations, helpertt_vibrations
+   * **Auxiliary routines:**
+       * compute_rate_coeff
+       * compute_equilibrium_constant
 
-   Note that all the extensive thermodynamic quantities computed here are in
-   atomic units per molecule. If you want to express the Gibbs free energy at
-   300 Kelvin of a system in kJ/mol, use the molmod module to perform unit
-   conversions. For example::
+   **Important**: Partition functions can be constructed for NpT gases, NVT
+   gases and many other systems. The return values of methods such as
+   ``free_energy``, ``internal_energy`` and ``heat_capacity`` are often given
+   specialized names in the context of different partition functions. For
+   example, chemists tend to use the following names:
+
+   * 3D NVT gas:
+       - ``PartFun.free_energy`` -> the Helmholtz free energy
+       - ``PartFun.internal_energy`` -> the internal energy
+       - ``PartFun.heat_capacity`` -> the heat capacity at constant volume
+
+   * 3D NpT gas:
+       - ``PartFun.free_energy`` -> the Gibbs free energy
+       - ``PartFun.internal_energy`` -> the enthalpy
+       - ``PartFun.heat_capacity`` -> the heat capacity at constant pressure
+
+   Don't say we did not warn you. Terminology can be very confusing.
+
+   All the extensive thermodynamic quantities computed here are in atomic units
+   per molecule. If you want to express the Gibbs free energy at 300 Kelvin of a
+   system in kJ/mol, use the molmod module to perform unit conversions. For
+   example::
 
      >>> pf = PartFun(..., [ExtTrans(cp=True)])
      >>> print pf.free_energy(300)/kjmol

@@ -14,7 +14,7 @@
 # In addition to the regulations of the GNU General Public License,
 # publications and communications based in parts on this program or on
 # parts of this program are required to cite the following five articles:
-# 
+#
 # "TAMkin: A Versatile Package for Vibrational Analysis and Chemical Kinetics",
 # An Ghysels, Toon Verstraelen, Karen Hemelsoet, Michel Waroquier and Veronique
 # Van Speybroeck, Journal of Chemical Information and Modeling, Articles ASAP

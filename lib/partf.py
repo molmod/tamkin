@@ -54,7 +54,7 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 # --
-"""Partition functions based on the harmonic oscillator approximation & extensions
+"""Partition functions based on the harmonic oscillator approximation.
 
    The workhorse of this module is the **PartFun** class. A PartFun object
    represents a partition function with a solid interface. PartFun objects
@@ -160,7 +160,7 @@ class IdealGasLaw(object):
             self.p_unit_name = "a.u."
 
     def pv(self, temp, n):
-        """PV function 0
+        """PV function.
 
            Arguments:
             | ``temp`` -- The temperature
@@ -181,7 +181,7 @@ class IdealGasLaw(object):
             return boltzmann*temp**(n+1)
 
     def pvt(self, temp, n):
-        """PV function T
+        """PV function T.
 
            Arguments:
             | ``temp`` -- The temperature
@@ -195,7 +195,7 @@ class IdealGasLaw(object):
         return 0.0
 
     def pvtt(self, temp, n):
-        """PV function TT
+        """PV function TT.
 
            Arguments:
             | ``temp`` -- The temperature
@@ -209,7 +209,7 @@ class IdealGasLaw(object):
         return 0.0
 
     def helper(self, temp, n):
-        r"""Helper function
+        r"""Helper function.
 
            Returns
 
@@ -230,7 +230,7 @@ class IdealGasLaw(object):
             return temp**n*numpy.log(boltzmann*temp/self.pressure)
 
     def helpert(self, temp, n):
-        r"""Helper function T
+        r"""Helper function T.
 
            Returns
 
@@ -249,7 +249,7 @@ class IdealGasLaw(object):
             return temp**(n-1)
 
     def helpertt(self, temp, n):
-        r"""Helper function TT
+        r"""Helper function TT.
 
            Returns
 
@@ -268,7 +268,7 @@ class IdealGasLaw(object):
             return -temp**(n-2)
 
     def helpern(self, temp, n):
-        r"""Helper function N
+        r"""Helper function N.
 
            Returns
 
@@ -282,7 +282,7 @@ class IdealGasLaw(object):
         return 0.0
 
     def _get_description(self):
-        """A one-line summary of the gas law"""
+        """A one-line summary of the gas law."""
         return "Ideal gas law, dimension = %i, pressure [%s] = %.5f" % (
             self.dim, self.p_unit_name, self.pressure/self.p_unit
         )
@@ -300,7 +300,7 @@ class Info(object):
         self.name = name
 
     def dump(self, f):
-        """Write a description to file
+        """Write a description to file.
 
            Arguments:
             | ``f`` -- the file object to write to
@@ -308,7 +308,7 @@ class Info(object):
         print >> f, "  %s" % self.name.upper()
 
     def dump_values(self, f, label, values, format, num_col=8):
-        """Write a nicely formatted array of numbers to file
+        """Write a nicely formatted array of numbers to file.
 
            Arguments:
             | ``f`` -- the file object to write to
@@ -332,13 +332,13 @@ class Info(object):
 
 
 class StatFys(object):
-    """Abstract class for (contributions to) the parition function
+    """Abstract class for (contributions to) the parition function.
 
        The constructor (__init__) and four methods (init_part_fun, helper,
        helpert, helpertt) must be implemented in derived classes.
     """
     def init_part_fun(self, nma, partf):
-        """Compute parameters that depend on nma and partition function
+        """Compute parameters that depend on nma and partition function.
 
            Arguments:
             | ``nma`` -- an NMA object
@@ -352,7 +352,7 @@ class StatFys(object):
         pass
 
     def helper(self, temp, n):
-        r"""Helper function
+        r"""Helper function.
 
            Returns
 
@@ -368,7 +368,7 @@ class StatFys(object):
         raise NotImplementedError
 
     def helpert(self, temp, n):
-        r"""Helper function T
+        r"""Helper function T.
 
            Returns
 
@@ -384,7 +384,7 @@ class StatFys(object):
         raise NotImplementedError
 
     def helpertt(self, temp, n):
-        r"""Helper function TT
+        r"""Helper function TT.
 
            Returns
 
@@ -400,7 +400,7 @@ class StatFys(object):
         raise NotImplementedError
 
     def helpern(self, temp, n):
-        r"""Helper function N
+        r"""Helper function N.
 
            Returns
 
@@ -420,7 +420,7 @@ class StatFys(object):
         return 0.0
 
     def log(self, temp, helper=None):
-        """The logarithm of the partition function
+        """The logarithm of the partition function.
 
            Argument:
             | ``temp`` -- the temperature
@@ -434,7 +434,7 @@ class StatFys(object):
         return helper(temp, 0)
 
     def logt(self, temp, helpert=None):
-        """The derivative towards temperature of the logarithm of the partition function
+        """The derivative towards temperature of the logarithm of the partition function.
 
            Argument:
             | ``temp`` -- the temperature
@@ -448,7 +448,7 @@ class StatFys(object):
         return helpert(temp, 0)
 
     def logtt(self, temp, helpertt=None):
-        """The second derivative towards temperature of the logarithm of the partition function
+        """The second derivative towards temperature of the logarithm of the partition function.
 
            Argument:
             | ``temp`` -- the temperature
@@ -462,7 +462,7 @@ class StatFys(object):
         return helpertt(temp, 0)
 
     def internal_energy(self, temp, helpert=None):
-        """Computes the internal energy per molecule
+        """Computes the internal energy per molecule.
 
            Argument:
             | ``temp`` -- the temperature
@@ -476,7 +476,7 @@ class StatFys(object):
         return boltzmann*helpert(temp, 2)
 
     def heat_capacity(self, temp, helpert=None, helpertt=None):
-        """Computes the heat capacity per molecule
+        """Computes the heat capacity per molecule.
 
            Argument:
             | ``temp`` -- the temperature
@@ -494,7 +494,7 @@ class StatFys(object):
         return boltzmann*(2*helpert(temp, 1) + helpertt(temp, 2))
 
     def entropy(self, temp, helper=None, helpert=None):
-        """Computes the entropy contribution per molecule
+        """Computes the entropy contribution per molecule.
 
            Argument:
             | ``temp`` -- the temperature
@@ -512,7 +512,7 @@ class StatFys(object):
         return boltzmann*(helper(temp, 0) + helpert(temp, 1))
 
     def free_energy(self, temp, helper=None):
-        """Computes the free energy per molecule
+        """Computes the free energy per molecule.
 
            Argument:
             | ``temp`` -- the temperature
@@ -526,7 +526,7 @@ class StatFys(object):
         return -boltzmann*helper(temp, 1)
 
     def chemical_potential(self, temp, helper=None, helpern=None):
-        """Computes the chemical potential
+        """Computes the chemical potential.
 
            Argument:
             | ``temp`` -- the temperature
@@ -548,7 +548,7 @@ class StatFys(object):
 
 
 class StatFysTerms(StatFys):
-    """Abstract class for (contributions to) the parition function with multiple terms
+    """Abstract class for (contributions to) the parition function with multiple terms.
 
        The different terms (or factors if you like) are of the same mathematical
        structure.
@@ -565,15 +565,15 @@ class StatFysTerms(StatFys):
         self.num_terms = num_terms
 
     def helper(self, temp, n):
-        """See :meth:`StatFys.helper`"""
+        """See :meth:`StatFys.helper`."""
         return self.helper_terms(temp, n).sum()
 
     def helpert(self, temp, n):
-        """See :meth:`StatFys.helpert`"""
+        """See :meth:`StatFys.helpert`."""
         return self.helpert_terms(temp, n).sum()
 
     def helpertt(self, temp, n):
-        """See :meth:`StatFys.helpertt`"""
+        """See :meth:`StatFys.helpertt`."""
         return self.helpertt_terms(temp, n).sum()
 
     def helper_terms(self, temp, n):
@@ -648,7 +648,7 @@ class StatFysTerms(StatFys):
 
 
 def helper_levels(temp, n, energy_levels):
-    """Helper 0 function for a system with the given energy levels
+    """Helper 0 function for a system with the given energy levels.
 
        Returns T^n ln(Z), where Z is the partition function
 
@@ -669,7 +669,7 @@ def helper_levels(temp, n, energy_levels):
         return temp**n*numpy.log(Z)
 
 def helpert_levels(temp, n, energy_levels):
-    """Helper 1 function for a system with the given energy levels
+    """Helper 1 function for a system with the given energy levels.
 
        Returns T^n (d ln(Z) / dT), where Z is the partition function
 
@@ -688,7 +688,7 @@ def helpert_levels(temp, n, energy_levels):
         return temp**(n-2)*(bfs*es).sum()/Z/boltzmann
 
 def helpertt_levels(temp, n, energy_levels):
-    """Helper 2 function for a system with the given energy levels
+    """Helper 2 function for a system with the given energy levels.
 
        Returns T^n (d^2 ln(Z) / dT^2), where Z is the partition function
 
@@ -710,7 +710,7 @@ def helpertt_levels(temp, n, energy_levels):
 
 
 class Electronic(Info, StatFys):
-    """The electronic contribution to the partition function"""
+    """The electronic contribution to the partition function."""
     # TODO: this should also include the potential energy from the ab initio
     # computation. This is now added in the PartFun object.
     def __init__(self, multiplicity=None):
@@ -725,52 +725,102 @@ class Electronic(Info, StatFys):
         Info.__init__(self, "electronic")
 
     def init_part_fun(self, nma, partf):
-        """See :meth:`StatFys.init_part_fun`"""
+        """See :meth:`StatFys.init_part_fun`."""
         if self.multiplicity is None:
             self.multiplicity = nma.multiplicity
             if self.multiplicity is None:
                 raise ValueError("Spin multiplicity is not defined.")
 
     def dump(self, f):
-        """See :meth:`Info.dump`"""
+        """See :meth:`Info.dump`."""
         Info.dump(self, f)
         print >> f, "    Multiplicity: %i" % self.multiplicity
 
     def helper(self, temp, n):
-        """See :meth:`StatFys.helper`"""
+        """See :meth:`StatFys.helper`."""
         return temp**n*numpy.log(self.multiplicity)
 
     def helpert(self, temp, n):
-        """See :meth:`StatFys.helpert`"""
+        """See :meth:`StatFys.helpert`."""
         return 0.0
 
     def helpertt(self, temp, n):
-        """See :meth:`StatFys.helpertt`"""
+        """See :meth:`StatFys.helpertt`."""
         return 0.0
 
 
 class ExtTrans(Info, StatFys):
-    """The contribution from the external translation"""
+    r"""The contribution from the external translation.
+
+       In the translational contribution, we take into account the terms that
+       are typical for the classical limit of the many body partition function.
+       Strictly speaking, these additions are not due to the fact that there is
+       translational freedom, so this is to some extent an ugly hack, but a very
+       common and convenient one.
+
+       ExtTrans has a second feature that goes beyond the limits of just a
+       simple translational partition function. All corrections due to the NpT
+       ensemble are included by default. Leaving out these corrections is
+       optional (cp=False), which leads to a partition function for the NVT
+       ensemble.
+
+       The translational partition function of a single d-dimensional particle
+       reads
+
+       .. math:: Z_{1,\text{trans}} = \left(\frac{2\pi m k_B T}{h^2}\right)^{\frac{d}{2}}V,
+
+       and the logarithm is
+
+       .. math:: \ln(Z_{1,\text{trans}}) = \frac{d}{2}\ln\left(\frac{2\pi m k_B T}{h^2}\right) + \ln(V).
+
+       ExtTrans models the logarithm of the many-body translational partition
+       per particle, in the classical limit:
+
+       .. math:: \frac{\ln(Z_{N,\text{trans}})}{N} = \frac{\ln(\frac{1}{N!}Z_{1,\text{trans}}^N)}{N},
+
+       where N is the total number of particles. Using Stirlings approximation,
+       this leads to:
+
+       .. math:: \frac{\ln(Z_{N,\text{trans}})}{N} = \frac{-N \ln(N) + N}{N} + \ln(Z_{1,\text{trans}}).
+
+       The first term is split into two terms, :math:`-\ln(N)` and :math:`1`.
+       The former is pushed into the expression of the translational partition
+       function, while the latter just remains where it is. The final
+       expression is:
+
+       .. math:: \frac{\ln(Z_{N,\text{trans}})}{N} = 1+\frac{d}{2}\ln\left(\frac{2\pi m k_B T}{h^2}\right) + \ln\left(\frac{V}{N}\right).
+
+       From this derivation it is clear that the many-body effects and the
+       translational part must be done together, because the separate
+       contributions depend on the number of particles, which is annoying.
+
+       Note that in the case of constant pressure, all derivatives towards
+       temperature are taken at constant pressure, and there is an extra term
+
+       .. math:: -\frac{PV}{k_BTN}
+
+       which becomes -1 in the case of an ideal gas.
+    """
 
     def __init__(self, cp=True, gaslaw=None, dim=3, mobile=None):
         """
-          Optional arguments:
-           | ``cp`` -- When True, an additional factor is included in the
-                       partition function to model a constant pressure (or
-                       constant surface tension) ensemble instead of a constant
-                       volume (or constant surface) ensemble.
-           | ``gaslaw`` -- the gas law that the system under study obeys. This
-                           is used to evaluation the PV term, and also to
-                           compute the derivative of the volume towards the
-                           temperature under constant pressure. By default, the
-                           ideal gas law is used.
-           | ``dim`` -- The dimensionality of the ideal gas.
-           | ``mobile`` -- A list of atom indexes that are free to translate. In
-                           case of a mobile molecule adsorbed on a surface, only
-                           include atom indexes of the adsorbate. The default is
-                           that all atoms are mobile.
+           Optional arguments:
+            | ``cp`` -- When True, an additional factor is included in the
+                        partition function to model a constant pressure (or
+                        constant surface tension) ensemble instead of a constant
+                        volume (or constant surface) ensemble.
+            | ``gaslaw`` -- The gas law that the system under study obeys. This
+                            is used to evaluation the PV term, and also to
+                            compute the derivative of the volume towards the
+                            temperature under constant pressure. By default, the
+                            ideal gas law is used.
+            | ``dim`` -- The dimension of the ideal gas.
+            | ``mobile`` -- A list of atom indexes that are free to translate. In
+                            case of a mobile molecule adsorbed on a surface, only
+                            include atom indexes of the adsorbate. The default is
+                            that all atoms are mobile.
 
-           Note that the dimensionality determines the unit of the partition
+           The dimension of the gas determines the unit of the partition
            function as follows::
 
                unit = bohr**dim/particle
@@ -788,14 +838,14 @@ class ExtTrans(Info, StatFys):
         Info.__init__(self, "translational")
 
     def init_part_fun(self, nma, partf):
-        """See :meth:`StatFys.init_part_fun`"""
+        """See :meth:`StatFys.init_part_fun`."""
         if self.mobile is None:
             self.mass = nma.mass
         else:
             self.mass = nma.masses[self.mobile].sum()
 
     def dump(self, f):
-        """See :meth:`Info.dump`"""
+        """See :meth:`Info.dump`."""
         Info.dump(self, f)
         print >> f, "    Gas law: %s" % self.gaslaw.description
         print >> f, "    Dimension: %i" % self.dim
@@ -815,51 +865,7 @@ class ExtTrans(Info, StatFys):
         print >> f, "    Mass [amu]: %f" % (self.mass/amu)
 
     def helper(self, temp, n):
-        r"""See :meth:`StatFys.helper`
-
-           In the translational contribution, we take into account the terms
-           that are typical for the classical limit of the many body partition
-           function. Strictly speaking, these additions are not due to the fact
-           that there is translational freedom, so this is to some extent an
-           ugly hack, but a very common and convenient one.
-
-           The translational partition function of a d-dimensional particle
-           reads
-
-           .. math:: Z_{1,\text{trans}} = \left(\frac{2\pi m k_B T}{h^2}\right)^{\frac{d}{2}}V,
-
-           and the logarithm is
-
-           .. math:: \ln(Z_{1,\text{trans}}) = \frac{d}{2}\ln\left(\frac{2\pi m k_B T}{h^2}\right) + \ln(V).
-
-           This routine computes the logarithm of the many-body translational
-           partition per particle (optionally multiplied by a power of the
-           temperature, omitted here for clarity):
-
-           .. math:: \text{result} = \frac{\ln(Z_{N,\text{trans}})}{N} = \frac{\ln(\frac{1}{N!}Z_{1,\text{trans}}^N)}{N},
-
-           where N is the total number of particles. Using Stirlings
-           approximation, this leads to:
-
-           .. math:: \text{result} = \frac{-N \ln(N) + N}{N} + \ln(Z_{1,\text{trans}}).
-
-           The first term is split into two terms, :math:`-\ln(N)` and
-           :math:`1`. The former is pushed into the expression of the
-           translational partition function, while the latter is just remains
-           where it is. The final expression is:
-
-           .. math:: \text{result} = 1+\frac{d}{2}\ln\left(\frac{2\pi m k_B T}{h^2}\right) + \ln\left(\frac{V}{N}\right).
-
-           From this derivation it is clear that the many-body effects and the
-           translational part must be done together, because the separate
-           contributions depend on the number of particles, which is annoying.
-
-           Note that in the case of constant pressure, there is an extra term
-
-           .. math:: -\frac{PV}{k_BTN}
-
-           which becomes -1 in the case of an ideal gas.
-        """
+        """See :meth:`StatFys.helper`."""
         if temp == 0:
             if n > 0:
                 return 0.0
@@ -876,7 +882,7 @@ class ExtTrans(Info, StatFys):
             return result
 
     def helpert(self, temp, n):
-        """See :meth:`StatFys.helpert`"""
+        """See :meth:`StatFys.helpert`."""
         if temp == 0:
             raise NotImplementedError
         else:
@@ -887,7 +893,7 @@ class ExtTrans(Info, StatFys):
             return result
 
     def helpertt(self, temp, n):
-        """See :meth:`StatFys.helpertt`"""
+        """See :meth:`StatFys.helpertt`."""
         if temp == 0:
             raise NotImplementedError
         else:
@@ -898,7 +904,7 @@ class ExtTrans(Info, StatFys):
             return result
 
     def helpern(self, temp, n):
-        """See :meth:`StatFys.helpern`"""
+        """See :meth:`StatFys.helpern`."""
         if temp==0:
             if n > 0:
                 return 0.0
@@ -912,21 +918,33 @@ class ExtTrans(Info, StatFys):
 
 
 class ExtRot(Info, StatFys):
-    """The contribution from the external rotation"""
-    def __init__(self, symmetry_number=0, im_threshold=1.0):
+    """The contribution from the external rotation.
+
+       This class is based on the integral approximation of the partition
+       function.
+    """
+    def __init__(self, symmetry_number=None, im_threshold=1.0):
+        """
+           Optional arguments:
+            | ``symmetry_number`` -- The rotational symmetry number of the
+                                     molecule.
+            | ``im_threshold``  --  When a moment of inertia drops below this
+                                    threshold, it is discarded, which matters
+                                    for linear molecules.
+        """
         self.symmetry_number = symmetry_number
         self.im_threshold = im_threshold
         Info.__init__(self, "rotational")
 
     def init_part_fun(self, nma, partf):
-        """See :meth:`StatFys.init_part_fun`"""
+        """See :meth:`StatFys.init_part_fun`."""
         if nma.periodic:
             raise ValueError("There is no external rotation in periodic systems.")
         self.inertia_tensor = nma.inertia_tensor
         self.moments = numpy.linalg.eigvalsh(nma.inertia_tensor)
-        if self.symmetry_number == 0:
+        if self.symmetry_number == None:
             self.symmetry_number = nma.symmetry_number
-            if self.symmetry_number == 0:
+            if self.symmetry_number == None:
                 from molmod import Molecule
                 # compute the rotational symmetry number
                 tmp_mol = Molecule(nma.numbers, nma.coordinates)
@@ -937,7 +955,7 @@ class ExtRot(Info, StatFys):
         self.count = (self.moments > self.im_threshold).sum()
 
     def dump(self, f):
-        """See :meth:`Info.dump`"""
+        """See :meth:`Info.dump`."""
         Info.dump(self, f)
         print >> f, "    Rotational symmetry number: %i" % self.symmetry_number
         print >> f, "    Moments of inertia [amu*bohr**2]: %f  %f %f" % tuple(self.moments/amu)
@@ -945,7 +963,7 @@ class ExtRot(Info, StatFys):
         print >> f, "    Non-zero moments of inertia: %i" % self.count
 
     def helper(self, temp, n):
-        """See :meth:`StatFys.helper`"""
+        """See :meth:`StatFys.helper`."""
         if temp == 0:
             if n > 0:
                 return 0.0
@@ -955,16 +973,16 @@ class ExtRot(Info, StatFys):
             return temp**n*(numpy.log(temp)*0.5*self.count + numpy.log(self.factor))
 
     def helpert(self, temp, n):
-        """See :meth:`StatFys.helpert`"""
+        """See :meth:`StatFys.helpert`."""
         return temp**(n-1)*0.5*self.count
 
     def helpertt(self, temp, n):
-        """See :meth:`StatFys.helpertt`"""
+        """See :meth:`StatFys.helpertt`."""
         return -temp**(n-2)*0.5*self.count
 
 
 class PCMCorrection(Info, StatFys):
-    """A correction to the free energy as function of the temperature
+    """A correction to the free energy as function of the temperature.
 
        The correction can be a constant shift of the free energy or a linear
        shift of the free energy as function of the temperature.
@@ -972,16 +990,16 @@ class PCMCorrection(Info, StatFys):
 
     def __init__(self, point1, point2=None):
         """
-        Argument:
-         | ``point1`` -- A 2-tuple with free energy and a temperature. A
-                         correction for the free energy at the given
-                         temperature. (If no second point is given, the same
-                         correction is applied to all temperatures.)
+           Argument:
+            | ``point1`` -- A 2-tuple with free energy and a temperature. A
+                            correction for the free energy at the given
+                            temperature. (If no second point is given, the same
+                            correction is applied to all temperatures.)
 
-        Optional argument:
-         | ``point2`` -- A 2-tuple with free energy and a temperature. In
-                         combination with point1, a linear free energy
-                         correction as function of the temperature is added.
+           Optional argument:
+            | ``point2`` -- A 2-tuple with free energy and a temperature. In
+                            combination with point1, a linear free energy
+                            correction as function of the temperature is added.
         """
         if (not hasattr(point1, "__len__")) or len(point1) != 2:
             raise ValueError("The first argument must be a (delta_G, temp) pair.")
@@ -992,7 +1010,7 @@ class PCMCorrection(Info, StatFys):
         Info.__init__(self, "pcm_correction")
 
     def dump(self, f):
-        """See :meth:`Info.dump`"""
+        """See :meth:`Info.dump`."""
         Info.dump(self, f)
         print >> f, "    Point 1:"
         print >> f, "       Delta G [kJ/mol]: %.2f" % (self.point1[0]/kjmol)
@@ -1017,25 +1035,25 @@ class PCMCorrection(Info, StatFys):
             )
 
     def helper(self, temp, n):
-        """See :meth:`StatFys.helper`"""
+        """See :meth:`StatFys.helper`."""
         F, Fp, Fpp = self._eval_free(temp)
         return -F*temp**(n-1)/boltzmann
 
     def helpert(self, temp, n):
-        """See :meth:`StatFys.helpert`"""
+        """See :meth:`StatFys.helpert`."""
         F, Fp, Fpp = self._eval_free(temp)
         return (F*temp**(n-2) - Fp*temp**(n-1))/boltzmann
 
     def helpertt(self, temp, n):
-        """See :meth:`StatFys.helpertt`"""
+        """See :meth:`StatFys.helpertt`."""
         F, Fp, Fpp = self._eval_free(temp)
         return (-Fpp*temp**(n-1) + 2*(Fp*temp**(n-2) - F*temp**(n-3)))/boltzmann
 
 
 def helper_vibrations(temp, n, freqs, classical=False, freq_scaling=1, zp_scaling=1):
-    """Helper 0 function for a set of harmonic oscillators
+    """Helper 0 function for a set of harmonic oscillators.
 
-       Returns T^n ln(Z), where Z is the partition function
+       Returns T^n ln(Z), where Z is the partition function.
 
        Arguments:
         | ``temp`` -- the temperature
@@ -1043,11 +1061,11 @@ def helper_vibrations(temp, n, freqs, classical=False, freq_scaling=1, zp_scalin
         | ``freqs`` -- an array with frequencies
 
        Optional arguments:
-        | ``classical`` -- When True, the classical partition function is used
+        | ``classical`` -- When True, the classical partition function is used.
                            [default=False]
-        | ``freq_scaling`` -- Scale the frequencies with the given factor
+        | ``freq_scaling`` -- Scale the frequencies with the given factor.
                               [default=1]
-        | ``freq_zp`` -- Scale the zero-point energy correction with the given
+        | ``freq_zp`` -- Scale the zero-point energy correction with the given.
                          factor [default=1]
     """
     # this is defined as a function because multiple classes need it
@@ -1072,9 +1090,9 @@ def helper_vibrations(temp, n, freqs, classical=False, freq_scaling=1, zp_scalin
         #return -numpy.log(1-numpy.exp(exp_arg*freq_scaling))
 
 def helpert_vibrations(temp, n, freqs, classical=False, freq_scaling=1, zp_scaling=1):
-    """Helper 1 function for a set of harmonic oscillators
+    """Helper 1 function for a set of harmonic oscillators.
 
-       Returns T^n (d ln(Z) / dT), where Z is the partition function
+       Returns T^n (d ln(Z) / dT), where Z is the partition function.
 
        Arguments:
         | ``temp`` -- the temperature
@@ -1103,9 +1121,9 @@ def helpert_vibrations(temp, n, freqs, classical=False, freq_scaling=1, zp_scali
             return pfb*temp**(n-2)*(zp_scaling - 2*freq_scaling/(1 - numpy.exp(2*freq_scaling*pfb/temp)))
 
 def helpertt_vibrations(temp, n, freqs, classical=False, freq_scaling=1, zp_scaling=1):
-    """Helper 2 function for a set of harmonic oscillators
+    """Helper 2 function for a set of harmonic oscillators.
 
-       Returns T^n (d^2 ln(Z) / dT^2), where Z is the partition function
+       Returns T^n (d^2 ln(Z) / dT^2), where Z is the partition function.
 
        Arguments:
         | ``temp`` -- the temperature
@@ -1136,15 +1154,15 @@ def helpertt_vibrations(temp, n, freqs, classical=False, freq_scaling=1, zp_scal
 
 
 class Vibrations(Info, StatFysTerms):
-    """The vibrational contribution to the partition function"""
+    """The vibrational contribution to the partition function."""
     def __init__(self, classical=False, freq_scaling=1, zp_scaling=1):
         """
-        Optional arguments:
-         | ``classical`` -- When True, the vibrations are treated classically
-                            [default=False]
-         | ``freq_scaling`` -- Scale factor for the frequencies [default=1]
-         | ``zp_scaling`` -- Scale factor for the zero-point energy correction
-                             [default=1]
+           Optional arguments:
+            | ``classical`` -- When True, the vibrations are treated classically
+                               [default=False]
+            | ``freq_scaling`` -- Scale factor for the frequencies [default=1]
+            | ``zp_scaling`` -- Scale factor for the zero-point energy
+                                correction [default=1]
         """
         self.classical = classical
         self.freq_scaling = freq_scaling
@@ -1152,7 +1170,7 @@ class Vibrations(Info, StatFysTerms):
         Info.__init__(self, "vibrational")
 
     def init_part_fun(self, nma, partf):
-        """See :meth:`StatFys.init_part_fun`"""
+        """See :meth:`StatFys.init_part_fun`."""
         zero_indexes = nma.zeros
         nonzero_mask = numpy.ones(len(nma.freqs), dtype=bool)
         nonzero_mask[zero_indexes] = False
@@ -1165,7 +1183,7 @@ class Vibrations(Info, StatFysTerms):
         StatFysTerms.__init__(self, len(self.positive_freqs))
 
     def dump(self, f):
-        """See :meth:`Info.dump`"""
+        """See :meth:`Info.dump`."""
         Info.dump(self, f)
         print >> f, "    Number of zero wavenumbers: %i " % (len(self.zero_freqs))
         print >> f, "    Number of real wavenumbers: %i " % (len(self.positive_freqs))
@@ -1178,21 +1196,21 @@ class Vibrations(Info, StatFysTerms):
         print >> f, "    Zero-point contribution [kJ/mol]: %.7f" % (self.free_energy(0.0)/kjmol)
 
     def helper_terms(self, temp, n):
-        """See :meth:`StatFysTerms.helper_terms`"""
+        """See :meth:`StatFysTerms.helper_terms`."""
         return helper_vibrations(
             temp, n, self.positive_freqs, self.classical, self.freq_scaling,
             self.zp_scaling
         )
 
     def helpert_terms(self, temp, n):
-        """See :meth:`StatFysTerms.helpert_terms`"""
+        """See :meth:`StatFysTerms.helpert_terms`."""
         return helpert_vibrations(
             temp, n, self.positive_freqs, self.classical, self.freq_scaling,
             self.zp_scaling
         )
 
     def helpertt_terms(self, temp, n):
-        """See :meth:`StatFysTerms.helpertt_terms`"""
+        """See :meth:`StatFysTerms.helpertt_terms`."""
         return helpertt_vibrations(
             temp, n, self.positive_freqs, self.classical, self.freq_scaling,
             self.zp_scaling
@@ -1200,7 +1218,7 @@ class Vibrations(Info, StatFysTerms):
 
 
 class PartFun(Info, StatFys):
-    """The partition function
+    """The partition function.
 
        This object contains all contributions to the partition function in
        self.terms and makes sure they are properly initialized. It also
@@ -1211,11 +1229,11 @@ class PartFun(Info, StatFys):
 
     def __init__(self, nma, terms=None):
         """
-        Arguments:
-          | ``nma`` -- NMA object
-        Optional arguments:
-          | ``terms`` -- list to select the contributions to the partition
-                         function e.g. [Vibrations(classical=True), ExtRot(1)]
+           Arguments:
+            | ``nma`` -- NMA object
+           Optional arguments:
+            | ``terms`` -- list to select the contributions to the partition
+                           function e.g. [Vibrations(classical=True), ExtRot(1)]
         """
         if terms is None:
             terms = []
@@ -1248,23 +1266,23 @@ class PartFun(Info, StatFys):
         Info.__init__(self, "total")
 
     def helper(self, temp, n):
-        """See :meth:`StatFys.helper`"""
+        """See :meth:`StatFys.helper`."""
         return sum(term.helper(temp, n) for term in self.terms)
 
     def helpert(self, temp, n):
-        """See :meth:`StatFys.helpert`"""
+        """See :meth:`StatFys.helpert`."""
         return sum(term.helpert(temp, n) for term in self.terms)
 
     def helpertt(self, temp, n):
-        """See :meth:`StatFys.helpertt`"""
+        """See :meth:`StatFys.helpertt`."""
         return sum(term.helpertt(temp, n) for term in self.terms)
 
     def helpern(self, temp, n):
-        """See :meth:`StatFys.helpern`"""
+        """See :meth:`StatFys.helpern`."""
         return sum(term.helpern(temp, n) for term in self.terms)
 
     def internal_energy(self, temp):
-        """Compute the internal energy
+        """Compute the internal energy.
 
            If self is a constant pressure ensemble of a regular 3D gas, the
            return value is the enthalpy. If self is a constant volume ensemble
@@ -1278,7 +1296,7 @@ class PartFun(Info, StatFys):
         return StatFys.internal_energy(self, temp) + self.energy
 
     def entropy(self, temp):
-        """Compute the total entropy
+        """Compute the total entropy.
 
            Arguments:
             | ``temp`` -- the temperature
@@ -1286,7 +1304,7 @@ class PartFun(Info, StatFys):
         return StatFys.entropy(self, temp)
 
     def free_energy(self, temp):
-        """Computes the free energy
+        """Computes the free energy.
 
            If self is a constant pressure ensemble of a regular 3D gas, the
            return value is the Gibbs free energy. If self is a constant volume
@@ -1301,7 +1319,7 @@ class PartFun(Info, StatFys):
         return StatFys.free_energy(self, temp) + self.energy
 
     def chemical_potential(self, temp):
-        """Computes the chemical potential
+        """Computes the chemical potential.
 
            Argument:
             | ``temp`` -- the temperature
@@ -1314,7 +1332,7 @@ class PartFun(Info, StatFys):
         return StatFys.chemical_potential(self, temp) + self.energy
 
     def dump(self, f):
-        """See :meth:`Info.dump`"""
+        """See :meth:`Info.dump`."""
         print >> f, "Title:", self.title
         print >> f, "Energy at T=0K [au]: %.5f" % self.energy
         print >> f, "Zero-point contribution [kJ/mol]: %.7f" % ((self.free_energy(0.0) - self.energy)/kjmol)
@@ -1324,7 +1342,7 @@ class PartFun(Info, StatFys):
             term.dump(f)
 
     def write_to_file(self, filename):
-        """Write an extensive description of the parition function to a file
+        """Write an extensive description of the parition function to a file.
 
            Argument:
             | ``filename`` -- The name of the file to write to.
@@ -1335,7 +1353,7 @@ class PartFun(Info, StatFys):
 
 
 def compute_rate_coeff(pfs_react, pf_trans, temp, do_log=False):
-    """Computes a (forward) rate coefficient
+    """Computes a (forward) rate coefficient.
 
        The implementation is based on transition state theory.
 
@@ -1364,8 +1382,7 @@ def compute_rate_coeff(pfs_react, pf_trans, temp, do_log=False):
 
 
 def compute_equilibrium_constant(pfs_A, pfs_B, temp, do_log=False):
-    """Computes the logarithm of equilibrium constant between some reactants and
-       some products
+    """Computes the equilibrium constant between reactants and products.
 
        Arguments:
          | ``pfs_A`` -- a list of reactant partition functions

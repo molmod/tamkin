@@ -59,9 +59,9 @@
    Instances of the classes :class:`Eckart` or :class:`Wigner` act as functions
    that take one argument, the temperature, and return a correction factor
    for the rate coefficient. Such an object can be given as an optional
-   argument to the constructor of a :class:`tamkin.pftools.ReactionAnalysis`
-   object to take tunneling corrections into account for the estimation of
-   kinetic parameters.
+   argument to the constructor of a :class:`tamkin.chemmod.KineticModel`
+   object to take tunneling corrections into account for the computation of
+   rate constants.
 """
 
 
@@ -70,7 +70,7 @@ from molmod import boltzmann, planck, kjmol
 import numpy
 
 
-__all__ = ["Eckart", "Wigner", "Miller"]
+__all__ = ["TunnelingCorrection", "Eckart", "Wigner", "Miller"]
 
 
 class TunnelingCorrection(object):
@@ -82,7 +82,7 @@ class TunnelingCorrection(object):
         """Compute a the tunneling correction as function of the temperature
 
            Argument:
-            | temps  --  a numpy array of temperatures or a single temperature
+            | ``temps`` -- a numpy array of temperatures or a single temperature
 
            Derived classes must override this method with a function that
            computes the correction factors for the rate constant at the given
@@ -94,21 +94,21 @@ class TunnelingCorrection(object):
 class Eckart(TunnelingCorrection):
     """Implements the Eckart tunneling correction factor
 
-       This correction is proposed in
-       C. Eckart, Phys. Rev. 35, 1303 (1930)
+       This correction is proposed in C. Eckart, Phys. Rev. 35, 1303 (1930),
+       http://link.aps.org/doi/10.1103/PhysRev.35.1303.
     """
 
     def __init__(self, pfs_react, pf_trans, pfs_prod):
         """
            Arguments:
-            | pfs_react  --  a list with partition functions of the reactants
-            | pf_trans  --  the partition function of the transition state
-            | pfs_prod  --  a list with partition functions of the products
+            | ``pfs_react`` -- a list with partition functions of the reactants
+            | ``pf_trans`` -- the partition function of the transition state
+            | ``pfs_prod`` -- a list with partition functions of the products
 
            Attributes derived from these arguments:
-            | self.Ef  --  forward energy barrier
-            | self.Er  --  reverse energy barrier
-            | self.nu  --  the imaginary frequency (as a real number)
+            | ``self.Ef`` -- forward energy barrier
+            | ``self.Er`` -- reverse energy barrier
+            | ``self.nu`` -- the imaginary frequency (as a real number)
 
            Note that this correction is only defined for transition states
            with only one imaginary frequency.
@@ -132,9 +132,9 @@ class Eckart(TunnelingCorrection):
         """An alternative constructor used for testing purposes.
 
            Arguments:
-            | Ef  --  The forward barrier
-            | Er  --  The reverse barrier
-            | nu  --  The imaginary frequency (as a real number)
+            | ``Ef`` -- The forward barrier
+            | ``Er`` -- The reverse barrier
+            | ``nu`` -- The imaginary frequency (as a real number)
 
            The constructor should not be used in normal situations.
         """
@@ -152,7 +152,7 @@ class Eckart(TunnelingCorrection):
         """Computes the correction for one temperature
 
            Arguments:
-            | temp  --  the temperature (scalar)
+            | ``temp`` -- the temperature (scalar)
         """
         from scipy.integrate import quad
 
@@ -197,7 +197,7 @@ class Eckart(TunnelingCorrection):
         return integral*factor
 
     def __call__(self, temps):
-        """See :meth:TunnelingCorrection.__call__"""
+        """See :meth:`TunnelingCorrection.__call__`."""
         if hasattr(temps, "__len__"):
             result = numpy.zeros(len(temps))
             for i, temp in enumerate(temps):
@@ -210,16 +210,16 @@ class Eckart(TunnelingCorrection):
 class Wigner(TunnelingCorrection):
     """Implements the Wigner tunneling correction factor
 
-       This correction is proposed in
-       E. Wigner, Z. Physik. Chern. B 19, 203 (1932)
+       This correction is proposed in E. Wigner, Z. Physik. Chern. B 19, 203
+       (1932).
     """
     def __init__(self, pf_trans):
         """
            Arguments:
-            | pf_trans  --  the partition function of the transition state
+            | ``pf_trans`` -- the partition function of the transition state
 
            Attribute derived from these argument:
-            | self.nu  --  the imaginary frequency (as a real number)
+            | ``self.nu`` -- the imaginary frequency (as a real number)
 
            Note that this correction is only defined for transition states
            with only one imaginary frequency.
@@ -233,7 +233,7 @@ class Wigner(TunnelingCorrection):
         """An alternative constructor used for testing purposes.
 
            Arguments:
-            | nu  --  The imaginary frequency (as a real number)
+            | ``nu`` -- The imaginary frequency (as a real number)
 
            This method should not be used in normal situations.
         """
@@ -242,23 +242,23 @@ class Wigner(TunnelingCorrection):
         return result
 
     def __call__(self, temps):
-        """See :meth:TunnelingCorrection.__call__"""
+        """See :meth:`TunnelingCorrection.__call__`."""
         return 1+(planck*self.nu/(boltzmann*temps))**2/24
 
 
 class Miller(TunnelingCorrection):
     """Implements the Miller tunneling correction factor
 
-       This correction is proposed in
-       Miller, W. H. J. Chem. Phys. 1973, 61, 1823.
+       This correction is proposed in Miller, W. H. J. Chem. Phys. 1973, 61,
+       1823, http://dx.doi.org/10.1063/1.1682181.
     """
     def __init__(self, pf_trans):
         """
            Arguments:
-            | pf_trans  --  the partition function of the transition state
+            | ``pf_trans`` -- the partition function of the transition state
 
            Attribute derived from these argument:
-            | self.nu  --  the imaginary frequency (as a real number)
+            | ``self.nu`` -- the imaginary frequency (as a real number)
 
            Note that this correction is only defined for transition states
            with only one imaginary frequency.
@@ -272,7 +272,7 @@ class Miller(TunnelingCorrection):
         """An alternative constructor used for testing purposes.
 
            Arguments:
-            | nu  --  The imaginary frequency (as a real number)
+            | ``nu`` -- The imaginary frequency (as a real number)
 
            This method should not be used in normal situations.
         """
@@ -281,6 +281,6 @@ class Miller(TunnelingCorrection):
         return result
 
     def __call__(self, temps):
-        """See :meth:TunnelingCorrection.__call__"""
+        """See :meth:`TunnelingCorrection.__call__`."""
         x = 0.5*planck*self.nu/(boltzmann*temps)
         return x/numpy.sin(x)

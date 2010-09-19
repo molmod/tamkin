@@ -1043,13 +1043,34 @@ class MBH(Treatment):
     Frequencies and modes are computed with the MBH approach, as described in
     the refences:
 
-    * Journal of Chem. Phys. 126 (22), Art. No. 224102, 2007
-    * Journal of Chem. Phys. 127 (16), Art. No. 164108, 2007
+    * "Vibrational modes in partially optimized molecular systems", An Ghysels,
+      Dimitri Van Neck, Veronique Van Speybroeck, Toon Verstraelen and Michel
+      Waroquier, Journal of Chemical Physics, Vol. 126 (22), Art. No. 224102,
+      2007, http://dx.doi.org/1.2737444
 
-    or the Mobile Block Hessian method with linked blocks:
+    * "Cartesian formulation of the Mobile Block Hesian Approach to vibrational
+      analysis in partially optimized systems", An Ghysels, Dimitri Van Neck and
+      Michel Waroquier, Journal of Chemical Physics, Vol. 127 (16), Art. No.
+      164108, 2007, http://dx.doi.org/1.2789429
 
-    * Journal of Chem. Theory Comput. 5 (5), 1203-1215, 2009
-    * Journal of Chem. Phys. 130 (18), Art. No. 084107, 2009
+    * "Calculating reaction rates with partial Hessians: validation of the MBH
+      approach", An Ghysels, Veronique Van Speybroeck, Toon Verstraelen, Dimitri
+      Van Neck and Michel Waroquier, Journal of Chemical Theory and Computation,
+      Vol. 4 (4), 614-625, 2008, http://dx.doi.org/ct7002836
+
+    For the Mobile Block Hessian method with linked blocks, please refer to the
+    following papers:
+
+    * "Mobile Block Hessian approach with linked blocks: an efficient approach
+      for the calculation of frequencies in macromolecules", An Ghysels,
+      Veronique Van Speybroeck, Ewald Pauwels, Dimitri Van Neck, Bernard R.
+      Brooks and Michel Waroquier, Journal of Chemical Theory and Computation,
+      Vol. 5 (5), 1203-1215, 2009, http://dx.doi.org/ct800489r
+
+    * "Normal modes for large molecules with arbitrary link constraints in the
+      mobile block Hessian approach", An Ghysels, Dimitri Van Neck, Bernard R.
+      Brooks, Veronique Van Speybroeck and Michel Waroquier, Journal of Chemical
+      Physics, Vol. 130 (18), Art. No. 084107, 2009, http://dx.doi.org/1.3071261
 
     The system is partitioned into blocks which are only allowed to move as
     rigid bodies during the vibrational analysis. Atoms that are not part of a

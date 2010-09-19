@@ -93,8 +93,8 @@ class Molecule(BaseMolecule):
             | multiplicity  --  The spin multiplicity of the electronic system
 
            Optional arguments:
-            | symmetry_number  --  The rotational symmetry number, 0 when not
-                                   known or computed [default=0]
+            | symmetry_number  --  The rotational symmetry number, None when not
+                                   known or computed [default=None]
             | periodic  --  True when the system is periodic in three dimensions
                             [default=False]
             | title  --  The title of the system

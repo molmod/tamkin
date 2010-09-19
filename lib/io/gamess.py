@@ -41,7 +41,7 @@ from molmod.io import PunchFile
 __all__ = ["load_molecule_pcgamess_punch"]
 
 
-def load_molecule_pcgamess_punch(fn_freq, energy=None, multiplicity=1, symmetry_number=0):
+def load_molecule_pcgamess_punch(fn_freq, energy=None, multiplicity=1, symmetry_number=None):
     """Load a molecule from a PCGAMESS punch file
 
        Arguments:

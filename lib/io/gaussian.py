@@ -140,7 +140,7 @@ def load_molecule_g03fchk(fn_freq, fn_ener=None, fn_vdw=None, energy=None):
         gradient,
         hessian,
         fchk_freq.fields["Multiplicity"],
-        0, # gaussian is very poor at computing the rotational symmetry number
+        None, # gaussian is very poor at computing the rotational symmetry number
         False,
         title=fchk_freq.title
     )
@@ -193,7 +193,7 @@ def load_molecule_g98fchk(fn_freq, fn_ener=None):
         numpy.reshape(numpy.array(fchk_freq.fields["Cartesian Gradient"]), (len(fchk_freq.molecule.numbers),3)),
         fchk_freq.get_hessian(),
         fchk_freq.fields["Multiplicity"],
-        0, # gaussian is very poor at computing the rotational symmetry number
+        None, # gaussian is very poor at computing the rotational symmetry number
         False,
     )
 

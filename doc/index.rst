@@ -2,10 +2,10 @@
 The TAMkin Manual
 =================
 
-TAMkin is a toolkit of normal mode analysis and the computation of thermodynamic
-and kinetic properties. It is conceived as a post-processing package for several
-popular computational chemistry codes such as: CHARMM, CP2K, CPMD, GAMESS,
-Gaussian, QChem and VASP.
+TAMkin is a toolkit for normal mode analysis and the computation of
+thermodynamic and kinetic properties. It is conceived as a post-processing
+package for several popular computational chemistry codes such as: CHARMM, CP2K,
+CPMD, GAMESS, Gaussian, QChem and VASP.
 
 
 Tutorial

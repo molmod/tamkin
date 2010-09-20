@@ -336,7 +336,13 @@ class StatFys(object):
            .. math:: T^n \frac{\ln(Z_N)}{N}
 
            where :math:`Z_N` is (the contribution to) the many body partition
-           function and :math:`N` is the total number of particles.
+           function and :math:`N` is the total number of particles. In all
+           cases, except for the translational contribution, this comes down to:
+
+           .. math:: T^n \ln(Z_1)
+
+           where :math:`\ln(Z_1)` is the single-particle contribution to the
+           partition function.
 
            Arguments:
             | ``temp`` -- the temperature
@@ -352,7 +358,13 @@ class StatFys(object):
            .. math:: T^n \frac{d \left(\frac{\ln(Z_N)}{N}\right)}{dT}
 
            where :math:`Z_N` is (the contribution to) the many body partition
-           function and :math:`N` is the total number of particles.
+           function and :math:`N` is the total number of particles.  In all
+           cases, except for the translational contribution, this comes down to:
+
+           .. math:: T^n \frac{\partial \ln(Z_1)}{\partial T}
+
+           where :math:`\ln(Z_1)` is the single-particle contribution to the
+           partition function.
 
            Arguments:
             | ``temp`` -- the temperature
@@ -368,7 +380,13 @@ class StatFys(object):
            .. math:: T^n \frac{d^2 \left(\frac{\ln(Z_N)}{N}\right)}{dT^2}
 
            where :math:`Z_N` is (the contribution to) the many body partition
-           function and :math:`N` is the total number of particles.
+           function and :math:`N` is the total number of particles. In all
+           cases, except for the translational contribution, this comes down to:
+
+           .. math:: T^n \frac{\partial^2 \ln(Z_1)}{\partial T^2}
+
+           where :math:`\ln(Z_1)` is the single-particle contribution to the
+           partition function.
 
            Arguments:
             | ``temp`` -- the temperature
@@ -381,23 +399,48 @@ class StatFys(object):
 
            Returns
 
-           .. math:: T^n N \frac{d \left(\frac{\ln(Z_N)}{N}\right)}{dN}
+           .. math:: T^n N \frac{\partial \ln(Z_1)}{\partial N}
 
            where :math:`Z_N` is (the contribution to) the many body partition
-           function and :math:`N` is the total number of particles. This is used to
-           compute the chemical potential.
+           function and :math:`N` is the total number of particles. This is used
+           to compute the chemical potential. In all cases, except for the
+           translational contribution, this comes down to zero.
 
            Arguments:
             | ``temp`` -- the temperature
             | ``n`` -- the power for the temperature factor
         """
-        # Return zero by default as this is the proper behavior for most
-        # constributions to the partition function. The external translation is
-        # (for now) the only exception.
         return 0.0
 
+    def helperv(self, temp, n):
+        r"""Helper function V
+
+           This always the same as the method ``helper``, except in case of the
+           translational contribution to the partition function. Then it returns
+           the single-particle partition function divided by the volume,
+           multiplied by a power of the temperature:
+
+           .. math:: T^n N \frac{\ln(Z_1)}{V}
+
+           Arguments:
+            | ``temp`` -- temperature
+            | ``n`` -- the power for the temperature factor
+        """
+        # By default return helper
+        return self.helper(temp, n)
+
     def log(self, temp, helper=None):
-        """The logarithm of the partition function.
+        r"""Log function
+
+           The logarithm of the N-particle partition function divided by the
+           number of particles:
+
+           .. math:: \frac{\ln(Z_N)}{N}
+
+           For all contributions, except for the translational, this comes down
+           to:
+
+           .. math:: \ln(Z_1)
 
            Argument:
             | ``temp`` -- the temperature
@@ -411,7 +454,17 @@ class StatFys(object):
         return helper(temp, 0)
 
     def logt(self, temp, helpert=None):
-        """The derivative towards temperature of the logarithm of the partition function.
+        r"""Log function T
+
+           The derivative towards temperature of the logarithm of the N-particle
+           partition function divided by the number of particles:
+
+           .. math:: \frac{d \left(\frac{\ln(Z_N)}{N}\right)}{dT}
+
+           For all contributions, except for the translational, this comes down
+           to:
+
+           .. math:: \frac{\partial \ln(Z_1)}{\partial T}
 
            Argument:
             | ``temp`` -- the temperature
@@ -425,7 +478,17 @@ class StatFys(object):
         return helpert(temp, 0)
 
     def logtt(self, temp, helpertt=None):
-        """The second derivative towards temperature of the logarithm of the partition function.
+        r"""Log function TT
+
+           The second derivative towards temperature of the logarithm of the
+           N-particle partition function divided by the number of particles.
+
+           .. math:: \frac{d^2 \left(\frac{\ln(Z_N)}{N}\right)}{dT^2}
+
+           For all contributions, except for the translational, this comes down
+           to:
+
+           .. math:: \frac{\partial^2 \ln(Z_1)}{\partial T^2}
 
            Argument:
             | ``temp`` -- the temperature
@@ -437,6 +500,27 @@ class StatFys(object):
         if helpertt is None:
             helpertt = self.helpertt
         return helpertt(temp, 0)
+
+    def logv(self, temp, helperv=None):
+        r"""Log function V
+
+           The logarithm of the single-particle partition function. In case of
+           the translational contribution it is divided by the volume:
+
+           .. math:: \frac{\ln(Z_1)}{V}
+
+           For all other cases, this is identical to the method ``log``.
+
+           Argument:
+            | ``temp`` -- the temperature
+
+           Optional argument:
+            | ``helperv`` -- an alternative implementation of helperv
+                             [default=self.helperv]
+        """
+        if helperv is None:
+            helperv = self.helperv
+        return helperv(temp, 0)
 
     def internal_energy(self, temp, helpert=None):
         """Computes the internal energy per molecule.
@@ -553,6 +637,14 @@ class StatFysTerms(StatFys):
         """See :meth:`StatFys.helpertt`."""
         return self.helpertt_terms(temp, n).sum()
 
+    def helpern(self, temp, n):
+        """See :meth:`StatFys.helpern`."""
+        return self.helpern_terms(temp, n).sum()
+
+    def helperv(self, temp, n):
+        """See :meth:`StatFys.helperv`."""
+        return self.helperv_terms(temp, n).sum()
+
     def helper_terms(self, temp, n):
         """Returns an array with all the helper results for the distinct terms.
 
@@ -573,6 +665,22 @@ class StatFysTerms(StatFys):
            This is just an array version of :meth:`StatFys.helpertt`.
         """
         raise NotImplementedError
+
+    def helpern_terms(self, temp, n):
+        """Returns an array with all the helpern results for the distinct terms.
+
+           This is just an array version of :meth:`StatFys.helpern`.
+        """
+        # by default, this is zero
+        return numpy.zeros(self.num_terms, float)
+
+    def helperv_terms(self, temp, n):
+        """Returns an array with all the helperv results for the distinct terms.
+
+           This is just an array version of :meth:`StatFys.helperv`.
+        """
+        # by default, this is the same as helper_terms
+        return self.helper_terms(temp, n)
 
     def log_terms(self, temp):
         """Returns an array with log results for the distinct terms.
@@ -628,7 +736,7 @@ class StatFysTerms(StatFys):
 
            This is just an array version of :meth:`StatFys.chemical_potential`.
         """
-        return self.chemical_potential(temp, self.helper_terms)
+        return self.chemical_potential(temp, self.helper_terms, self.helpern_terms)
 
 
 def helper_levels(temp, n, energy_levels):
@@ -748,19 +856,23 @@ class ExtTrans(Info, StatFys):
        optional (cp=False), which leads to a partition function for the NVT
        ensemble.
 
-       The translational partition function of a single d-dimensional particle
-       reads
+       **Some notes on the definition of** ``ExtTrans.log``
 
-       .. math:: Z_{1,\text{trans}} = \left(\frac{2\pi m k_B T}{h^2}\right)^{\frac{d}{2}}V,
+       The translational partition function of a single d-dimensional particle
+       reads (with NpT specific contributions in blue)
+
+       .. math:: Z_{1,\text{trans}} = \left(\frac{2\pi m k_B T}{h^2}\right)^{\frac{d}{2}}V{\color{blue}\exp\left(-\frac{PV}{k_BT}\right)},
 
        and the logarithm is
 
-       .. math:: \ln(Z_{1,\text{trans}}) = \frac{d}{2}\ln\left(\frac{2\pi m k_B T}{h^2}\right) + \ln(V).
+       .. math:: \ln(Z_{1,\text{trans}}) = \frac{d}{2}\ln\left(\frac{2\pi m k_B T}{h^2}\right)
+                          + \ln(V) {\color{blue}-\frac{PV}{k_BT}}.
 
-       ExtTrans models the logarithm of the many-body translational partition
-       per particle, in the classical limit:
+       ``ExtTrans.log`` computes the logarithm of the many-body translational
+       partition per particle, in the classical limit:
 
-       .. math:: \frac{\ln(Z_{N,\text{trans}})}{N} = \frac{\ln(\frac{1}{N!}Z_{1,\text{trans}}^N)}{N},
+       .. math:: \frac{\ln(Z_{N,\text{trans}})}{N} =
+                   \frac{\ln\left(\frac{1}{N!}Z_{1,\text{trans}}^N\right)}{N},
 
        where N is the total number of particles. Using Stirlings approximation,
        this leads to:
@@ -772,18 +884,42 @@ class ExtTrans(Info, StatFys):
        function, while the latter just remains where it is. The final
        expression is:
 
-       .. math:: \frac{\ln(Z_{N,\text{trans}})}{N} = 1+\frac{d}{2}\ln\left(\frac{2\pi m k_B T}{h^2}\right) + \ln\left(\frac{V}{N}\right).
+       .. math:: \frac{\ln(Z_{N,\text{trans}})}{N} = 1
+                      + \frac{d}{2}\ln\left(\frac{2\pi m k_B T}{h^2}\right)
+                      + \ln\left(\frac{V}{N}\right)
+                      {\color{blue}- \frac{PV}{k_BTN}}.
 
        From this derivation it is clear that the many-body effects and the
        translational part must be done together, because the separate
        contributions depend on the number of particles, which is annoying.
 
-       Note that in the case of constant pressure, all derivatives towards
-       temperature are taken at constant pressure, and there is an extra term
+       *Note:* All quantities so far are dimensionless.
 
-       .. math:: -\frac{PV}{k_BTN}
+       **Some notes on the definition of** ``ExtTrans.logv``
 
-       which becomes -1 in the case of an ideal gas.
+       For the computation of equilibrium constants and rate coefficients,
+       one makes use of
+
+       .. math:: \frac{\ln(Z_{1,\text{trans}})}{V}.
+
+       After substituting the definition of :math:`Z_{1,\text{trans}}`, this
+       becomes:
+
+       .. math:: \frac{\ln(Z_{1,\text{trans}})}{V} =
+                 \frac{d}{2}\ln\left(\frac{2\pi m k_B T}{h^2}\right)
+                 {\color{blue}-\frac{P}{k_BT}}.
+
+       The latter quantity is computed by ``ExtTrans.logv``. This is no
+       longer dimensionless, but it is an intensive quantity. The dimension
+       of the gas determines the unit of the return value:
+
+       .. math:: \text{unit} = \text{bohr}^-\text{dim}
+
+       In 3D it is a particle per volume, or a concentration.
+
+       There is only a distinction between ``log`` and ``logv`` in the case
+       if the translational contribution. In all other contributions, these
+       methods are the same.
     """
 
     def __init__(self, cp=True, gaslaw=None, dim=3, mobile=None):
@@ -803,13 +939,6 @@ class ExtTrans(Info, StatFys):
                             case of a mobile molecule adsorbed on a surface, only
                             include atom indexes of the adsorbate. The default is
                             that all atoms are mobile.
-
-           The dimension of the gas determines the unit of the partition
-           function as follows::
-
-               unit = bohr**dim/particle
-
-           In 3D it is a volume per particle, or an inverse concentration.
         """
         self.cp = cp
         if gaslaw is None:
@@ -907,6 +1036,16 @@ class ExtTrans(Info, StatFys):
         if self.cp:
             result += self.gaslaw.helpern(temp, n)
         return result
+
+    def helperv(self, temp, n):
+        r"""See :meth:`StatFys.helperv`."""
+        if temp == 0:
+            return 0.0
+        else:
+            result = 0.5*self.dim*numpy.log(2*numpy.pi*self.mass*boltzmann*temp/planck**2)
+            if self.cp:
+                result -= self.gaslaw.pressure*temp**(n-1)/boltzmann
+            return result
 
 
 class ExtRot(Info, StatFys):
@@ -1273,6 +1412,10 @@ class PartFun(Info, StatFys):
         """See :meth:`StatFys.helpern`."""
         return sum(term.helpern(temp, n) for term in self.terms)
 
+    def helperv(self, temp, n):
+        """See :meth:`StatFys.helperv`."""
+        return sum(term.helperv(temp, n) for term in self.terms)
+
     def internal_energy(self, temp):
         """Compute the internal energy.
 
@@ -1286,14 +1429,6 @@ class PartFun(Info, StatFys):
         # The molecular ground state energy is added here. It is tempting
         # to include it in the electronic part of partition function.
         return StatFys.internal_energy(self, temp) + self.energy
-
-    def entropy(self, temp):
-        """Compute the total entropy.
-
-           Arguments:
-            | ``temp`` -- the temperature
-        """
-        return StatFys.entropy(self, temp)
 
     def free_energy(self, temp):
         """Computes the free energy.
@@ -1359,18 +1494,12 @@ def compute_rate_coeff(pfs_react, pf_trans, temp, do_log=False):
          | ``do_log`` -- Return the logarithm of the rate coefficient instead of
                          just the rate coefficient itself.
     """
-    delta_A = pf_trans.free_energy(temp)
-    delta_A -= sum(pf_react.free_energy(temp) for pf_react in pfs_react)
-    log_result = -delta_A/(boltzmann*temp)
-    for pf_react in pfs_react:
-        if hasattr(pf_react, "translational"):
-            log_result += pf_react.translational.gaslaw.helper(temp,0)
-    if hasattr(pf_trans, "translational"):
-        log_result -= pf_trans.translational.gaslaw.helper(temp,0)
+    log_K = pf_trans.logv(temp)
+    log_K -= sum(pf_react.logv(temp) for pf_react in pfs_react)
     if do_log:
-        return numpy.log(boltzmann*temp/planck) + log_result
+        return numpy.log(boltzmann*temp/planck) + log_K
     else:
-        return boltzmann*temp/planck*numpy.exp(log_result)
+        return boltzmann*temp/planck*numpy.exp(log_K)
 
 
 def compute_equilibrium_constant(pfs_A, pfs_B, temp, do_log=False):
@@ -1385,17 +1514,10 @@ def compute_equilibrium_constant(pfs_A, pfs_B, temp, do_log=False):
          | ``do_log`` -- Return the logarithm of the equilibrium constant
                          instead of just the equilibrium constant itself.
     """
-    delta_A = 0.0
-    delta_A -= sum(pf_A.free_energy(temp) for pf_A in pfs_A)
-    delta_A += sum(pf_B.free_energy(temp) for pf_B in pfs_B)
-    log_K = -delta_A/(boltzmann*temp)
+    log_K = 0.0
+    log_K += sum(pf_B.logv(temp) for pf_B in pfs_B)
+    log_K -= sum(pf_A.logv(temp) for pf_A in pfs_A)
 
-    for pf_A in pfs_A:
-        if hasattr(pf_A, "translational"):
-            log_K += pf_A.translational.gaslaw.helper(temp,0)
-    for pf_B in pfs_B:
-        if hasattr(pf_B, "translational"):
-            log_K -= pf_B.translational.gaslaw.helper(temp,0)
     if do_log:
         return log_K
     else:

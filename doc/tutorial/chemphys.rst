@@ -1,6 +1,9 @@
 Chemical Physics with TAMkin
 ============================
 
+TODO: a chapter prior to this one, discussing the math of all supported
+contributions to the partition function in TAMkin.
+
 
 Macroscopic properties of molecular systems
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -301,7 +304,7 @@ meaning of the returned numbers for two common ensembles.
 ``free_energy``           Hartree/particle       Helmholtz free energy (per particle)                   Gibbs free energy (per particle)
 ``chemical_potential``    Hartree/particle       Chemical potential                                     (idem)
 ``entropy``               Hartree/particle       Entropy (per particle)                                 (idem)
-``log``                   1/particle             Logarithm of the partition function (per particles)    (idem)
+``log``                   1/particle             Logarithm of the partition function (per particle)     (idem)
 ``logt``                  1/(K*particle)         First derivative of ``log`` towards temperature        (idem)
 ``logtt``                 1/(K^2*particle)       Second derivative of ``log`` towards temperature       (idem)
 ========================= ====================== ====================================================== ====================================================
@@ -313,41 +316,6 @@ One can print out these values in a TAMkin script::
     print "The internal energy at 300K [kJ/mol]", pf.internal_energy(300)/kjmol
     print "The heat capacity at 300K [J/mol/K]", pf.heat_capacity(300)/(joule/(mol*kelvin))
 
-Unit conventions and reference values
-^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-
-Four thermodynamic functions in the table above have a poorly defined reference
-value. The problematic cases are ``free_energy``, ``chemical_potential``,
-``entropy``, ``log``. The translational contribution to these quantities
-contains a term that is proportional to
-
-.. math:: \ln\left(\frac{V}{N}\right).
-
-In principle one can only define the logarithm of a dimensionless number.
-Because the program works in some unit system, it actually computes
-
-.. math:: \ln\left(\frac{V}{NV_0}\right),
-
-where :math:`V_0` is the internal unit of volume. From the numerical
-perspective, the contribution due to the unit can be considered as a separate
-factor,
-
-.. math:: \ln\left(\frac{V}{N}\right) - \ln(V_0),
-
-which reveals that this unit convention affects the reference value of the four
-quantities. This reference `correction` may in practice be temperature
-dependent. For example, the free energy per particle is defined as:
-
-.. math:: F_1 = -k_BT\frac{\ln(Z_N)}{N},
-
-where :math:`Z_N` is the many body partition function, and :math:`N` is the
-number of particles. This gives a temperature dependent reference correction:
-
-.. math:: k_BT\ln(V_0).
-
-It is clear that genuinely physical, i.e. measurable, quantities should not have
-this weakness. This issue will return in the computation of equilibrium and rate
-constants.
 
 Poking under the hood
 ^^^^^^^^^^^^^^^^^^^^^
@@ -384,43 +352,288 @@ The CSV file contains tables with thermodynamic quantities, at the temperatures
 in the second argument of the ThermoAnalysis constructor, corresponding to the
 PartFun methods as explained the table below.
 
-==================== ============ ==========================
-Name in CSV file     Unit         ``PartFun`` method name
-==================== ============ ==========================
-Energy               kJ/mol       ``internal_energy``
-Heat capacity        J/(mol*K)    ``heat_capacity``
-Free energy          kJ/mol       ``free_energy``
-Chemical potential   kJ/mol       ``chemical_potential``
-Entropy              J/(mol*K)    ``entropy``
-log(q)               1/mol        ``log``
-d log(q) / dT        1/(mol*K)    ``logt``
-d^2 log(q) / dT^2    1/(mol*K^2)  ``logtt``
-==================== ============ ==========================
+=============================================================================== ============ ==========================
+Name in CSV file                                                                Unit         ``PartFun`` method name
+=============================================================================== ============ ==========================
+Energy                                                                          kJ/mol       ``internal_energy``
+Heat capacity                                                                   J/(mol*K)    ``heat_capacity``
+Free energy                                                                     kJ/mol       ``free_energy``
+Chemical potential                                                              kJ/mol       ``chemical_potential``
+Entropy                                                                         J/(mol*K)    ``entropy``
+log= :math:`\frac{log(Z_N)}{N}`                                                 1/mol        ``log``
+logt= :math:`\frac{\partial}{\partial T}\left(\frac{log(Z_N)}{N}\right)`        1/(mol*K)    ``logt``
+logtt= :math:`\frac{\partial^2}{\partial T^2}\left(\frac{log(Z_N)}{N}\right)`   1/(mol*K^2)  ``logtt``
+=============================================================================== ============ ==========================
 
 
 Thermodynamic equilibrium
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
+The steady state limit of a chemical reaction is completely characterized by
+the equilibrium constant. It is one of the most important quantities that can
+be derived from the partition functions in TAMkin.
+
+In the case of ideal gases, this quantity only depends on the temperature, not
+on the total pressure. For this reason, it is practically never necessary to set
+the pressure in the translational contribution to the partition function.
+
 Definition of the equilibrium constant
 --------------------------------------
 
-Unit conventions
-----------------
+McQuarry
+^^^^^^^^
+
+It is instructive to review to the definition of the equilibrium constant given
+in `Physical chemistry, a molecular approach`, by McQuarry and Simon
+[McQuarry1997]_ (page 981). For a chemical reaction of the form
+
+.. math:: \nu_A A(g) + \nu_b B(g) \rightleftharpoons \nu_C C(g) + \nu_D D(g)
+
+the equilibrium constant in terms of concentrations is defined as
+
+.. math:: K_c(T) = \frac{(Z_{1,C}/V)^{\nu_C}(Z_{1,D}/V)^{\nu_D}}
+                        {(Z_{1,A}/V)^{\nu_A}(Z_{1,V}/V)^{\nu_B}},
+
+where :math:`Z_{1,X}` is the single-particle partition function of species `X`
+and V is the total volume of the system. One can derive the equilibrium constant
+in terms of partial pressures using the ideal-gas law:
+
+.. math:: K_p(T) = K_c(T) \left(\frac{c^0k_BT}{P_0}\right)^{\nu_C+\nu_D-\nu_A-\nu_B}.
+
+Although this expressions for :math:`K_c` and :math:`K_p` are perfectly valid, they
+are only applicable to the case where all reactants and products are 3D gas phase
+particles sitting in the same reactor volume, :math:`V`. TAMkin also supports
+partition functions for gases in other dimensions, or even for systems that have
+no translational degrees of freedom at all. Moreover, for some applications, one
+needs to find the equilibrium between systems that are physically discjunct
+instead of sharing the same volume. Therefore we derive a more general
+expression in the following section that coincides with the form of McQuarry in
+the case of 3D gases.
+
+General form
+^^^^^^^^^^^^
+
+Consider again the same chemical balance,
+
+.. math:: \nu_A A + \nu_b B \rightleftharpoons \nu_C C + \nu_D D,
+
+where we dropped the labels :math:`(g)`  as we do no longer consider the
+only conventional gas phase systems. An extension with more reactions and
+products is trivial.
+
+The grand canonical partition function of this system is written as
+
+.. math:: \mathcal{Z} = \sum_{N_A} \sum_{N_B} \sum_{N_C} \sum_{N_D}
+                        Z(N_A, N_B, N_C, N_D, \ldots)
+
+where :math:`Z` is the partition function for a fixed number of particles of
+each species. We now introduce the first approximation, i.e. that the
+interaction between the particles of different species can be neglected. This
+means that the partition function :math:`Z` can be factorized into contributions
+from partition functions per species:
+
+.. math:: \mathcal{Z} = \sum_{N_A} \sum_{N_B} \sum_{N_C} \sum_{N_D}
+                        Z_A(N_A, \ldots) Z_B(N_B, \ldots)
+                        Z_C(N_C, \ldots) Z_D(N_D, \ldots)
+
+where :math:`Z_X(N_X, \ldots)` is the parition function of a system with
+:math:`N_X` reactants of species `X`. We do not need to know in detail what
+kind of partition function :math:`Z_X` represents. It may be an NVT, NpT or any
+other ensemble with a fixed number of particles.
+
+The probability of a certain mixture of reactants is proportional to the product
+of fixed particle partition functions:
+
+.. math:: p(N_A, N_B, N_C, N_D) \propto Z_A(N_A, \ldots) Z_B(N_B, \ldots) Z_C(N_C, \ldots) Z_D(N_D, \ldots)
+
+Now assume that we start from a reference state
+
+.. math:: (N^0_A, N^0_B, N^0_C, N^0_D).
+
+When we introduce a reaction coordinate :math:`\xi`, all other states
+reachable through the chemical reaction can be written as
+
+.. math:: (N^0_A - \xi\nu_A, N^0_B - \xi\nu_B, N^0_C + \xi\nu_C, N^0_D + \xi\nu_D)
+
+To find the most probable system, the chemical equilibrium, we must find the
+state that maximizes the probability :math:`p(N_A, N_B, N_C, N_D)`.
+Mathematically, this means that we want to find a non-trivial solution to the
+equation
+
+.. math:: \frac{\partial p(N^0_A - \xi_{\text{eq}}\nu_A,
+                           N^0_B - \xi_{\text{eq}}\nu_B,
+                           N^0_C + \xi_{\text{eq}}\nu_C,
+                           N^0_D + \xi_{\text{eq}}\nu_D)}
+               {\partial \xi_{\text{eq}}} = 0.
+
+To solve this problem, we rephrase it in terms of free energies, i.e. using
+:math:`F_X = -k_Bt\ln(Z_X)` and the fact that the logarithmic function is
+monotonous. The most probably state is therefore the state that minimizes the
+total free energy.
+
+.. math:: \frac{\partial (F_A(N^0_A - \xi_{\text{eq}}\nu_A, \ldots)
+                         +F_B(N^0_B - \xi_{\text{eq}}\nu_B, \ldots)
+                         +F_C(N^0_C + \xi_{\text{eq}}\nu_C, \ldots)
+                         +F_D(N^0_D + \xi_{\text{eq}}\nu_D, \ldots)}
+               {\partial \xi_{\text{eq}}} = 0
+
+Using the the definition of the chemical potential, :math:`\mu(N_X, \ldots) =
+\frac{\partial F_X(N_X, \ldots)}{\partial N_X}`, we end up with a very familiar
+expression for the equilibrium condition:
+
+.. math:: \nu_C \mu_C(N_{C,\text{eq}}, \ldots) + \nu_D \mu_D(N_{D,\text{eq}}, \ldots)
+          - \nu_A \mu_A(N_{A,\text{eq}}, \ldots) - \nu_B \mu_B(N_{B,\text{eq}}, \ldots) = 0
+
+where :math:`N_{X, \text{eq}}` is a shorthand for :math:`N^0_{X} +
+\xi_{\text{eq}}\nu_X`. Now we rephrase these equations back in terms of the
+partition functions. We rely on the classical gas limit of many-particle
+partition function:
+
+.. math::
+    :nowrap:
+
+    \begin{align*}
+      \mu_X & = -k_BT \left(\frac{\partial \ln(Z_X(N_X, \ldots)}{\partial N_X}\right) \\
+            & = -k_BT \left(\frac{\partial \ln\left(\frac{Z^{N_X}_X(1, \ldots)}{N_X!}\right)}{\partial N_X}\right) \\
+            & = -k_BT \left(\frac{\partial (N_X\ln(Z_X(1, \ldots) - N_X\ln(N_X) + N_X)}{\partial N_X}\right) \\
+            & = -k_BT \ln\left(\frac{Z_X(1, \ldots)}{N_X}\right)
+    \end{align*}
+
+**TODO:** This only valid when :math:`Z_X(1, \ldots)` does not explicitly depend
+on the :math:`N_X`, i.e. the density in the case of gases. This assumption is
+only valid in the ideal-gas or non-interacting limit. Should we generalize here
+for non-ideal gases?
+
+This expression for the chemical potential can be plugged back into the
+equilibrium condition to get
+
+.. math:: \frac{N_{C,\text{eq}}^{\nu_C}\,N_{D,\text{eq}}^{\nu_D}}
+               {N_{A,\text{eq}}^{\nu_A}\,N_{B,\text{eq}}^{\nu_B}} =
+          \frac{Z_C(1, \ldots)^{\nu_C}\,Z_D(1, \ldots)^{\nu_D}}
+               {Z_A(1, \ldots)^{\nu_A}\,Z_B(1, \ldots)^{\nu_B}},
+
+which is a standard text-book result. Now comes the hard part, where we have to
+keep the derivation general enough to cover 3D gases, 2D gases, and systems
+without translational freedom. In each case we must introduce a definition of
+a density, which is required for a general expression of :math:`K_c`:
+
+* **3D gas**: :math:`\rho_X = N_X/V_X`, where :math:`V_X` is the volume of the
+  system containing particles of species X.
+
+* **2D gas**: :math:`\rho_X = N_X/A_X`, where :math:`A_X` is the area of the
+  system containing particles of species X.
+
+* **Non-translational**: :math:`\rho_X = N_X`, which is simply the occupation
+  number of the site X, or the probability that it is occupied. In the classical
+  limit, this number is always well below unity.
+
+In analogy, we must introduce different types of `dimensionless` partition
+functions:
+
+* **3D gas**: :math:`Z'_X(1, \ldots) = Z_X(1, \ldots)/V_X`, where :math:`V_X` is
+  the volume of the system containing particles of species X.
+
+* **2D gas**: :math:`Z'_X(1, \ldots) = Z_X(1, \ldots)/A_X`, where :math:`A_X` is
+  the area of the system containing particles of species X.
+
+* **Non-translational**: :math:`Z'_X(1, \ldots) = Z_X(1, \ldots)`.
+
+We can finally write down the general form of :math:`K_c`:
+
+.. math:: K_c(T) = \frac{\rho_{C,\text{eq}}^{\nu_C}\,\rho_{D,\text{eq}}^{\nu_D}}
+                        {\rho_{A,\text{eq}}^{\nu_A}\,\rho_{B,\text{eq}}^{\nu_B}}
+                 = \frac{Z'^{\nu_C}_C(1, \ldots)\,Z'^{\nu_D}_D(1, \ldots)}
+                        {Z'^{\nu_A}_A(1, \ldots)\,Z'^{\nu_B}_B(1, \ldots)}
+
+
+Implementation in TAMkin
+^^^^^^^^^^^^^^^^^^^^^^^^
+
+To guarantee the numerical stability of the results obtained with TAMkin,
+logarithms of partition functions are computed in the ``PartFun`` object and
+its contributions. These can be used to compute the logarithm of the equilibrium
+constant:
+
+.. math:: \ln(K_c(T)) = \nu_C\ln(Z'_C(1, \ldots)) + \nu_D\ln(Z'_D(1, \ldots))
+                       -\nu_A\ln(Z'_A(1, \ldots)) - \nu_B\ln(Z'_B(1, \ldots))
+
+The method ``PartFun.logv`` computes the quantity :math:`\ln(Z'_X(1, \ldots))`.
+The same method can be found in all the contributions to the partition function.
+For all contributions, except the translational one, the method ``logv`` and
+``log`` are identical.
+
+
+The unit of :math:`K_c`
+^^^^^^^^^^^^^^^^^^^^^^^
+
+By construction :math:`K_c` is no longer a dimensionless quantity. It's unit is
+defined by the partition functions that go into the equilibrium constant.
+
+- For each gas phase reactant, there is a factor bohr\ :sup:`d`, where `d` is
+  the dimension of the gas.
+- For a each gas phase product, there is a factor bohr\ :sup:`-d`, where `d` is
+  the dimension of the gas.
+
+In SI units, this becomes:
+
+- For each gas phase reactant, there is a factor meter\ :sup:`d` mol\ :sup:`-1`,
+  where `d` is the dimension of the gas.
+- For a each gas phase product, there is a factor meter\ :sup:`-d` mol, where
+  `d` is the dimension of the gas.
+
+The standard change in free energy
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+TODO
+
 
 Computation of the equilibrium constant
 ---------------------------------------
 
+Given a list of partition functions of reactants (``pfs_react``) and a list of
+product partition functions (``pfs_prod``), the equilibrium constant is computed
+at a certain temperature, ``temp``, as follows::
+
+    K = compute_equilibrium_constant(pfs_react, pfs_prod, temp)
+
+This function takes one optional argument: ``do_log``, which is by default
+``False``. When set to True, the logarithm of the partition function is
+returned.
+
+Computation
+
+
+Computation of the standard change in free energy
+-------------------------------------------------
+
+TODO
+
+
 ThermodynamicModel objects
 --------------------------
+
+For later reference it is convenient to mention the ``ThermodynamicModel``
+class. It is a simple object oriented representation of a thermodynamic
+equilibrium.
+
+Given a list of partition functions of reactants (``pfs_react``) and a list of
+product partition functions (``pfs_prod``), a ``ThermodynamicModel`` object is
+created as follows::
+
+    tm = ThermodynamicModel(pfs_react, pfs_prod)
+
+This can be used to compute the equilibrium constant as function of the
+temperature::
+
+    print "Equilibrium constant at 300K.", tm.compute_equilibrium_constant(300)
+
+**TODO:** Add the standard change in free energy.
 
 Reaction kinetics
 ~~~~~~~~~~~~~~~~~
 
 Definition of the equilibrium constant
 --------------------------------------
-
-Unit conventions
-----------------
 
 Computation of the equilibrium constant
 ---------------------------------------

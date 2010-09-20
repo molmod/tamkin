@@ -34,9 +34,10 @@ Library Reference
    reference/aux.rst
 
 
-Indices and tables
-------------------
+Indices, tables and refereces
+-----------------------------
 
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
+* :ref:`references`

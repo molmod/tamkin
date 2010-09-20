@@ -225,6 +225,8 @@ latex_documents = [
 
 # -- Configuration of extensions -----------------------------------------------
 
+pngmath_latex_preamble = r"\usepackage{color}"
+
 autoclass_content = "both"
 
 inheritance_graph_attrs = {"rankdir": "TB", "ratio": "compress", "fontzise": 14}

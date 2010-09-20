@@ -312,6 +312,41 @@ One can print out these values in a TAMkin script::
     print "The internal energy at 300K [kJ/mol]", pf.internal_energy(300)/kjmol
     print "The heat capacity at 300K [J/mol/K]", pf.heat_capacity(300)/(joule/(mol*kelvin))
 
+Unit conventions and reference values
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+Four thermodynamic functions in the table above have a poorly defined reference
+value. The problematic cases are ``free_energy``, ``chemical_potential``,
+``entropy``, ``log``. The translational contribution to these quantities
+contains a term that is proportional to
+
+.. math:: \ln\left(\frac{V}{N}\right).
+
+In principle one can only define the logarithm of a dimensionless number.
+Because the program works in some unit system, it actually computes
+
+.. math:: \ln\left(\frac{V}{NV_0}\right),
+
+where :math:`V_0` is the internal unit of volume. From the numerical
+perspective, the contribution due to the unit can be considered as a separate
+factor,
+
+.. math:: \ln\left(\frac{V}{N}\right) - \ln(V_0),
+
+which reveals that this unit convention affects the reference value of the four
+quantities. This reference `correction` may in practice be temperature
+dependent. For example, the free energy per particle is defined as:
+
+.. math:: F_1 = -k_BT\frac{\ln(Z_N)}{N},
+
+where :math:`Z_N` is the many body partition function, and :math:`N` is the
+number of particles. This gives a temperature dependent reference correction:
+
+.. math:: k_BT\ln(V_0).
+
+It is clear that genuinely physical, i.e. measurable, quantities should not have
+this weakness. This issue will return in the computation of equilibrium and rate
+constants.
 
 Poking under the hood
 ^^^^^^^^^^^^^^^^^^^^^
@@ -359,8 +394,6 @@ log(q)               1/mol        ``log``
 d log(q) / dT        1/(mol*K)    ``logt``
 d^2 log(q) / dT^2    1/(mol*K^2)  ``logtt``
 ==================== ============ ==========================
-
-TODO: explain the ambiguity of the units of the logarithmic functions.
 
 
 Thermodynamic equilibrium

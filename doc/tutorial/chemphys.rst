@@ -285,21 +285,23 @@ Overview of standard quantities
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 Thermodynamic quantities can be computed for a given ``PartFun`` object by calling
-the appropriate methods. The following table relates the methods to the meaning
-of the returned numbers for two common ensembles.
+the appropriate methods. All extensive quantities, i.e. all quantities except
+the chemical potential, are transformed into intensive quantities by dividing
+through the number of particles. The following table relates the methods to the
+meaning of the returned numbers for two common ensembles.
 
-========================= ========================================================================= =====================================
-``PartFun`` method        NVT Ensemble (3D gas)                                                     NpT Ensemble (3D gas)
-========================= ========================================================================= =====================================
-``log``                   Logarithm of the partition function divided by the number of particles    (idem)
-``logt``                  First derivative of ``log`` towards temperature                           (idem)
-``logtt``                 Second derivative of ``log`` towards temperature                          (idem)
-``internal_energy``       Internal energy                                                           Enthalpy
-``heat_capacity``         Heat capacity at constant volume                                          Heat capacity at constant pressure
-``free_energy``           Helmholtz free energy                                                     Gibbs free energy
-``chemical_potential``    Chemical potential                                                        (idem)
-``entropy``               Entropy                                                                   (idem)
-========================= ========================================================================= =====================================
+========================= ====================== ====================================================== ====================================================
+``PartFun`` method        Internal unit          NVT Ensemble (3D gas)                                  NpT Ensemble (3D gas)
+========================= ====================== ====================================================== ====================================================
+``internal_energy``       Hartree/particle       Internal energy (per particle)                         Enthalpy (per particle)
+``heat_capacity``         Hartree/(K*particle)   Heat capacity at constant volume (per particle)        Heat capacity at constant pressure (per particle)
+``free_energy``           Hartree/particle       Helmholtz free energy (per particle)                   Gibbs free energy (per particle)
+``chemical_potential``    Hartree/particle^2     Chemical potential                                     (idem)
+``entropy``               Hartree/particle       Entropy (per particle)                                 (idem)
+``log``                   1/particle             Logarithm of the partition function (per particles)    (idem)
+``logt``                  1/(K*particle)         First derivative of ``log`` towards temperature        (idem)
+``logtt``                 1/(K^2*particle)       Second derivative of ``log`` towards temperature       (idem)
+========================= ====================== ====================================================== ====================================================
 
 One can print out these values in a TAMkin script::
 
@@ -351,9 +353,9 @@ Energy               kJ/mol       ``internal_energy``
 Free energy          kJ/mol       ``free_energy``
 Heat capacity        J/(mol*K)    ``heat_capacity``
 Entropy              J/(mol*K)    ``entropy``
-log(q)               1            ``log``
-d log(q) / dT        1/K          ``logt``
-d^2 log(q) / dT^2    1/K^2        ``logtt``
+log(q)               1/mol        ``log``
+d log(q) / dT        1/(mol*K)    ``logt``
+d^2 log(q) / dT^2    1/(mol*K^2)  ``logtt``
 ==================== ============ ==========================
 
 TODO: explain the ambiguity of the units of the logarithmic functions.

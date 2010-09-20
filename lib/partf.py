@@ -821,6 +821,14 @@ class ExtTrans(Info, StatFys):
         else:
             self.mass = nma.masses[self.mobile].sum()
 
+    def set_pressure(self, pressure):
+        """Update the pressure setting in the gaslaw.
+
+           Argument:
+            | ``pressure`` -- The new pressure.
+        """
+        self.gaslaw.pressure = pressure
+
     def dump(self, f):
         """See :meth:`Info.dump`."""
         Info.dump(self, f)

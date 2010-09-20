@@ -134,13 +134,14 @@ values for these options are suitable for most applications.
 * **Options for IdealGasLaw**. See :class:`tamkin.partf.IdealGasLaw` for the
   details. The ideal gas law has two optional parameters.
 
-  ``default_pressure`` (default ``default_pressure=None``).
-    The default pressure is used when the pressure is not explicitly given in
-    the computations as demonstrated below. The default value of
-    ``default_pressure`` is 1 bar for 3D gases, 4.86e-05 atomic units for 2D
-    gases (surface tension of water) and 1.0 atomic units for any other
-    dimension. *Note:* several quantities derived from the partition function do
-    not explicitly depend on the pressure in the case of ideal gases.
+  ``pressure`` (default ``pressure=None``).
+    The default value of ``pressure`` is 1 bar for 3D gases, 4.86e-05 atomic
+    units for 2D gases (surface tension of water) and 1.0 atomic units for any
+    other dimension. *Note:* several quantities derived from the partition
+    function do not explicitly depend on the pressure in the case of ideal
+    gases. In case you want to see the pressure dependence, use the method
+    ``ExtTrans.set_pressure()`` and compute the thermodynamic quantities
+    afterwards.
 
   ``dim`` (default ``dim=3``).
     The dimension of the gas. This must match the option ``dim`` given to

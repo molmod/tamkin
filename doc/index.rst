@@ -12,18 +12,21 @@ Tutorial
 --------
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
+   :numbered:
 
    tutorial/install.rst
    tutorial/getting_started.rst
    tutorial/gendata.rst
+   tutorial/chemphys.rst
    tutorial/development.rst
 
 Library Reference
 -----------------
 
 .. toctree::
-   :maxdepth: 2
+   :maxdepth: 3
+   :numbered:
 
    reference/io.rst
    reference/nma.rst

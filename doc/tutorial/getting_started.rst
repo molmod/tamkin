@@ -38,12 +38,12 @@ on this input, one of the predefined routes through the program is followed and
 the output is written to an output file, again with a (hopefully) fixed grammar
 and syntax.
 
-In our vision this conventional approach is frustrating and hampers the
-creativity of the researcher. It troubles the implementation new methods on top
-of existing algorithms and the use existing implementations in a different way
-than it was originally envisioned by the developer. TAMkin is designed to
-surmount these weaknesses and gives its users more power and flexibility when
-solving physico-chemical research questions.
+In our vision, this conventional approach is frustrating and hampers the
+creativity of the researcher. It troubles the implementation of new methods on
+top of existing algorithms and it disables the use of existing implementations
+in a different way than it was originally envisioned by the developer. TAMkin is
+designed to overcome these weaknesses and gives its users more power and
+flexibility when solving physico-chemical research questions.
 
 The big difference is that TAMkin is a `software library` instead of a
 `program`. It is entirely written in Python, which makes it easy to use: one
@@ -75,7 +75,7 @@ several advantages:
    <https://molmod.ugent.be/code/wiki/MolMod>`_, `MatPlotLib
    <http://matplotlib.sourceforge.net/>`_ and `SciPy <http://www.scipy.org>`_.
 
-The TAMkin philosophy has one downside: as soon as one want to go a beyond the
+The TAMkin philosophy has one downside: as soon as one want to go beyond the
 standard functionality of TAMkin, one must get familiar with the Python
 language. However, learning Python is something one will never regret. Python is
 a great tool for many tasks in computational chemistry, also far beyond the

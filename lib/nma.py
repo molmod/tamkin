@@ -103,24 +103,26 @@ class NMA(object):
     def __init__(self, molecule, treatment=None, do_modes=True):
         """
            Arguments:
-            | molecule  --  a molecule object obtained from a routine in
-                            tamkin.io
+            | ``molecule`` -- a molecule object obtained from a routine in
+                              :mod:`tamkin.io`
 
            Optional arguments:
-            | treatment  --  an instance of a Treatment subclass
-                             [default=Full()]
-            | do_modes  --  When False, only the frequencies are computed. When
-                            True, also the normal modes are computed.
-                            [default=True]
+            | ``treatment`` -- an instance of a Treatment subclass
+                               [default=Full()]
+            | ``do_modes`` -- When False, only the frequencies are computed.
+                              When True, also the normal modes are computed.
+                              [default=True]
 
            Referenced attributes of molecule:
-            | mass, masses, masses3, numbers, coordinates, inertia_tensor,
-              multiplicity, symmetry_number, periodic, energy
+              ``mass``, ``masses``, ``masses3``, ``numbers``, ``coordinates``,
+              ``inertia_tensor``, ``multiplicity``, ``symmetry_number``,
+              ``periodic``, ``energy``
 
            Extra attributes:
-            | freqs  --  array of frequencies
-            | modes  --  array of mass-weighted Cartesian modes (if do_modes is True)
-            | zeros  --  list of indices of zero frequencies
+            | ``freqs`` -- array of frequencies
+            | ``modes`` -- array of mass-weighted Cartesian modes (if do_modes
+                           is True)
+            | ``zeros`` -- list of indices of zero frequencies
 
         """
         if treatment == None:
@@ -218,14 +220,14 @@ class NMA(object):
         """Write the NMA results to a human-readable checkpoint file.
 
            Argument:
-            | filename  --  the file to write to
+            | ``filename`` -- the file to write to
 
            Optional argument:
-            | fields  --  define the selection of attributes to be written to
-                          file. This is one of 'all' (all attributes), 'modes'
-                          (only attributes required for nmatools.py), or 'partf'
-                          (only attributes required for the construction of
-                          a partition function)
+            | ``fields`` -- define the selection of attributes to be written to
+                            file. This is one of 'all' (all attributes), 'modes'
+                            (only attributes required for nmatools.py), or
+                            'partf' (only attributes required for the
+                            construction of a partition function)
         """
         if fields == 'all':
             data = dict((key, val) for key, val in self.__dict__.iteritems())
@@ -245,7 +247,7 @@ class NMA(object):
         """Construct an NMA object from a previously saved checkpoint file
 
            Arguments:
-            | filename  --  the file to load from
+            | ``filename`` -- the file to load from
 
            Usage::
 
@@ -275,12 +277,12 @@ class AtomDivision(object):
     def __init__(self, transformed, free, fixed):
         """
            Arguments:
-            | transformed  --  the atom indices of the atoms whose coordinates
-                               are transformed into non-Cartesian coordinates.
-            | free  --  the atom indices that are not transformed and retained
-                        as Cartesian coordinates in the new set of coordinates
-            | fixed  --  the atoms that are not used for the new coordinates,
-                         i.e. their positions are constrained.
+            | ``transformed`` -- the atom indices of the atoms whose coordinates
+                                 are transformed into non-Cartesian coordinates.
+            | ``free`` -- the atom indices that are not transformed and retained
+                          as Cartesian coordinates in the new set of coordinates
+            | ``fixed`` -- the atoms that are not used for the new coordinates,
+                           i.e. their positions are constrained.
         """
         self.transformed = numpy.array(transformed, int)
         self.free = numpy.array(free, int)
@@ -322,17 +324,17 @@ class Transform(object):
     def __init__(self, matrix, atom_division=None):
         """
            Arguments:
-             | matrix -- the linear transformation from the transformed
-                         displacements to Cartesian coordinates.
+             | ``matrix`` -- the linear transformation from the transformed
+                             displacements to Cartesian coordinates.
 
            Optional argument
-             | atom_division -- an AtomDivision instance, when not given all
-                                atom coordinates are `transformed`
+             | ``atom_division`` -- an AtomDivision instance, when not given all
+                                    atom coordinates are `transformed`
 
            Attributes:
-             |  matrix  --  see above
-             |  scalars  --  diagonal part of the linear transformation (only
-                             used with mass-weighted transformations)
+             | ``matrix`` -- see above
+             | ``scalars`` -- diagonal part of the linear transformation (only
+                              used with mass-weighted transformations)
         """
         if matrix is None:
             matrix = numpy.zeros((0,0), float)
@@ -366,13 +368,13 @@ class Transform(object):
         """Transform small displacement vectors from new to Cartesian coordinates.
 
            Argument:
-            | modes  -- Small (mass-weighted) displacements (or modes) in
-                        internal coordinates (float numpy array with shape KxM,
-                        where K is the number of internal coordinates and M is
-                        the number of modes)
+            | ``modes`` -- Small (mass-weighted) displacements (or modes) in
+                           internal coordinates (float numpy array with shape
+                           KxM, where K is the number of internal coordinates
+                           and M is the number of modes)
 
            Returns:
-            | Small non-mass-weighted displacements (or modes) in Cartesian
+              Small non-mass-weighted displacements (or modes) in Cartesian
               coordinates (float numpy array with shape 3NxM, where N is the
               number of Cartesian coordinates and M is the number of modes)
 
@@ -415,7 +417,7 @@ class Transform(object):
            coordinates.
 
            Argument:
-            | mass_matrix  --  A MassMatrix instance for the new coordinates
+            | ``mass_matrix`` -- A MassMatrix instance for the new coordinates
         """
         # modifies the transformation matrix in place:
         # the transformation matrix always transforms to non-mass-weighted Cartesian coords
@@ -434,18 +436,18 @@ class MassMatrix(object):
     def __init__(self, *args):
         """
            Arguments, if one is given and it is a two-dimensional matrix:
-             | mass_block -- the mass matrix associated with the transformed
-                             coordinates
+            | ``mass_block`` -- the mass matrix associated with the transformed
+                                coordinates
 
            Arguments, if one is given and it is a one-dimensional matrix:
-             | mass_diag -- the diagonal of the mass matrix associated with the
-                            free atoms (each mass appears three times)
+            | ``mass_diag`` -- the diagonal of the mass matrix associated with
+                               the free atoms (each mass appears three times)
 
            Arguments, if two are given:  ! Attention for order of arguments.
-             | mass_block -- the mass matrix associated with the transformed
-                            coordinates
-             | mass_diag -- the diagonal of the mass matrix associated with the
-                           free atoms (each mass appears three times)
+            | ``mass_block`` -- the mass matrix associated with the transformed
+                                coordinates
+            | ``mass_diag`` -- the diagonal of the mass matrix associated with
+                               the free atoms (each mass appears three times)
 
            The mass of the fixed atoms does not really matter here.
         """
@@ -502,9 +504,9 @@ class Treatment(object):
         """Calls compute_hessian and compute_zeros (in order) with same arguments
 
            Arguments:
-            | molecule  --  a Molecule instance
-            | do_modes  --  a boolean indicates whether the modes have to be
-                            computed
+            | ``molecule`` -- a Molecule instance
+            | ``do_modes`` -- a boolean indicates whether the modes have to be
+                              computed
         """
         self.compute_hessian(molecule, do_modes)
         self.compute_zeros(molecule, do_modes)
@@ -513,8 +515,8 @@ class Treatment(object):
         """To be computed in derived classes
 
            Arguments:
-            | molecule  --  a Molecule instance
-            | do_modes  --  a boolean indicates whether the modes have to be
+            | ``molecule`` -- a Molecule instance
+            | ``do_modes`` -- a boolean indicates whether the modes have to be
 
            Attributes to be computed:
 
@@ -536,8 +538,8 @@ class Treatment(object):
         """To be computed in derived classes
 
            Arguments:
-            | molecule  --  a Molecule instance
-            | do_modes  --  a boolean indicates whether the modes have to be
+            | ``molecule`` -- a Molecule instance
+            | ``do_modes`` -- a boolean indicates whether the modes have to be
 
            Attributes to be computed:
 
@@ -556,8 +558,8 @@ class Full(Treatment):
     def __init__(self, svd_threshold=1e-5):
         """
            Optional argument:
-            | svd_threshold  --  threshold for detection of deviations for
-                                 linearity [default=1e-5]
+            | ``svd_threshold`` -- threshold for detection of deviations for
+                                   linearity [default=1e-5]
         """
         self.svd_threshold = svd_threshold
         Treatment.__init__(self)
@@ -613,13 +615,14 @@ class ConstrainExt(Treatment):
     def __init__(self, gradient_threshold=1e-4, svd_threshold=1e-5):
         """
            Optional arguments:
-             | gradient_threshold  --  The maximum allowed value of the components
-                                       of the Cartesian gradient in atomic units.
-                                       When the threshold is exceeded, a
-                                       ValueError is raised. [default=1-e4]
-             | svd_threshold  --  threshold for detection of deviations for
-                                  linearity (needed to construct a basis of
-                                  external degrees of freedom.)
+            | ``gradient_threshold`` -- The maximum allowed value of the
+                                        components of the Cartesian gradient in
+                                        atomic units. When the threshold is
+                                        exceeded, a ValueError is raised.
+                                        [default=1-e4]
+            | ``svd_threshold`` -- threshold for detection of deviations for
+                                   linearity (needed to construct a basis of
+                                   external degrees of freedom.)
         """
         self.gradient_threshold = gradient_threshold
         self.svd_threshold = svd_threshold
@@ -685,11 +688,11 @@ class PHVA(Treatment):
     def __init__(self, fixed, svd_threshold=1e-5):
         """
            Argument:
-             | fixed  --  a list with fixed atoms, counting starts from zero.
+            | ``fixed`` -- a list with fixed atoms, counting starts from zero.
 
            Optional argument:
-             | svd_threshold  --  threshold for detection of deviations for
-                                  linearity
+            | ``svd_threshold`` -- threshold for detection of deviations for
+                                   linearity
         """
         # QA:
         if len(fixed) == 0:
@@ -786,11 +789,12 @@ class VSA(Treatment):
     def __init__(self, subs, svd_threshold=1e-5):
         """
            One argument:
-             | subs  --  a list with the subsystem atoms, counting starts from zero.
+            | ``subs`` -- a list with the subsystem atoms, counting starts from
+                          zero.
 
            Optional argument:
-             | svd_threshold  --  threshold for detection of deviations for
-                                  linearity
+            | ``svd_threshold`` -- threshold for detection of deviations for
+                                   linearity
         """
         # QA:
         if len(subs) == 0:
@@ -916,11 +920,12 @@ class VSANoMass(Treatment):
     def __init__(self, subs, svd_threshold=1e-5):
         """
            One argument:
-             | subs  --  a list with the subsystem atoms, counting starts from zero.
+            | ``subs`` -- a list with the subsystem atoms, counting starts from
+                          zero.
 
            Optional argument:
-             | svd_threshold  --  threshold for detection of deviations for
-                                  linearity
+            | ``svd_threshold`` -- threshold for detection of deviations for
+                                   linearity
         """
         # QA:
         if len(subs) == 0:
@@ -1060,13 +1065,13 @@ class MBH(Treatment):
     def __init__(self, blocks, do_gradient_correction=True, svd_threshold=1e-5):
         """
            One argument:
-             | blocks  --  a list of blocks, each block is a list of atoms,
-                           counting starts from zero.
+            | ``blocks`` -- a list of blocks, each block is a list of atoms,
+                            counting starts from zero.
 
            Optional arguments:
-             | do_gradient_correction  --  boolean, whether gradient correction
-                                           to MBH should be added
-             | svd_threshold  --  threshold for zero singular values in svd
+            | ``do_gradient_correction`` -- boolean, whether gradient correction
+                                            to MBH should be added
+            | ``svd_threshold`` -- threshold for zero singular values in svd
         """
         # QA:
         if len(blocks) == 0:
@@ -1319,12 +1324,12 @@ class Blocks(object):
     def __init__(self,blocks,molecule,svd_threshold):
         """
         Arguments:
-          | blocks --   a list of lists of atoms
-                       [ [at1,at5,at3], [at4,at5], ...]
-                       with a list of atoms for each block
-          | molecule -- Molecule object, necessary for N (total nb
-                        of atoms) and positions (linearity of blocks).
-          | svd_trheshold -- threshold for zero singular values in svd
+         | ``blocks`` -- a list of lists of atoms
+                         [ [at1,at5,at3], [at4,at5], ...]
+                         with a list of atoms for each block
+         | ``molecule`` -- Molecule object, necessary for N (total nb of atoms)
+                           and positions (linearity of blocks).
+         | ``svd_trheshold`` -- threshold for zero singular values in svd
         """
         N = molecule.size
         # check for empty blocks and single-atom-blocks
@@ -1462,13 +1467,14 @@ class PHVA_MBH(MBH):
     def __init__(self, fixed, blocks, do_gradient_correction=True, svd_threshold=1e-5):
         """
            Two arguments:
-             | fixed  --  a list with fixed atoms, counting starts from zero.
-             | blocks  --  a list of blocks, each block is a list of atoms
+            | ``fixed`` -- a list with fixed atoms, counting starts from zero.
+            | ``blocks`` -- a list of blocks, each block is a list of atoms
 
            Optional arguments:
-             | svd_threshold  --  threshold for zero singular values in svd
-             | do_gradient_correction  --  boolean, whether gradient correction
-                                           to MBH part should be added [default True]
+            | ``svd_threshold`` -- threshold for zero singular values in svd
+            | ``do_gradient_correction`` -- boolean, whether gradient correction
+                                            to MBH part should be added
+                                            [default=True]
         """
         # QA:
         if len(fixed) == 0:
@@ -1554,14 +1560,15 @@ class Constrain(Treatment):
     def __init__(self, constraints, do_gradient_correction=True, svd_threshold=1e-5):
         """
            One argument:
-             | constraints  --  a list with constraints of internal coordinates:
-                                [at1,at2] to constrain a distance,
-                                [at1,at2,at3] to constrain an angle,
-                                [at1,at2,at3,at4] to constrain a dihedral angle.
+            | ``constraints`` -- a list with constraints of internal coordinates:
+                                 [at1,at2] to constrain a distance,
+                                 [at1,at2,at3] to constrain an angle,
+                                 [at1,at2,at3,at4] to constrain a dihedral angle.
 
            Optional:
-             | do_gradient_correction  --  whether gradient correction should be applied
-             | svd_threshold  --  threshold for singular value decomposition
+            | ``do_gradient_correction`` -- whether gradient correction should
+                                            be applied
+            | ``svd_threshold`` -- threshold for singular value decomposition
         """
         # QA:
         if len(constraints) == 0:

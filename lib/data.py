@@ -77,30 +77,30 @@ class Molecule(BaseMolecule):
     def __init__(self, numbers, coordinates, masses, energy, gradient, hessian, multiplicity=None, symmetry_number=None, periodic=False, title=None, graph=None, symbols=None, unit_cell=None):
         """
            Arguments:
-            | numbers  --  The atom numbers (integer numpy array with shape N)
-            | coordinates  --  the atom coordinates in Bohr (float numpy array
-                               with shape Nx3)
-            | masses  --  The atomic masses in atomic units (float numpy array
-                          with shape N)
-            | energy  --  The molecular energy in Hartree
-            | gradient  --  The gradient of the energy, i.e. the derivatives
-                            towards Cartesian coordinates, in atomic units
-                            (float numpy array with shape Nx3)
-            | hessian  --  The hessian of the energy, i.e. the matrix with
-                           second order derivatives towards Cartesian
-                           coordinates, in atomic units (float numpy array with
-                           shape 3Nx3N)
-            | multiplicity  --  The spin multiplicity of the electronic system
+            | ``numbers`` -- The atom numbers (integer numpy array with shape N)
+            | ``coordinates`` -- the atom coordinates in Bohr (float numpy array
+                                 with shape Nx3)
+            | ``masses`` -- The atomic masses in atomic units (float numpy array
+                            with shape N)
+            | ``energy`` -- The molecular energy in Hartree
+            | ``gradient`` -- The gradient of the energy, i.e. the derivatives
+                              towards Cartesian coordinates, in atomic units
+                              (float numpy array with shape Nx3)
+            | ``hessian`` -- The hessian of the energy, i.e. the matrix with
+                             second order derivatives towards Cartesian
+                             coordinates, in atomic units (float numpy array
+                             with shape 3Nx3N)
+            | ``multiplicity`` -- The spin multiplicity of the electronic system
 
            Optional arguments:
-            | symmetry_number  --  The rotational symmetry number, None when not
-                                   known or computed [default=None]
-            | periodic  --  True when the system is periodic in three dimensions
-                            [default=False]
-            | title  --  The title of the system
-            | graph  --  The molecular graph of the system
-            | symbols  --  A list with atom symbols
-            | unit_cell  --  The unit cell vectors for periodic structures
+            | ``symmetry_number`` -- The rotational symmetry number, None when
+                                     not known or computed [default=None]
+            | ``periodic`` -- True when the system is periodic in three
+                              dimensions [default=False]
+            | ``title`` -- The title of the system
+            | ``graph`` -- The molecular graph of the system
+            | ``symbols`` -- A list with atom symbols
+            | ``unit_cell`` -- The unit cell vectors for periodic structures
         """
         BaseMolecule.__init__(self, numbers, coordinates, title, masses, graph, symbols, unit_cell)
         self.energy = energy
@@ -146,19 +146,19 @@ class Molecule(BaseMolecule):
         """Create a submolecule with a selection of atoms
 
            Argument:
-            | selected  --  list of atom indices, numbering starts at 0
+            | ``selected`` -- list of atom indices, numbering starts at 0
 
            Optional arguments:
-            | energy  --  Molecular electronic energy
-            | multiplicity  --  The spin multiplicity of the electronic system
-            | symmetry_number  --  The rotational symmetry number. Inherited, 0 when not
-                                   known or computed [default=0]
-            | periodic  --  True when the system is periodic in three dimensions
-                            [default=False]
-            | title  --  The title of the system
-            | graph  --  The molecular graph of the system
-            | symbols  --  A list with atom symbols
-            | unit_cell  --  The unit cell vectors for periodic structures
+            | ``energy`` -- Molecular electronic energy
+            | ``multiplicity`` -- The spin multiplicity of the electronic system
+            | ``symmetry_number`` -- The rotational symmetry number. Inherited,
+                                     None when not known or computed [default=0]
+            | ``periodic`` -- True when the system is periodic in three dimensions
+                              [default=False]
+            | ``title`` -- The title of the system
+            | ``graph`` -- The molecular graph of the system
+            | ``symbols`` -- A list with atom symbols
+            | ``unit_cell`` -- The unit cell vectors for periodic structures
 
            The function returns a Molecule object consisting of the
            atoms in the selected list. The numbers, coordinates, masses, gradient,
@@ -201,7 +201,7 @@ class Molecule(BaseMolecule):
         """Write the molecule to a human-readable checkpoint file.
 
            Argument:
-            | filename  --  the file to write to
+            | ``filename`` -- the file to write to
         """
         from tamkin.io.internal import dump_chk
         data = {}
@@ -223,7 +223,7 @@ class Molecule(BaseMolecule):
         """Construct a Molecule object from a previously saved checkpoint file
 
            Arguments:
-            | filename  --  the file to load from
+            | ``filename`` -- the file to load from
 
            Usage::
 
@@ -265,10 +265,10 @@ class BareNucleus(Molecule):
     def __init__(self, number, mass=None):
         """
            Argument:
-            | number  --  The atom number
+            | ``number`` -- The atom number
 
            Optional argument:
-            | mass  --  The mass of the atom in atomic units
+            | ``mass`` -- The mass of the atom in atomic units
         """
         if mass is None:
             mass = periodic[number].mass
@@ -284,7 +284,7 @@ class Proton(BareNucleus):
     def __init__(self, mass=None):
         """
            Optional argument:
-            | mass  --  The mass of the proton in atomic units
+            | ``mass`` -- The mass of the proton in atomic units
         """
         BareNucleus.__init__(self, 1, mass)
 
@@ -307,17 +307,17 @@ class RotScan(ReadOnly):
     def __init__(self, dihedral, molecule=None, top_indexes=None, potential=None):
         """
            Arguments
-            | dihedral  --  the index of the atoms that define the dihedral
-                            angle
+            | ``dihedral`` -- the index of the atoms that define the dihedral
+                              angle
 
            Optional arguments
-            | molecule  --  a molecule object. required when top_indexes is not
-                            given
-            | top_indexes  --  a list of atom indexes involved in the rotor.
-                               required when molecule is not given
-            | potential  --  rotational potential info (if this is a hindered
-                             rotor). must be a two-tuple containing the angles
-                             and the corresponding energies.
+            | ``molecule`` -- a molecule object. required when top_indexes is not
+                              given
+            | ``top_indexes`` -- a list of atom indexes involved in the rotor.
+                                 required when molecule is not given
+            | ``potential`` -- rotational potential info (if this is a hindered
+                               rotor). must be a two-tuple containing the angles
+                               and the corresponding energies.
 
         """
         self.dihedral = dihedral
@@ -346,16 +346,16 @@ def translate_pbc(molecule, selected, displ, vectors = None):
        boundary conditions apply (pbc).
 
        Arguments:
-        | molecule  --  a Molecule instance
-        | selected  --  a list of indices of the atoms that will be displaced
-        | displ  -- a list of 3 integers: [i0,i1,i2]. The selected atoms will be
-                    displaced over i0 lattice distances in the 0-axis direction,
-                    similarly for i1 and i2.
+        | ``molecule`` -- A Molecule instance.
+        | ``selected`` -- A list of indices of the atoms that will be displaced.
+        | ``displ`` -- A list of 3 integers: [i0,i1,i2]. The selected atoms will
+                       be displaced over i0 lattice distances in the 0-axis
+                       direction, similarly for i1 and i2.
 
        Optional argument:
-        | vectors  --  the lattice vectors, one in each column. If not
-                       specified, the vectors in the unit_cell attribute of the
-                       molecule is used.
+        | ``vectors`` -- The lattice vectors, one in each column. If not
+                         specified, the vectors in the unit_cell attribute of
+                         the molecule is used.
     """
     coordinates = molecule.coordinates.copy()
     if vectors is None:

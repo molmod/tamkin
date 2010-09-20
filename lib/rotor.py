@@ -76,9 +76,9 @@ class HarmonicBasis(object):
     def __init__(self, nmax, a):
         """
            Arguments:
-            | nmax  --  The maximum index used for the gaussian basis. Hence the
-                        the number of basis functions is 2*nmax+1
-            | a  --  The length of the periodic system
+            | ``nmax`` -- The maximum index used for the gaussian basis. Hence
+                          the the number of basis functions is 2*nmax+1
+            | ``a`` -- The length of the periodic system
 
 
            The basis functions are:
@@ -107,8 +107,8 @@ class HarmonicBasis(object):
         """Returns the Hamiltonian operator for the given mass and potential
 
            Arguments:
-            | mass  --  the mass of the particle
-            | potential  --  the expansion coefficients of the potential energy
+            | ``mass`` -- the mass of the particle
+            | ``potential`` -- the expansion coefficients of the potential energy
         """
         op = self.get_empty_op()
         self._add_kinetic_op(op, mass)
@@ -158,12 +158,12 @@ class HarmonicBasis(object):
         """Return the energies and wavefunctions for the given mass and potential
 
            Arguments:
-            | mass  --  the mass of the particle
-            | potential  --  the expansion coefficients of the potential energy
+            | ``mass`` -- the mass of the particle
+            | ``potential`` -- the expansion coefficients of the potential energy
 
            Optional argument:
-            | evecs  --  When True, also the eigenstates are returned.
-                         [default=False]
+            | ``evecs`` -- When True, also the eigenstates are returned.
+                           [default=False]
         """
         H = self.get_hamiltonian_op(mass, potential)
         if evecs:
@@ -175,8 +175,8 @@ class HarmonicBasis(object):
         """Evaluate the function represented by coeffs
 
            Arguments:
-            | grid  --  the values at which the function must be evaluated
-            | coeffs  --  the expansion coefficients
+            | ``grid`` -- the values at which the function must be evaluated
+            | ``coeffs`` -- the expansion coefficients
         """
         result = numpy.zeros(grid.shape, float) + coeffs[0]/numpy.sqrt(self.a)
         for i in xrange(self.nmax):
@@ -189,8 +189,8 @@ class HarmonicBasis(object):
         """Evaluate the derivative of function represented by coeffs
 
            Arguments:
-            | grid  --  the values at which the derivative must ben evaluated
-            | coeffs  --  the expansion coefficients
+            | ``grid`` -- the values at which the derivative must ben evaluated
+            | ``coeffs`` -- the expansion coefficients
         """
         result = numpy.zeros(grid.shape, float)
         for i in xrange(self.nmax):
@@ -204,9 +204,9 @@ class HarmonicBasis(object):
         """Evaluate the second derivative of function represented by coeffs
 
            Arguments:
-            | grid  --  the values at which the second derivative must be
-                        evaluated
-            | coeffs  --  the expansion coefficients
+            | ``grid`` -- the values at which the second derivative must be
+                          evaluated
+            | ``coeffs`` -- the expansion coefficients
         """
         result = numpy.zeros(grid.shape, float)
         for i in xrange(self.nmax):
@@ -220,22 +220,22 @@ class HarmonicBasis(object):
         """Fit the expansion coefficients that represent function f
 
            Arguments:
-            | grid  --  the x values on which the function f is known
-            | v  --  the function to be represented by expansion coefficients
-            | dofmax  --  the maximum number of cosines in the fit
-                          when even==False, the same number of sines is also
-                          included
+            | ``grid`` -- The x values on which the function f is known.
+            | ``v`` -- The function to be represented by expansion coefficients.
+            | ``dofmax`` -- The maximum number of cosines in the fit. When
+                            even==False, the same number of sines is also
+                            included.
 
            Optional arguments:
-            | rotsym  --  impose this rotational symmetry [default=1], must be
-                          an integer and is least 1.
-            | even  --  only fit even functions, i.e. cosines [default=False]
-            | rcond  --  the cutoff for the singular values in the least squares
-                         fit [default=1e-10]
-            | v_threshold  --  tolerance on the relative error between the Fourier
-                               expansion and the data points of the scan.
-                               [default=0.01]. Absolute errors smaller than 1
-                               kJ/mol are always ignored.
+            | ``rotsym`` -- Impose this rotational symmetry [default=1]. Must be
+                            an integer and is least 1..
+            | ``even`` -- Only fit even functions, i.e. cosines. [default=False]
+            | ``rcond`` -- The cutoff for the singular values in the least
+                           squares fit. [default=1e-10]
+            | ``v_threshold`` -- Tolerance on the relative error between the
+                                 Fourier expansion and the data points of the
+                                 scan. [default=0.01]. Absolute errors smaller
+                                 than 1 kJ/mol are always ignored.
 
            In case the Fourier expansion represents a poor fit (determined by
            v_threshold), a ValueError is raised. It means that you have to
@@ -297,8 +297,8 @@ def compute_cancel_frequency_mbh(molecule, dihedral, top_indexes):
        rotor.
 
        Arguments:
-        | molecule  --  A Molecule object (see data.py)
-        | top_indexes  --  the indexes of the rotor atoms
+        | ``molecule`` -- A Molecule object. (see :mod:`tamkin.data`)
+        | ``top_indexes`` -- The indexes of the rotor atoms.
     """
     axis = tuple(dihedral[1:3])
     other_top_indexes = tuple(set(xrange(molecule.size)) - set(top_indexes) - set(axis))
@@ -317,15 +317,15 @@ def compute_moments(coordinates, masses3, center, axis, indexes):
     """Computes the absolute and the relative moment of an internal rotor
 
        Arguments:
-        | coordinates  --  The coordinates of all atoms, float numpy array with
-                           shape (N,3)
-        | masses3  --  The diagonal of the mass matrix, each mass is repeated
-                       three tines, float numpy array with shape 3N
-        | center  --  A point on the rotation axis, float numpy array with shape
-                      3
-        | axis  --  A unit vector with the direction of the rotation axis, float
-                    numpy array with shape 3
-        | indexes  --  the indexes of the atoms that belong to the rotor
+        | ``coordinates`` -- The coordinates of all atoms, float numpy array
+                             with shape (N,3).
+        | ``masses3`` -- The diagonal of the mass matrix, each mass is repeated
+                         three tines, float numpy array with shape 3N.
+        | ``center`` -- A point on the rotation axis. Float numpy array with
+                        shape 3.
+        | ``axis`` -- A unit vector with the direction of the rotation axis.
+                      Float numpy array with shape 3.
+        | ``indexes`` -- The indexes of the atoms that belong to the rotor.
 
        The implementation is based on the transformation of the mass-matrix to
        the internal rotation coordinate. The derivative of the internal
@@ -368,39 +368,40 @@ class Rotor(Info, StatFysTerms):
                  v_threshold=0.01, large_fixed=False):
         """
            Arguments:
-            | rot_scan  --  A rotational scan object (free or hindered rotor
-                           information)
+            | ``rot_scan`` -- A rotational scan object. (free or hindered rotor
+                              information)
 
            Optional arguments:
-            | molecule  --  molecule  to which the rotor applies, is used to
-                            compute the cancel frequency. not required when the
-                            cancel_freq argument is present
-            | cancel_freq  --  the frequency to cancel in the vibrational
-                               partition function. This can also be 'mbh' or
-                               'scan' to indicate that the cancel frequency
-                               should be computed using the MBH method or based
-                               on the second order derivative of the rotational
-                               potential. Note that the latter option is only
-                               possible in the case of the hindered rotor
-                               formalism. [default='mbh']
-            | suffix  --  a name suffix used to distinguish between different
-                          rotors
-            | rotsym  --  the rotational symmetry of the rotor [default=1]
-            | even    --  True of the rotor is not chiral, i.e. when it has an
+            | ``molecule`` -- Molecule to which the rotor applies, is used to
+                              compute the cancelation frequency. Not required
+                              when the cancel_freq argument is present.
+            | ``cancel_freq`` -- The frequency to cancel in the vibrational
+                                 partition function. This can also be 'mbh' or
+                                 'scan' to indicate that the cancel frequency
+                                 should be computed using the MBH method or
+                                 based on the second order derivative of the
+                                 rotational potential. Note that the latter
+                                 option is only possible in the case of the
+                                 hindered rotor formalism. [default='mbh']
+            | ``suffix`` -- A name suffix used to distinguish between different
+                            rotors.
+            | ``rotsym`` -- The rotational symmetry of the rotor. [default=1]
+            | ``even`` -- True of the rotor is not chiral, i.e. when it has an
                           even potential
-            | num_levels  --  the number of energy levels considered in the
-                              QM treatment of the rotor [default=50]
-            | dofmax  --  the maximym number of cosines used to represent the
-                          torsional potential. if the potential is not even,
-                         the same number of sines is also used. [default=5]
-            | v_threshold  --  tolerance on the relative error between the Fourier
-                               expansion and the data points of the scan.
-                               [default=0.01]. Absolute errors smaller than 1
-                               kJ/mol are always ignored.
-            | large_fixed  --  When True, assume that the large part of the
-                               system is fixed in space while the small part
-                               rotates. (this means that the absolute moment of
-                               the rotor is used instead of the relative moment)
+            | ``num_levels`` -- The number of energy levels considered in the
+                                QM treatment of the rotor [default=50]
+            | ``dofmax`` -- The maximum number of cosines used to represent the
+                            torsional potential. if the potential is not even,
+                            the same number of sines is also used. [default=5]
+            | ``v_threshold`` -- Tolerance on the relative error between the
+                                 Fourier expansion and the data points of the
+                                 scan. [default=0.01]. Absolute errors smaller
+                                 than 1 kJ/mol are always ignored.
+            | ``large_fixed`` -- When True, assume that the large part of the
+                                 system is fixed in space while the small part
+                                 rotates. (this means that the absolute moment
+                                 of the rotor is used instead of the relative
+                                 moment)
 
            In case the Fourier expansion of the potential represents a poor fit
            (determined by v_threshold), a ValueError is raised. It means that
@@ -526,7 +527,7 @@ class Rotor(Info, StatFysTerms):
            is called.
 
            Arguments:
-            | f  --  a file-like object
+            | ``f`` -- A file-like object.
         """
         Info.dump(self, f)
         # parameters
@@ -559,20 +560,20 @@ class Rotor(Info, StatFysTerms):
         """Plots the potential with the energy levels
 
            Arguments:
-            | prefix  --  a filename prefix for the png files
-            | temp  --  a temperature that is used to indicate the statistical
-                       weight of each level in the plots
+            | ``prefix`` -- A filename prefix for the png files.
+            | ``temp`` -- A temperature that is used to indicate the statistical
+                          weight of each level in the plots
 
            Optional argument:
-            | num  --  the number of energy levels and wavefunctions to be
-                      plotted (default=10)
-            | do_levels  --  When True, the energy levels are plotted
+            | ``num`` -- The number of energy levels and wavefunctions to be
+                         plotted. [default=10]
+            | ``do_levels`` -- When True, the energy levels are plotted.
+                               [default=True]
+            | ``do_data`` -- When True, the data points are plotted.
                              [default=True]
-            | do_data  --  When True, the data points are plotted
-                           [default=True]
 
            One image will be generated:
-            | ${prefix}.png  --  the potential and the energy levels
+            | ``${prefix}.png`` -- The potential and the energy levels.
         """
         import pylab
         pylab.clf()

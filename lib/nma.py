@@ -612,7 +612,7 @@ class ConstrainExt(Treatment):
        gradient is zero.
     """
 
-    def __init__(self, gradient_threshold=1e-4, svd_threshold=1e-5):
+    def __init__(self, gradient_threshold=1e-4, im_threshold=1.0):
         """
            Optional arguments:
             | ``gradient_threshold`` -- The maximum allowed value of the
@@ -620,30 +620,31 @@ class ConstrainExt(Treatment):
                                         atomic units. When the threshold is
                                         exceeded, a ValueError is raised.
                                         [default=1-e4]
-            | ``svd_threshold`` -- threshold for detection of deviations for
-                                   linearity (needed to construct a basis of
-                                   external degrees of freedom.)
+            | ``im_threshold`` -- Threshold for detection of deviations for
+                                  linearity. When a moment of inertia is below
+                                  this threshold, it is considered zero.
         """
         self.gradient_threshold = gradient_threshold
-        self.svd_threshold = svd_threshold
+        self.im_threshold = im_threshold
         Treatment.__init__(self)
 
     def compute_zeros(self, molecule, do_modes):
         """See :meth:`Treatment.compute_zeros`.
 
-        The number of zeros is set to 0, because the global translations
-        and rotations are already projected out.
+           The number of zeros is set to 0, because the global translations
+           and rotations are already projected out.
         """
         self.num_zeros = 0
 
     def compute_hessian(self, molecule, do_modes):
         """See :meth:`Treatment.compute_hessian`
 
-        First a basis is constructed for the internal coordinates. The 3N-6
-        basis vectors of length 3N (matrix B is (3N-6)x3N) are mass-weighted.
-        The ConstrainExt Hessian is then: ``B^T H B``.
-        This matrix is already mass weigthed, such that no ConstrainExt mass
-        matrix needs to be specified.
+           First a basis is constructed for the internal coordinates. The 3N-6
+           (or 3N-5) basis vectors of length 3N (matrix B is (3N-6)x3N) are
+           mass-weighted.
+           The ConstrainExt Hessian is then: ``B^T H B``.
+           This matrix is already mass weigthed, such that no ConstrainExt mass
+           matrix needs to be specified.
         """
         if abs(molecule.gradient).max() > self.gradient_threshold:
             raise ValueError(
@@ -655,11 +656,9 @@ class ConstrainExt(Treatment):
             )
         # project the hessian on the orthogonal complement of the basis of small
         # displacements in the external degrees of freedom.
-        # TODO: this will fail if the molecule is displaced far from the origin
-        # TODO: keep it simple and just analyze the inertia tensor
-        # TODO: make ext_dof a molecule property
+        external_basis = molecule.get_external_basis_new(self.im_threshold)
         U, W, Vt = numpy.linalg.svd(molecule.external_basis, full_matrices=True)
-        rank = (W/W[0] > self.svd_threshold).sum()
+        rank = external_basis.shape[0]
         internal_basis_mw = (Vt[rank:]/numpy.sqrt(molecule.masses3)).transpose()
         # the following hessian is already mass-weighted;
         self.hessian_small = numpy.dot(internal_basis_mw.transpose(), numpy.dot(molecule.hessian, internal_basis_mw))

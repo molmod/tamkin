@@ -110,6 +110,52 @@ class Molecule(BaseMolecule):
         self.symmetry_number = symmetry_number
         self.periodic = periodic
 
+    def get_external_basis_new(self, im_threshold=1.0):
+        """Create a robust basis for small displacements in the external degrees of freedom.
+
+           The basis is expressed in mass-weighted Cartesian coordinates.
+           The three translations are along the x, y, and z-axis. The three
+           rotations are about an axis parallel to the x, y, and z-axis
+           through the center of mass.
+
+           The returned result depends on the periodicity of the system and on
+           the parameter im_threshold:
+
+           * When the system is periodic, only the translation external degrees
+             are included. The result is an array with shape (3,3N)
+
+           * When the system is not periodic, the rotational external
+             degrees are also included. The result is an array with shape (5,3N)
+             or (6,3N). The first three rows correspond to translation, the
+             latter rows correspond to rotation. Rotational modes that have a
+             angular moment below ``im_threshold`` are discarded.
+        """
+        if self.periodic:
+            result = numpy.zeros((3, 3*self.size), float)
+        else:
+            ims, iaxs = numpy.linalg.eigh(self.inertia_tensor)
+            mask = ims > im_threshold
+            ims = ims[mask]
+            iaxs = iaxs[:,mask]
+            ext_dof = len(ims) + 3
+            result = numpy.zeros((ext_dof, 3*self.size), float)
+        # translation
+        result[0, 0::3] = 1
+        result[1, 1::3] = 1
+        result[2, 2::3] = 1
+        if not self.periodic:
+            # rotation
+            counter = 3
+            for iax in iaxs.transpose():
+                result[counter,0::3] = (iax[1]*(self.coordinates[:,2] - self.com[2])
+                                       -iax[2]*(self.coordinates[:,1] - self.com[1])) # x
+                result[counter,1::3] = (iax[2]*(self.coordinates[:,0] - self.com[0])
+                                       -iax[0]*(self.coordinates[:,2] - self.com[2])) # y
+                result[counter,2::3] = (iax[0]*(self.coordinates[:,1] - self.com[1])
+                                       -iax[1]*(self.coordinates[:,0] - self.com[0])) # z
+                counter += 1
+        return result
+
     @cached
     def external_basis(self):
         """The basis for small displacements in the external degrees of freedom.
@@ -122,8 +168,8 @@ class Molecule(BaseMolecule):
 
            * When the system is periodic, only the translation external degrees
              are included. The result is an array with shape (3,3N)
-           * When the system is not periodic, only the translation external
-             degrees are included. The result is an array with shape (6,3N). The
+           * When the system is not periodic, the rotational external
+             degrees are also included. The result is an array with shape (6,3N). The
              first three rows correspond to translation, the latter three rows
              correspond to rotation.
         """

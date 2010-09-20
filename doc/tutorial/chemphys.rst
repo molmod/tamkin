@@ -63,20 +63,22 @@ values for these options are suitable for most applications.
 
       nma = NMA(mol, ConstrainExt(gradient_threshold=0.01))
 
-  The method also checks if the molecule is linear, which is
-  currently done in a cumbersome way. The threshold is based on the singular
-  value decomposition of the basis of displacements along the external degrees
-  of freedom. This is totally hopeless because the average human being has no
-  clue what that is supposed to mean. Anyway, the following setting would allow
-  more deviations from linearity in linear molecules::
+  The method also checks if the molecule is linear, which is based on the
+  angular moments of inertia. Any angular momentum below the parameter
+  im_threshold is treated as zero. The following setting would allow more
+  deviations from linearity in linear molecules::
 
-      nma = NMA(mol, ConstrainExt(svd_threshold=1e-3))
+      nma = NMA(mol, ConstrainExt(im_threshold=10.0))
+
+  *Note:* that the im_threshold value is given here in internal (atomic) units.
+  For comparison, the lowest moment of inertia in ethane is about 40435 atomic
+  units.
 
   One can always check the log file (see below) of a partition function to see
   if the molecule was considered to be linear or not. When combining both
   options, they must be separated by a comma::
 
-      nma = NMA(mol, ConstrainExt(gradient_threshold=0.01, svd_threshold=1e-3))
+      nma = NMA(mol, ConstrainExt(gradient_threshold=0.01, im_threshold=10.0))
 
 * **Arguments for the PartFun object**. See :class:`tamkin.partf.PartFun` for
   the details. The partition function object is merely a definition of the
@@ -127,8 +129,7 @@ values for these options are suitable for most applications.
   ``im_threshold`` (default ``im_threshold=1.0``).
     The threshold to determine if the molecule is linear or not. If one of the
     moments of inertia drops below this number, the molecule is considered to be
-    linear. The value 1.0 is in internal (atomic) units. For comparison, the
-    lowest moment of ineratia in ethane is about 40435 atomic units.
+    linear. The value 1.0 is in internal (atomic) units.
 
 * **Options for IdealGasLaw**. See :class:`tamkin.partf.IdealGasLaw` for the
   details. The ideal gas law has two optional parameters.

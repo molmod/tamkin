@@ -169,3 +169,40 @@ class DataTestCase(unittest.TestCase):
         mol1 = load_molecule_g03fchk("input/sterck/aa.fchk")
         mol2 = mol1.copy_with(title="foo")
         self.assertEqual(mol2.title, "foo")
+
+    def test_get_external_basis_new1(self):
+        mol = load_molecule_g03fchk("input/linear/gaussian.fchk")
+        eb = mol.get_external_basis_new()
+        self.assertEqual(eb.shape[0], 5)
+        # orthogonality test: the external basis should be orthogonal
+        # to the basis of the four internal coordinates: stretch1, stertch2,
+        # bend1 and bend2
+        ib = numpy.array([
+            [0,0,1,0,0,-1,0,0,0],
+            [0,0,1,0,0,0,0,0,-1],
+            [0,-1,0,0,0.5,0,0,0.5,0],
+            [-1,0,0,0.5,0,0,0.5,0,0],
+        ])
+        error = abs(numpy.dot(ib, eb.transpose())).max()
+        self.assert_(error < 1e-5)
+
+    def test_get_external_basis_new2(self):
+        mol = load_molecule_g03fchk("input/ethane/gaussian.fchk")
+        eb = mol.get_external_basis_new()
+        self.assertEqual(eb.shape[0], 6)
+        # orthogonality test: the external basis should be orthogonal
+        # to the basis of the internal coordinates. in this case we construct
+        # a redundant basis of internal coordinates based on all interatomic
+        # distances. this is overkill...
+        ib = []
+        for i in xrange(mol.size):
+            for j in xrange(i):
+                b = numpy.zeros((mol.size, 3), float)
+                delta = mol.coordinates[j] - mol.coordinates[i]
+                delta /= numpy.linalg.norm(delta)
+                b[i] = delta
+                b[j] = -delta
+                ib.append(b.ravel())
+        ib = numpy.array(ib)
+        error = abs(numpy.dot(ib, eb.transpose())).max()
+        self.assert_(error < 1e-5)

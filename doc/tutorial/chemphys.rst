@@ -56,10 +56,11 @@ values for these options are suitable for most applications.
 
   The method only gives the correct result when the geometry is sufficiently
   optimized, i.e. when the gradient of the energy is approximately zero. This
-  condition will be checked by comparing the RSMD of gradient vector with a
-  threshold value. If the trheshold is violated, TAMkin raises an error and your
-  script will abort. The threshold can be specified as an option to
-  ``ConstrainExt``. The following would relax the default threshold::
+  condition will be checked by comparing the maximum absolute value of the
+  gradient vector with a threshold value. If the trheshold is violated, TAMkin
+  raises an error and your script will abort. The threshold can be specified as
+  an option to ``ConstrainExt``. The following would relax the default
+  threshold::
 
       nma = NMA(mol, ConstrainExt(gradient_threshold=0.01))
 

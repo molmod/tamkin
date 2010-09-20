@@ -67,13 +67,12 @@ class ThermoAnalysis(object):
         self.temps = temps
         self.tables = [
             ThermoTable("Energy", "%.5f", kjmol, "kJ/mol", "internal_energy", pf, temps),
-            ThermoTable("Etnhalpy", "%.5f", kjmol, "kJ/mol", "internal_energy", pf, temps),
             ThermoTable("Free energy", "%.5f", kjmol, "kJ/mol", "free_energy", pf, temps),
-            ThermoTable("Heat capacity (v)", "%.3f", joule/mol/kelvin, "J/(mol*K)", "heat_capacity", pf, temps),
+            ThermoTable("Heat capacity", "%.3f", joule/mol/kelvin, "J/(mol*K)", "heat_capacity", pf, temps),
             ThermoTable("Entropy", "%.5f",  joule/mol/kelvin, "J/(mol*K)", "entropy", pf, temps),
             ThermoTable("log(q)", "%.1f", 1, "1", "log", pf, temps),
             ThermoTable("d log(q) / dT", "%.3e", 1/kelvin, "1/K", "logt", pf, temps),
-            ThermoTable("d^2 log(q) / dT^2", "%.1e", 1/kelvin, "1//K", "logtt", pf, temps)
+            ThermoTable("d^2 log(q) / dT^2", "%.1e", 1/kelvin**2, "1/K^2", "logtt", pf, temps),
         ]
 
     def write_to_file(self, filename):

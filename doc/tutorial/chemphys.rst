@@ -298,7 +298,7 @@ meaning of the returned numbers for two common ensembles.
 ``internal_energy``       Hartree/particle       Internal energy (per particle)                         Enthalpy (per particle)
 ``heat_capacity``         Hartree/(K*particle)   Heat capacity at constant volume (per particle)        Heat capacity at constant pressure (per particle)
 ``free_energy``           Hartree/particle       Helmholtz free energy (per particle)                   Gibbs free energy (per particle)
-``chemical_potential``    Hartree/particle^2     Chemical potential                                     (idem)
+``chemical_potential``    Hartree/particle       Chemical potential                                     (idem)
 ``entropy``               Hartree/particle       Entropy (per particle)                                 (idem)
 ``log``                   1/particle             Logarithm of the partition function (per particles)    (idem)
 ``logt``                  1/(K*particle)         First derivative of ``log`` towards temperature        (idem)
@@ -387,8 +387,9 @@ PartFun methods as explained the table below.
 Name in CSV file     Unit         ``PartFun`` method name
 ==================== ============ ==========================
 Energy               kJ/mol       ``internal_energy``
-Free energy          kJ/mol       ``free_energy``
 Heat capacity        J/(mol*K)    ``heat_capacity``
+Free energy          kJ/mol       ``free_energy``
+Chemical potential   kJ/mol       ``chemical_potential``
 Entropy              J/(mol*K)    ``entropy``
 log(q)               1/mol        ``log``
 d log(q) / dT        1/(mol*K)    ``logt``

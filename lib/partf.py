@@ -623,6 +623,13 @@ class StatFysTerms(StatFys):
         """
         return self.free_energy(temp, self.helper_terms)
 
+    def chemical_potential_terms(self, temp):
+        """Returns an array with chemical_potential results for the distinct terms.
+
+           This is just an array version of :meth:`StatFys.chemical_potential`.
+        """
+        return self.chemical_potential(temp, self.helper_terms)
+
 
 def helper_levels(temp, n, energy_levels):
     """Helper 0 function for a system with the given energy levels.

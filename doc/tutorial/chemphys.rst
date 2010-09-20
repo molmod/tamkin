@@ -364,6 +364,38 @@ TODO: explain the ambiguity of the units of the logarithmic functions.
 Thermodynamic equilibrium
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
+Definition of the equilibrium constant
+--------------------------------------
+
+Unit conventions
+----------------
+
+Computation of the equilibrium constant
+---------------------------------------
+
+ThermodynamicModel objects
+--------------------------
 
 Reaction kinetics
 ~~~~~~~~~~~~~~~~~
+
+Definition of the equilibrium constant
+--------------------------------------
+
+Unit conventions
+----------------
+
+Computation of the equilibrium constant
+---------------------------------------
+
+KineticModel objects
+--------------------
+
+Tunneling corrections
+^^^^^^^^^^^^^^^^^^^^^
+
+ReactionAnalysis objects -- fitting kinetic parameters A and E\ :sub:`a`
+------------------------------------------------------------------------
+
+Error analysis
+^^^^^^^^^^^^^^

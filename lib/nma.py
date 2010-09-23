@@ -558,7 +558,7 @@ class Full(Treatment):
     def __init__(self, svd_threshold=1e-5):
         """
            Optional argument:
-            | ``svd_threshold`` -- threshold for detection of deviations for
+            | ``svd_threshold`` -- threshold for detection of deviations from
                                    linearity [default=1e-5]
         """
         self.svd_threshold = svd_threshold
@@ -620,7 +620,7 @@ class ConstrainExt(Treatment):
                                         atomic units. When the threshold is
                                         exceeded, a ValueError is raised.
                                         [default=1-e4]
-            | ``im_threshold`` -- Threshold for detection of deviations for
+            | ``im_threshold`` -- Threshold for detection of deviations from
                                   linearity. When a moment of inertia is below
                                   this threshold, it is considered zero.
         """

@@ -24,7 +24,7 @@ specify the correct parameters that define the partition function for the
 molecular system under scrutiny. One must pay special attention to the
 compatibility of the normal mode analysis (NMA, to compute the vibrational
 spectrum) and the definition of the partition function. TAMkin will not complain
-about `unusual` combinations of NMA's and Parition functions.
+about `unusual` combinations of NMA's and Partition functions.
 
 In the tutorial below, the microscopic computations are all carried out with
 Gaussian03, but one can replace the ``load_molecule_...`` line with anything
@@ -60,7 +60,7 @@ values for these options are suitable for most applications.
   The method only gives the correct result when the geometry is sufficiently
   optimized, i.e. when the gradient of the energy is approximately zero. This
   condition will be checked by comparing the maximum absolute value of the
-  gradient vector with a threshold value. If the trheshold is violated, TAMkin
+  gradient vector with a threshold value. If the threshold is violated, TAMkin
   raises an error and your script will abort. The threshold can be specified as
   an option to ``ConstrainExt``. The following would relax the default
   threshold::
@@ -94,7 +94,7 @@ values for these options are suitable for most applications.
   is created. By default, the vibrational and the electronic part are included.
   The first argument is a normal mode analysis object. It is used to set up the
   vibrational and the electronic contribution. Additional contributions are
-  givin in a list (square brackets). For gas phase molecules, one typically adds
+  given in a list (square brackets). For gas phase molecules, one typically adds
   the ``ExtTrans`` and ``ExtRot`` contributions.
 
 * **Options for ExtTrans**. See :class:`tamkin.partf.ExtTrans` for the details.
@@ -107,8 +107,8 @@ values for these options are suitable for most applications.
   ``cp`` (default ``cp=True``).
     By default the translational contribution includes the corrections to
     describe an NpT partition function instead of an NVT partition function. If
-    you are interested in the constant volume boundary conditions, use the
-    option ``cp=False``
+    you are interested in the constant volume boundary conditions (NVY
+    ensemble), use the option ``cp=False``.
 
   ``gaslaw`` (default ``gaslaw=IdealGasLaw()``).
     The ideal gas law is the only gas law implemented so far, and is therefore
@@ -165,7 +165,7 @@ not rotate or displace over the surface once adsorbed. If it has to adsorb at
 another place, or somewhere else, it first has to desorb and adsorb again.
 
 We assume that the adsorption energy is computed with Gaussian using a cluster
-approximation for the surface. This means that some the cluster is terminated
+approximation for the surface. This means that the cluster is terminated
 and that the atoms at the termination are fixed in space with constraints during
 the geometry optimization. We also assume that the adsorbed molecule is free to
 rotate as it can do in the gas phase.
@@ -178,7 +178,7 @@ system::
     nma_both = NMA(mol_both, PHVA(fixed))
     pf_both = PartFun(nma_both, [])
 
-Compared to the gas phase, external translation and rotation are removed. Yhe
+Compared to the gas phase, external translation and rotation are removed. The
 file ``"gaussian_both.fchk"`` comes from a frequency computation of the adsorbed
 molecule on the cluster model of the surface.
 
@@ -190,7 +190,7 @@ follows::
     nma_surf = NMA(mol_surf, PHVA(fixed))
     pf_surf = PartFun(nma_surf, [])
 
-The surface is treated as a cluster fixed in space, i.e. there are not external
+The surface is treated as a cluster fixed in space, i.e. there are no external
 rotation and translation contributions to its partition function. The file
 ``"gaussian_surf.fchk"`` comes from a frequency computation on the surface
 cluster model. The geometry of the cluster must be optimized with constraints on
@@ -219,7 +219,7 @@ the surface and that this translational motion can be modeled with a 2D ideal
 gas partition function with a constant surface area.
 
 Further we assume that the adsorption energy is computed with Gaussian using
-a cluster approximation for the surface. This means that some the cluster is
+a cluster approximation for the surface. This means that the cluster is
 terminated and that the atoms at the termination are fixed in space with
 constraints during the geometry optimization. We also assume that the adsorbed
 molecule is free to rotate as it can do in the gas phase.
@@ -380,12 +380,12 @@ the pressure in the translational contribution to the partition function.
 Definition of the equilibrium constant
 --------------------------------------
 
-McQuarry
-^^^^^^^^
+McQuarrie
+^^^^^^^^^
 
 It is instructive to review to the definition of the equilibrium constant given
-in `Physical chemistry, a molecular approach`, by McQuarry and Simon
-[McQuarry1997]_ (page 981). For a chemical reaction of the form
+in `Physical chemistry, a molecular approach`, by McQuarrie and Simon
+[McQuarrie1997]_ (page 981). For a chemical reaction of the form
 
 .. math:: \nu_A A(g) + \nu_b B(g) \rightleftharpoons \nu_C C(g) + \nu_D D(g)
 
@@ -405,9 +405,9 @@ are only applicable to the case where all reactants and products are 3D gas phas
 particles sitting in the same reactor volume, :math:`V`. TAMkin also supports
 partition functions for gases in other dimensions, or even for systems that have
 no translational degrees of freedom at all. Moreover, for some applications, one
-needs to find the equilibrium between systems that are physically discjunct
+needs to find the equilibrium between systems that are physically disjunct
 instead of sharing the same volume. Therefore we derive a more general
-expression in the following section that coincides with the form of McQuarry in
+expression in the following section that coincides with the form of McQuarrie in
 the case of 3D gases.
 
 General form
@@ -468,7 +468,7 @@ equation
 
 To solve this problem, we rephrase it in terms of free energies, i.e. using
 :math:`F_X = -k_Bt\ln(Z_X)` and the fact that the logarithmic function is
-monotonous. The most probably state is therefore the state that minimizes the
+monotonous. The most probable state is therefore the state that minimizes the
 total free energy.
 
 .. math:: \frac{\partial (F_A(N^0_A - \xi_{\text{eq}}\nu_A, \ldots)

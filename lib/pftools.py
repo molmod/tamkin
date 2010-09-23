@@ -453,6 +453,6 @@ class ReactionAnalysis(object):
         pylab.plot([self.Ea/kjmol],[numpy.log(self.A/self.kinetic_model.unit)], color=color,
                    marker=marker, label=label_point, mew=2, mec="white", ms=10)
         if label is None:
-            pylab.legend(loc=0, numpoints=1, scatterpoints=1)
+            pylab.legend(loc=0, numpoints=1)
         if filename is not None:
             pylab.savefig(filename)

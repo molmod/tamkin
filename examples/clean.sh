@@ -76,7 +76,11 @@
 )
 
 ( cd 014_pentane_mbh
-  rm -v *.png *.csv *.txt
+  rm -v *.png *.csv *.txt *.vib
+)
+
+( cd 017_activationkineticmodel
+  rm -v *.png *.txt
 )
 
 ( cd 018_physisorption

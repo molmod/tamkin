@@ -1008,18 +1008,13 @@ class ExtTrans(Info, StatFys):
                     \frac{d}{2}\ln\left(\frac{2\pi m k_B T}{h^2}\right)
                     {\color{red} + \left(\frac{N}{V} - \frac{P}{k_BT}\right)\frac{\partial V}{\partial N}}.
 
-       The latter quantity is computed by ``ExtTrans.logv``. This is no
-       longer the logarithm of a dimensionless quantity, but it still is an
+       The quantity is computed by ``ExtTrans.logv``. (The part in red is only
+       present in the NpT enesemble and becomes zero for ideal gases.) This is
+       no longer the logarithm of a dimensionless quantity, but it still is an
        intensive quantity. The dimension of the gas determines the unit of the
        return value:
 
-       .. math:: \text{unit} = \text{bohr}^{-\text{dim}}
-
-       In 3D it is a particle per volume, or a concentration.
-
-       There is only a distinction between ``log`` and ``logv`` in the case
-       if the translational contribution. In all other contributions, these
-       methods are the same.
+       .. math:: \text{unit} = \ln(\text{bohr}^{-\text{dim}})
     """
 
     def __init__(self, cp=True, gaslaw=None, dim=3, mobile=None):

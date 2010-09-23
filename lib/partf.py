@@ -814,6 +814,7 @@ class Electronic(Info, StatFys):
            PartFun object is constructed.
         """
         self.multiplicity = multiplicity
+        self.energy = None
         Info.__init__(self, "electronic")
 
     def init_part_fun(self, nma, partf):
@@ -822,23 +823,45 @@ class Electronic(Info, StatFys):
             self.multiplicity = nma.multiplicity
             if self.multiplicity is None:
                 raise ValueError("Spin multiplicity is not defined.")
+        self.energy = nma.energy
 
     def dump(self, f):
         """See :meth:`Info.dump`."""
         Info.dump(self, f)
         print >> f, "    Multiplicity: %i" % self.multiplicity
+        print >> f, "    Electronic energy: %.7f" % self.energy
 
     def helper(self, temp, n):
         """See :meth:`StatFys.helper`."""
-        return temp**n*numpy.log(self.multiplicity)
+        result = temp**n*numpy.log(self.multiplicity)
+        if temp == 0.0:
+            if n < 1:
+                raise NotImplementedError
+            else:
+                result -= self.energy/boltzmann
+        else:
+            result -= temp**(n-1)*self.energy/boltzmann
+        return result
 
     def helpert(self, temp, n):
         """See :meth:`StatFys.helpert`."""
-        return 0.0
+        if temp == 0.0:
+            if n < 2:
+                raise NotImplementedError
+            else:
+                return self.energy/boltzmann
+        else:
+            return temp**(n-2)*self.energy/boltzmann
 
     def helpertt(self, temp, n):
         """See :meth:`StatFys.helpertt`."""
-        return 0.0
+        if temp == 0.0:
+            if n < 3:
+                raise NotImplementedError
+            else:
+                return -2.0*self.energy/boltzmann
+        else:
+            return -2.0*temp**(n-3)*self.energy/boltzmann
 
 
 class ExtTrans(Info, StatFys):
@@ -1415,48 +1438,6 @@ class PartFun(Info, StatFys):
     def helperv(self, temp, n):
         """See :meth:`StatFys.helperv`."""
         return sum(term.helperv(temp, n) for term in self.terms)
-
-    def internal_energy(self, temp):
-        """Compute the internal energy.
-
-           If self is a constant pressure ensemble of a regular 3D gas, the
-           return value is the enthalpy. If self is a constant volume ensemble
-           of a regular 3D gas, the return value is the internal energy.
-
-           Arguments:
-            | ``temp`` -- the temperature
-        """
-        # The molecular ground state energy is added here. It is tempting
-        # to include it in the electronic part of partition function.
-        return StatFys.internal_energy(self, temp) + self.energy
-
-    def free_energy(self, temp):
-        """Computes the free energy.
-
-           If self is a constant pressure ensemble of a regular 3D gas, the
-           return value is the Gibbs free energy. If self is a constant volume
-           ensemble of a regular 3D gas, the return value is the Helmholtz free
-           energy.
-
-           Arguments:
-            | ``temp`` -- the temperature
-        """
-        # The molecular ground state energy is added here. It is tempting
-        # to include it in the electronic part of partition function.
-        return StatFys.free_energy(self, temp) + self.energy
-
-    def chemical_potential(self, temp):
-        """Computes the chemical potential.
-
-           Argument:
-            | ``temp`` -- the temperature
-
-           Note: as opposed to most other methods, this is an intensive
-           function!
-        """
-        # The molecular ground state energy is added here. It is tempting
-        # to include it in the electronic part of partition function.
-        return StatFys.chemical_potential(self, temp) + self.energy
 
     def dump(self, f):
         """See :meth:`Info.dump`."""

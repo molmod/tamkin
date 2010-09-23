@@ -399,28 +399,32 @@ class StatFys(object):
 
            Returns
 
-           .. math:: T^n N \frac{\partial \ln(Z_1)}{\partial N}
+           .. math:: T^n \frac{\partial \ln(Z_N)}{\partial N}
 
            where :math:`Z_N` is (the contribution to) the many body partition
            function and :math:`N` is the total number of particles. This is used
-           to compute the chemical potential. In all cases, except for the
-           translational contribution, this comes down to zero.
+           to compute the chemical potential and reaction free energies. In all
+           cases, except for the total partition function and translational
+           contribution, this comes down to the method ``helper``.
 
            Arguments:
             | ``temp`` -- the temperature
             | ``n`` -- the power for the temperature factor
         """
-        return 0.0
+        # By default return helper
+        return self.helper(temp, n)
 
     def helperv(self, temp, n):
         r"""Helper function V
 
-           This always the same as the method ``helper``, except in case of the
-           translational contribution to the partition function. Then it returns
-           the single-particle partition function divided by the volume,
-           multiplied by a power of the temperature:
+           This always the same as the method ``helpern``, except in for the
+           total partition function and the translational contribution to the
+           partition function. Then it returns
 
-           .. math:: T^n N \frac{\ln(Z_1)}{V}
+           .. math:: T^n \frac{\partial \ln(Z_N)}{\partial N} - \ln\left(\frac{V}{N}\right)
+
+           This is used for the computation of equilibrium constants, and rate
+           constants.
 
            Arguments:
             | ``temp`` -- temperature
@@ -586,26 +590,19 @@ class StatFys(object):
             helper = self.helper
         return -boltzmann*helper(temp, 1)
 
-    def chemical_potential(self, temp, helper=None, helpern=None):
+    def chemical_potential(self, temp, helpern=None):
         """Computes the chemical potential.
 
            Argument:
             | ``temp`` -- the temperature
 
            Optional argument:
-            | ``helper`` -- an alternative implementation of helper
-                            [default=self.helper]
             | ``helper`` -- an alternative implementation of helpern
                             [default=self.helpern]
-
-           Note: as opposed to most other methods, this is an intensive
-           function!
         """
-        if helper is None:
-            helper = self.helper
         if helpern is None:
             helpern = self.helpern
-        return -boltzmann*(helper(temp, 1) + helpern(temp, 1))
+        return -boltzmann*helpern(temp, 1)
 
 
 class StatFysTerms(StatFys):
@@ -671,8 +668,8 @@ class StatFysTerms(StatFys):
 
            This is just an array version of :meth:`StatFys.helpern`.
         """
-        # by default, this is zero
-        return numpy.zeros(self.num_terms, float)
+        # by default, this is the same as helper_terms
+        return self.helper_terms(temp, n)
 
     def helperv_terms(self, temp, n):
         """Returns an array with all the helperv results for the distinct terms.
@@ -702,6 +699,13 @@ class StatFysTerms(StatFys):
            This is just an array version of :meth:`StatFys.logtt`.
         """
         return self.logtt(temp, self.helpertt_terms)
+
+    def logv_terms(self, temp):
+        """Returns an array with logv results for the distinct terms.
+
+           This is just an array version of :meth:`StatFys.logv`.
+        """
+        return self.logv(temp, self.helperv_terms)
 
     def internal_energy_terms(self, temp):
         """Returns an array with internal_energy results for the distinct terms.
@@ -736,7 +740,7 @@ class StatFysTerms(StatFys):
 
            This is just an array version of :meth:`StatFys.chemical_potential`.
         """
-        return self.chemical_potential(temp, self.helper_terms, self.helpern_terms)
+        return self.chemical_potential(temp, self.helpern_terms)
 
 
 def helper_levels(temp, n, energy_levels):
@@ -923,20 +927,20 @@ class ExtTrans(Info, StatFys):
        For the computation of equilibrium constants and rate coefficients,
        one makes use of
 
-       .. math:: \frac{\ln(Z_{1,\text{trans}})}{V}.
+       .. math:: \ln\left(\frac{Z_{1,\text{trans}}}{V}\right).
 
        After substituting the definition of :math:`Z_{1,\text{trans}}`, this
        becomes:
 
        .. math:: \frac{\ln(Z_{1,\text{trans}})}{V} =
                  \frac{d}{2}\ln\left(\frac{2\pi m k_B T}{h^2}\right)
-                 {\color{blue}-\frac{P}{k_BT}}.
+                 {\color{blue}-\frac{PV}{k_BT}}.
 
        The latter quantity is computed by ``ExtTrans.logv``. This is no
        longer dimensionless, but it is an intensive quantity. The dimension
        of the gas determines the unit of the return value:
 
-       .. math:: \text{unit} = \text{bohr}^-\text{dim}
+       .. math:: \text{unit} = \text{bohr}^{-\text{dim}}
 
        In 3D it is a particle per volume, or a concentration.
 
@@ -1049,26 +1053,21 @@ class ExtTrans(Info, StatFys):
 
     def helpern(self, temp, n):
         """See :meth:`StatFys.helpern`."""
+        result = self.helper(temp, n)
         if temp==0:
             if n > 0:
-                return 0.0
+                return result
             else:
                 raise NotImplementedError
         else:
-            result = -temp**n
+            result -= temp**n
         if self.cp:
             result += self.gaslaw.helpern(temp, n)
         return result
 
     def helperv(self, temp, n):
         r"""See :meth:`StatFys.helperv`."""
-        if temp == 0:
-            return 0.0
-        else:
-            result = 0.5*self.dim*numpy.log(2*numpy.pi*self.mass*boltzmann*temp/planck**2)
-            if self.cp:
-                result -= self.gaslaw.pressure*temp**(n-1)/boltzmann
-            return result
+        return self.helpern(temp, n) - self.gaslaw.helper(temp, n)
 
 
 class ExtRot(Info, StatFys):

@@ -47,9 +47,9 @@ __all__ = ["PFToolsTestCase"]
 
 class PFToolsTestCase(unittest.TestCase):
     def test_reaction_analysis_sterck(self):
-        pf_react1 = PartFun(NMA(load_molecule_g03fchk("input/sterck/aa.fchk")), [ExtTrans(), ExtRot(1)])
-        pf_react2 = PartFun(NMA(load_molecule_g03fchk("input/sterck/aarad.fchk")), [ExtTrans(), ExtRot(1)])
-        pf_trans = PartFun(NMA(load_molecule_g03fchk("input/sterck/paats.fchk")), [ExtTrans(), ExtRot(1)])
+        pf_react1 = PartFun(NMA(load_molecule_g03fchk("input/sterck/aa.fchk")), [ExtTrans(cp=False), ExtRot(1)])
+        pf_react2 = PartFun(NMA(load_molecule_g03fchk("input/sterck/aarad.fchk")), [ExtTrans(cp=False), ExtRot(1)])
+        pf_trans = PartFun(NMA(load_molecule_g03fchk("input/sterck/paats.fchk")), [ExtTrans(cp=False), ExtRot(1)])
 
         km = KineticModel([pf_react1, pf_react2], pf_trans)
         ra = ReactionAnalysis(km, 280, 360)
@@ -65,8 +65,8 @@ class PFToolsTestCase(unittest.TestCase):
         ra.plot_parameters("output/parameters_aa.png")
 
     def test_reaction_analysis_mat(self):
-        pf_react = PartFun(NMA(load_molecule_g03fchk("input/mat/5Te_etheen_react_deel2.fchk")), [ExtTrans(), ExtRot(1)])
-        pf_trans = PartFun(NMA(load_molecule_g03fchk("input/mat/5Te_etheen_ts_deel2_punt108_freq.fchk")), [ExtTrans(), ExtRot(1)])
+        pf_react = PartFun(NMA(load_molecule_g03fchk("input/mat/5Te_etheen_react_deel2.fchk")), [])
+        pf_trans = PartFun(NMA(load_molecule_g03fchk("input/mat/5Te_etheen_ts_deel2_punt108_freq.fchk")), [])
 
         km = KineticModel([pf_react], pf_trans)
         ra = ReactionAnalysis(km, 100, 1200, temp_step=50)

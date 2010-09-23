@@ -161,9 +161,9 @@ class PartFunTestCase(unittest.TestCase):
         mol_react1 = load_molecule_g03fchk("input/sterck/aa.fchk")
         mol_react2 = load_molecule_g03fchk("input/sterck/aarad.fchk")
         mol_trans = load_molecule_g03fchk("input/sterck/paats.fchk")
-        pf_react1 = PartFun(NMA(mol_react1, ConstrainExt()), [ExtTrans(), ExtRot(1)])
-        pf_react2 = PartFun(NMA(mol_react2, ConstrainExt()), [ExtTrans(), ExtRot(1)])
-        pf_trans = PartFun(NMA(mol_trans, ConstrainExt()), [ExtTrans(), ExtRot(1)])
+        pf_react1 = PartFun(NMA(mol_react1, ConstrainExt()), [ExtTrans(cp=False), ExtRot(1)])
+        pf_react2 = PartFun(NMA(mol_react2, ConstrainExt()), [ExtTrans(cp=False), ExtRot(1)])
+        pf_trans = PartFun(NMA(mol_trans, ConstrainExt()), [ExtTrans(cp=False), ExtRot(1)])
 
         # values taken from the fancy excel file...
         temps = numpy.array([298.15,300,400,500,600,700,800,900,1000,1100])
@@ -242,8 +242,27 @@ class PartFunTestCase(unittest.TestCase):
                 self.assert_(error < 1e-3)
                 # check the helper function and the definition of the chemical
                 # potential in an ideal gas
-                self.assertAlmostEqual(pf.helpern(temp, 0), -1)
+                self.assertAlmostEqual(pf.translational.helpern(temp, 0) - pf.translational.helper(temp, 0), -1)
+                self.assertAlmostEqual(pf.electronic.helpern(temp, 0) - pf.electronic.helper(temp, 0), 0.0)
+                self.assertAlmostEqual(pf.rotational.helpern(temp, 0) - pf.rotational.helper(temp, 0), 0.0)
+                self.assertAlmostEqual(pf.vibrational.helpern(temp, 0) - pf.vibrational.helper(temp, 0), 0.0)
+                self.assertAlmostEqual(pf.helpern(temp, 0) - pf.helper(temp, 0), -1)
                 self.assertAlmostEqual(pf.chemical_potential(temp), pf.free_energy(temp) + boltzmann*temp)
+
+    def test_logv(self):
+        for cp in False, True:
+            molecule = load_molecule_g03fchk("input/ethane/gaussian.fchk")
+            nma = NMA(molecule)
+            pf = PartFun(nma, [ExtTrans(cp=cp), ExtRot()])
+            temps = numpy.array([300.0,400.0,500.0,600.0,700.0])
+            for temp in temps:
+                self.assertAlmostEqual(pf.translational.logv(temp) - pf.translational.log(temp),
+                                       -1 -pf.translational.gaslaw.helper(temp,0))
+                self.assertAlmostEqual(pf.electronic.logv(temp) - pf.electronic.log(temp), 0.0)
+                self.assertAlmostEqual(pf.rotational.logv(temp) - pf.rotational.log(temp), 0.0)
+                self.assertAlmostEqual(pf.vibrational.logv(temp) - pf.vibrational.log(temp), 0.0)
+                self.assertAlmostEqual(pf.logv(temp) - pf.log(temp),
+                                       -1 -pf.translational.gaslaw.helper(temp,0))
 
     def test_derived_quantities(self):
         # internal energy, heat capacity and entropy

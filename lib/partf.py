@@ -1004,7 +1004,7 @@ class ExtTrans(Info, StatFys):
        Using the final result in the derivation of ``ExtTrans.logn`` as a
        starting point, this becomes:
 
-       .. math:: \ln(Z'_{Z_{1,\text{trans}})} =
+       .. math:: \ln(Z'_{1,\text{trans}}) =
                     \frac{d}{2}\ln\left(\frac{2\pi m k_B T}{h^2}\right)
                     {\color{red} + \left(\frac{N}{V} - \frac{P}{k_BT}\right)\frac{\partial V}{\partial N}}.
 

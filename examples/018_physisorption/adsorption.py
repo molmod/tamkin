@@ -62,7 +62,7 @@ nma_c = NMA(mol_c, PHVA(fixed)) # use PHVA to model the surface
 # correction, imperfections in the DFT functional. The first and the second
 # error will probably compensate partially. The benzene approximation is rather
 # dramatic because the Van der Waals sphere of Argon is larger than benzene.
-nma_c.energy += -1.7*kjmol
+nma_c.energy += -2.4*kjmol
 # Note that kT at 87K is about 0.723 kJ/mol. This is example a very sensitive
 # to the accuracy of the adsorption energy.
 

@@ -78,3 +78,7 @@
 ( cd 014_pentane_mbh
   rm -v *.png *.csv *.txt
 )
+
+( cd 018_physisorption
+  rm -v *.png *.txt
+)

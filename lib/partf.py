@@ -417,7 +417,7 @@ class StatFys(object):
     def helperv(self, temp, n):
         r"""Helper function V
 
-           This always the same as the method ``helpern``, except in for the
+           This always the same as the method ``helpern``, except for the
            total partition function and the translational contribution to the
            partition function. Then it returns
 
@@ -505,15 +505,42 @@ class StatFys(object):
             helpertt = self.helpertt
         return helpertt(temp, 0)
 
+    def logn(self, temp, helperv=None):
+        r"""Log function N
+
+           The derivative of the logarithm of the many-particle partition
+           function towards to number of particles.
+
+           .. math:: \frac{\partial \ln(Z_N)}{\partial N}
+
+           In most cases, this is the same as the logarithm of the
+           single-particle partition divided by the number of particles. (see
+           method ``log``.) The only exception is the translational contribution
+           to the partition function, and hence also the total partition
+           function.
+
+           Argument:
+            | ``temp`` -- the temperature
+
+           Optional argument:
+            | ``helperv`` -- an alternative implementation of helperv
+                             [default=self.helperv]
+        """
+        if helperv is None:
+            helperv = self.helperv
+        return helperv(temp, 0)
+
     def logv(self, temp, helperv=None):
         r"""Log function V
 
-           The logarithm of the single-particle partition function. In case of
-           the translational contribution it is divided by the volume:
+           This always the same as the method ``logn``, except for the
+           total partition function and the translational contribution to the
+           partition function. Then it returns
 
-           .. math:: \frac{\ln(Z_1)}{V}
+           .. math:: \frac{\partial \ln(Z_N)}{\partial N} - \ln\left(\frac{V}{N}\right)
 
-           For all other cases, this is identical to the method ``log``.
+           This is used for the computation of equilibrium constants, and rate
+           constants.
 
            Argument:
             | ``temp`` -- the temperature
@@ -707,6 +734,13 @@ class StatFysTerms(StatFys):
         """
         return self.logv(temp, self.helperv_terms)
 
+    def logn_terms(self, temp):
+        """Returns an array with logn results for the distinct terms.
+
+           This is just an array version of :meth:`StatFys.logn`.
+        """
+        return self.logn(temp, self.helperv_terms)
+
     def internal_energy_terms(self, temp):
         """Returns an array with internal_energy results for the distinct terms.
 
@@ -888,12 +922,13 @@ class ExtTrans(Info, StatFys):
        The translational partition function of a single d-dimensional particle
        reads (with NpT specific contributions in blue)
 
-       .. math:: Z_{1,\text{trans}} = \left(\frac{2\pi m k_B T}{h^2}\right)^{\frac{d}{2}}V{\color{blue}\exp\left(-\frac{PV}{k_BT}\right)},
+       .. math:: Z_{1,\text{trans}} = \left(\frac{2\pi m k_B T}{h^2}\right)^{\frac{d}{2}}V
+                                      {\color{blue}\exp\left(-\frac{PV}{Nk_BT}\right)},
 
        and the logarithm is
 
        .. math:: \ln(Z_{1,\text{trans}}) = \frac{d}{2}\ln\left(\frac{2\pi m k_B T}{h^2}\right)
-                          + \ln(V) {\color{blue}-\frac{PV}{k_BT}}.
+                          + \ln(V) {\color{blue}-\frac{PV}{Nk_BT}}.
 
        ``ExtTrans.log`` computes the logarithm of the many-body translational
        partition per particle, in the classical limit:
@@ -914,7 +949,7 @@ class ExtTrans(Info, StatFys):
        .. math:: \frac{\ln(Z_{N,\text{trans}})}{N} = 1
                       + \frac{d}{2}\ln\left(\frac{2\pi m k_B T}{h^2}\right)
                       + \ln\left(\frac{V}{N}\right)
-                      {\color{blue}- \frac{PV}{k_BTN}}.
+                      {\color{blue}- \frac{PV}{Nk_BT}}.
 
        From this derivation it is clear that the many-body effects and the
        translational part must be done together, because the separate
@@ -922,23 +957,61 @@ class ExtTrans(Info, StatFys):
 
        *Note:* All quantities so far are dimensionless.
 
+       **Some notes on the definition of** ``ExtTrans.logn``
+
+       For the computation of the chemical potential, one needs the quantity
+
+       .. math:: \frac{\partial \ln(Z_{N,\text{trans}})}{\partial N},
+
+       which is computed by ``ExtTrans.logn``. In all contributions except the
+       translational, such a term boils down to the single-particle partition
+       function divided by :math:`N`. In case of the translational partition
+       function, one finds (using Stirlings approximation, and the classical gas
+       limit)
+
+       .. math::
+           :nowrap:
+
+           \begin{align*}
+             \frac{\partial \ln(Z_{N,\text{trans}})}{\partial N}
+                & = \frac{\partial \ln\left(\frac{Z^N_{1,\text{trans}}}{N!}\right)}{\partial N} \\
+                & = \frac{\partial \left(N \ln(Z_{1,\text{trans}}) - N\ln(N) + N \right)}{\partial N} \\
+                & = \ln\left(\frac{Z_{1,\text{trans}}}{N}\right) +
+                          {\color{red} N\frac{\partial \ln(Z_{1,\text{trans}})}{\partial N}} \\
+                & = \frac{d}{2}\ln\left(\frac{2\pi m k_B T}{h^2}\right)
+                          + \ln\left(\frac{V}{N}\right) {\color{blue}-\frac{PV}{Nk_BT}}
+                          {\color{red} +N\frac{\partial \left(\ln(V) -\frac{PV}{Nk_BT} \right)}{\partial N}}\\
+                & = \frac{d}{2}\ln\left(\frac{2\pi m k_B T}{h^2}\right)
+                          + \ln\left(\frac{V}{N}\right) {\color{blue}-\frac{PV}{Nk_BT}}
+                          {\color{red} + \left(\frac{N}{V} - \frac{P}{k_BT}\right)\frac{\partial V}{\partial N} + \frac{PV}{Nk_BT}}\\
+                & = \frac{d}{2}\ln\left(\frac{2\pi m k_B T}{h^2}\right)
+                          + \ln\left(\frac{V}{N}\right)
+                          {\color{red} + \left(\frac{N}{V} - \frac{P}{k_BT}\right)\frac{\partial V}{\partial N}}
+           \end{align*}
+
+       The colored terms only matter in case of constant pressure ensembles. The
+       red portion in the final results becomes zero in the case of ideal gases.
+
        **Some notes on the definition of** ``ExtTrans.logv``
 
        For the computation of equilibrium constants and rate coefficients,
        one makes use of
 
-       .. math:: \ln\left(\frac{Z_{1,\text{trans}}}{V}\right).
+       .. math:: \ln(Z'_{1,\text{trans}}) =
+                    \frac{\partial \ln(Z_{N,\text{trans}})}{\partial N}
+                    + \ln\left(\frac{N}{V}\right).
 
-       After substituting the definition of :math:`Z_{1,\text{trans}}`, this
-       becomes:
+       Using the final result in the derivation of ``ExtTrans.logn`` as a
+       starting point, this becomes:
 
-       .. math:: \frac{\ln(Z_{1,\text{trans}})}{V} =
-                 \frac{d}{2}\ln\left(\frac{2\pi m k_B T}{h^2}\right)
-                 {\color{blue}-\frac{PV}{k_BT}}.
+       .. math:: \ln(Z'_{Z_{1,\text{trans}})} =
+                    \frac{d}{2}\ln\left(\frac{2\pi m k_B T}{h^2}\right)
+                    {\color{red} + \left(\frac{N}{V} - \frac{P}{k_BT}\right)\frac{\partial V}{\partial N}}.
 
        The latter quantity is computed by ``ExtTrans.logv``. This is no
-       longer dimensionless, but it is an intensive quantity. The dimension
-       of the gas determines the unit of the return value:
+       longer the logarithm of a dimensionless quantity, but it still is an
+       intensive quantity. The dimension of the gas determines the unit of the
+       return value:
 
        .. math:: \text{unit} = \text{bohr}^{-\text{dim}}
 
@@ -1067,7 +1140,10 @@ class ExtTrans(Info, StatFys):
 
     def helperv(self, temp, n):
         r"""See :meth:`StatFys.helperv`."""
-        return self.helpern(temp, n) - self.gaslaw.helper(temp, n)
+        result = self.helpern(temp, n) - self.gaslaw.helper(temp, n)
+        if self.cp:
+            result += self.gaslaw.pv(temp, n-1)/boltzmann
+        return result
 
 
 class ExtRot(Info, StatFys):

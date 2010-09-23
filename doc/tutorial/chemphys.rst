@@ -500,9 +500,8 @@ partition function:
     \end{align*}
 
 **TODO:** This only valid when :math:`Z_X(1, \ldots)` does not explicitly depend
-on the :math:`N_X`, i.e. the density in the case of gases. This assumption is
-only valid in the ideal-gas or non-interacting limit. Should we generalize here
-for non-ideal gases?
+on the :math:`N_X`, which is only the case in constant volume ensembles. This
+derivation should be generalized.
 
 This expression for the chemical potential can be plugged back into the
 equilibrium condition to get

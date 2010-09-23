@@ -257,12 +257,12 @@ class PartFunTestCase(unittest.TestCase):
             temps = numpy.array([300.0,400.0,500.0,600.0,700.0])
             for temp in temps:
                 self.assertAlmostEqual(pf.translational.logv(temp) - pf.translational.log(temp),
-                                       -1 -pf.translational.gaslaw.helper(temp,0))
+                                       -(1-cp)-pf.translational.gaslaw.helper(temp,0))
                 self.assertAlmostEqual(pf.electronic.logv(temp) - pf.electronic.log(temp), 0.0)
                 self.assertAlmostEqual(pf.rotational.logv(temp) - pf.rotational.log(temp), 0.0)
                 self.assertAlmostEqual(pf.vibrational.logv(temp) - pf.vibrational.log(temp), 0.0)
                 self.assertAlmostEqual(pf.logv(temp) - pf.log(temp),
-                                       -1 -pf.translational.gaslaw.helper(temp,0))
+                                       -(1-cp)-pf.translational.gaslaw.helper(temp,0))
 
     def test_derived_quantities(self):
         # internal energy, heat capacity and entropy

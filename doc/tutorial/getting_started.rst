@@ -6,24 +6,30 @@ Feature overview
 
 TAMkin consists of three major parts visualized in the scheme below.
 
-FIGURE: ask Wim.
+.. image:: ../tamkin_workflow.png
 
-1. Routines to read the output from several quantum chemistry codes: CHARMM,
-   CP2K, CPMD, GAMESS, Gaussian, QChem and VASP. All these routines are bundled
-   in the package :mod:`tamkin.io`. The output from these codes is represented
-   in a uniform ``Molecule`` class that is used by the rest of the code.
+Part 1 = Molecule
+   A collection of IO routines read the output from several quantum chemistry
+   codes: CHARMM, CP2K, CPMD, GAMESS, Gaussian, QChem and VASP. All these
+   routines are bundled in the package :mod:`tamkin.io`. The output from these
+   codes is represented in a uniform ``Molecule`` class that is used by the rest
+   of the code.
 
-2. Based on the data in the Molecule class, one can perform a normal mode
+Part 2 = NMA
+   Based on the data in the Molecule class, one can perform a normal mode
    analysis (NMA) to obtain frequencies and vibrational modes. TAMkin supports
    many different NMA schemes. In addition to the standard full Hessian
    analysis in Cartesian or internal coordinates, the methods PHVA, VSA,
    VSANoMass, MBH and a combination of PHVA and MBH are implemented. Tools to
    analyze normal modes are also included.
 
-3. Based on the vibrational analysis, one can construct a parition function that
+Part 3 = PartFun
+   Based on the vibrational analysis, one can construct a parition function that
    is primarily based on the harmonic oscillator approximation. However,
    extension are included to treat a variety of systems for which the harmonic
-   oscillator is known to fail.
+   oscillator is known to fail. From partition functions one can derive
+   thermochemical quantities such as equilibrium constants and kinetic
+   parameters.
 
 
 TAMkin is different

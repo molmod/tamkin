@@ -81,6 +81,21 @@ values for these options are suitable for most applications.
 
       nma = NMA(mol, ConstrainExt(gradient_threshold=0.01, im_threshold=10.0))
 
+* **Full instead of ConstrainExt**. See :class:`tamkin.nma.Full` for the
+  details. Instead of constraining the external degrees of freedom, one may
+  also perform the normal mode analysis in 3N coordinates and hope that the
+  Hessian is accurate enough to produce 6 zero frequencies. They will be
+  elminated automatically for the vibrational contribution to the partition
+  function.
+
+  For a proper identification of the zero frequencies, the ``Full`` treatment
+  will also check the linearity of the molecule, just like the ``ConstrainExt``
+  treatment. One can relax the linearity check as follows::
+
+      nma = NMA(mol, Full(im_threshold=10.0))
+
+  There are no other options for the full treatment.
+
 * **Arguments for the PartFun object**. See :class:`tamkin.partf.PartFun` for
   the details. The partition function object is merely a definition of the
   partition function. It can be used to compute the numerical value of the
@@ -119,19 +134,6 @@ values for these options are suitable for most applications.
     One can optionally specify that only a part of the system is translational
     freedom. This is not relevant for molecules in the gas phase.
 
-* **Options for ExtRot**. See :class:`tamkin.partf.ExtRot` for the details.
-
-  ``symmetry_number`` (default ``symmetry_number=None``).
-    When the symmetry number is not given, it is computed from the molecular
-    geometry and topology. This may not work properly or very slowly for
-    gigantic systems. In that case, specify symmetry_number=1, or whatever the
-    number it should be.
-
-  ``im_threshold`` (default ``im_threshold=1.0``).
-    The threshold to determine if the molecule is linear or not. If one of the
-    moments of inertia drops below this number, the molecule is considered to be
-    linear. The value 1.0 is in internal (atomic) units.
-
 * **Options for IdealGasLaw**. See :class:`tamkin.partf.IdealGasLaw` for the
   details. The ideal gas law has two optional parameters.
 
@@ -148,6 +150,36 @@ values for these options are suitable for most applications.
     The dimension of the gas. This must match the option ``dim`` given to
     ``ExtTrans``. When the ideal gas law is not specified in ExtTrans, the
     default value will have automatically the proper dimension.
+
+* **Options for ExtRot**. See :class:`tamkin.partf.ExtRot` for the details.
+
+  ``symmetry_number`` (default ``symmetry_number=None``).
+    When the symmetry number is not given, it is computed from the molecular
+    geometry and topology. This may not work properly or very slowly for
+    gigantic systems. In that case, specify symmetry_number=1, or whatever the
+    number it should be.
+
+  ``im_threshold`` (default ``im_threshold=1.0``).
+    The threshold to determine if the molecule is linear or not. If one of the
+    moments of inertia drops below this number, the molecule is considered to be
+    linear. The value 1.0 is in internal (atomic) units.
+
+* **Options for Vibrations**. See :class:`tamkin.partf.Vibrations` for the
+  details. One does not have to add a ``Vibrations`` object to the list of
+  contributions in the partition function, unless one wants to modify the
+  options of the vibrational contribution.
+
+  ``classical`` (default ``classical=False``)
+    When True, the vibrations are treated classically. The QM treatment is the
+    default. This may be useful to compare TAMkin results with Monte Carlo or
+    Molecular Dynamics simulations.
+
+  ``freq_scaling`` (default ``freq_scaling=1.0``)
+    Scaling factor for the classical part of the vibrational partition function,
+    ie. excluding the zero-point term.
+
+  ``zp_scaling``  (default ``zp_scaling=1.0``)
+    Scaling factor for the zero-point term in the vibrational contribution [default=1]
 
 
 Immobile adsorbed molecules

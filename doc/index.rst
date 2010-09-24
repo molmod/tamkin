@@ -18,7 +18,8 @@ Tutorial
    tutorial/install.rst
    tutorial/getting_started.rst
    tutorial/gendata.rst
-   tutorial/chemphys.rst
+   tutorial/chemphys_theory.rst
+   tutorial/chemphys_tamkin.rst
    tutorial/development.rst
 
 Library Reference

@@ -555,39 +555,44 @@ class Full(Treatment):
     """A full vibrational analysis, without transforming to a new set of
        coordinates.
     """
-    def __init__(self, svd_threshold=1e-5):
+    def __init__(self, im_threshold=1.0):
         """
            Optional argument:
-            | ``svd_threshold`` -- threshold for detection of deviations from
-                                   linearity [default=1e-5]
+            | ``im_threshold`` -- Threshold for detection of deviations from
+                                  linearity. When a moment of inertia is below
+                                  this threshold, it is treated as a zero.
         """
-        self.svd_threshold = svd_threshold
+        self.im_threshold = im_threshold
         Treatment.__init__(self)
 
     def compute_zeros(self, molecule, do_modes):
         """See :meth:`Treatment.compute_zeros`.
 
-        The number of zeros should be:
+           The number of zeros should be:
 
-        - 3 for a single atom, nonperiodic calculation
-        - 5 for a linear molecule, nonperiodic calculation
-        - 6 for a nonlinear molecule, nonperiodic calculation
-        - 3 in periodic calculations
+           - 3 for a single atom, nonperiodic calculation
+           - 5 for a linear molecule, nonperiodic calculation
+           - 6 for a nonlinear molecule, nonperiodic calculation
+           - 3 in periodic calculations
         """
         # determine nb of zeros
-        U, W, Vt = numpy.linalg.svd(molecule.external_basis, full_matrices=False)
-        rank = (abs(W) > abs(W[0])*self.svd_threshold).sum()
-        self.num_zeros = rank
+        external_basis = molecule.get_external_basis_new(self.im_threshold)
+        self.num_zeros = external_basis.shape[0]
 
         # check
-        if self.num_zeros not in [3,5,6] and not molecule.periodic :
-            raise ValueError("Number of zeros is expected to be 3, 5 or 6, but found %i." % self.num_zeros)
-        if self.num_zeros != 3 and molecule.periodic :
-            raise ValueError("Number of zeros is expected to be 3 (periodic calculation), but found %i." % self.num_zeros)
+        if molecule.periodic:
+            assert self.num_zeros == 3, "Number of zeros is expected to be 3 "\
+                "(periodic calculation), but found %i." % self.num_zeros
+        else:
+            assert self.num_zeros in [3,5,6], "Number of zeros is expected to "\
+                "be 3, 5 or 6, but found %i." % self.num_zeros
 
-        # return mass-weighted basis vectors for external degrees of freedom
         if do_modes:
-            self.external_basis = Vt[:rank]
+            # Mass-weighted and orthonormal basis vectors for external degrees
+            # of freedom. These are used to detect which vibrational modes match
+            # the external degrees of freedom.
+            U, W, Vt = numpy.linalg.svd(molecule.external_basis, full_matrices=False)
+            self.external_basis = Vt
 
     def compute_hessian(self, molecule, do_modes):
         """See :meth:`Treatment.compute_hessian`.
@@ -622,7 +627,7 @@ class ConstrainExt(Treatment):
                                         [default=1-e4]
             | ``im_threshold`` -- Threshold for detection of deviations from
                                   linearity. When a moment of inertia is below
-                                  this threshold, it is considered zero.
+                                  this threshold, it is treated as a zero.
         """
         self.gradient_threshold = gradient_threshold
         self.im_threshold = im_threshold

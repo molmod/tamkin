@@ -36,9 +36,7 @@
 
 import numpy
 
-from molmod.units import kjmol, second, meter, mol
-
-from tamkin.partf import compute_rate_coeff, compute_equilibrium_constant
+from molmod import boltzmann, kjmol, second, meter, mol, planck
 
 
 __all__ = [
@@ -72,7 +70,12 @@ def get_unit(pfs_A, pfs_B, per_second=False):
     if meter_power != 0:
         unit_name += "m**%i" % meter_power
     if mol_power != 0:
-        unit_name += "*mol**%i" % mol_power
+        if mol_power == -1:
+            unit_name += "*mol"
+        else:
+            unit_name += "*mol**%i" % (-mol_power)
+    if len(unit_name) == 0:
+        unit_name = "1"
     if per_second:
         unit /= second
         unit_name += "/second"
@@ -129,6 +132,22 @@ class BaseModel(object):
             del pf.vibrational.negative_freqs_orig
             del pf.energy_backup
 
+    def free_energy_change(self, temp):
+        """Compute the change in free energy.
+
+           The change in free energy depends on the the pressure in the
+           ``ExtTrans`` contribution to the partition function, if such a
+           contribution would be present.
+
+           Arguments:
+            | temp  -- the temperature
+        """
+        raise NotImplementedError
+
+    def energy_difference(self):
+        """Compute the classical (microscopic) energy difference."""
+        raise NotImplementedError
+
     def write_to_file(self, filename):
         """Write the model to a text file.
 
@@ -157,7 +176,7 @@ class ThermodynamicModel(BaseModel):
         self.unit, self.unit_name = get_unit(pfs_react, pfs_prod)
         BaseModel.__init__(self, pfs_react + pfs_prod)
 
-    def compute_equilibrium_constant(self, temp, do_log=False):
+    def equilibrium_constant(self, temp, do_log=False):
         """Compute the equilibrium constant at the given temperature.
 
            Argument:
@@ -168,28 +187,41 @@ class ThermodynamicModel(BaseModel):
                           is returned instead of just the equilibrium constant
                           itself. [default=False]
         """
-        return compute_equilibrium_constant(self.pfs_react, self.pfs_prod, temp, do_log)
+        log_K = 0.0
+        log_K -= sum(pf_react.logv(temp) for pf_react in self.pfs_react)
+        log_K += sum(pf_prod.logv(temp) for pf_prod in self.pfs_prod)
 
-    def compute_reaction_free_energy(self, temp):
-        """Compute the free energy difference between (+) products and (-) reactants.
+        if do_log:
+            return log_K
+        else:
+            return numpy.exp(log_K)
+
+    def free_energy_change(self, temp):
+        """Compute the change in free energy from reactants to products.
+
+           The change in free energy depends on the the pressure in the
+           ``ExtTrans`` contribution to the partition function, if such a
+           contribution would be present.
 
            Arguments:
             | temp  --  The temperature.
         """
-        return sum(pf_prod.free_energy(temp) for pf_prod in self.pfs_prod) - \
-               sum(pf_react.free_energy(temp) for pf_react in self.pfs_react)
+        result = 0.0
+        result -= sum(pf_react.chemical_potential(temp) for pf_react in self.pfs_react)
+        result += sum(pf_prod.chemical_potential(temp) for pf_prod in self.pfs_prod)
+        return result
 
-    def compute_reaction_energy(self):
+    def energy_difference(self):
         """Compute the classical (microscopic) energy difference between (+) products and (-) reactants."""
         return sum(pf_prod.energy for pf_prod in self.pfs_prod) - \
                sum(pf_react.energy for pf_react in self.pfs_react)
 
     def dump(self, f):
         """Write all info about the thermodynamic model to a file."""
-        delta_E = self.compute_reaction_energy()
+        delta_E = self.energy_difference()
         print >> f, "Energy difference = %.1f" % (delta_E/kjmol)
-        delta_A0K = self.compute_reaction_free_energy(0.0)
-        print >> f, "Zero-point corrected energy difference [kJ/mol] = %.1f" % (delta_A0K/kjmol)
+        delta_A0K = self.free_energy_change(0.0)
+        print >> f, "Free energy change at 0K [kJ/mol] = %.1f" % (delta_A0K/kjmol)
         print >> f
         for counter, pf_react in enumerate(self.pfs_react):
             print >> f, "Reactant %i partition function" % counter
@@ -203,15 +235,8 @@ class ThermodynamicModel(BaseModel):
 
 class BaseKineticModel(BaseModel):
     """A generic model for the rate of a chemical reaction."""
-    def compute_free_energy_barrier(self, temp):
-        """Compute the free energy barrier of the reaction.
 
-           Arguments:
-            | temp  -- the temperature
-        """
-        raise NotImplementedError
-
-    def compute_rate_coeff(self, temp, do_log=False):
+    def rate(self, temp, do_log=False):
         """Compute the rate coefficient of the reaction in this analysis
 
            Arguments:
@@ -252,9 +277,17 @@ class KineticModel(BaseKineticModel):
         self.unit, self.unit_name = get_unit(pfs_react, [pf_trans], per_second=True)
         BaseKineticModel.__init__(self, pfs_react + [pf_trans])
 
-    def compute_rate_coeff(self, temp, do_log=False):
-        """See :meth:`BaseKineticModel.compute_rate_coeff`"""
-        result = compute_rate_coeff(self.pfs_react, self.pf_trans, temp, do_log)
+    def rate(self, temp, do_log=False):
+        """See :meth:`BaseKineticModel.rate`
+
+           The implementation is based on transition state theory.
+        """
+        log_K = self.pf_trans.logv(temp)
+        log_K -= sum(pf_react.logv(temp) for pf_react in self.pfs_react)
+        if do_log:
+            result = numpy.log(boltzmann*temp/planck) + log_K
+        else:
+            result = boltzmann*temp/planck*numpy.exp(log_K)
         if self.tunneling is not None:
             if do_log:
                 result += numpy.log(self.tunneling(temp))
@@ -262,26 +295,32 @@ class KineticModel(BaseKineticModel):
                 result *= self.tunneling(temp)
         return result
 
-    def compute_free_energy_barrier(self, temp):
-        """Compute the free energy barrier of the reaction.
+    def free_energy_change(self, temp):
+        """Compute the free energy change from reactants to transition state.
+
+           The change in free energy depends on the the pressure in the
+           ``ExtTrans`` contribution to the partition function, if such a
+           contribution would be present.
 
            Arguments:
             | temp  -- the temperature
         """
-        return self.pf_trans.free_energy(temp) - \
-               sum(pf_react.free_energy(temp) for pf_react in self.pfs_react)
+        result = 0.0
+        result -= sum(pf_react.chemical_potential(temp) for pf_react in self.pfs_react)
+        result += self.pf_trans.chemical_potential(temp)
+        return result
 
-    def compute_energy_barrier(self):
+    def energy_difference(self):
         """Compute the classical (microscopic) energy barrier of the reaction."""
         return self.pf_trans.energy - \
                sum(pf_react.energy for pf_react in self.pfs_react)
 
     def dump(self, f):
         """Write all info about the kinetic model to a file."""
-        delta_E = self.compute_energy_barrier()
+        delta_E = self.energy_difference()
         print >> f, "Energy barrier [kJ/mol] = %.1f" % (delta_E/kjmol)
-        delta_A0K = self.compute_free_energy_barrier(0.0)
-        print >> f, "Zero-point corrected energy barrier [kJ/mol] = %.1f" % (delta_A0K/kjmol)
+        delta_mu0K = self.free_energy_change(0.0)
+        print >> f, "Free energy change at 0K [kJ/mol] = %.1f" % (delta_mu0K/kjmol)
         print >> f
         for counter, pf_react in enumerate(self.pfs_react):
             print >> f, "Reactant %i partition function" % counter
@@ -315,14 +354,32 @@ class ActivationKineticModel(BaseKineticModel):
 
         BaseKineticModel.__init__(self, tm.pfs_all | km.pfs_all)
 
-    def compute_free_energy_barrier(self, temp):
-        """Compute the free energy barrier of the entire reaction.
+    def rate(self, temp, do_log=False):
+        """See :meth:`BaseKineticModel.rate`"""
+        if do_log:
+            return self.tm.equilibrium_constant(temp, True) + \
+                   self.km.rate(temp, True)
+        else:
+            return self.tm.equilibrium_constant(temp, False)* \
+                   self.km.rate(temp, False)
+
+    def free_energy_change(self, temp):
+        """Compute the change in free energy from reactants to transition state.
+
+           The change in free energy depends on the the pressure in the
+           ``ExtTrans`` contribution to the partition function, if such a
+           contribution would be present.
 
            Arguments:
             | temp  -- the temperature
         """
-        return self.tm.compute_reaction_free_energy(temp) + \
-               self.km.compute_free_energy_barrier(temp)
+        return self.tm.free_energy_change(temp) + \
+               self.km.free_energy_change(temp)
+
+    def energy_difference(self):
+        """Compute the classical (microscopic) energy barrier of the reaction."""
+        return self.tm.energy_difference(temp) + \
+               self.km.energy_difference(temp)
 
     def dump(self, f):
         """Write all info about the kinetic model to a file."""
@@ -331,12 +388,3 @@ class ActivationKineticModel(BaseKineticModel):
         print >> f
         print >> f, "Kinetic model"
         self.km.dump(f)
-
-    def compute_rate_coeff(self, temp, do_log=False):
-        """See :meth:`BaseKineticModel.compute_rate_coeff`"""
-        if do_log:
-            return self.tm.compute_equilibrium_constant(temp, True) + \
-                   self.km.compute_rate_coeff(temp, True)
-        else:
-            return self.tm.compute_equilibrium_constant(temp, False)* \
-                   self.km.compute_rate_coeff(temp, False)

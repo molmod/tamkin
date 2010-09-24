@@ -55,9 +55,6 @@
    * **Helper functions:**
        * helper_levels, helpert_levels, helpertt_levels,
        * helper_vibrations, helpert_vibrations, helpertt_vibrations
-   * **Auxiliary routines:**
-       * compute_rate_coeff
-       * compute_equilibrium_constant
 
    **Important**: Partition functions can be constructed for NpT gases, NVT
    gases and many other systems. The return values of methods such as
@@ -99,7 +96,7 @@ __all__ = [
     "Electronic", "ExtTrans", "ExtRot", "PCMCorrection",
     "Vibrations",
     "helper_vibrations", "helpert_vibrations", "helpertt_vibrations",
-    "PartFun", "compute_rate_coeff", "compute_equilibrium_constant"
+    "PartFun",
 ]
 
 
@@ -1528,48 +1525,3 @@ class PartFun(Info, StatFys):
         f = file(filename, 'w')
         self.dump(f)
         f.close()
-
-
-def compute_rate_coeff(pfs_react, pf_trans, temp, do_log=False):
-    """Computes a (forward) rate coefficient.
-
-       The implementation is based on transition state theory.
-
-       Arguments:
-         | ``pfs_react`` -- a list of partition functions objects, one for each
-                            reactant
-         | ``pf_trans`` -- the partition function of the transition state
-         | ``temp`` -- the temperature
-
-       Optional argument:
-         | ``do_log`` -- Return the logarithm of the rate coefficient instead of
-                         just the rate coefficient itself.
-    """
-    log_K = pf_trans.logv(temp)
-    log_K -= sum(pf_react.logv(temp) for pf_react in pfs_react)
-    if do_log:
-        return numpy.log(boltzmann*temp/planck) + log_K
-    else:
-        return boltzmann*temp/planck*numpy.exp(log_K)
-
-
-def compute_equilibrium_constant(pfs_A, pfs_B, temp, do_log=False):
-    """Computes the equilibrium constant between reactants and products.
-
-       Arguments:
-         | ``pfs_A`` -- a list of reactant partition functions
-         | ``pfs_B`` -- a list of product partition functions
-         | ``temp`` -- the temperature
-
-       Optional argument:
-         | ``do_log`` -- Return the logarithm of the equilibrium constant
-                         instead of just the equilibrium constant itself.
-    """
-    log_K = 0.0
-    log_K += sum(pf_B.logv(temp) for pf_B in pfs_B)
-    log_K -= sum(pf_A.logv(temp) for pf_A in pfs_A)
-
-    if do_log:
-        return log_K
-    else:
-        return numpy.exp(log_K)

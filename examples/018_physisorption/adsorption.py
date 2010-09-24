@@ -234,7 +234,7 @@ for p in exp_pressure:
     dens_ar = p/(boltzmann*temp)
     # use the equilibrium constant of the thermodynamic model to compute the
     # density on the 2D surface.
-    K = tm.compute_equilibrium_constant(temp)
+    K = tm.equilibrium_constant(temp)
     dens2d = K*dens_ar
     # from density to occupation using the cross section
     occupation = dens2d*cross_sec_ar

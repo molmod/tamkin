@@ -367,8 +367,8 @@ Thermodynamic equilibrium
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-Implementation in TAMkin
-------------------------
+The method ``PartFun.logv``
+---------------------------
 
 To guarantee the numerical stability of the results obtained with TAMkin,
 logarithms of partition functions are computed in the ``PartFun`` object and
@@ -384,58 +384,44 @@ For all contributions, except the translational one, the method ``logv`` and
 ``log`` are identical.
 
 
-Computation of the equilibrium constant
----------------------------------------
+``ThermodynamicModel`` objects
+------------------------------
 
 Given a list of partition functions of reactants (``pfs_react``) and a list of
-product partition functions (``pfs_prod``), the equilibrium constant is computed
-at a certain temperature, ``temp``, as follows::
+product partition functions (``pfs_prod``), one must first construct a
+``ThermodynamicModel`` object. ::
 
-    Kc = compute_equilibrium_constant(pfs_react, pfs_prod, temp)
+    tm = ThermodynamicModel(pfs_react, pfs_prod)
+
+Then the equilibrium constant is computed at a certain temperature, ``temp``, as
+follows::
+
+    kc = tm.equilibrium_constant(temp)
 
 This function takes one optional argument: ``do_log``, which is by default
 ``False``. When set to True, the logarithm of the partition function is
-returned.
+returned. The name of the SI unit of the equilibrium constant and the
+corresponding conversion factor are attributes of the ``ThermodymanicModel``
+object. This can be used to facilitate the output of equilibrium constants. For
+example::
+
+    print "K_c at 350K [%s] = %.5e" % (tm.unit_name, kc/tm.unit)
 
 Currently TAMkin only supports ideal gases for the translational contribution to
 the partition function, which means that :math:`K_c` does not depend on the
 pressure set in ``ExtTrans.gaslaw.pressure``.
 
+The change in free energy is computed (and printed) as follows::
 
-Computation of the change in free energy
-----------------------------------------
+    drf = tm.free_energy_change(temp)
+    print "Change in free energy [kJ/mol] = %.3f" % (drf/kjmol)
 
-TODO
+The change in free energy does depend on the pressure parameter in the
+translational part of the partition functions of the reactants and products.
 
-
-ThermodynamicModel objects
---------------------------
-
-For later reference it is convenient to mention the ``ThermodynamicModel``
-class. It is a simple object oriented representation of a thermodynamic
-equilibrium.
-
-Given a list of partition functions of reactants (``pfs_react``) and a list of
-product partition functions (``pfs_prod``), a ``ThermodynamicModel`` object is
-created as follows::
-
-    tm = ThermodynamicModel(pfs_react, pfs_prod)
-
-This can be used to compute the equilibrium constant as function of the
-temperature::
-
-    print "Equilibrium constant at 300K.", tm.compute_equilibrium_constant(300)
-
-**TODO:** Add the standard change in free energy.
 
 Reaction kinetics
 ~~~~~~~~~~~~~~~~~
-
-Definition of the equilibrium constant
---------------------------------------
-
-Computation of the equilibrium constant
----------------------------------------
 
 KineticModel objects
 --------------------

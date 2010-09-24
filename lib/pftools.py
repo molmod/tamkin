@@ -221,7 +221,7 @@ class ReactionAnalysis(object):
         self.temps = numpy.arange(self.temp_low,self.temp_high+0.5*self.temp_step,self.temp_step,dtype=float)
         self.temps_inv = 1/self.temps
         self.ln_rate_coeffs = numpy.array([
-            self.kinetic_model.compute_rate_coeff(temp, do_log=True)
+            self.kinetic_model.rate(temp, do_log=True)
             for temp in self.temps
         ])
         self.rate_coeffs = numpy.exp(self.ln_rate_coeffs)
@@ -272,10 +272,10 @@ class ReactionAnalysis(object):
         print >> f, "Number of temperatures = %i" % len(self.temps)
         print >> f
         print >> f, "Reaction rate coefficients"
-        print >> f, "    T [K]     Delta A [kJ/mol]       k(T) [%s]" % (self.kinetic_model.unit_name)
+        print >> f, "    T [K]    Delta_r F [kJ/mol]      k(T) [%s]" % (self.kinetic_model.unit_name)
         for i in xrange(len(self.temps)):
             temp = self.temps[i]
-            delta_free = self.kinetic_model.compute_free_energy_barrier(temp)
+            delta_free = self.kinetic_model.free_energy_change(temp)
             print >> f, "% 10.2f      %8.1f             % 10.5e" % (
                 temp, delta_free/kjmol, self.rate_coeffs[i]/self.kinetic_model.unit
             )

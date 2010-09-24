@@ -62,6 +62,7 @@ class PartFunTestCase(unittest.TestCase):
         mol_trans = load_molecule_g03fchk("input/mat/Zp_p_TS.28aug.fchk", "input/mat/5Tp_p_TS.oniom21apr_HF.fchk")
         pf_react = PartFun(NMA(mol_react, PHVA(fixed_atoms)))
         pf_trans = PartFun(NMA(mol_trans, PHVA(fixed_atoms)))
+        km = KineticModel([pf_react], pf_trans)
 
         # values taken from the fancy excel file...
         temps = numpy.array([670,680,690,700,710,720,730,740,750,760,770])
@@ -71,10 +72,10 @@ class PartFunTestCase(unittest.TestCase):
             3.7236678E+06, 4.4160510E+06, 5.2143822E+06
         ])
         for i in xrange(len(temps)):
-            k = compute_rate_coeff([pf_react], pf_trans, temps[i])
+            k = km.rate(temps[i])
             self.assertAlmostEqual(numpy.log(k/(1/second)), numpy.log(expected_ks[i]),5)
-            logk = compute_rate_coeff([pf_react], pf_trans, temps[i], do_log=True)
-            self.assertAlmostEqual(numpy.log(k), logk)
+            log_k = km.rate(temps[i], do_log=True)
+            self.assertAlmostEqual(numpy.log(k), log_k)
 
     def test_gas_react_sterck(self):
         # Test both Full and ConstrainExt:
@@ -164,6 +165,7 @@ class PartFunTestCase(unittest.TestCase):
         pf_react1 = PartFun(NMA(mol_react1, ConstrainExt()), [ExtTrans(cp=False), ExtRot(1)])
         pf_react2 = PartFun(NMA(mol_react2, ConstrainExt()), [ExtTrans(cp=False), ExtRot(1)])
         pf_trans = PartFun(NMA(mol_trans, ConstrainExt()), [ExtTrans(cp=False), ExtRot(1)])
+        km = KineticModel([pf_react1, pf_react2], pf_trans)
 
         # values taken from the fancy excel file...
         temps = numpy.array([298.15,300,400,500,600,700,800,900,1000,1100])
@@ -174,10 +176,10 @@ class PartFunTestCase(unittest.TestCase):
         ])
         unit = meter**3/mol/second
         for i in xrange(len(temps)):
-            k = compute_rate_coeff([pf_react1, pf_react2], pf_trans, temps[i])
+            k = km.rate(temps[i])
             # Sometimes, the fancy excel files use slightly different constants.
-            # Therefore, only equal up to 2 decimals.
-            self.assertAlmostEqual(numpy.log(k/unit), numpy.log(expected_ks[i]),2)
+            # Therefore, only expect numbers to be equal up to 2 decimals.
+            self.assertAlmostEqual(numpy.log(k/unit), numpy.log(expected_ks[i]), 2)
 
     def test_derivatives(self):
         molecule = load_molecule_g03fchk("input/ethane/gaussian.fchk")
@@ -364,18 +366,27 @@ class PartFunTestCase(unittest.TestCase):
         mol_trans = load_molecule_g03fchk("input/sterck/paats_1h2o_b_aa.fchk")
         pf_react1 = PartFun(NMA(mol_react1), [ExtTrans(), ExtRot(1)])
         pf_react2 = PartFun(NMA(mol_react2), [ExtTrans(), ExtRot(1)])
-        pf_comlex = PartFun(NMA(mol_complex), [ExtTrans(), ExtRot(1)])
+        pf_complex = PartFun(NMA(mol_complex), [ExtTrans(), ExtRot(1)])
         pf_trans = PartFun(NMA(mol_trans), [ExtTrans(), ExtRot(1)])
+        km1 = KineticModel([pf_react1, pf_react2], pf_trans)
+        km2 = KineticModel([pf_complex], pf_trans)
+        tm = ThermodynamicModel([pf_react1, pf_react2], [pf_complex])
+        self.assertAlmostEqual(tm.unit*km2.unit, km1.unit)
+        self.assertEqual(tm.unit_name, "m**3*mol**-1")
+        self.assertEqual(km1.unit_name, "m**3*mol**-1/second")
+        self.assertEqual(km2.unit_name, "1/second")
 
         for temp in numpy.arange(100,1000,10.0):
-            log_K = compute_equilibrium_constant([pf_react1, pf_react2], [pf_comlex], temp, do_log=True)
-            K = compute_equilibrium_constant([pf_react1, pf_react2], [pf_comlex], temp)
+            K = tm.equilibrium_constant(temp)
+            log_K = tm.equilibrium_constant(temp, do_log=True)
             self.assertAlmostEqual(numpy.log(K), log_K)
-            k = compute_rate_coeff([pf_react1, pf_react2], pf_trans, temp)
-            log_k = numpy.log(k)
-            k_prime = compute_rate_coeff([pf_comlex], pf_trans, temp)
-            log_k_prime = numpy.log(k_prime)
-            self.assertAlmostEqual(log_K + log_k_prime, log_k)
+            k1 = km1.rate(temp)
+            log_k1 = km1.rate(temp, do_log=True)
+            self.assertAlmostEqual(numpy.log(k1), log_k1)
+            k2 = km2.rate(temp)
+            log_k2 = km2.rate(temp, do_log=True)
+            self.assertAlmostEqual(numpy.log(k2), log_k2)
+            self.assertAlmostEqual(log_K + log_k2, log_k1)
 
     def test_proton(self):
         mol = Proton()

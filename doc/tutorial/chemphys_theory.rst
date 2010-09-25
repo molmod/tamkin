@@ -427,8 +427,148 @@ temperature, and bundles all the density or pressure information of the
 reference state at which the change in free energy is computed.
 
 
-The rate constant
------------------
+The rate constant -- Transition State Theory
+--------------------------------------------
+
+Introduction
+^^^^^^^^^^^^
+
+Consider the reaction
+
+.. math:: \nu_A A + \nu_b B \rightarrow P,
+
+where P may a product or a mixture of products. The rate of the reaction is
+proportional to some rate constant, :math:`k`, and the concentrations of the
+reactants:
+
+.. math:: \frac{d \rho_P}{d T}  = k \rho_A^{\nu_A} \rho_B^{\nu_B}.
+
+Rate constants can be computed with TAMkin using transition state theory. The
+derivation below follows the established approach of Eyring, and is based on the
+derivation of McQuarrie and Simon (see [McQuarrie1997]_, page 1075). However, we
+use slightly different conventions and introduce a few generalizations:
+
+- The derivation below is applicable to any number of reactants.
+
+- We use the same `generalized density`, :math:`\rho_X`, as in the derivation of
+  the equilibrium constant. The result is therefore also applicable to surface
+  reaction, etc.
+
+- The equilibrium constant is not treated as a dimensionless quantity.
+
+The transition state
+^^^^^^^^^^^^^^^^^^^^
+
+The transition state can be seen as a thin border that divides the coordinate
+space into the reactant and the product region:
+
+.. image:: ../tst_2d.png
+
+The transition state is not some sort of stable intermediate, but rather a
+geometrical definition of the molecular configurations that are in between
+reactants and products.
+
+Basic equations
+^^^^^^^^^^^^^^^
+
+In transition state theory, one assumes there is a quasi-equilibrium between the
+reactants and the transition state. The transition state has a certain
+probability per unit of time, :math:`f`, to evolve into the product well, for
+which there is no reverse process:
+
+.. math:: \nu_A A + \nu_b B \rightleftharpoons T \rightarrow P.
+
+These assumptions can be expressed mathematically as follows:
+
+.. math:: \frac{d \rho_P}{d T}  = f \rho_T
+
+.. math:: \rho_T = K_c^{\ddagger} \rho_A^{\nu_A} \rho_B^{\nu_B}
+
+This leads to a convenient expression for the rate constant:
+
+.. math:: k = f K_c^{\ddagger}
+
+
+The reaction coordinate
+^^^^^^^^^^^^^^^^^^^^^^^
+
+The reaction coordinate is a function of internal coordinates that can be used
+to distinguish between reactant and product geometries. It is illustrated in the
+figure below:
+
+.. image:: ../tst.png
+
+The potential energy as function of the reaction coordinate has two minima, one
+for the reactants and one for the products. Between these wells, the energy
+has a local maximum. We assume that the energy as function of all other
+coordinates is a simple quasi-harmonic well. This means that the energy maximum
+on the reaction coordinate is a saddle point in the full phase space.
+
+Along the reaction coordinate, :math:`x`, we select a small interval that
+corresponds to the transition state. In principle one can choose this interval
+at any point between the reactant and product well. We make a choice that is
+most in line with the assumptions of transition state theory:
+
+- The activated complex falls into the product well as soon as it crosses the
+  right boundary of the transition state. For this reason, the right boundary
+  should be at the right of the energy maximum.
+
+  When considering the true dynamics of the system, it is still possible that
+  the system will bounce back into the reactant well without first reaching the
+  product well. These events are neglected in transition state theory.
+
+- There is a pseudo-equilibrium between the reactants and the transition state.
+  We must therefore put the left boundary at the left of the energy maximum. If
+  it would be at the right of the maximum, all transition state structures would
+  simply fall into the product well.
+
+- As will be discussed below, the width of the transition state region should
+  be small such that the potential energy as function of the reaction coordinate
+  is nearly constant.
+
+
+K\ :sub:`c` in terms of gas phase partition functions
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+The quasi-equilibrium constant, :math:`K_c^{\ddagger}`, can be expressed in
+terms of the partition functions of the reactants and the transition state.
+
+.. math:: K_c^{\ddagger}
+                = \frac{\rho_{T,\text{eq}}}
+                       {\rho_{A,\text{eq}}^{\nu_A}\,\rho_{B,\text{eq}}^{\nu_B}}
+                = \frac{Z'_T(1, \ldots)}
+                       {Z'^{\nu_A}_A(1, \ldots)\,Z'^{\nu_B}_B(1, \ldots)}
+
+The reactants are treated as simple stable gas-phase molecules, and their
+partition functions are straightforward.
+
+The partition function of the transition state needs some special attention. For
+all coordinates except the reaction coordinate, one can use the traditional
+gas phase approximation to define the partition function. For the reaction
+coordinate one assumes that the energy dependence on the reaction coordinate
+can be neglected. A simple one-dimensional translational partition function is
+used for the reaction coordinate.
+
+.. math:: Z'_T(1, \ldots) = Z'_{T,\text{rc}} \times Z'_{T,\text{other}}(1, \ldots)
+
+with
+
+.. math:: Z'_{T,\text{rc}} = \sqrt{ \frac{2\pi m^{\ddagger} k_B T}{h^2} } \delta x
+
+where `rc` stands for reaction coordinate, and :math:`m^{\ddagger}` is the
+reduced mass of the reaction coordinate.
+
+The partition function :math:`Z'_{T,\text{other}}(1, \ldots)` is constructed
+in the same way as a stable gas phase partition function, but using the saddle
+point on the potential energy surface as reference geometry. The imaginary
+frequency is not considered in the vibrational contribution to
+:math:`Z'_{T,\text{other}}(1, \ldots)`.
+
+A simple model for `f`
+^^^^^^^^^^^^^^^^^^^^^^
+
+Final expression for the rate constant
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
 
 Kinetic parameters (A and E\ :sub:`a`)

@@ -233,7 +233,7 @@ dots stand for all other natural variables of the closed system, .e.g. total
 volume or external pressure, which remain constant during the course of the
 reaction.
 
-When we introduce a reaction coordinate :math:`\xi`, all other states
+When we introduce `the extent of reaction`, :math:`\xi`, all other states
 reachable through the chemical reaction can be written as
 
 .. math:: (N^0_A - \xi\nu_A, N^0_B - \xi\nu_B, N^0_C + \xi\nu_C, N^0_D + \xi\nu_D, \ldots)
@@ -243,8 +243,8 @@ The grand partition function for all states of the mixture is written as:
 .. math:: \mathcal{Z} = \sum_{\xi = \xi_{\text{min}}}^{\xi_{\text{max}}}
                 Z(N^0_A - \xi\nu_A, N^0_B - \xi\nu_B, N^0_C + \xi\nu_C, N^0_D + \xi\nu_D, \ldots)
 
-where :math:`Z` is the partition function of the mixture at a fixed reaction
-coordinate. Assuming that the interactions between particles of different
+where :math:`Z` is the partition function of the mixture at a fixed extent of
+the reaction. Assuming that the interactions between particles of different
 species can be neglected, the grand partition function becomes:
 
 .. math:: \mathcal{Z} = \sum_{\xi = \xi_{\text{min}}}^{\xi_{\text{max}}}
@@ -264,10 +264,10 @@ product of fixed particle partition functions:
 .. math:: p(N_A, N_B, N_C, N_D) \propto Z_A(N_A, \ldots) Z_B(N_B, \ldots) Z_C(N_C, \ldots) Z_D(N_D, \ldots)
 
 where :math:`N_X` is a shorthand for :math:`N^0_{X} + \xi\nu_X`. To find the
-most probable state of the system, the chemical equilibrium, we must find the
-:math:`\xi` that maximizes the probability :math:`p(N_A, N_B, N_C, N_D)`.
-Mathematically, this means that we want to find a non-trivial solution to the
-equation
+most probable state of the system, the chemical equilibrium, we must find `the
+equilibrium extent of reqction`, :math:`\xi_{\text{eq}}` that maximizes the
+probability :math:`p(N_A, N_B, N_C, N_D)`. Mathematically, this means that we
+want to find a non-trivial solution to the equation
 
 .. math:: \frac{\partial p(N_A, N_B, N_C, N_D + \xi_{\text{eq}}\nu_D)}
                {\partial \xi_{\text{eq}}} = 0.

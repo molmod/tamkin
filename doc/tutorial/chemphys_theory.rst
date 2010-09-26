@@ -478,29 +478,186 @@ Hindered free rotor correction
 Quantities derived from one partition function
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
+in this section we shortly review all thermodynamic functions that can be
+derived from the `basic` quantities discussed above. The `derived` quantities
+are:
+
+========================= =====================
+Symbol                    Name
+========================= =====================
+:math:`F`                 Free energy
+:math:`E`                 Internal Energy
+:math:`C`                 Heat capacity
+:math:`E_{\text{ZPE}}`    Zero-point energy
+:math:`S`                 Entropy
+:math:`\mu`               Chemical potential
+========================= =====================
+
+In TAMkin these `derived` thermodynamic functions are implemented in a general
+fashion terms of the `basic` quantities. Therefore we will not discuss the
+analytical form of each contribution to the a `derived` quantity, as they are
+not required for the implementation.
+
+All extensive quantities (all derived quantities except the chemical potential)
+are made intensive by dividing through the number of particles.
+
+In all the derivatives in the following subsections, the derivatives are taken
+such that all other natural variables of the ensemble are kept constant, except
+the quantity that is derived.
 
 Free energy
 -----------
+
+The free energy per particle is defined as
+
+.. math::
+    :nowrap:
+
+    \begin{align*}
+        F & = -k_BT \frac{\ln(Z_N)}{N} \\
+          & = -k_BT \mathsf{(log)}
+    \end{align*}
+
+One may wonder how TAMkin makes a distinction between the Gibbs and the
+Helmholtz free energy. The convention in TAMkin is that the type of free energy
+depends on the ensemble of the partition function. For example, when the
+translational partition function corresponds to the NpT ensemble of a 3D gas,
+the free energy is the Gibbs free energy. When the translational partition
+function corresponds to the NVT ensemble of a 3D gas, the free energy is the
+Helmholtz free energy. There are even more sorts of translational contributions
+that TAMkin can include in the partition function, or it can even be omitted.
+All these options lead to different types sorts of free energies. However, they
+all adhere to the definition given above. It is only the form of :math:`Z_N`
+that changes.
 
 
 Internal energy
 ---------------
 
+The internal energy per particle is defined as
+
+.. math::
+    :nowrap:
+
+    \begin{align*}
+        E & = k_BT^2 \frac{1}{N}\frac{\partial \ln(Z_N)}{\partial T} \\
+          & = k_BT^2 \mathsf{(logt)}
+    \end{align*}
+
+When this definition is applied to a partition function of an NVT ensemble of
+3D particles, one gets the conventional internal energy. In the case of an NpT
+3D gas, this definition leads to the enthalpy.
+
 
 Heat capacity
 -------------
 
+The heat capacity per particle is the derivative of the internal energy towards
+the temperature:
 
-Zero-point energy
------------------
+.. math::
+    :nowrap:
+
+    \begin{align*}
+        C & = \frac{\partial E}{\partial T} \\
+          & = 2 k_BT \frac{1}{N}\frac{\partial \ln(Z_N)}{\partial T} + k_B T^2 \frac{\partial^2 \ln(Z_N)}{\partial T^2} \\
+          & = 2 k_BT \mathsf{(logt)} + k_BT^2 \mathsf{(logtt)}
+    \end{align*}
+
+This quantity is called the heat capacity at constant volume in the case of an
+3D NVT ensemble and the heat capacity at constant pressure in the case of an
+3D NpT ensemble.
 
 
 Entropy
 -------
 
+The entropy per particle is defined as:
+
+.. math::
+    :nowrap:
+
+    \begin{align*}
+        S & = \frac{F - E}{T} \\
+          & = -k_B \frac{\ln Z_N}{N} - k_B T \frac{1}{N} \frac{\partial \ln Z_N}{\partial T} \\
+          & = -k_B (\mathsf{(log)} - T \mathsf{(logt)})
+    \end{align*}
+
+The entropy in the chemical context is typically the entropy in the NVT
+ensemble.
 
 Chemical potential
 ------------------
+
+The chemical potential is the derivative of the free energy towards the number
+of particles. We must multiply our definition of :math:`F` with the number of
+particles to get back the extensive quantity before taking the derivative:
+
+.. math::
+    :nowrap:
+
+    \begin{align*}
+        \mu & = \frac{\partial FN}{\partial N} \\
+            & = -k_B T \frac{\partial \ln Z_N}{\partial N} \\
+            & = -k_B \mathsf{(logn)}
+    \end{align*}
+
+A closer look a the definition of :math:`\mathsf{(logn)}` reveals that the
+chemical potential can also be interpreted is the free energy of a single
+particle in its `own` volume, i.e. :math:`V/N`. Such a physical interpretation
+is convenient, but it may also cause some confusion. Because of this anology,
+one can split the chemical potential into an energetic and entropic
+contribution:
+
+.. math:: \mu = E + TS_1
+
+where :math:`E` is the internal energy per particle and :math:`S_1` is slightly
+different from the normal entropy:
+
+.. math::
+    :nowrap:
+
+    \begin{align*}
+        S_1 & = \frac{\mu - E}{T} \\
+            & = -k_B \frac{\partial \ln Z_N}{\partial N} - k_B T \frac{1}{N} \frac{\partial \ln Z_N}{\partial T} \\
+            & = -k_B (\mathsf{(logn)} - T \mathsf{(logt)})
+    \end{align*}
+
+This also reveals that the chemical potential in the limit of the temperature
+towards zero is the zero-point energy. The latter is therefore a good
+zero'th-order estimate of the chemical potential, which can be used to get
+a first insight in the trends in equilibrium constants and rate constants. This
+is discussed in more detail below.
+
+Zero-point energy
+-----------------
+
+The zero-point energy can be derived in several ways. TAMkin computes it
+as the limit of the chemical potential for the temperature going towards zero.
+This definition facilitates the comparison with the change in free energy in
+a chemical reaction, but it is numerically identical to any other definition. It
+is also a computationally beneficial definition.
+
+.. math::
+    :nowrap:
+
+    \begin{align*}
+        E_{ZPE} & = \lim_{T \rightarrow 0} \mu \\
+                & = \lim_{T \rightarrow 0} -kT \mathsf{(logn)}
+    \end{align*}
+
+Some remarks:
+
+* TAMkin uses a general scheme for the computation of the zero-point energy that
+  can be applied to any contribution in the partition function. The typical
+  origin of the zero-point energy correction is the vibrational partition
+  function.
+
+* In TAMkin, also the electronic contribution has a zero-piont energy
+  because the same reference energy is used as in the electronic structure
+  computation.
+
+* Hindered rotors can also have a contribution to the zero-point energy.
 
 
 Quantities derived from multiple partition functions

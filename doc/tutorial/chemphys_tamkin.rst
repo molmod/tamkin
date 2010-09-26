@@ -17,15 +17,15 @@ Definition of the partition function
 ------------------------------------
 
 In order to compute thermodynamic quantities with TAMkin, it is crucial to
-specify the correct parameters that define the partition function for the
-molecular system under scrutiny. One must pay special attention to the
-compatibility of the normal mode analysis (NMA, to compute the vibrational
-spectrum) and the definition of the partition function. TAMkin will not complain
-about `unusual` combinations of NMA's and Partition functions.
+specify the correct parameters for the partition function of the molecular
+system under scrutiny. One must pay special attention to the compatibility of
+the normal mode analysis (NMA, to compute the vibrational spectrum) and the
+definition of the partition function. TAMkin will not complain about `unusual`
+combinations of NMA's and Partition functions.
 
-In the tutorial below, the microscopic computations are all carried out with
+In the tutorial below, all the microscopic computations are all carried out with
 Gaussian03, but one can replace the ``load_molecule_...`` line with anything
-suitable to load data from other quantum chemistry packages. The same
+suitable to load data from other (quantum) chemistry packages. The same
 instructions also work starting from Gaussian09 computations.
 
 The text below shows `snippets` of Python code to perform certain tasks. When
@@ -122,34 +122,29 @@ values for these options are suitable for most applications.
     you are interested in the constant volume boundary conditions (NVY
     ensemble), use the option ``cp=False``.
 
-  ``gaslaw`` (default ``gaslaw=IdealGasLaw()``).
-    The ideal gas law is the only gas law implemented so far, and is therefore
-    also used by default. One may specify some options for the IdealGasLaw
-    object. They are discussed below.
+  ``pressure`` (default ``pressure=None``, only allowed when ``cp==True``).
+    The default value of ``pressure`` is 1 bar for 3D gases, 75.64 mNewton/m for
+    2D gases (surface tension of water) and 1.0 atomic units for any other
+    dimension. *Note:* several quantities derived from the partition function do
+    not explicitly depend on the pressure in the case of ideal gases. If you
+    want to see the (absence of) pressure dependence, use the method
+    ``ExtTrans.set_pressure()`` and recompute the thermodynamic quantities
+    afterwards.
+
+  ``density`` (default ``density=None``, only allowed when ``cp==False``).
+    The default value of ``density`` is 1 mol/m\ :sub:`dim`, where dim is the
+    dimension of the gas. *Note:* several quantities derived from the partition
+    function do not explicitly depend on the density in the case of ideal gases.
+    If you want to see the (absence of) density dependence, use the method
+    ``ExtTrans.set_density()`` and recompute the thermodynamic quantities
+    afterwards.
 
   ``dim`` (default ``dim=3``).
     The dimension of the gas. For ordinary gases, the dimension is three.
 
   ``mobile`` (default ``mobile=None``).
-    One can optionally specify that only a part of the system is translational
-    freedom. This is not relevant for molecules in the gas phase.
-
-* **Options for IdealGasLaw**. See :class:`tamkin.partf.IdealGasLaw` for the
-  details. The ideal gas law has two optional parameters.
-
-  ``pressure`` (default ``pressure=None``).
-    The default value of ``pressure`` is 1 bar for 3D gases, 4.86e-05 atomic
-    units for 2D gases (surface tension of water) and 1.0 atomic units for any
-    other dimension. *Note:* several quantities derived from the partition
-    function do not explicitly depend on the pressure in the case of ideal
-    gases. In case you want to see the pressure dependence, use the method
-    ``ExtTrans.set_pressure()`` and compute the thermodynamic quantities
-    afterwards.
-
-  ``dim`` (default ``dim=3``).
-    The dimension of the gas. This must match the option ``dim`` given to
-    ``ExtTrans``. When the ideal gas law is not specified in ExtTrans, the
-    default value will have automatically the proper dimension.
+    One may specify that only a part of the system has translational freedom.
+    This is not relevant for molecules in the gas phase.
 
 * **Options for ExtRot**. See :class:`tamkin.partf.ExtRot` for the details.
 
@@ -189,15 +184,14 @@ Make sure you first read and understand the section on partition functions for
 ideal gas molecules.
 
 In this section, we show how one defines a partition function for a particle
-that is adsorbed on a surface (flat or inside a porous material) and that it can
-not rotate or displace over the surface once adsorbed. If it has to adsorb at
-another place, or somewhere else, it first has to desorb and adsorb again.
+that is adsorbed on a surface (flat or inside a porous material) such that it
+can not rotate or translate over the surface once adsorbed. It can only adsorb
+at another site, if it first desorbs from the surface.
 
 We assume that the adsorption energy is computed with Gaussian using a cluster
 approximation for the surface. This means that the cluster is terminated
 and that the atoms at the termination are fixed in space with constraints during
-the geometry optimization. We also assume that the adsorbed molecule is free to
-rotate as it can do in the gas phase.
+the geometry optimization.
 
 The following code can be used to define the partition function for such a
 system::
@@ -209,7 +203,8 @@ system::
 
 Compared to the gas phase, external translation and rotation are removed. The
 file ``"gaussian_both.fchk"`` comes from a frequency computation of the adsorbed
-molecule on the cluster model of the surface.
+molecule on the cluster model of the surface. The list ``fixed`` contains all
+atom indexes that fixed in space during the optimization.
 
 The partition function of the surface without absorbed species is defined as
 follows::
@@ -220,10 +215,11 @@ follows::
     pf_surf = PartFun(nma_surf, [])
 
 The surface is treated as a cluster fixed in space, i.e. there are no external
-rotation and translation contributions to its partition function. The file
+rotation and translation contributions to the partition function. The file
 ``"gaussian_surf.fchk"`` comes from a frequency computation on the surface
 cluster model. The geometry of the cluster must be optimized with constraints on
-the atoms that terminate the cluster.
+the atoms that terminate the cluster. The list ``fixed`` contains all
+atom indexes that fixed in space during the optimization.
 
 One may load the indexes of the fixed atoms from a Gaussian ``.com`` file as
 follows::
@@ -233,8 +229,8 @@ follows::
 Be aware that the fixed atom indexes may be different in the two computations,
 but we recommend some consistency in this context. The following convention
 avoids a lot of confusion: put all your surface atoms in the beginning of the
-geometry definition, and within this group of atoms, put all fixed atoms first,
-then the free atoms.
+geometry definition, and within this group of surface atoms, put all fixed atoms
+first, then the free atoms.
 
 Mobile adsorbed molecules
 ^^^^^^^^^^^^^^^^^^^^^^^^^
@@ -245,13 +241,13 @@ ideal gas molecules.
 In this section, we show how one defines a partition function for a particle
 that is adsorbed on a surface. We assume that the particle can still hover over
 the surface and that this translational motion can be modeled with a 2D ideal
-gas partition function with a constant surface area.
+gas partition function with a constant surface area. We also assume that the
+adsorbed molecule is free to rotate as it can do in the gas phase.
 
 Further we assume that the adsorption energy is computed with Gaussian using
 a cluster approximation for the surface. This means that the cluster is
 terminated and that the atoms at the termination are fixed in space with
-constraints during the geometry optimization. We also assume that the adsorbed
-molecule is free to rotate as it can do in the gas phase.
+constraints during the geometry optimization.
 
 The following code can be used to define the partition function for such a system::
 
@@ -263,8 +259,12 @@ The following code can be used to define the partition function for such a syste
 
 In this code, the file ``"gaussian_both.fchk"`` comes from a frequency
 computation of the adsorbed molecule on the cluster model of the surface. The
-partition function of the surface without the adsorbed molecule is constructed
-as follows::
+list ``fixed`` contains all atom indexes that fixed in space during the
+optimization. The ``mobile`` atoms refer to those of the adsorbed species that
+has 2D translational motion on the surface.
+
+The partition function of the surface without the adsorbed molecule is
+constructed as follows::
 
     fixed = [0, 1, 2, ...] # atom indexes of the fixed atoms, counting from zero
     mol_surf = load_molecule_g03fchk("gaussian_surf.fchk")
@@ -275,7 +275,8 @@ The surface is treated as a cluster fixed in space, i.e. there are not external
 rotation and translation contributions to its partition function. The file
 ``"gaussian_surf.fchk"`` comes from a frequency computation on the surface
 cluster model. The geometry of the cluster must be optimized with constraints on
-the atoms that terminate the cluster.
+the atoms that terminate the cluster. The list ``fixed`` contains all atom
+indexes that fixed in space during the optimization.
 
 One may load the indexes of the fixed atoms from a Gaussian ``.com`` file as
 follows::
@@ -301,7 +302,7 @@ TODO
 The Partition function dump file
 --------------------------------
 
-After a partition function is defined in your script, one can write the entire
+Once a partition function is defined in your script, one can write an extensive
 description to a text file for later reference::
 
     pf.write_to_file("partfun.txt")
@@ -312,33 +313,35 @@ It is recommended to double check the contents of the file.
 Computation of thermodynamic quantities
 ---------------------------------------
 
-Once the partition function of a system is defined, one can start computing
+Once a partition function object is created, one can start computing
 thermodynamic quantities at different temperatures and pressures (or densities).
 
 
 Overview of standard quantities
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
-Thermodynamic quantities can be computed for a given ``PartFun`` object by calling
-the appropriate methods. All extensive quantities, i.e. all quantities except
-the chemical potential, are transformed into intensive quantities by dividing
-through the number of particles. The following table relates the methods to the
-meaning of the returned numbers for two common ensembles.
+Thermodynamic quantities can be computed for a given ``PartFun`` object by
+calling the appropriate methods. All extensive quantities, i.e. all quantities
+except the chemical potential, are transformed into intensive quantities by
+dividing through the number of particles. The following table relates the
+methods to the meaning of the returned numbers for two common ensembles.
 
-========================= ====================== ====================================================== ====================================================
-``PartFun`` method        Internal unit          NVT Ensemble (3D gas)                                  NpT Ensemble (3D gas)
-========================= ====================== ====================================================== ====================================================
-``internal_energy``       Hartree/particle       Internal energy (per particle)                         Enthalpy (per particle)
-``heat_capacity``         Hartree/(K*particle)   Heat capacity at constant volume (per particle)        Heat capacity at constant pressure (per particle)
-``free_energy``           Hartree/particle       Helmholtz free energy (per particle)                   Gibbs free energy (per particle)
-``chemical_potential``    Hartree/particle       Chemical potential                                     (idem)
-``entropy``               Hartree/particle       Entropy (per particle)                                 (idem)
-``log``                   1/particle             Logarithm of the partition function (per particle)     (idem)
-``logt``                  1/(K*particle)         First derivative of ``log`` towards temperature        (idem)
-``logtt``                 1/(K^2*particle)       Second derivative of ``log`` towards temperature       (idem)
-========================= ====================== ====================================================== ====================================================
+========================= ====================== ======================================================================================== ====================================================
+``PartFun`` method        Internal unit          NVT Ensemble (3D gas)                                                                    NpT Ensemble (3D gas)
+========================= ====================== ======================================================================================== ====================================================
+``internal_energy``       Hartree/particle       Internal energy (per particle)                                                           Enthalpy (per particle)
+``heat_capacity``         Hartree/(K*particle)   Heat capacity at constant volume (per particle)                                          Heat capacity at constant pressure (per particle)
+``free_energy``           Hartree/particle       Helmholtz free energy (per particle)                                                     Gibbs free energy (per particle)
+``chemical_potential``    Hartree/particle       Chemical potential                                                                       (idem)
+``entropy``               Hartree/particle       Entropy (per particle)                                                                   (idem)
+``log``                   1/particle             Logarithm of the partition function (per particle)                                       (idem)
+``logt``                  1/(K*particle)         First derivative of ``log`` towards temperature                                          (idem)
+``logtt``                 1/(K^2*particle)       Second derivative of ``log`` towards temperature                                         (idem)
+``logn``                  1/particle             Derivative of the logarithm of the partition function towards the number of particles    (idem)
+``logv``                  1/particle             ``logn`` - :math:`\ln(V/N)`                                                              (idem)
+========================= ====================== ======================================================================================== ====================================================
 
-One can print out these values in a TAMkin script::
+One can print any of these quantities in a TAMkin script::
 
     from molmod import *  # for the unit conversion
     pf = ...
@@ -376,10 +379,9 @@ spreadsheet software. ::
     ta = ThermoAnalysis(pf, [300, 400, 500, 600])
     ta.write_to_file("thermo.csv")
 
-
 The CSV file contains tables with thermodynamic quantities, at the temperatures
-in the second argument of the ThermoAnalysis constructor, corresponding to the
-PartFun methods as explained the table below.
+in the second argument of the ``ThermoAnalysis`` constructor, corresponding to
+the ``PartFun`` methods as explained the table below.
 
 =============================================================================== ============ ==========================
 Name in CSV file                                                                Unit         ``PartFun`` method name
@@ -399,58 +401,51 @@ Thermodynamic equilibrium
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-The method ``PartFun.logv``
----------------------------
-
-To guarantee the numerical stability of the results obtained with TAMkin,
-logarithms of partition functions are computed in the ``PartFun`` object and
-its contributions. These can be used to compute the logarithm of the equilibrium
-constant:
-
-.. math:: \ln(K_c(T)) = \nu_C\ln(Z'_C(1, \ldots)) + \nu_D\ln(Z'_D(1, \ldots))
-                       -\nu_A\ln(Z'_A(1, \ldots)) - \nu_B\ln(Z'_B(1, \ldots))
-
-The method ``PartFun.logv`` computes the quantity :math:`\ln(Z'_X(1, \ldots))`.
-The same method can be found in all the contributions to the partition function.
-For all contributions, except the translational one, the method ``logv`` and
-``log`` are identical.
-
-
-``ThermodynamicModel`` objects
-------------------------------
-
 Given a list of partition functions of reactants (``pfs_react``) and a list of
-product partition functions (``pfs_prod``), one must first construct a
+product partition functions (``pfs_prod``), one can construct a
 ``ThermodynamicModel`` object. ::
 
     tm = ThermodynamicModel(pfs_react, pfs_prod)
 
-Then the equilibrium constant is computed at a certain temperature, ``temp``, as
-follows::
+With a ``ThermodynamicModel`` object one can compute the following quantities:
 
-    kc = tm.equilibrium_constant(temp)
+* **The equilibrium constant** is computed at a given temperature, ``temp``, as
+  follows::
 
-This function takes one optional argument: ``do_log``, which is by default
-``False``. When set to True, the logarithm of the partition function is
-returned. The name of the SI unit of the equilibrium constant and the
-corresponding conversion factor are attributes of the ``ThermodymanicModel``
-object. This can be used to facilitate the output of equilibrium constants. For
-example::
+      kc = tm.equilibrium_constant(temp)
 
-    print "K_c at 350K [%s] = %.5e" % (tm.unit_name, kc/tm.unit)
+  This function takes one optional argument: ``do_log``, which is by default
+  ``False``. When set to True, the logarithm of the equilibrium constant is
+  returned. The name of the SI unit of the equilibrium constant and the
+  corresponding conversion factor are attributes of the ``ThermodymanicModel``
+  object. This can be used to facilitate the output of equilibrium constants.
+  For example::
 
-Currently TAMkin only supports ideal gases for the translational contribution to
-the partition function, which means that :math:`K_c` does not depend on the
-pressure set in ``ExtTrans.gaslaw.pressure``.
+      print "K_c at 350K [%s] = %.5e" % (tm.unit_name, kc/tm.unit)
 
-The change in free energy is computed (and printed) as follows::
+  Currently TAMkin only supports ideal gases in the translational partition
+  function which means that :math:`K_c` does notdepend on the pressure set in
+  ``ExtTrans.pressure`` or the density set in ``ExtTrans.density``. (When no
+  translational freedom is included in the partition function, there is no
+  pressure or density to worry about.)
 
-    drf = tm.free_energy_change(temp)
-    print "Change in free energy [kJ/mol] = %.3f" % (drf/kjmol)
+* **The change in free energy** is computed (and printed) as follows::
 
-The change in free energy does depend on the pressure parameter in the
-translational part of the partition functions of the reactants and products.
+      drf = tm.free_energy_change(temp)
+      print "Change in free energy [kJ/mol] = %.3f" % (drf/kjmol)
 
+  The change in free energy does depend on the pressure (or density) in the
+  translational part of the partition functions of the reactants and products.
+
+* **The electronic energy difference** between the reactants (-) and the
+  products (+) can be computed as follows::
+
+      delta_e = tm.energy_difference(temp)
+
+* **The zero-point energy difference** between the reactants (-) and the
+  products (+) can also be computed::
+
+      delta_zpe = tm.zero_point_energy_difference(temp)
 
 Reaction kinetics
 ~~~~~~~~~~~~~~~~~

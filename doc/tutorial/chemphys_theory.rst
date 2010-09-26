@@ -1,13 +1,15 @@
 Chemical Physics -- Theoretical Background
 ==========================================
 
+**TODO**: add some more introductory text.
+
 
 The partition function of gas-phase molecules
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 
-Introduction
-------------
+The classical limit
+-------------------
 
 The canonical partition function of a molecular gas in the classical and ideal
 gas limit can be written in terms of the partition function of a single gas

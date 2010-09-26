@@ -52,9 +52,9 @@ class PartFunTestCase(unittest.TestCase):
         pf = PartFun(nma)
 
         # values obtained with frektsjek.exe
-        self.assertAlmostEqual(pf.log(650)-(-pf.energy/(boltzmann*650)), numpy.log(1.69428264E-45),3)
-        self.assertAlmostEqual(pf.log(700)-(-pf.energy/(boltzmann*700)), numpy.log(3.26776842E-29),3)
-        self.assertAlmostEqual(pf.log(750)-(-pf.energy/(boltzmann*750)), numpy.log(2.00896366E-14),3)
+        self.assertAlmostEqual(pf.log(650)-(-pf.electronic.energy/(boltzmann*650)), numpy.log(1.69428264E-45),3)
+        self.assertAlmostEqual(pf.log(700)-(-pf.electronic.energy/(boltzmann*700)), numpy.log(3.26776842E-29),3)
+        self.assertAlmostEqual(pf.log(750)-(-pf.electronic.energy/(boltzmann*750)), numpy.log(2.00896366E-14),3)
 
     def test_phva_rate_coeff_mat(self):
         fixed_atoms = load_fixed_g03com("input/mat/Zp_p_react.14mei.com")
@@ -97,7 +97,7 @@ class PartFunTestCase(unittest.TestCase):
             ])
             for i in xrange(len(expected_vib_contribs)):
                 self.assertAlmostEqual(vib_contribs[i], expected_vib_contribs[i], 2)
-            self.assertAlmostEqual(-53.068692, pf.log(temp)-(-pf.energy/(boltzmann*temp)), 2)
+            self.assertAlmostEqual(-53.068692, pf.log(temp)-(-pf.electronic.energy/(boltzmann*temp)), 2)
 
             ## aa.fchk, rotational symmetry number is computed by molmod
             pf = PartFun(nma, [ExtTrans(), ExtRot()])
@@ -114,7 +114,7 @@ class PartFunTestCase(unittest.TestCase):
             ])
             for i in xrange(len(expected_vib_contribs)):
                 self.assertAlmostEqual(vib_contribs[i], expected_vib_contribs[i], 2)
-            self.assertAlmostEqual(-53.068692, pf.log(temp)-(-pf.energy/(boltzmann*temp)), 2)
+            self.assertAlmostEqual(-53.068692, pf.log(temp)-(-pf.electronic.energy/(boltzmann*temp)), 2)
 
             ## aarad.fchk
             molecule = load_molecule_g03fchk("input/sterck/aarad.fchk")
@@ -132,7 +132,7 @@ class PartFunTestCase(unittest.TestCase):
             ])
             for i in xrange(len(expected_vib_contribs)):
                 self.assertAlmostEqual(vib_contribs[i], expected_vib_contribs[i], 2+precision_wn)
-            self.assertAlmostEqual(-61.738525, pf.log(temp)-(-pf.energy/(boltzmann*temp)), 1+precision_wn)
+            self.assertAlmostEqual(-61.738525, pf.log(temp)-(-pf.electronic.energy/(boltzmann*temp)), 1+precision_wn)
 
     def test_gas_trans_sterck(self):
         # Test both Full and ConstrainExt:
@@ -156,7 +156,7 @@ class PartFunTestCase(unittest.TestCase):
             ])
             for i in xrange(len(expected_vib_contribs)):
                 self.assertAlmostEqual(vib_contribs[i], expected_vib_contribs[i], 2+precision_wn)
-            self.assertAlmostEqual(-139.302816, pf.log(temp)-(-pf.energy/(boltzmann*temp)), 1+precision_wn)
+            self.assertAlmostEqual(-139.302816, pf.log(temp)-(-pf.electronic.energy/(boltzmann*temp)), 1+precision_wn)
 
     def test_gas_rate_coeff_sterck(self):
         mol_react1 = load_molecule_g03fchk("input/sterck/aa.fchk")
@@ -331,7 +331,7 @@ class PartFunTestCase(unittest.TestCase):
         # total
         # WARNING: pf returns enthalpy, turn it into internal energy
         # WARNING: pf returns enthalpy that includes the electronic energy
-        self.assertAlmostEqual((pf.internal_energy(temp)-pf.energy)/(kcalmol)-RT, 53.121, 2)
+        self.assertAlmostEqual((pf.internal_energy(temp)-pf.electronic.energy)/(kcalmol)-RT, 53.121, 2)
         # WARNING: pf returns heat capacity at constant pressure,
         #          turn it into heat capacity at constant volume
         self.assertAlmostEqual(pf.heat_capacity(temp)/(calmolK)-R, 19.225, 2)

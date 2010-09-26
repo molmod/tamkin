@@ -100,7 +100,7 @@ class BaseModel(object):
         for pf in self.pfs_all:
             pf.vibrational.positive_freqs_orig = pf.vibrational.positive_freqs.copy()
             pf.vibrational.negative_freqs_orig = pf.vibrational.negative_freqs.copy()
-            pf.energy_backup = pf.energy
+            pf.electronic.energy_backup = pf.electronic.energy
 
     def alter_freqs(self, freq_error, scale_energy):
         """Randomly distort the frequencies and energies.
@@ -120,17 +120,17 @@ class BaseModel(object):
             freq_shift = numpy.random.normal(0, freq_error, N)
             pf.vibrational.negative_freqs = pf.vibrational.negative_freqs_orig + freq_shift
             pf.vibrational.negative_freqs[pf.vibrational.negative_freqs>=0] = -0.01
-            pf.energy = pf.energy_backup*scale_energy
+            pf.electronic.energy = pf.electronic.energy_backup*scale_energy
 
     def restore_freqs(self):
         """Restore the backup of the frequencies and the energy of each partition function."""
         for pf in self.pfs_all:
             pf.vibrational.positive_freqs = pf.vibrational.positive_freqs_orig
             pf.vibrational.negative_freqs = pf.vibrational.negative_freqs_orig
-            pf.energy = pf.energy_backup
+            pf.electronic.energy = pf.electronic.energy_backup
             del pf.vibrational.positive_freqs_orig
             del pf.vibrational.negative_freqs_orig
-            del pf.energy_backup
+            del pf.electronic.energy_backup
 
     def free_energy_change(self, temp):
         """Compute the change in free energy.
@@ -213,8 +213,8 @@ class ThermodynamicModel(BaseModel):
 
     def energy_difference(self):
         """Compute the electronic energy difference between (+) products and (-) reactants."""
-        return sum(pf_prod.energy for pf_prod in self.pfs_prod) - \
-               sum(pf_react.energy for pf_react in self.pfs_react)
+        return sum(pf_prod.electronic.energy for pf_prod in self.pfs_prod) - \
+               sum(pf_react.electronic.energy for pf_react in self.pfs_react)
 
     def zero_point_energy_difference(self):
         """Compute the zero-point energy difference between (+) products and (-) reactants."""
@@ -317,8 +317,8 @@ class KineticModel(BaseKineticModel):
 
     def energy_difference(self):
         """Compute the electronic energy barrier of the reaction."""
-        return self.pf_trans.energy - \
-               sum(pf_react.energy for pf_react in self.pfs_react)
+        return self.pf_trans.electronic.energy - \
+               sum(pf_react.electronic.energy for pf_react in self.pfs_react)
 
     def zero_point_energy_difference(self):
         """Compute the zero-point energy barrier of the reaction."""

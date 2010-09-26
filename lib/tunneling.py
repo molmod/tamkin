@@ -96,10 +96,10 @@ class Eckart(TunnelingCorrection):
             raise ValueError("At least one reactant is required.")
         if len(pfs_react) == 0:
             raise ValueError("At least one product is required.")
-        self.Ef = pf_trans.energy - sum(pf.energy for pf in pfs_react)
+        self.Ef = pf_trans.electronic.energy - sum(pf.electronic.energy for pf in pfs_react)
         if self.Ef < 0:
             raise ValueError("The forward barrier is negative. Can not apply Eckart tunneling.")
-        self.Er = pf_trans.energy - sum(pf.energy for pf in pfs_prod)
+        self.Er = pf_trans.electronic.energy - sum(pf.electronic.energy for pf in pfs_prod)
         if self.Er < 0:
             raise ValueError("The reverse barrier is negative. Can not apply Eckart tunneling.")
         self.nu = pf_trans.vibrational.negative_freqs[0]

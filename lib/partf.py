@@ -1312,7 +1312,6 @@ class PartFun(Info, StatFys):
         for term in self.terms:
             term.init_part_fun(nma, self)
 
-        self.energy = nma.energy
         self.title = nma.title
         Info.__init__(self, "total")
 
@@ -1339,8 +1338,8 @@ class PartFun(Info, StatFys):
     def dump(self, f):
         """See :meth:`Info.dump`."""
         print >> f, "Title:", self.title
-        print >> f, "Electronic energy [au]: %.5f" % self.energy
-        print >> f, "Zero-point contribution [kJ/mol]: %.7f" % ((self.zero_point_energy() - self.energy)/kjmol)
+        print >> f, "Electronic energy [au]: %.5f" % self.electronic.energy
+        print >> f, "Zero-point contribution [kJ/mol]: %.7f" % ((self.zero_point_energy() - self.electronic.energy)/kjmol)
         print >> f, "Zero-point energy [au]: %.5f" % self.zero_point_energy()
         print >> f, "Contributions to the partition function:"
         for term in self.terms:

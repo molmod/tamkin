@@ -145,7 +145,11 @@ class BaseModel(object):
         raise NotImplementedError
 
     def energy_difference(self):
-        """Compute the classical (microscopic) energy difference."""
+        """Compute the electronic energy difference between (+) products and (-) reactants."""
+        raise NotImplementedError
+
+    def zero_point_energy_difference(self):
+        """Compute the zero-point energy difference between (+) products and (-) reactants."""
         raise NotImplementedError
 
     def write_to_file(self, filename):

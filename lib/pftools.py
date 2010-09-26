@@ -204,10 +204,12 @@ class ReactionAnalysis(object):
            reactions can be gathered in a single plot when this is desirable.
 
            The following attributes may be useful:
-            | ``A and Ea`` -- The kinetic parameters in atomic units.
+            | ``A`` and ``Ea`` -- The kinetic parameters in atomic units.
             | ``R2`` -- The Pearson R^2 of the fit.
             | ``temps`` -- An array with the temperature grid in Kelvin
             | ``temps_inv`` -- An array with the inverse temperatures
+            | ``rate_consts`` -- the rate constants at the grid points in atomic
+                                 units
             | ``ln_rate_consts`` -- the logarithm of `the rate constants in
                                     atomic units`
         """

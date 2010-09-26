@@ -182,41 +182,45 @@ class PartFunTestCase(unittest.TestCase):
             self.assertAlmostEqual(numpy.log(k/unit), numpy.log(expected_ks[i]), 2)
 
     def test_derivatives(self):
-        molecule = load_molecule_g03fchk("input/ethane/gaussian.fchk")
-        nma = NMA(molecule)
-        rotscan = load_rotscan_g03log("input/rotor/gaussian.log")
-        rotor = Rotor(rotscan, molecule, rotsym=3, even=True)
-        pf = PartFun(nma, [ExtTrans(), ExtRot(), rotor])
-        self.assertEqual(pf.rotational.symmetry_number, 6)
+        for classical in True, False:
+            molecule = load_molecule_g03fchk("input/ethane/gaussian.fchk")
+            nma = NMA(molecule)
+            rotscan = load_rotscan_g03log("input/rotor/gaussian.log")
+            rotor = Rotor(rotscan, molecule, rotsym=3, even=True)
+            pf = PartFun(nma, [
+                ExtTrans(), ExtRot(), rotor,
+                Vibrations(classical, 0.5, 0.7),
+            ])
+            self.assertEqual(pf.rotational.symmetry_number, 6)
 
-        eps = 0.0001
-        temps = numpy.array([300.0,400.0,500.0,600.0,700.0])
-        sfs = [
-            pf.electronic, pf.translational, pf.rotational, pf.vibrational,
-            pf.hindered_rotor_3_4_5, pf
-        ]
-        for stat_fys in sfs:
-            for temp in temps:
-                # check the first derivative towards temperature with finite differences
-                a = stat_fys.logt(temp)
-                b = (stat_fys.log(temp+eps) -
-                     stat_fys.log(temp-eps))/(2*eps)
-                self.assertAlmostEqual(
-                    a, b, 6,
-                    "error in partial derivative (%s): %s!=%s" % (stat_fys.name, a, b)
-                )
-                # check the second derivative towards temperature with finite differences
-                a = stat_fys.logtt(temp)
-                b = (stat_fys.logt(temp+eps) -
-                     stat_fys.logt(temp-eps))/(2*eps)
-                self.assertAlmostEqual(
-                    a, b, 6,
-                    "error in second partial derivative (%s): %s!=%s" % (stat_fys.name, a, b)
-                )
-                # check the helper functions temperature argument
-                self.assertAlmostEqual(stat_fys.helper(temp,1), stat_fys.helper(temp,0)*temp)
-                self.assertAlmostEqual(stat_fys.helpert(temp,1), stat_fys.helpert(temp,0)*temp)
-                self.assertAlmostEqual(stat_fys.helpertt(temp,1), stat_fys.helpertt(temp,0)*temp)
+            eps = 0.0001
+            temps = numpy.array([300.0,400.0,500.0,600.0,700.0])
+            sfs = [
+                pf.electronic, pf.translational, pf.rotational, pf.vibrational,
+                pf.hindered_rotor_3_4_5, pf
+            ]
+            for stat_fys in sfs:
+                for temp in temps:
+                    # check the first derivative towards temperature with finite differences
+                    a = stat_fys.logt(temp)
+                    b = (stat_fys.log(temp+eps) -
+                         stat_fys.log(temp-eps))/(2*eps)
+                    self.assertAlmostEqual(
+                        a, b, 6,
+                        "error in partial derivative (%s,%s): %s!=%s" % (stat_fys.name, classical, a, b)
+                    )
+                    # check the second derivative towards temperature with finite differences
+                    a = stat_fys.logtt(temp)
+                    b = (stat_fys.logt(temp+eps) -
+                         stat_fys.logt(temp-eps))/(2*eps)
+                    self.assertAlmostEqual(
+                        a, b, 6,
+                        "error in second partial derivative (%s,%s): %s!=%s" % (stat_fys.name, classical, a, b)
+                    )
+                    # check the helper functions temperature argument
+                    self.assertAlmostEqual(stat_fys.helper(temp,1), stat_fys.helper(temp,0)*temp)
+                    self.assertAlmostEqual(stat_fys.helpert(temp,1), stat_fys.helpert(temp,0)*temp)
+                    self.assertAlmostEqual(stat_fys.helpertt(temp,1), stat_fys.helpertt(temp,0)*temp)
 
     def test_chemical_potential(self):
         for cp in False, True:
@@ -303,7 +307,7 @@ class PartFunTestCase(unittest.TestCase):
         self.assertAlmostEqual(pf.free_energy(298.15), -247.257535, 5)
 
 
-    def test_classical(self):
+    def test_classical1(self):
         pf = PartFun(
             NMA(load_molecule_g03fchk("input/sterck/aa.fchk")),
             [Vibrations(classical=True), ExtTrans(), ExtRot(1)],
@@ -313,6 +317,31 @@ class PartFunTestCase(unittest.TestCase):
             tmp = pf.vibrational.heat_capacity_terms(numpy.random.uniform(100,500))
             for value in tmp:
                 self.assertAlmostEqual(value, boltzmann, 10)
+
+    def test_classical2(self):
+        pfc = PartFun(
+            NMA(load_molecule_g03fchk("input/sterck/aa.fchk")),
+            [Vibrations(True), ExtTrans(), ExtRot(1)],
+        )
+        pfq = PartFun(
+            NMA(load_molecule_g03fchk("input/sterck/aa.fchk")),
+            [Vibrations(False), ExtTrans(), ExtRot(1)],
+        )
+
+        lnzcs = pfc.vibrational.log_terms(50000)
+        lnzqs = pfq.vibrational.log_terms(50000)
+        for lnzc, lnzq in zip(lnzcs, lnzqs):
+            self.assertAlmostEqual(lnzc, lnzq, 3)
+
+        lnzcs = pfc.vibrational.logt_terms(50000)
+        lnzqs = pfq.vibrational.logt_terms(50000)
+        for lnzc, lnzq in zip(lnzcs, lnzqs):
+            self.assertAlmostEqual(lnzc, lnzq, 7)
+
+        lnzcs = pfc.vibrational.logtt_terms(50000)
+        lnzqs = pfq.vibrational.logtt_terms(50000)
+        for lnzc, lnzq in zip(lnzcs, lnzqs):
+            self.assertAlmostEqual(lnzc, lnzq, 7)
 
     def test_external_separate(self):
         calmolK = calorie/mol/kelvin

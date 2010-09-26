@@ -1292,23 +1292,26 @@ def helper_vibrations(temp, n, freqs, classical=False, freq_scaling=1, zp_scalin
     # this is defined as a function because multiple classes need it
     if classical:
         if temp == 0:
-            if n > 0:
+            if n >= 1:
                 return numpy.zeros(len(freqs))
             else:
                 raise NotImplementedError
         else:
-            return temp**n*numpy.log(0.5*boltzmann*temp/numpy.pi/freqs*freq_scaling)
+            Af = planck*freqs*freq_scaling/(boltzmann*temp)
+            return -temp**n*numpy.log(Af)
     else:
-        # The zero point correction is included in the partition function and
-        # should not be taken into account when computing the reaction barrier.
-        pfb = numpy.pi*freqs/boltzmann
+        # The zero point correction is included in the vibrational partition
+        # function.
         if temp == 0:
-            return -zp_scaling*pfb*temp**(n-1)
+            Abis = freqs*(0.5*planck*zp_scaling/boltzmann)
+            if n >= 1:
+                return -Abis*temp**(n-1)
+            else:
+                raise NotImplementedError
         else:
-            return -zp_scaling*pfb*temp**(n-1) - numpy.log(1-numpy.exp(-2*freq_scaling*pfb/temp))*temp**n
-        # This would be the version when the zero point energy corrections are
-        # included in the energy difference when computing the reaction rate:
-        #return -numpy.log(1-numpy.exp(exp_arg*freq_scaling))
+            A = freqs*(planck/(boltzmann*temp))
+            B = numpy.exp(-freq_scaling*A)
+            return -((0.5*zp_scaling)*A + numpy.log(1 - B))*temp**n
 
 def helpert_vibrations(temp, n, freqs, classical=False, freq_scaling=1, zp_scaling=1):
     """Helper 1 function for a set of harmonic oscillators.
@@ -1333,13 +1336,18 @@ def helpert_vibrations(temp, n, freqs, classical=False, freq_scaling=1, zp_scali
         if temp == 0:
             raise NotImplementedError
         else:
-            return temp**(n-1)*numpy.ones(len(freqs))
+            result = temp**(n-1)
+            if hasattr(freqs, "__len__"):
+                result *= numpy.ones(len(freqs))
+            return result
     else:
         if temp == 0:
             raise NotImplementedError
         else:
-            pfb = numpy.pi*freqs/boltzmann
-            return pfb*temp**(n-2)*(zp_scaling - 2*freq_scaling/(1 - numpy.exp(2*freq_scaling*pfb/temp)))
+            A = freqs*(planck/(boltzmann*temp))
+            B = numpy.exp(-freq_scaling*A)
+            C = B/(1 - B)
+            return A*temp**(n-1)*(0.5*zp_scaling + freq_scaling*C)
 
 def helpertt_vibrations(temp, n, freqs, classical=False, freq_scaling=1, zp_scaling=1):
     """Helper 2 function for a set of harmonic oscillators.
@@ -1364,14 +1372,19 @@ def helpertt_vibrations(temp, n, freqs, classical=False, freq_scaling=1, zp_scal
         if temp == 0:
             raise NotImplementedError
         else:
-            return -temp**(n-2)*numpy.ones(len(freqs))
+            result = -temp**(n-2)
+            if hasattr(freqs, "__len__"):
+                result *= numpy.ones(len(freqs))
+            return result
     else:
         if temp == 0:
             raise NotImplementedError
         else:
-            pfb = numpy.pi*freqs/boltzmann
-            return -2*pfb*temp**(n-3)*(zp_scaling - 2*freq_scaling/(1 - numpy.exp(2*freq_scaling*pfb/temp))) + \
-                   +temp**(n-4)*(freq_scaling*pfb/numpy.sinh(freq_scaling*pfb/temp))**2
+            A = freqs*(planck/(boltzmann*temp))
+            Af = freq_scaling*A
+            B = numpy.exp(-Af)
+            C = B/(1.0 - B)
+            return -A*temp**(n-2)*(zp_scaling + freq_scaling*C*(2 - Af/(1-B)))
 
 
 class Vibrations(Info, StatFysTerms):

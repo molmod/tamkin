@@ -327,13 +327,13 @@ oscillators:
             - \ln\left[ 1 - \exp\left( -\frac{h \nu_i}{k_B T} \right) \right] \\
         \mathsf{logt}_{\text{qvib}} & =
             \sum_{i=1}^N \frac{h\nu_i}{k_BT^2} \left[
-            \frac{1}{2} + \frac{1}{\exp\left( -\frac{h \nu_i}{k_B T} \right)-1}
+            \frac{1}{2} + \frac{1}{\exp\left( +\frac{h \nu_i}{k_B T} \right)-1}
             \right]
             \\
         \mathsf{logtt}_{\text{qvib}} & =
             \sum_{i=1}^N -\frac{h\nu_i}{k_BT^3} \left[
-            1 + \frac{1}{\exp\left( -\frac{h \nu_i}{k_B T} \right)-1}\left(
-            2 + \frac{h\nu_i}{k_BT}\frac{1}{1-\exp\left( -\frac{h \nu_i}{k_B T} \right)}
+            1 + \frac{1}{\exp\left( +\frac{h \nu_i}{k_B T} \right)-1}\left(
+            2 - \frac{h\nu_i}{k_BT}\frac{1}{1-\exp\left( -\frac{h \nu_i}{k_B T} \right)}
             \right)\right]
             \\
         \mathsf{logn}_{\text{qvib}} & = \mathsf{log}_{\text{qvib}} \\
@@ -349,21 +349,48 @@ the implementation:
     \begin{align*}
         A_i & = \frac{h\nu_i}{k_BT} \\
         B_i & = \exp(-A_i) \\
-        C_i & = \frac{1}{B_i-1}
+        C_i & = \frac{B_i}{B_i-1}
     \end{align*}
 
-The basic quantities become:
+The `basic` quantities become:
 
 .. math::
     :nowrap:
 
     \begin{align*}
-        \mathsf{log}_{\text{qvib}} & = \sum_{i=1}^N -\frac{A_i}{2} - \ln(1 - B_i) \\
+        \mathsf{log}_{\text{qvib}} & = -\sum_{i=1}^N \frac{A_i}{2} + \ln(1 - B_i) \\
         \mathsf{logt}_{\text{qvib}} & = \sum_{i=1}^N \frac{A_i}{T} \left(\frac{1}{2} + C_i\right) \\
-        \mathsf{logtt}_{\text{qvib}} & = \sum_{i=1}^N -\frac{A_i}{T^2} (1 + C_i (2 - A_i C_i )) \\
+        \mathsf{logtt}_{\text{qvib}} & = -\sum_{i=1}^N \frac{A_i}{T^2} (1 + C_i (2 - A_i / (1 - B_i))) \\
         \mathsf{logn}_{\text{qvib}} & = \mathsf{log}_{\text{qvib}} \\
         \mathsf{logv}_{\text{qvib}} & = \mathsf{log}_{\text{qvib}}
     \end{align*}
+
+In case of frequency scaling factors, i.e. :math:`\alpha_z` for the
+frequencies in the zero-point term and :math:`\alpha_f` for the frequencies in
+the other term, the implementation is very similar.
+
+.. math::
+    :nowrap:
+
+    \begin{align*}
+        A_i & = \frac{h\nu_i}{k_BT} \\
+        B_i & = \exp(-\alpha_f A_i) \\
+        C_i & = \frac{B_i}{B_i-1}
+    \end{align*}
+
+The `basic` quantities with correction factors become:
+
+.. math::
+    :nowrap:
+
+    \begin{align*}
+        \mathsf{log}_{\text{qvib}} & = -\sum_{i=1}^N \frac{A_i\alpha_z}{2} + \ln(1 - B_i) \\
+        \mathsf{logt}_{\text{qvib}} & = \sum_{i=1}^N \frac{A_i}{T} \left(\frac{\alpha_z}{2} + C_i\right) \\
+        \mathsf{logtt}_{\text{qvib}} & = -\sum_{i=1}^N \frac{A_i}{T^2} (\alpha_z + C_i (2 - \alpha_f A_i / (1 - B_i))) \\
+        \mathsf{logn}_{\text{qvib}} & = \mathsf{log}_{\text{qvib}} \\
+        \mathsf{logv}_{\text{qvib}} & = \mathsf{log}_{\text{qvib}}
+    \end{align*}
+
 
 
 Classical form

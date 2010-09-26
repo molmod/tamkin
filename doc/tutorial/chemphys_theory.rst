@@ -63,8 +63,10 @@ each factor in the partition function will be discussed:
     \end{align*}
 
 
-These are all intensive quantities. All other thermodynamic functions will be
-derived from these basic quantities in a general fashion.
+These are all intensive quantities, and we will refer to them in the remainder
+of the text as the `basic` quantities. All other thermodynamic functions (free
+energy, internal energy, heat capacity, zero-point energy, entropy and chemical
+potential) will be derived from the `basic` quantities in a general fashion.
 
 The first step is to rewrite these quantities in terms of the
 single-particle partition function, using the classical gas limit and
@@ -118,28 +120,319 @@ degrees of freedom can be treated within the same framework. For such systems,
 the classical gas limit does not apply either and one has :math:`Z_N = Z_1^N`.
 One can simply drop the translational contributions to :math:`\mathsf{log*}`.
 
+
 Electronic contribution
 -----------------------
+
+The electronic states of a molecular system have the typical quantum-mechanical
+contribution to the partition function:
+
+.. math:: Z_{1, \text{elec}} = \sum_i g_{i,\text{elec}} \exp\left( - \frac{E_{i,\text{elec}}}{k_B T} \right)
+
+At temperatures below 1000 K, it is in most cases safe to assume that only the
+electronic ground state has a signification contribution to the partition
+function. TAMkin uses the same reference energy as the electronic structure
+computation. Hence we get:
+
+.. math:: Z_{1, \text{elec}} \approx g_{\text{gs}} \exp\left( - \frac{E_{\text{gs}}}{k_B T} \right)
+
+The `basic` quantities become:
+
+.. math::
+    :nowrap:
+
+    \begin{align*}
+        \mathsf{log}_{\text{elec}} & = \ln(g_{\text{gs}}) - \frac{E_{\text{gs}}}{k_B T} \\
+        \mathsf{logt}_{\text{elec}} & = \frac{E_{\text{gs}}}{k_B T^2} \\
+        \mathsf{logtt}_{\text{elec}} & = -2\frac{E_{\text{gs}}}{k_B T^3} \\
+        \mathsf{logn}_{\text{elec}} & = \mathsf{log}_{\text{elec}}\\
+        \mathsf{logv}_{\text{elec}} & = \mathsf{log}_{\text{elec}}
+    \end{align*}
 
 
 Translational contribution
 --------------------------
 
+NVT ensemble
+^^^^^^^^^^^^
+
+The single-particle translational partition function in the NVT ensemble is
+given by:
+
+.. math:: \left(\frac{2\pi m k_B T}{h^2}\right)^{\frac{d}{2}}V
+
+where :math:`d` is the dimension of the gas and :math:`V` is the `generalized`
+volume. In three dimensions, :math:`V` is an ordinary volume. In two dimensions,
+:math:`V` is a surface area. We prefer not to introduce different symbols for
+the `generalized` volume in different dimensions, because it would only clutter
+the mathematical derivations.
+
+NpT ensemble
+^^^^^^^^^^^^
+
+**TODO**: cite a book for the starting point of the derivation.
+
+The many-particle partition function of the NpT ensemble is related to the
+partition function of the NVT ensemble as follows:
+
+.. math:: Z(N,p,T) = \int_0^{+\infty} Z(N,V,T) \exp\left(-\frac{pV}{k_BT}\right) \frac{p}{k_BT} dV
+
+In the case of a classical ideal gas one can further simplify this relation:
+
+.. math::
+    :nowrap:
+
+    \begin{align*}
+        Z(N,p,T) & =
+            \frac{1}{N!}
+            \left(\frac{2 \pi m kT}{h^2}\right)^{\frac{Nd}{2}}
+            \int_0^{+\infty}
+            V^N \exp\left(-\frac{pV}{k_BT}\right)
+            \frac{p}{k_BT} dV \\
+                 & =
+            \frac{1}{N!}
+            \left(\frac{2 \pi m kT}{h^2}\right)^{\frac{Nd}{2}}
+            \left( \frac{K_BT}{p} \right)^N
+            \int_0^{+\infty} x^N \exp(-x) dx \\
+                 & =
+            \left(\frac{2 \pi m kT}{h^2}\right)^{\frac{Nd}{2}}
+            \left( \frac{V}{N} \right)^N
+    \end{align*}
+
+When the logarithm of the partition function is divided by the number of
+particles, one obtains a convenient identity for the implementation in TAMkin.
+
+.. math::
+    :nowrap:
+
+    \begin{align*}
+        \frac{\ln Z(N,p,T)}{N} & =
+            \frac{d}{2}\ln\left(\frac{2 \pi m kT}{h^2}\right)
+            + \ln\left( \frac{V}{N} \right) \\
+                               & =
+            \frac{\ln Z(N,V,T)}{N} - 1
+    \end{align*}
+
+
+`Basic` quantities
+^^^^^^^^^^^^^^^^^^
+
+We will discuss both the NVT and NpT ensemble at the same time. The terms that
+are specific for the NpT ensemble are printed in blue. In the NpT ensemble, the
+derivatives are taken at constant pressure, i.e. the volume becomes a function
+of the temperature.
+
+.. math::
+    :nowrap:
+
+    \begin{align*}
+        \mathsf{log}_{\text{trans}} & = 1
+            + \frac{d}{2}\ln\left(\frac{2\pi m k_B T}{h^2}\right)
+            + \ln\left(\frac{V}{N}\right)
+            {\color{blue}- 1} \\
+        \mathsf{logt}_{\text{trans}} & = \frac{1}{T}
+            {\color{blue} + \frac{1}{T}} \\
+        \mathsf{logtt}_{\text{trans}} & = -\frac{1}{T^2}
+            {\color{blue} - \frac{1}{T^2}}\\
+        \mathsf{logn}_{\text{trans}} & =
+            \frac{d}{2}\ln\left(\frac{2\pi m k_B T}{h^2}\right)
+            + \ln\left(\frac{V}{N}\right) \\
+        \mathsf{logv}_{\text{trans}} & =
+            \frac{d}{2}\ln\left(\frac{2\pi m k_B T}{h^2}\right) \\
+    \end{align*}
+
 
 Rotational contribution
 -----------------------
+
+The rotational temperature, :math:`\Theta_{\text{rot}}`, associated with a
+moment of inertia, :math:`I`, is defined as
+
+.. math:: \Theta_{\text{rot}} = \frac{\hbar^2}{2 I k_B}.
+
+We only consider the rotational partition function based on the integration
+formula, where one assumes that :math:`\Theta_{\text{rot}}` is much larger than
+the temperature of interest.
+
+- For a linear molecule the rotational partition is given by:
+
+  .. math:: Z_{1,\text{rot-lin}} = \frac{T}{\sigma \Theta_{\text{rot}}}
+
+  where :math:`\sigma` is the rotational symmetry number
+
+- For a general non-linear molecule the rotational partition is given by:
+
+  .. math:: Z_{1,\text{rot}} = \frac{\sqrt{\pi}}{\sigma}
+                               \sqrt{\frac{T^3}{
+                               \Theta_{\text{rot,A}}\Theta_{\text{rot,B}}\Theta_{\text{rot,C}}
+                               }}
+
+  where :math:`\sigma` is the rotational symmetry number and `A`, `B` and `C`
+  refer to the three principal moments of inertia of the molecule.
+
+One can cast both cases into a single general mathematical expression:
+
+.. math:: Z_{1,\text{rot}} = \frac{1}{\pi\sigma}
+                             \prod_{j=1}^M \sqrt{\frac{T\pi}{\Theta_{\text{rot,j}}}}
+
+where the product runs over all non-zero moments of inertia. M is the number of
+non-zero moments of inertia. The `basic` quantities become:
+
+.. math::
+    :nowrap:
+
+    \begin{align*}
+        \mathsf{log}_{\text{rot}} & =
+            - \ln(\pi\sigma)
+            + \frac{1}{2} \sum_{j=1}^M \ln\left(\frac{T\pi}{\Theta_{\text{rot,j}}}\right) \\
+        \mathsf{logt}_{\text{rot}} & = \frac{M}{2T} \\
+        \mathsf{logtt}_{\text{rot}} & = -\frac{M}{2T^2} \\
+        \mathsf{logn}_{\text{rot}} & = \mathsf{log}_{\text{rot}} \\
+        \mathsf{logv}_{\text{rot}} & = \mathsf{log}_{\text{rot}}
+    \end{align*}
 
 
 Vibrational contribution
 ------------------------
 
+The vibrational partition function is a product of contributions from decoupled
+harmonic oscillators. Each factor has the same form. The frequencies required
+for the vibrational contribution are typically obtained with a normal mode
+analysis on the ground state geometry of a gas phase molecule.
+
+In the case of a transition state geometry, corresponding to a saddle point on
+the potential energy surface, one of the frequencies in the normal mode analysis
+becomes imaginary. The imaginary frequency is not included in the partition
+function, as it would not make any physical sense. At this level, one does not
+compensate for this `missing` degree of freedom with some special contribution
+to the partition function. It will become clear in the discussion of theoretical
+rate constants that this is a practical convention.
+
+
+Quantum-mechanical form
+^^^^^^^^^^^^^^^^^^^^^^^
+
+The partition function of a quantum-mechanical harmonic oscillator is:
+
+.. math:: \frac{\exp\left( -\frac{h \nu}{2k_BT} \right)}{1 - \exp\left( -\frac{h \nu}{k_BT} \right)}
+
+This leads to the following `basic` quantities for a system with N harmonic
+oscillators:
+
+.. math::
+    :nowrap:
+
+    \begin{align*}
+        \mathsf{log}_{\text{qvib}} & = \sum_{i=1}^N -\frac{h\nu_i}{2k_BT}
+            - \ln\left[ 1 - \exp\left( -\frac{h \nu_i}{k_B T} \right) \right] \\
+        \mathsf{logt}_{\text{qvib}} & =
+            \sum_{i=1}^N \frac{h\nu_i}{k_BT^2} \left[
+            \frac{1}{2} + \frac{1}{\exp\left( -\frac{h \nu_i}{k_B T} \right)-1}
+            \right]
+            \\
+        \mathsf{logtt}_{\text{qvib}} & =
+            \sum_{i=1}^N -\frac{h\nu_i}{k_BT^3} \left[
+            1 + \frac{1}{\exp\left( -\frac{h \nu_i}{k_B T} \right)-1}\left(
+            2 + \frac{h\nu_i}{k_BT}\frac{1}{1-\exp\left( -\frac{h \nu_i}{k_B T} \right)}
+            \right)\right]
+            \\
+        \mathsf{logn}_{\text{qvib}} & = \mathsf{log}_{\text{qvib}} \\
+        \mathsf{logv}_{\text{qvib}} & = \mathsf{log}_{\text{qvib}}
+    \end{align*}
+
+These expression look scary, but one can make a few substitutions to facilitate
+the implementation:
+
+.. math::
+    :nowrap:
+
+    \begin{align*}
+        A_i & = \frac{h\nu_i}{k_BT} \\
+        B_i & = \exp(-A_i) \\
+        C_i & = \frac{1}{B_i-1}
+    \end{align*}
+
+The basic quantities become:
+
+.. math::
+    :nowrap:
+
+    \begin{align*}
+        \mathsf{log}_{\text{qvib}} & = \sum_{i=1}^N -\frac{A_i}{2} - \ln(1 - B_i) \\
+        \mathsf{logt}_{\text{qvib}} & = \sum_{i=1}^N \frac{A_i}{T} \left(\frac{1}{2} + C_i\right) \\
+        \mathsf{logtt}_{\text{qvib}} & = \sum_{i=1}^N -\frac{A_i}{T^2} (1 + C_i (2 - A_i C_i )) \\
+        \mathsf{logn}_{\text{qvib}} & = \mathsf{log}_{\text{qvib}} \\
+        \mathsf{logv}_{\text{qvib}} & = \mathsf{log}_{\text{qvib}}
+    \end{align*}
+
+
+Classical form
+^^^^^^^^^^^^^^
+
+In the classical limit partition function of the harmonic oscillator reduces to:
+
+.. math:: -\frac{k_BT}{h \nu}
+
+This leads to the following `basic` quantities for a system with N harmonic
+oscillators:
+
+.. math::
+    :nowrap:
+
+    \begin{align*}
+        \mathsf{log}_{\text{cvib}} & = \sum_{i=1}^N \ln\left( \frac{k_BT}{h\nu_i} \right) \\
+        \mathsf{logt}_{\text{cvib}} & = \frac{N}{T} \\
+        \mathsf{logtt}_{\text{cvib}} & = -\frac{N}{T^2} \\
+        \mathsf{logn}_{\text{cvib}} & = \mathsf{log}_{\text{qvib}} \\
+        \mathsf{logv}_{\text{cvib}} & = \mathsf{log}_{\text{qvib}}
+    \end{align*}
+
+
+Although the quantum mechanical partition function should give a better
+correspondence with experimental results, the classical approximation may still
+be of use for comparison with other programs or with molecular dynamics and
+Monte Carlo simulations where the nuclei are treated classically.
 
 Rigid free rotor correction
 ---------------------------
 
+**TODO**
+
+.. math::
+    :nowrap:
+
+    \begin{align*}
+        \mathsf{log}_{\text{cancel}} & = \\
+        \mathsf{logt}_{\text{cancel}} & = \\
+        \mathsf{logtt}_{\text{cancel}} & = \\
+        \mathsf{logn}_{\text{cancel}} & = \\
+        \mathsf{logv}_{\text{cancel}} & =
+    \end{align*}
+
+    \begin{align*}
+        \mathsf{log}_{\text{frot}} & = \\
+        \mathsf{logt}_{\text{frot}} & = \\
+        \mathsf{logtt}_{\text{frot}} & = \\
+        \mathsf{logn}_{\text{frot}} & = \\
+        \mathsf{logv}_{\text{frot}} & =
+    \end{align*}
+
 
 Hindered free rotor correction
 ------------------------------
+
+**TODO**
+
+.. math::
+    :nowrap:
+
+    \begin{align*}
+        \mathsf{log}_{\text{hrot}} & = \\
+        \mathsf{logt}_{\text{hrot}} & = \\
+        \mathsf{logtt}_{\text{hrot}} & = \\
+        \mathsf{logn}_{\text{hrot}} & = \\
+        \mathsf{logv}_{\text{hrot}} & =
+    \end{align*}
 
 
 Quantities derived from one partition function
@@ -156,6 +449,10 @@ Internal energy
 
 Heat capacity
 -------------
+
+
+Zero-point energy
+-----------------
 
 
 Entropy
@@ -200,7 +497,7 @@ where :math:`Z_{1,X}` is the single-particle partition function of species `X`
 and V is the total volume of the system. One can derive the equilibrium constant
 in terms of partial pressures using the ideal-gas law:
 
-.. math:: K_p(T) = K_c(T) \left(\frac{c^0k_BT}{P_0}\right)^{\nu_C+\nu_D-\nu_A-\nu_B}.
+.. math:: K_p(T) = K_c(T) \left(\frac{c^0k_BT}{p_0}\right)^{\nu_C+\nu_D-\nu_A-\nu_B}.
 
 Although this expressions for :math:`K_c` and :math:`K_p` are perfectly valid, they
 are only applicable to the case where all reactants and products are 3D gas phase
@@ -373,17 +670,17 @@ In SI units, this becomes:
 
 
 The change in free energy
--------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^
 
-The change in free energy associated with a reaction, :math:`\Delta_r G`, is
+The change in free energy associated with a reaction, :math:`\Delta_r F`, is
 defined as the chemical potential of the products minus the chemical potential
 of the reactants
 
-.. math:: \Delta_r G(T) = \nu_C \mu_C(N_C, \ldots) + \nu_D \mu_D(N_D, \ldots)
-                        - \nu_A \mu_A(N_A, \ldots) - \nu_B \mu_B(N_B, \ldots)
+.. math:: \Delta_r F = \nu_C \mu_C(N_C, \ldots) + \nu_D \mu_D(N_D, \ldots)
+                     - \nu_A \mu_A(N_A, \ldots) - \nu_B \mu_B(N_B, \ldots)
 
 where the chemical potentials are all computed at a certain well-defined state
-of the ensemble. For example, for 3D gases, :math:`\Delta_r G` depends on the
+of the ensemble. For example, for 3D gases, :math:`\Delta_r F` depends on the
 pressure and the temperature. When the number is expressed in Hartree/particle,
 it is the free energy required to transform :math:`\nu_A` molecules of reactant
 A and :math:`\nu_B` molecules of reactant B into :math:`\nu_C` molecules of
@@ -396,7 +693,7 @@ Let us now use the relation
 
 to rewrite the change in free energy in terms of partition functions.
 
-.. math:: \Delta_r G(T) = -k_BT \ln\left(
+.. math:: \Delta_r F = -k_BT \ln\left(
                 \frac{Z^{\nu_C}_C(1,\ldots) Z^{\nu_D}_D(1,\ldots)}
                      {Z^{\nu_A}_A(1,\ldots) Z^{\nu_B}_B(1,\ldots)}
                 \frac{N^{\nu_A}_A N^{\nu_B}_B}{N^{\nu_C}_C N^{\nu_D}_D}
@@ -407,7 +704,7 @@ reference `density`, :math:`\rho_{X,0}`, for each subsystem. The meaning the ter
 `density` may depend on the dimension of the gas, as discussed previously. We
 can further rewrite the change in free energy as:
 
-.. math:: \Delta_r G(T) = -k_BT \ln\left(
+.. math:: \Delta_r F = -k_BT \ln\left(
                 \frac{Z'^{\nu_C}_C(1,\ldots) Z'^{\nu_D}_D(1,\ldots)}
                      {Z'^{\nu_A}_A(1,\ldots) Z'^{\nu_B}_B(1,\ldots)}
                 \frac{\rho^{\nu_A}_{A,0} \rho^{\nu_B}_{B,0}}{\rho^{\nu_C}_{C,0} \rho^{\nu_D}_{D,0}}
@@ -415,17 +712,28 @@ can further rewrite the change in free energy as:
 
 The first factor in the logarithm is the equilibrium constant, so we get:
 
-.. math:: \Delta_r G(T) = -k_BT \ln\left(
+.. math:: \Delta_r F = -k_BT \ln\left(
                 K_c \frac{\rho^{\nu_A}_{A,0} \rho^{\nu_B}_{B,0}}
                          {\rho^{\nu_C}_{C,0} \rho^{\nu_D}_{D,0}}
             \right).
 
 
 :math:`K_c` is (for ideal gases) independent of the density or pressure of each
-component. It still depends on the temperature. The second factor does not depend on
-temperature, and bundles all the density or pressure information of the
-reference state at which the change in free energy is computed.
+component. It still depends on the temperature. The second factor does not
+depend on temperature, and bundles all the density or pressure information of
+the reference state at which the change in free energy is computed.
 
+One may split the change in free energy into two parts, an energetic and an
+entropic contribution:
+
+.. math:: \Delta_r F = \Delta_r E - T \Delta_r S
+
+The energetic part is:
+
+.. math:: \Delta_r E = \nu_C E_C(1, \ldots) + \nu_D E_D(1, \ldots)
+                     - \nu_A E_A(1, \ldots) - \nu_B E_B(1, \ldots)
+
+where :math:`E_X(1, \ldots)` is the internal energy per molecule of species `X`.
 
 The rate constant -- Transition State Theory
 --------------------------------------------
@@ -452,7 +760,7 @@ use slightly different conventions and introduce a few generalizations:
 
 - We use the same `generalized density`, :math:`\rho_X`, as in the derivation of
   the equilibrium constant. The result is therefore also applicable to surface
-  reaction, etc.
+  reactions, etc.
 
 - The equilibrium constant is not treated as a dimensionless quantity.
 
@@ -460,7 +768,8 @@ The transition state
 ^^^^^^^^^^^^^^^^^^^^
 
 The transition state can be seen as a thin border that divides the coordinate
-space into the reactant and the product region:
+space into the reactant and the product region. The figure below is an
+illustration for a two-dimensional system.
 
 .. image:: ../tst_2d.png
 
@@ -514,13 +823,14 @@ most in line with the assumptions of transition state theory:
   should be at the right of the energy maximum.
 
   When considering the true dynamics of the system, it is still possible that
-  the system will bounce back into the reactant well without first reaching the
-  product well. These events are neglected in transition state theory.
+  the system will bounce back into the reactant well after crossing the right
+  boundary without first reaching the product well. These events are neglected
+  in transition state theory.
 
 - There is a pseudo-equilibrium between the reactants and the transition state.
   We must therefore put the left boundary at the left of the energy maximum. If
-  it would be at the right of the maximum, all transition state structures would
-  simply fall into the product well.
+  it would be at the right of the maximum, `all` transition state structures
+  would simply fall into the product well.
 
 - As will be discussed below, the width of the transition state region should
   be small such that the potential energy as function of the reaction coordinate
@@ -544,10 +854,10 @@ partition functions are straightforward.
 
 The partition function of the transition state needs some special attention. For
 all coordinates except the reaction coordinate, one can use the traditional
-gas phase approximation to define the partition function. For the reaction
-coordinate one assumes that the energy dependence on the reaction coordinate
-can be neglected. A simple one-dimensional translational partition function is
-used for the reaction coordinate.
+gas phase approximation to define the partition function. Further one assumes
+that the energy dependence on the reaction coordinate can be neglected in the
+transition state region. A simple one-dimensional translational partition
+function is used for the reaction coordinate.
 
 .. math:: Z'_T(1, \ldots) = Z'_{T,\text{rc}} \times Z'_{T,\text{other}}(1, \ldots)
 
@@ -564,12 +874,142 @@ point on the potential energy surface as reference geometry. The imaginary
 frequency is not considered in the vibrational contribution to
 :math:`Z'_{T,\text{other}}(1, \ldots)`.
 
+
 A simple model for `f`
 ^^^^^^^^^^^^^^^^^^^^^^
+
+:math:`f` is the probability per unit of time that a `free` one-dimensional
+particle in an NVT system with size :math:`\delta x` crosses the right
+boundary of the system. There are two conditions that must be satisfied for the
+particle to cross that boundary:
+
+1. The particle must be at the right edge. For a `free` particle in a box with
+   length :math:`\delta x`, this happens with a uniform probability density of
+   :math:`\frac{1}{\delta x}`.
+
+2. The velocity must be in the right direction.
+
+The flux of particles through the right boundary is computed as the probability
+of finding the particle at the right boundary and the average velocity of a
+particle when it moves to the right. We use the Maxwell-Boltzmann velocity
+distribution to compute the average velocity.
+
+.. math::
+    :nowrap:
+
+    \begin{align*}
+        f & = \frac{1}{\delta x} \langle v \rangle_\text{right} \\
+          & = \frac{1}{\delta x} \int_0^{+\infty} v p(v) dv \\
+          & = \frac{1}{\delta x} \sqrt{\frac{m^{\ddagger}}{2\pi k_B T}} \int_0^{+\infty} v
+                \exp\left( -\frac{m^{\dagger}v^2}{2 k_B T} \right) dv \\
+          & = \frac{1}{\delta x} \sqrt{\frac{k_B T}{2\pi m^{\ddagger}}}
+    \end{align*}
+
 
 Final expression for the rate constant
 ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
 
+Putting the results of the previous two subsections together, we get:
+
+.. math::
+    :nowrap:
+
+    \begin{align*}
+        k(T) & = f(T) K_c^{\ddagger}(T) \\
+             & = \frac{1}{\delta x} \sqrt{\frac{k_B T}{2\pi m^{\ddagger}}}
+              \sqrt{ \frac{2\pi m^{\ddagger} k_B T}{h^2} } \delta x
+              \frac{Z'_{T,\text{other}}(1, \ldots)}{Z'^{\nu_A}_A(1, \ldots)\,Z'^{\nu_B}_B(1, \ldots)} \\
+            & = \frac{k_B T}{h}
+              \frac{Z'_{T,\text{other}}(1, \ldots)}{Z'^{\nu_A}_A(1, \ldots)\,Z'^{\nu_B}_B(1, \ldots)} \\
+            & = \frac{k_B T}{h} \tilde{K}_c^{\ddagger}(T) \\
+    \end{align*}
+
+The quantity :math:`\tilde{K}_c^{\ddagger}` is different from the original
+equilibrium constant, :math:`K_c^{\ddagger}`. :math:`\tilde{K}_c^{\ddagger}` is
+computed with a partition function that does not contain the reaction
+coordinate. :math:`K_c^{\ddagger}` is based on a complete partition function
+for the transition state.
+
+
+The change in free energy
+^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In analogy to the equilibrium constant in a conventional chemical reaction, one
+can also define the change in free energy from the reactants to the transition
+state:
+
+.. math:: \Delta^{\ddagger} \tilde{F} = -k_BT \ln\left(
+                \tilde{K}_c^{\ddagger}
+                \frac{\rho^{\nu_A}_{A,0} \rho^{\nu_B}_{B,0}}{\rho^{\nu_T}_{T,0}}
+            \right),
+
+where one must specify reference densities. This is equivalent to
+
+.. math:: \Delta^{\ddagger} \tilde{F} =
+                \nu_T \mu_{T,\text{other}}(N_T, \ldots)
+                - \nu_A \mu_A(N_A, \ldots) - \nu_B \mu_B(N_B, \ldots),
+
+where :math:`\mu_{T,\text{other}}` is computed with a partition function for the
+transition state that does not include the reaction coordinate.
+
+One may split the change in free energy into two parts, an energetic and an
+entropic contribution:
+
+.. math:: \Delta_r \tilde{F} = \Delta_r E - T \Delta_r \tilde{S}
+
+The energetic part is:
+
+.. math:: \Delta_r E = E_T(1, \ldots)
+                     - \nu_A E_A(1, \ldots) - \nu_B E_B(1, \ldots)
+
+where :math:`E_X(1, \ldots)` is the internal energy per molecule of species `X`.
+
 
 Kinetic parameters (A and E\ :sub:`a`)
---------------------------------------
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+One may rewrite the rate constant as:
+
+.. math:: k(T) = \frac{k_B T}{h}
+                 \exp\left( -\frac{\Delta^{\ddagger} \tilde{F}}{k_B T} \right)
+                 \frac{\rho^{\nu_T}_{T,0}}{\rho^{\nu_A}_{A,0} \rho^{\nu_B}_{B,0}}
+
+where :math:`\Delta^{\ddagger} \tilde{F}` is computed at the reference densities
+in the last factor. The free energy can be split up in an energetic and an
+entropic contribution:
+
+.. math:: k(T) = \frac{k_B T}{h}
+                 \exp\left( \frac{\Delta^{\ddagger} \tilde{S}}{k_B} \right)
+                 \frac{\rho^{\nu_T}_{T,0}}{\rho^{\nu_A}_{A,0} \rho^{\nu_B}_{B,0}}
+                 \exp\left( -\frac{\Delta^{\ddagger} E}{k_B T} \right)
+
+In a short temperature interval, one may describe the temperature dependence
+of the rate constant with the empirical Arrhenius law,
+
+.. math:: k(T) = A \exp\left( -\frac{E_a}{k_B T} \right),
+
+with the kinetic parameters
+
+.. math:: A = \frac{k_B T}{h}
+              \exp\left( \frac{\Delta^{\ddagger} \tilde{S}}{k_B} \right)
+              \frac{\rho^{\nu_T}_{T,0}}{\rho^{\nu_A}_{A,0} \rho^{\nu_B}_{B,0}}
+
+and
+
+.. math:: E_a = \Delta^{\ddagger} E
+
+In this comparison, one assumes that the energy dependence of the expressions
+for :math:`A` and :math:`E_a` can be neglected.
+
+However, this does not lead to a convenient computational estimate of the
+kinetic parameters. In practice one computes rate constants on a grid in a
+well-defined temperature interval, and estimates the kinetic parameters by a
+linear regression of :math:`ln(k)` versus :math:`1/T`.
+
+One may double check the estimated activation energy by comparing it with the
+change in zero-point energy when going from reactants to the transition state:
+
+.. math:: \Delta^{\ddagger} E_{\text{ZPE}} = \lim_{T \rightarrow 0} \Delta^{\ddagger} E(T)
+
+There should be a good correlation between both numbers because
+:math:`\Delta^{\ddagger} E(T)` is only weakly dependent on the temperature.

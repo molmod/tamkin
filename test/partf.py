@@ -183,77 +183,108 @@ class PartFunTestCase(unittest.TestCase):
 
     def test_derivatives(self):
         for classical in True, False:
-            molecule = load_molecule_g03fchk("input/ethane/gaussian.fchk")
-            nma = NMA(molecule)
-            rotscan = load_rotscan_g03log("input/rotor/gaussian.log")
-            rotor = Rotor(rotscan, molecule, rotsym=3, even=True)
-            pf = PartFun(nma, [
-                ExtTrans(), ExtRot(), rotor,
-                Vibrations(classical, 0.5, 0.7),
-            ])
-            self.assertEqual(pf.rotational.symmetry_number, 6)
+            for cp in True, False:
+                molecule = load_molecule_g03fchk("input/ethane/gaussian.fchk")
+                nma = NMA(molecule)
+                rotscan = load_rotscan_g03log("input/rotor/gaussian.log")
+                rotor = Rotor(rotscan, molecule, rotsym=3, even=True)
+                pf = PartFun(nma, [
+                    ExtTrans(cp), ExtRot(), rotor,
+                    Vibrations(classical, 0.5, 0.7),
+                ])
+                self.assertEqual(pf.rotational.symmetry_number, 6)
 
-            eps = 0.0001
-            temps = numpy.array([300.0,400.0,500.0,600.0,700.0])
-            sfs = [
-                pf.electronic, pf.translational, pf.rotational, pf.vibrational,
-                pf.hindered_rotor_3_4_5, pf
-            ]
-            for stat_fys in sfs:
-                for temp in temps:
-                    # check the first derivative towards temperature with finite differences
-                    a = stat_fys.logt(temp)
-                    b = (stat_fys.log(temp+eps) -
-                         stat_fys.log(temp-eps))/(2*eps)
-                    self.assertAlmostEqual(
-                        a, b, 6,
-                        "error in partial derivative (%s,%s): %s!=%s" % (stat_fys.name, classical, a, b)
-                    )
-                    # check the second derivative towards temperature with finite differences
-                    a = stat_fys.logtt(temp)
-                    b = (stat_fys.logt(temp+eps) -
-                         stat_fys.logt(temp-eps))/(2*eps)
-                    self.assertAlmostEqual(
-                        a, b, 6,
-                        "error in second partial derivative (%s,%s): %s!=%s" % (stat_fys.name, classical, a, b)
-                    )
-                    # check the helper functions temperature argument
-                    self.assertAlmostEqual(stat_fys.helper(temp,1), stat_fys.helper(temp,0)*temp)
-                    self.assertAlmostEqual(stat_fys.helpert(temp,1), stat_fys.helpert(temp,0)*temp)
-                    self.assertAlmostEqual(stat_fys.helpertt(temp,1), stat_fys.helpertt(temp,0)*temp)
+                eps = 0.0001
+                temps = numpy.array([300.0,400.0,500.0,600.0,700.0])
+                sfs = [
+                    pf.electronic, pf.translational, pf.rotational, pf.vibrational,
+                    pf.hindered_rotor_3_4_5, pf
+                ]
+                for stat_fys in sfs:
+                    for temp in temps:
+                        # check the first derivative towards temperature with finite differences
+                        a = stat_fys.logt(temp)
+                        b = (stat_fys.log(temp+eps) -
+                             stat_fys.log(temp-eps))/(2*eps)
+                        self.assertAlmostEqual(
+                            a, b, 6,
+                            "error in partial derivative (%s, classical=%s, "
+                            "cp=%s): %s!=%s" % (stat_fys.name, classical, cp,
+                            a, b)
+                        )
+                        # check the second derivative towards temperature with finite differences
+                        a = stat_fys.logtt(temp)
+                        b = (stat_fys.logt(temp+eps) -
+                             stat_fys.logt(temp-eps))/(2*eps)
+                        self.assertAlmostEqual(
+                            a, b, 6,
+                            "error in second derivative (%s, classical=%s, "
+                            "cp=%s): %s!=%s" % (stat_fys.name, classical, cp,
+                            a, b)
+                        )
+                        # check the helper functions temperature argument
+                        self.assertAlmostEqual(stat_fys.helper(temp,1), stat_fys.helper(temp,0)*temp)
+                        self.assertAlmostEqual(stat_fys.helpert(temp,1), stat_fys.helpert(temp,0)*temp)
+                        self.assertAlmostEqual(stat_fys.helpertt(temp,1), stat_fys.helpertt(temp,0)*temp)
 
-    def test_chemical_potential(self):
-        for cp in False, True:
-            molecule = load_molecule_g03fchk("input/ethane/gaussian.fchk")
-            nma = NMA(molecule)
-            pf = PartFun(nma, [ExtTrans(cp=cp), ExtRot()])
-            N0 = 1.0
-            p0 = pf.translational.gaslaw.pressure
-            N1 = 1.001
-            p1 = p0*N1/N0
-            self.assertEqual(pf.rotational.symmetry_number, 6)
-            temps = numpy.array([300.0,400.0,500.0,600.0,700.0])
-            for temp in temps:
-                # compare the derivative of the free energy at N=1 with its
-                # finit difference approximation.
-                if not cp:
-                    pf.translational.gaslaw.pressure = p0
-                A0 = (pf.free_energy(temp))*N0
-                if not cp:
-                    pf.translational.gaslaw.pressure = p1
-                A1 = (pf.free_energy(temp))*N1
-                mu = pf.chemical_potential(temp)
-                #print cp, temp, A1 - A0, (N1-N0)*mu, (A1 - A0 - (N1-N0)*mu)/kjmol
-                error = abs(A1 - A0 - (N1-N0)*mu)
-                self.assert_(error < 1e-3)
-                # check the helper function and the definition of the chemical
-                # potential in an ideal gas
-                self.assertAlmostEqual(pf.translational.helpern(temp, 0) - pf.translational.helper(temp, 0), -1)
-                self.assertAlmostEqual(pf.electronic.helpern(temp, 0) - pf.electronic.helper(temp, 0), 0.0)
-                self.assertAlmostEqual(pf.rotational.helpern(temp, 0) - pf.rotational.helper(temp, 0), 0.0)
-                self.assertAlmostEqual(pf.vibrational.helpern(temp, 0) - pf.vibrational.helper(temp, 0), 0.0)
-                self.assertAlmostEqual(pf.helpern(temp, 0) - pf.helper(temp, 0), -1)
-                self.assertAlmostEqual(pf.chemical_potential(temp), pf.free_energy(temp) + boltzmann*temp)
+    def test_chemical_potential_cp(self):
+        molecule = load_molecule_g03fchk("input/ethane/gaussian.fchk")
+        nma = NMA(molecule)
+        pf = PartFun(nma, [ExtTrans(cp=True), ExtRot()])
+        N0 = 1.0
+        p0 = pf.translational.pressure
+        N1 = 1.001
+        p1 = p0*N1/N0
+        self.assertEqual(pf.rotational.symmetry_number, 6)
+        temps = numpy.array([300.0,400.0,500.0,600.0,700.0])
+        for temp in temps:
+            # compare the derivative of the free energy at N=1 with its
+            # finit difference approximation.
+            pf.pressure = p0
+            F0 = pf.free_energy(temp)*N0
+            pf.pressure = p1
+            F1 = pf.free_energy(temp)*N1
+            pf.pressure = 0.5*(p0+p1)
+            mu = pf.chemical_potential(temp)
+            error = abs(F1 - F0 - (N1-N0)*mu)
+            self.assert_(error < 1e-12)
+            # check the helper function and the definition of the chemical
+            # potential in an ideal gas
+            self.assertAlmostEqual(pf.translational.helpern(temp, 0) - pf.translational.helper(temp, 0), 0.0)
+            self.assertAlmostEqual(pf.electronic.helpern(temp, 0) - pf.electronic.helper(temp, 0), 0.0)
+            self.assertAlmostEqual(pf.rotational.helpern(temp, 0) - pf.rotational.helper(temp, 0), 0.0)
+            self.assertAlmostEqual(pf.vibrational.helpern(temp, 0) - pf.vibrational.helper(temp, 0), 0.0)
+            self.assertAlmostEqual(pf.helpern(temp, 0) - pf.helper(temp, 0), 0.0)
+            self.assertAlmostEqual(pf.chemical_potential(temp), pf.free_energy(temp))
+
+    def test_chemical_potential_cv(self):
+        molecule = load_molecule_g03fchk("input/ethane/gaussian.fchk")
+        nma = NMA(molecule)
+        pf = PartFun(nma, [ExtTrans(cp=False), ExtRot()])
+        N0 = 1.0
+        r0 = pf.translational.density
+        N1 = 1.001
+        r1 = r0*N1/N0
+        self.assertEqual(pf.rotational.symmetry_number, 6)
+        temps = numpy.array([300.0,400.0,500.0,600.0,700.0])
+        for temp in temps:
+            # compare the derivative of the free energy at N=1 with its
+            # finit difference approximation.
+            pf.translational.density = r0
+            F0 = pf.free_energy(temp)*N0
+            pf.translational.density = r1
+            F1 = pf.free_energy(temp)*N1
+            mu = pf.chemical_potential(temp)
+            error = abs(F1 - F0 - (N1-N0)*mu)
+            self.assert_(error < 1e-8)
+            # check the helper function and the definition of the chemical
+            # potential in an ideal gas
+            self.assertAlmostEqual(pf.translational.helpern(temp, 0) - pf.translational.helper(temp, 0), -1)
+            self.assertAlmostEqual(pf.electronic.helpern(temp, 0) - pf.electronic.helper(temp, 0), 0.0)
+            self.assertAlmostEqual(pf.rotational.helpern(temp, 0) - pf.rotational.helper(temp, 0), 0.0)
+            self.assertAlmostEqual(pf.vibrational.helpern(temp, 0) - pf.vibrational.helper(temp, 0), 0.0)
+            self.assertAlmostEqual(pf.helpern(temp, 0) - pf.helper(temp, 0), -1)
+            self.assertAlmostEqual(pf.chemical_potential(temp), pf.free_energy(temp) + boltzmann*temp)
 
     def test_logv(self):
         for cp in False, True:
@@ -262,49 +293,54 @@ class PartFunTestCase(unittest.TestCase):
             pf = PartFun(nma, [ExtTrans(cp=cp), ExtRot()])
             temps = numpy.array([300.0,400.0,500.0,600.0,700.0])
             for temp in temps:
-                self.assertAlmostEqual(pf.translational.logv(temp) - pf.translational.log(temp),
-                                       -(1-cp)-pf.translational.gaslaw.helper(temp,0))
+                self.assertAlmostEqual(pf.translational.logv(temp), pf.translational._z1(temp))
                 self.assertAlmostEqual(pf.electronic.logv(temp) - pf.electronic.log(temp), 0.0)
                 self.assertAlmostEqual(pf.rotational.logv(temp) - pf.rotational.log(temp), 0.0)
                 self.assertAlmostEqual(pf.vibrational.logv(temp) - pf.vibrational.log(temp), 0.0)
-                self.assertAlmostEqual(pf.logv(temp) - pf.log(temp),
-                                       -(1-cp)-pf.translational.gaslaw.helper(temp,0))
 
     def test_derived_quantities(self):
         # internal energy, heat capacity and entropy
         molecule = load_molecule_g03fchk("input/sterck/aa.fchk")
         nma = NMA(molecule, ConstrainExt())
-        pf = PartFun(nma, [ExtTrans(cp=False), ExtRot(1)])
+        pf = PartFun(nma, [ExtTrans(cp=True), ExtRot(1)])
 
         # values taken from aa.log
         calmolK = calorie/mol/kelvin
         R = 1.98720649773 # R in calorie/(mol*K)
+        temp = 298.15
+        RT = R*temp*0.001 # RT in kcal/(mol*K)
         # electronic
-        self.assertAlmostEqual(pf.electronic.internal_energy(298.15), pf.electronic.energy)
-        self.assertAlmostEqual(pf.electronic.heat_capacity(298.15)/(calmolK), 0.0)
-        self.assertAlmostEqual(pf.electronic.entropy(298.15)/(calmolK), 0.0)
+        self.assertAlmostEqual(pf.electronic.internal_energy(temp), pf.electronic.energy)
+        self.assertAlmostEqual(pf.electronic.heat_capacity(temp)/(calmolK), 0.0)
+        self.assertAlmostEqual(pf.electronic.entropy(temp)/(calmolK), 0.0)
         # translational
-        self.assertAlmostEqual(pf.translational.internal_energy(298.15)/(kcalmol), 0.889, 2)
-        self.assertAlmostEqual(pf.translational.heat_capacity(298.15)/(calmolK), 2.981, 2)
-        self.assertAlmostEqual(pf.translational.entropy(298.15)/(calmolK), 38.699, 2)
+        # WARNING: pf returns enthalpy, turn it into internal energy
+        self.assertAlmostEqual(pf.translational.internal_energy(temp)/(kcalmol)-RT, 0.889, 2)
+        # WARNING: pf returns heat capacity at constant pressure,
+        #          turn it into heat capacity at constant volume
+        self.assertAlmostEqual(pf.translational.heat_capacity(temp)/(calmolK)-R, 2.981, 2)
+        self.assertAlmostEqual(pf.translational.entropy(temp)/(calmolK), 38.699, 2)
         # rotational
-        self.assertAlmostEqual(pf.rotational.internal_energy(298.15)/(kcalmol), 0.889, 2)
-        self.assertAlmostEqual(pf.rotational.heat_capacity(298.15)/(calmolK), 2.981, 2)
-        self.assertAlmostEqual(pf.rotational.entropy(298.15)/(calmolK), 25.287, 2)
+        self.assertAlmostEqual(pf.rotational.internal_energy(temp)/(kcalmol), 0.889, 2)
+        self.assertAlmostEqual(pf.rotational.heat_capacity(temp)/(calmolK), 2.981, 2)
+        self.assertAlmostEqual(pf.rotational.entropy(temp)/(calmolK), 25.287, 2)
         # vibrational
-        self.assertAlmostEqual(pf.vibrational.internal_energy(298.15)/(kcalmol), 51.343, 2)
-        self.assertAlmostEqual(pf.vibrational.heat_capacity(298.15)/(calmolK), 13.264, 2)
-        self.assertAlmostEqual(pf.vibrational.entropy(298.15)/(calmolK), 10.710, 2)
+        self.assertAlmostEqual(pf.vibrational.internal_energy(temp)/(kcalmol), 51.343, 2)
+        self.assertAlmostEqual(pf.vibrational.heat_capacity(temp)/(calmolK), 13.264, 2)
+        self.assertAlmostEqual(pf.vibrational.entropy(temp)/(calmolK), 10.710, 2)
         # total
-        self.assertAlmostEqual((pf.internal_energy(298.15)-pf.energy)/(kcalmol), 53.121, 2)
-        self.assertAlmostEqual(pf.heat_capacity(298.15)/(calmolK), 19.225, 2)
-        self.assertAlmostEqual(pf.entropy(298.15)/(calmolK), 74.696, 2)
+        # WARNING: pf returns enthalpy, turn it into internal energy
+        # WARNING: pf returns enthalpy that includes the electronic energy
+        self.assertAlmostEqual((pf.internal_energy(temp)-pf.energy)/(kcalmol)-RT, 53.121, 2)
+        # WARNING: pf returns heat capacity at constant pressure,
+        #          turn it into heat capacity at constant volume
+        self.assertAlmostEqual(pf.heat_capacity(temp)/(calmolK)-R, 19.225, 2)
+        self.assertAlmostEqual(pf.entropy(temp)/(calmolK), 74.696, 2)
         self.assertAlmostEqual(pf.free_energy(0.0), -247.228749, 2) # Zero-point energy
-        self.assertAlmostEqual(pf.internal_energy(298.15), -247.222989, 2)
+        self.assertAlmostEqual(pf.internal_energy(temp), -247.222989, 2)
         # switch to constant pressure for the enthalpy and Gibbs free energy.
-        pf.translational.cp = True
-        self.assertAlmostEqual(pf.internal_energy(298.15), -247.222045, 2)
-        self.assertAlmostEqual(pf.free_energy(298.15), -247.257535, 5)
+        self.assertAlmostEqual(pf.internal_energy(temp), -247.222045, 2)
+        self.assertAlmostEqual(pf.free_energy(temp), -247.257535, 5)
 
 
     def test_classical1(self):
@@ -346,21 +382,26 @@ class PartFunTestCase(unittest.TestCase):
     def test_external_separate(self):
         calmolK = calorie/mol/kelvin
         R = 1.98720649773 # R in calorie/(mol*K)
+        temp = 298.15
+        RT = R*temp*0.001 # RT in kcal/(mol*K)
 
         # values taken from aa.log
         molecule = load_molecule_g03fchk("input/sterck/aa.fchk")
-        pf = PartFun(NMA(molecule, ConstrainExt()), [ExtTrans(cp=False)])
+        pf = PartFun(NMA(molecule, ConstrainExt()), [ExtTrans(cp=True)])
         # translational
-        self.assertAlmostEqual(pf.translational.internal_energy(298.15)/(kcalmol), 0.889, 2)
-        self.assertAlmostEqual(pf.translational.heat_capacity(298.15)/(calmolK), 2.981, 2)
-        self.assertAlmostEqual(pf.translational.entropy(298.15)/(calmolK), 38.699, 2)
+        # WARNING: pf.translational returns enthalpy, turn it into internal energy
+        self.assertAlmostEqual(pf.translational.internal_energy(temp)/(kcalmol)-RT, 0.889, 2)
+        # WARNING: pf.translational returns heat capacity at constant pressure,
+        #          turn it into heat capacity at constant volume
+        self.assertAlmostEqual(pf.translational.heat_capacity(temp)/(calmolK)-R, 2.981, 2)
+        self.assertAlmostEqual(pf.translational.entropy(temp)/(calmolK), 38.699, 2)
 
         molecule = load_molecule_g03fchk("input/sterck/aa.fchk")
         pf = PartFun(NMA(molecule, ConstrainExt()), [ExtRot(1)])
         # rotational
-        self.assertAlmostEqual(pf.rotational.internal_energy(298.15)/(kcalmol), 0.889, 2)
-        self.assertAlmostEqual(pf.rotational.heat_capacity(298.15)/(calmolK), 2.981, 2)
-        self.assertAlmostEqual(pf.rotational.entropy(298.15)/(calmolK), 25.287, 2)
+        self.assertAlmostEqual(pf.rotational.internal_energy(temp)/(kcalmol), 0.889, 2)
+        self.assertAlmostEqual(pf.rotational.heat_capacity(temp)/(calmolK), 2.981, 2)
+        self.assertAlmostEqual(pf.rotational.entropy(temp)/(calmolK), 25.287, 2)
 
     def test_linear(self):
         molecule = load_molecule_g03fchk("input/linear/gaussian.fchk")
@@ -417,26 +458,30 @@ class PartFunTestCase(unittest.TestCase):
             self.assertAlmostEqual(numpy.log(k2), log_k2)
             self.assertAlmostEqual(log_K + log_k2, log_k1)
 
-    def test_proton(self):
-        mol = Proton()
-        pf = PartFun(NMA(mol), [ExtTrans(cp=False)])
+    def test_proton_cp(self):
+        proton = Proton()
+        pf = PartFun(NMA(proton), [ExtTrans(cp=True)])
+        temp = 298.15
+        self.assertAlmostEqual(pf.heat_capacity(temp), 2.5*boltzmann)
+        self.assertAlmostEqual(pf.internal_energy(temp), 2.5*boltzmann*temp)
+        self.assertAlmostEqual(pf.translational.helpert(temp, 1), 2.5)
+        self.assertAlmostEqual(
+            pf.translational.log(temp),
+            1.5*numpy.log(proton.masses[0]*boltzmann*temp/(2*numpy.pi)) +
+            numpy.log(boltzmann*temp/(1*atm))
+        )
+
+    def test_proton_cv(self):
+        proton = Proton()
+        pf = PartFun(NMA(proton), [ExtTrans(cp=False)])
         temp = 298.15
         self.assertAlmostEqual(pf.heat_capacity(temp), 1.5*boltzmann)
         self.assertAlmostEqual(pf.internal_energy(temp), 1.5*boltzmann*temp)
-        qt = (mol.masses[0]*boltzmann*temp/(2*numpy.pi))**1.5 * boltzmann*temp/(1*atm)
         self.assertAlmostEqual(pf.translational.helpert(temp, 1), 1.5)
         self.assertAlmostEqual(
-            pf.translational.gaslaw.helper(temp, 0),
-            numpy.log(boltzmann*temp/(1*atm))
-        )
-        self.assertAlmostEqual(
-            pf.translational.helper(temp, 0),
-            1 + 1.5*numpy.log(mol.masses[0]*boltzmann*temp/(2*numpy.pi)) +
-            numpy.log(boltzmann*temp/(1*atm))
-        )
-        self.assertAlmostEqual(
-            pf.entropy(temp)/boltzmann,
-            (numpy.log(qt) + 1.5 + 1)
+            pf.translational.log(temp),
+            1.0 + 1.5*numpy.log(proton.masses[0]*boltzmann*temp/(2*numpy.pi)) +
+            numpy.log(meter**3/mol)
         )
 
     def test_pcm_correction(self):

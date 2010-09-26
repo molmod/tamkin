@@ -167,6 +167,28 @@ volume. In three dimensions, :math:`V` is an ordinary volume. In two dimensions,
 the `generalized` volume in different dimensions, because it would only clutter
 the mathematical derivations.
 
+The `basic` quantities are expressed in terms of only intensive quantities, i.e.
+finally :math:`\ln(V/N)` is substituted by :math:`-ln \rho`, where :math:`\rho`
+is the particle density. Note that all derivatives are taken at constant volume.
+
+.. math::
+    :nowrap:
+
+    \begin{align*}
+        \mathsf{log}_{\text{trans,NVT}} & = 1
+            + \frac{d}{2}\ln\left(\frac{2\pi m k_B T}{h^2}\right)
+            - \ln \rho \\
+        \mathsf{logt}_{\text{trans,NVT}} & = \frac{d}{2T} \\
+        \mathsf{logtt}_{\text{trans,NVT}} & = -\frac{d}{2T^2} \\
+        \mathsf{logn}_{\text{trans,NVT}} & =
+            \frac{d}{2}\ln\left(\frac{2\pi m k_B T}{h^2}\right)
+            - \ln \rho \\
+        \mathsf{logv}_{\text{trans,NVT}} & =
+            \frac{d}{2}\ln\left(\frac{2\pi m k_B T}{h^2}\right) \\
+    \end{align*}
+
+
+
 NpT ensemble
 ^^^^^^^^^^^^
 
@@ -214,29 +236,20 @@ particles, one obtains a convenient identity for the implementation in TAMkin.
     \end{align*}
 
 
-`Basic` quantities
-^^^^^^^^^^^^^^^^^^
-
-We will discuss both the NVT and NpT ensemble at the same time. The terms that
-are specific for the NpT ensemble are printed in blue. In the NpT ensemble, the
-derivatives are taken at constant pressure, i.e. the volume becomes a function
-of the temperature.
+The `basic` quantities are expressed in terms of only intensive quantities, i.e.
+finally :math:`\ln(V/N)` is substituted by :math:`\ln\left( \frac{k_BT}{p}
+\right)`. Note that all derivatives are taken at constant pressure
 
 .. math::
     :nowrap:
 
     \begin{align*}
-        \mathsf{log}_{\text{trans}} & = 1
-            + \frac{d}{2}\ln\left(\frac{2\pi m k_B T}{h^2}\right)
-            + \ln\left(\frac{V}{N}\right)
-            {\color{blue}- 1} \\
-        \mathsf{logt}_{\text{trans}} & = \frac{1}{T}
-            {\color{blue} + \frac{1}{T}} \\
-        \mathsf{logtt}_{\text{trans}} & = -\frac{1}{T^2}
-            {\color{blue} - \frac{1}{T^2}}\\
-        \mathsf{logn}_{\text{trans}} & =
+        \mathsf{log}_{\text{trans}} & =
             \frac{d}{2}\ln\left(\frac{2\pi m k_B T}{h^2}\right)
-            + \ln\left(\frac{V}{N}\right) \\
+            + \ln\left( \frac{k_BT}{p} \right) \\
+        \mathsf{logt}_{\text{trans}} & = \left(\frac{d}{2} + 1\right)\frac{1}{T} \\
+        \mathsf{logtt}_{\text{trans}} & = -\left(\frac{d}{2} + 1\right)\frac{1}{T^2} \\
+        \mathsf{logn}_{\text{trans}} & = \mathsf{log}_{\text{trans}} \\
         \mathsf{logv}_{\text{trans}} & =
             \frac{d}{2}\ln\left(\frac{2\pi m k_B T}{h^2}\right) \\
     \end{align*}

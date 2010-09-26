@@ -40,8 +40,6 @@
 
    These are the other classes and functions present in this module:
 
-   * **Gas Laws:**
-       * IdealGasLaw
    * **Abstract classes:**
        * Info
        * StatFys
@@ -85,183 +83,19 @@
 
 
 from molmod import boltzmann, lightspeed, atm, bar, amu, centimeter, kjmol, \
-    planck
+    planck, mol, meter, newton
 
 import numpy
 
 
 __all__ = [
-    "IdealGasLaw", "Info", "StatFys", "StatFysTerms",
+    "Info", "StatFys", "StatFysTerms",
     "helper_levels", "helpert_levels", "helpertt_levels",
     "Electronic", "ExtTrans", "ExtRot", "PCMCorrection",
     "Vibrations",
     "helper_vibrations", "helpert_vibrations", "helpertt_vibrations",
     "PartFun",
 ]
-
-
-
-class IdealGasLaw(object):
-    """Bundles several functions related to the ideal gas law."""
-
-    def __init__(self, pressure=None, dim=3):
-        """
-           Optional argument:
-             | ``pressure`` -- the external pressure of the system. The default
-                               is 1 atm for 3D gases. The default for 2D systems
-                               is 75.64 mili Newton per meter, i.e. the surface
-                               tension of water. For other dimensions, the
-                               default is 1.0.
-             | ``dim`` -- The dimensionality of the gas.
-        """
-        if pressure is None:
-            if dim == 3:
-                pressure = 1*atm
-            elif dim == 2:
-                # approximately the surface tension of water in atomic units:
-                pressure = 4.86e-05
-            else:
-                # whatever...
-                pressure = 1.0
-        self.pressure = pressure
-        self.dim = dim
-        # decide on the units
-        if dim == 3:
-            self.p_unit = bar
-            self.p_unit_name = "bar"
-        else:
-            self.p_unit = 1.0
-            self.p_unit_name = "a.u."
-
-    def pv(self, temp, n):
-        """PV function.
-
-           Arguments:
-            | ``temp`` -- The temperature
-            | ``n`` -- A power for the additional temperature factor.
-
-           This is an auxiliary function for the translational partition
-           function. It returns the product of pressure and volume multiplied by
-           a power of the temperature.
-        """
-        if temp == 0:
-            if n > -1:
-                return 0.0
-            elif n == -1:
-                return boltzmann
-            else:
-                raise NotImplementedError
-        else:
-            return boltzmann*temp**(n+1)
-
-    def pvt(self, temp, n):
-        """PV function T.
-
-           Arguments:
-            | ``temp`` -- The temperature
-            | ``n`` -- A power for the additional temperature factor.
-
-           This is an auxiliary function for the translational partition
-           function. It returns the derivative towards the temperature product
-           of pressure and volume, multiplied by a power of the temperature.
-           (Derivation is performed prior to multiplication with T)
-        """
-        return 0.0
-
-    def pvtt(self, temp, n):
-        """PV function TT.
-
-           Arguments:
-            | ``temp`` -- The temperature
-            | ``n`` -- A power for the additional temperature factor.
-
-           This is an auxiliary function for the translational partition
-           function. It returns the second derivative towards the temperature of
-           the product of pressure and volume, multiplied by a power of the
-           temperature. (Derivation is performed prior to multiplication with T)
-        """
-        return 0.0
-
-    def helper(self, temp, n):
-        r"""Helper function.
-
-           Returns
-
-           .. math:: T^n \ln(V(T))
-
-           where :math:`V` is the volume per molecule.
-
-           Arguments:
-            | ``temp`` -- the temperature
-            | ``n`` -- the power for the temperature factor
-        """
-        if temp == 0:
-            if n > 0:
-                return 0.0
-            else:
-                raise NotImplementedError
-        else:
-            return temp**n*numpy.log(boltzmann*temp/self.pressure)
-
-    def helpert(self, temp, n):
-        r"""Helper function T.
-
-           Returns
-
-           .. math:: T^n \frac{d \ln(V(T))}{d T}
-
-           where :math:`V` is the volume per molecule and the derivative is
-           taken at constant pressure.
-
-           Arguments:
-            | ``temp`` -- the temperature
-            | ``n`` -- the power for the temperature factor
-        """
-        if temp == 0:
-            raise NotImplementedError
-        else:
-            return temp**(n-1)
-
-    def helpertt(self, temp, n):
-        r"""Helper function TT.
-
-           Returns
-
-           .. math:: T^n \frac{d^2 \ln(V(T))}{d T^2}
-
-           where :math:`V` is the volume per molecule and the derivative is
-           taken at constant pressure.
-
-           Arguments:
-            | ``temp`` -- the temperature
-            | ``n`` -- the power for the temperature factor
-        """
-        if temp == 0:
-            raise NotImplementedError
-        else:
-            return -temp**(n-2)
-
-    def helpern(self, temp, n):
-        r"""Helper function N.
-
-           Returns
-
-           .. math:: T^n \left(\frac{N}{V}-\frac{P}{kT}\right)\frac{dV(T)}{dN}
-
-           where :math:`V` is the volume per molecule, :math:`N` is the number
-           of particles, :math:`P` is the pressure and the derivative is taken
-           at constant pressure. This is part of the computation of the chemical
-           potential at constant pressure and is non-zero for non-ideal gases.
-        """
-        return 0.0
-
-    def _get_description(self):
-        """A one-line summary of the gas law."""
-        return "Ideal gas law, dimension = %i, pressure [%s] = %.5f" % (
-            self.dim, self.p_unit_name, self.pressure/self.p_unit
-        )
-
-    description = property(_get_description)
 
 
 class Info(object):
@@ -900,147 +734,113 @@ class Electronic(Info, StatFys):
 
 
 class ExtTrans(Info, StatFys):
-    r"""The contribution from the external translation.
+    """The contribution from the external translation.
 
-       In the translational contribution, we take into account the terms that
-       are typical for the classical limit of the many body partition function.
-       Strictly speaking, these additions are not due to the fact that there is
-       translational freedom, so this is to some extent an ugly hack, but a very
-       common and convenient one.
-
-       ExtTrans has a second feature that goes beyond the limits of just a
-       simple translational partition function. All corrections due to the NpT
-       ensemble are included by default. Leaving out these corrections is
-       optional (cp=False), which leads to a partition function for the NVT
-       ensemble.
-
-       **Some notes on the definition of** ``ExtTrans.log``
-
-       The translational partition function of a single d-dimensional particle
-       reads (with NpT specific contributions in blue)
-
-       .. math:: Z_{1,\text{trans}} = \left(\frac{2\pi m k_B T}{h^2}\right)^{\frac{d}{2}}V
-                                      {\color{blue}\exp\left(-\frac{PV}{Nk_BT}\right)},
-
-       and the logarithm is
-
-       .. math:: \ln(Z_{1,\text{trans}}) = \frac{d}{2}\ln\left(\frac{2\pi m k_B T}{h^2}\right)
-                          + \ln(V) {\color{blue}-\frac{PV}{Nk_BT}}.
-
-       ``ExtTrans.log`` computes the logarithm of the many-body translational
-       partition per particle, in the classical limit:
-
-       .. math:: \frac{\ln(Z_{N,\text{trans}})}{N} =
-                   \frac{\ln\left(\frac{1}{N!}Z_{1,\text{trans}}^N\right)}{N},
-
-       where N is the total number of particles. Using Stirlings approximation,
-       this leads to:
-
-       .. math:: \frac{\ln(Z_{N,\text{trans}})}{N} = \frac{-N \ln(N) + N}{N} + \ln(Z_{1,\text{trans}}).
-
-       The first term is split into two terms, :math:`-\ln(N)` and :math:`1`.
-       The former is pushed into the expression of the translational partition
-       function, while the latter just remains where it is. The final
-       expression is:
-
-       .. math:: \frac{\ln(Z_{N,\text{trans}})}{N} = 1
-                      + \frac{d}{2}\ln\left(\frac{2\pi m k_B T}{h^2}\right)
-                      + \ln\left(\frac{V}{N}\right)
-                      {\color{blue}- \frac{PV}{Nk_BT}}.
-
-       From this derivation it is clear that the many-body effects and the
-       translational part must be done together, because the separate
-       contributions depend on the number of particles, which is annoying.
-
-       *Note:* All quantities so far are dimensionless.
-
-       **Some notes on the definition of** ``ExtTrans.logn``
-
-       For the computation of the chemical potential, one needs the quantity
-
-       .. math:: \frac{\partial \ln(Z_{N,\text{trans}})}{\partial N},
-
-       which is computed by ``ExtTrans.logn``. In all contributions except the
-       translational, such a term boils down to the single-particle partition
-       function divided by :math:`N`. In case of the translational partition
-       function, one finds (using Stirlings approximation, and the classical gas
-       limit)
-
-       .. math::
-           :nowrap:
-
-           \begin{align*}
-             \frac{\partial \ln(Z_{N,\text{trans}})}{\partial N}
-                & = \frac{\partial \ln\left(\frac{Z^N_{1,\text{trans}}}{N!}\right)}{\partial N} \\
-                & = \frac{\partial \left(N \ln(Z_{1,\text{trans}}) - N\ln(N) + N \right)}{\partial N} \\
-                & = \ln\left(\frac{Z_{1,\text{trans}}}{N}\right) +
-                          {\color{red} N\frac{\partial \ln(Z_{1,\text{trans}})}{\partial N}} \\
-                & = \frac{d}{2}\ln\left(\frac{2\pi m k_B T}{h^2}\right)
-                          + \ln\left(\frac{V}{N}\right) {\color{blue}-\frac{PV}{Nk_BT}}
-                          {\color{red} +N\frac{\partial \left(\ln(V) -\frac{PV}{Nk_BT} \right)}{\partial N}}\\
-                & = \frac{d}{2}\ln\left(\frac{2\pi m k_B T}{h^2}\right)
-                          + \ln\left(\frac{V}{N}\right) {\color{blue}-\frac{PV}{Nk_BT}}
-                          {\color{red} + \left(\frac{N}{V} - \frac{P}{k_BT}\right)\frac{\partial V}{\partial N} + \frac{PV}{Nk_BT}}\\
-                & = \frac{d}{2}\ln\left(\frac{2\pi m k_B T}{h^2}\right)
-                          + \ln\left(\frac{V}{N}\right)
-                          {\color{red} + \left(\frac{N}{V} - \frac{P}{k_BT}\right)\frac{\partial V}{\partial N}}
-           \end{align*}
-
-       The colored terms only matter in case of constant pressure ensembles. The
-       red portion in the final results becomes zero in the case of ideal gases.
-
-       **Some notes on the definition of** ``ExtTrans.logv``
-
-       For the computation of equilibrium constants and rate coefficients,
-       one makes use of
-
-       .. math:: \ln(Z'_{1,\text{trans}}) =
-                    \frac{\partial \ln(Z_{N,\text{trans}})}{\partial N}
-                    + \ln\left(\frac{N}{V}\right).
-
-       Using the final result in the derivation of ``ExtTrans.logn`` as a
-       starting point, this becomes:
-
-       .. math:: \ln(Z'_{1,\text{trans}}) =
-                    \frac{d}{2}\ln\left(\frac{2\pi m k_B T}{h^2}\right)
-                    {\color{red} + \left(\frac{N}{V} - \frac{P}{k_BT}\right)\frac{\partial V}{\partial N}}.
-
-       The quantity is computed by ``ExtTrans.logv``. (The part in red is only
-       present in the NpT enesemble and becomes zero for ideal gases.) This is
-       no longer the logarithm of a dimensionless quantity, but it still is an
-       intensive quantity. The dimension of the gas determines the unit of the
-       return value:
-
-       .. math:: \text{unit} = \ln(\text{bohr}^{-\text{dim}})
+       This contribution includes many body terms and optional constant pressure
+       corrections. It is based on the classical ideal gas approximation.
     """
 
-    def __init__(self, cp=True, gaslaw=None, dim=3, mobile=None):
+    def __init__(self, cp=True, pressure=None, density=None, dim=3, mobile=None):
         """
            Optional arguments:
             | ``cp`` -- When True, an additional factor is included in the
                         partition function to model a constant pressure (or
                         constant surface tension) ensemble instead of a constant
                         volume (or constant surface) ensemble.
-            | ``gaslaw`` -- The gas law that the system under study obeys. This
-                            is used to evaluation the PV term, and also to
-                            compute the derivative of the volume towards the
-                            temperature under constant pressure. By default, the
-                            ideal gas law is used.
+             | ``pressure`` -- (only allowed when cp==True)
+                               The external pressure exerted on the system in
+                               case of the NpT ensemble. The default is 1 atm
+                               for 3D gases. The default for 2D systems is 75.64
+                               miliNewton per meter, i.e. the surface tension of
+                               water. For other dimensions, the default is 1.0.
+            | ``density`` -- (only allowed when cp==False)
+                             The density of the system in case of the NVT
+                             ensemble. The default is 1.0 mol/meter**dim.
             | ``dim`` -- The dimension of the ideal gas.
             | ``mobile`` -- A list of atom indexes that are free to translate. In
                             case of a mobile molecule adsorbed on a surface, only
                             include atom indexes of the adsorbate. The default is
                             that all atoms are mobile.
         """
-        self.cp = cp
-        if gaslaw is None:
-            self.gaslaw = IdealGasLaw(dim=dim)
+        if dim <= 0:
+            raise ValueError("The dimension of the gas must be strictly positive.")
+        if dim == 3:
+            self.pressure_unit = bar
+            self.pressure_unit_name = "bar"
+        elif dim == 2:
+            self.pressure_unit = 1e-3*newton/meter
+            self.pressure_unit_name = "mN/m"
         else:
-            self.gaslaw = gaslaw
-            assert self.gaslaw.dim == dim
+            self.pressure_unit = 1.0
+            self.pressure_unit_name = "a.u."
+        self.density_unit = mol/meter**dim
+        self.density_unit_name = "mol*meter**%i" % (-dim)
+
+        if cp:
+            if density is not None:
+                raise ValueError("The density can not be fixed in the NpT ensemble, i.e. it depends on the temperature.")
+            if pressure is None:
+                if dim == 3:
+                    pressure = 1*atm
+                elif dim == 2:
+                    # approximately the surface tension of water:
+                    pressure = self.pressure_unit*75.64
+                else:
+                    # whatever...
+                    pressure = 1.0
+            self._pressure = pressure
+        else:
+            if pressure is not None:
+                raise ValueError("The pressure can not be fixed in the NVT ensemble, i.e. it depends on the temperature.")
+            if density is None:
+                density = self.density_unit
+            self._density = density
+
+        self._cp = cp
         self.dim = dim
-        self.mobile = mobile
+        self._mobile = mobile
         Info.__init__(self, "translational")
+
+    cp = property(lambda self: self._cp)
+    mobile = property(lambda self: self._mobile)
+
+    def _get_pressure(self):
+        """The pressure in case of an NpT ensemble."""
+        if self.cp:
+            return self._pressure
+        else:
+            raise ValueError("The pressure is not a known constant in the NVT ensemble, i.e. it depends on the temperature.")
+
+    def _set_pressure(self, pressure):
+        """Set the pressure in case of an NpT ensemble.
+
+           This will raise a ValueError in case this is a constant volume ensemble.
+        """
+        if self.cp:
+            self._pressure = pressure
+        else:
+            raise ValueError("The pressure can not be fixed in the NVT ensemble, i.e. it depends on the temperature.")
+
+    pressure = property(_get_pressure, _set_pressure)
+
+    def _get_density(self):
+        """The density in case of an NVT ensemble."""
+        if not self.cp:
+            return self._density
+        else:
+            raise ValueError("The density is not a known constant in the NpT ensemble, i.e. it depends on the temperature.")
+
+    def _set_density(self, density):
+        """Set the density in case of an NVT ensemble.
+
+           This will raise a ValueError in case this is a constant pressure ensemble.
+        """
+        if not self.cp:
+            self._density = density
+        else:
+            raise ValueError("The density can not be fixed in the NpT ensemble, i.e. it depends on the temperature.")
+
+    density = property(_get_density, _set_density)
 
     def init_part_fun(self, nma, partf):
         """See :meth:`StatFys.init_part_fun`."""
@@ -1049,20 +849,15 @@ class ExtTrans(Info, StatFys):
         else:
             self.mass = nma.masses[self.mobile].sum()
 
-    def set_pressure(self, pressure):
-        """Update the pressure setting in the gaslaw.
-
-           Argument:
-            | ``pressure`` -- The new pressure.
-        """
-        self.gaslaw.pressure = pressure
-
     def dump(self, f):
         """See :meth:`Info.dump`."""
         Info.dump(self, f)
-        print >> f, "    Gas law: %s" % self.gaslaw.description
         print >> f, "    Dimension: %i" % self.dim
         print >> f, "    Constant pressure: %s" % self.cp
+        if self.cp:
+            print >> f, "    Pressure [%s]: %.5f" % (self.pressure_unit_name, self._pressure/self.pressure_unit)
+        else:
+            print >> f, "    Density [%s]: %.5f" % (self.density_unit_name, self._density/self.density_unit)
         if self.cp:
             print >> f, "      BIG FAT WARNING!!!"
             print >> f, "      This is an NpT partition function."
@@ -1077,6 +872,9 @@ class ExtTrans(Info, StatFys):
             print >> f, "      The heat capacity is computed at constant volume."
         print >> f, "    Mass [amu]: %f" % (self.mass/amu)
 
+    def _z1(self, temp):
+        return 0.5*self.dim*numpy.log(2*numpy.pi*self.mass*boltzmann*temp/planck**2)
+
     def helper(self, temp, n):
         """See :meth:`StatFys.helper`."""
         if temp == 0:
@@ -1085,57 +883,57 @@ class ExtTrans(Info, StatFys):
             else:
                 raise NotImplementedError
         else:
-            result = (
-                temp**n + # This is due to the 1/N!
-                temp**n*0.5*self.dim*numpy.log(2*numpy.pi*self.mass*boltzmann*temp/planck**2) +
-                self.gaslaw.helper(temp, n) # this is the T^n*ln(V/N), the /N is due to 1/N!
-            )
+            result = self._z1(temp)
             if self.cp:
-                result -= self.gaslaw.pv(temp, n-1)/boltzmann
-            return result
+                result += numpy.log(boltzmann*temp/self._pressure)
+            else:
+                result += 1.0 - numpy.log(self.density)
+            return result*temp**n
 
     def helpert(self, temp, n):
         """See :meth:`StatFys.helpert`."""
         if temp == 0:
             raise NotImplementedError
         else:
-            result = 0.5*self.dim*temp**(n-1)
+            result = 0.5*self.dim
             if self.cp:
-                result += self.gaslaw.helpert(temp, n)
-                result -= self.gaslaw.pvt(temp, n-1)/boltzmann
-            return result
+                result += 1
+            return result*temp**(n-1)
 
     def helpertt(self, temp, n):
         """See :meth:`StatFys.helpertt`."""
         if temp == 0:
             raise NotImplementedError
         else:
-            result = -0.5*self.dim*temp**(n-2)
+            result = -0.5*self.dim
             if self.cp:
-                result += self.gaslaw.helpertt(temp, n)
-                result -= self.gaslaw.pvtt(temp, n-1)/boltzmann
-            return result
+                result -= 1
+            return result*temp**(n-2)
 
     def helpern(self, temp, n):
         """See :meth:`StatFys.helpern`."""
-        result = self.helper(temp, n)
-        if temp==0:
+        if temp == 0:
             if n > 0:
-                return result
+                return 0.0
             else:
                 raise NotImplementedError
         else:
-            result -= temp**n
-        if self.cp:
-            result += self.gaslaw.helpern(temp, n)
-        return result
+            result = self._z1(temp)
+            if self.cp:
+                result += numpy.log(boltzmann*temp/self._pressure)
+            else:
+                result += -numpy.log(self._density)
+            return result*temp**n
 
     def helperv(self, temp, n):
         r"""See :meth:`StatFys.helperv`."""
-        result = self.helpern(temp, n) - self.gaslaw.helper(temp, n)
-        if self.cp:
-            result += self.gaslaw.pv(temp, n-1)/boltzmann
-        return result
+        if temp == 0:
+            if n > 0:
+                return 0.0
+            else:
+                raise NotImplementedError
+        else:
+            return self._z1(temp)*temp**n
 
 
 class ExtRot(Info, StatFys):

@@ -73,8 +73,8 @@ print
 # Kinetic model
 km = KineticModel([pf_VO_AA_OOtBu,pf_cyclohexene],pf_TS,tunneling=None)
 print "Kinetic model:"
-print "rate coefficient and gibbs free energy difference"
-print km.rate(323.0,do_log=False)/km.unit, "%s" % km.unit_name,"   " , km.free_energy_change(323.0)/kjmol, "kJ/mol"
+print "rate constant and gibbs free energy difference"
+print km.rate_constant(323.0,do_log=False)/km.unit, "%s" % km.unit_name,"   " , km.free_energy_change(323.0)/kjmol, "kJ/mol"
 print
 ra = ReactionAnalysis(km, 273, 373.1, temp_step=10)
 ra.plot_arrhenius("arrhenius.png") # make the Arrhenius plot
@@ -99,6 +99,6 @@ rakm.plot_arrhenius("arrhenius_akm.png")
 rakm.monte_carlo()
 rakm.plot_parameters("parameters_akm.png")
 print "Activation kinetic model:"
-print "global rate coefficient and global gibbs free energy difference"
-print akm.rate(323.0)/akm.unit, "%s" % akm.unit_name,"    ", akm.free_energy_change(323.0)/kjmol, "kJ/mol"
+print "global rate constant and global gibbs free energy difference"
+print akm.rate_constant(323.0)/akm.unit, "%s" % akm.unit_name,"    ", akm.free_energy_change(323.0)/kjmol, "kJ/mol"
 akm.write_to_file("activation_model.txt")

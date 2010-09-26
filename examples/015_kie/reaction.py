@@ -54,7 +54,7 @@ def create_kinetic_model(mol_react, mol_trans):
 old_mol_react = load_molecule_g03fchk("reactant.fchk")
 old_mol_trans = load_molecule_g03fchk("trans.fchk")
 old_km = create_kinetic_model(old_mol_react, old_mol_trans)
-print "Original rate coefficient at 303K =", old_km.rate(303)/old_km.unit, old_km.unit_name
+print "Original rate constant at 303K =", old_km.rate_constant(303)/old_km.unit, old_km.unit_name
 
 # does not work:
 # mol_react1.masses[0] = 13*amu
@@ -64,6 +64,6 @@ new_masses[20] = ame2003.masses[7][15]
 new_mol_react = old_mol_react.copy_with(masses=new_masses)
 new_mol_trans = old_mol_trans.copy_with(masses=new_masses)
 new_km = create_kinetic_model(new_mol_react, new_mol_trans)
-print "New rate coefficient at 303K =", new_km.rate(303)/new_km.unit, new_km.unit_name
+print "New rate constant at 303K =", new_km.rate_constant(303)/new_km.unit, new_km.unit_name
 
-print "Ratio at 303K =", old_km.rate(303)/new_km.rate(303)
+print "Ratio at 303K =", old_km.rate_constant(303)/new_km.rate_constant(303)

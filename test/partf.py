@@ -56,7 +56,7 @@ class PartFunTestCase(unittest.TestCase):
         self.assertAlmostEqual(pf.log(700)-(-pf.electronic.energy/(boltzmann*700)), numpy.log(3.26776842E-29),3)
         self.assertAlmostEqual(pf.log(750)-(-pf.electronic.energy/(boltzmann*750)), numpy.log(2.00896366E-14),3)
 
-    def test_phva_rate_coeff_mat(self):
+    def test_phva_rate_const_mat(self):
         fixed_atoms = load_fixed_g03com("input/mat/Zp_p_react.14mei.com")
         mol_react = load_molecule_g03fchk("input/mat/Zp_p_react.28aug.fchk", "input/mat/Zp_p_react.14mei.fchk")
         mol_trans = load_molecule_g03fchk("input/mat/Zp_p_TS.28aug.fchk", "input/mat/5Tp_p_TS.oniom21apr_HF.fchk")
@@ -72,9 +72,9 @@ class PartFunTestCase(unittest.TestCase):
             3.7236678E+06, 4.4160510E+06, 5.2143822E+06
         ])
         for i in xrange(len(temps)):
-            k = km.rate(temps[i])
+            k = km.rate_constant(temps[i])
             self.assertAlmostEqual(numpy.log(k/(1/second)), numpy.log(expected_ks[i]),5)
-            log_k = km.rate(temps[i], do_log=True)
+            log_k = km.rate_constant(temps[i], do_log=True)
             self.assertAlmostEqual(numpy.log(k), log_k)
 
     def test_gas_react_sterck(self):
@@ -158,7 +158,7 @@ class PartFunTestCase(unittest.TestCase):
                 self.assertAlmostEqual(vib_contribs[i], expected_vib_contribs[i], 2+precision_wn)
             self.assertAlmostEqual(-139.302816, pf.log(temp)-(-pf.electronic.energy/(boltzmann*temp)), 1+precision_wn)
 
-    def test_gas_rate_coeff_sterck(self):
+    def test_gas_rate_const_sterck(self):
         mol_react1 = load_molecule_g03fchk("input/sterck/aa.fchk")
         mol_react2 = load_molecule_g03fchk("input/sterck/aarad.fchk")
         mol_trans = load_molecule_g03fchk("input/sterck/paats.fchk")
@@ -176,7 +176,7 @@ class PartFunTestCase(unittest.TestCase):
         ])
         unit = meter**3/mol/second
         for i in xrange(len(temps)):
-            k = km.rate(temps[i])
+            k = km.rate_constant(temps[i])
             # Sometimes, the fancy excel files use slightly different constants.
             # Therefore, only expect numbers to be equal up to 2 decimals.
             self.assertAlmostEqual(numpy.log(k/unit), numpy.log(expected_ks[i]), 2)
@@ -450,11 +450,11 @@ class PartFunTestCase(unittest.TestCase):
             K = tm.equilibrium_constant(temp)
             log_K = tm.equilibrium_constant(temp, do_log=True)
             self.assertAlmostEqual(numpy.log(K), log_K)
-            k1 = km1.rate(temp)
-            log_k1 = km1.rate(temp, do_log=True)
+            k1 = km1.rate_constant(temp)
+            log_k1 = km1.rate_constant(temp, do_log=True)
             self.assertAlmostEqual(numpy.log(k1), log_k1)
-            k2 = km2.rate(temp)
-            log_k2 = km2.rate(temp, do_log=True)
+            k2 = km2.rate_constant(temp)
+            log_k2 = km2.rate_constant(temp, do_log=True)
             self.assertAlmostEqual(numpy.log(k2), log_k2)
             self.assertAlmostEqual(log_K + log_k2, log_k1)
 

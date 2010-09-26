@@ -196,7 +196,7 @@ class ReactionAnalysis(object):
             | ``temp_step`` -- The resolution of the temperature grid.
                                [default=10K]
 
-           The rate coefficients are computed on the specified temperature grid
+           The rate constants are computed on the specified temperature grid
            and afterwards the kinetic parameters are fitted to these data. All
            the results are stored as attributes of the reaction analysis object
            and can be written to text files (method write_to_file) or plotted
@@ -208,7 +208,7 @@ class ReactionAnalysis(object):
             | ``R2`` -- The Pearson R^2 of the fit.
             | ``temps`` -- An array with the temperature grid in Kelvin
             | ``temps_inv`` -- An array with the inverse temperatures
-            | ``ln_rate_coeffs`` -- the logarithm of `the rate coefficients in
+            | ``ln_rate_consts`` -- the logarithm of `the rate constants in
                                     atomic units`
         """
         self.kinetic_model = kinetic_model
@@ -220,22 +220,22 @@ class ReactionAnalysis(object):
         # make sure that the final temperature is included
         self.temps = numpy.arange(self.temp_low,self.temp_high+0.5*self.temp_step,self.temp_step,dtype=float)
         self.temps_inv = 1/self.temps
-        self.ln_rate_coeffs = numpy.array([
-            self.kinetic_model.rate(temp, do_log=True)
+        self.ln_rate_consts = numpy.array([
+            self.kinetic_model.rate_constant(temp, do_log=True)
             for temp in self.temps
         ])
-        self.rate_coeffs = numpy.exp(self.ln_rate_coeffs)
+        self.rate_consts = numpy.exp(self.ln_rate_consts)
 
         design_matrix = numpy.zeros((len(self.temps),2), float)
         design_matrix[:,0] = 1
         design_matrix[:,1] = -self.temps_inv/boltzmann
-        expected_values = self.ln_rate_coeffs
+        expected_values = self.ln_rate_consts
         if not numpy.isfinite(expected_values).all():
-            raise ValueError("non-finite rate coefficients. check your partition functions for errors.")
+            raise ValueError("non-finite rate constants. check your partition functions for errors.")
         self.hessian = numpy.dot(design_matrix.transpose(), design_matrix)
-        self.parameters, SSE, rank, s = numpy.linalg.lstsq(design_matrix, self.ln_rate_coeffs)
+        self.parameters, SSE, rank, s = numpy.linalg.lstsq(design_matrix, self.ln_rate_consts)
 
-        SST = ((self.ln_rate_coeffs - self.ln_rate_coeffs.mean())**2).sum()
+        SST = ((self.ln_rate_consts - self.ln_rate_consts.mean())**2).sum()
         self.R2 = 1-SSE/SST
 
         self.A = numpy.exp(self.parameters[0])
@@ -271,13 +271,13 @@ class ReactionAnalysis(object):
         print >> f, "T_step [K] = %.1f" % self.temp_step
         print >> f, "Number of temperatures = %i" % len(self.temps)
         print >> f
-        print >> f, "Reaction rate coefficients"
+        print >> f, "Reaction rate constants"
         print >> f, "    T [K]    Delta_r F [kJ/mol]      k(T) [%s]" % (self.kinetic_model.unit_name)
         for i in xrange(len(self.temps)):
             temp = self.temps[i]
             delta_free = self.kinetic_model.free_energy_change(temp)
             print >> f, "% 10.2f      %8.1f             % 10.5e" % (
-                temp, delta_free/kjmol, self.rate_coeffs[i]/self.kinetic_model.unit
+                temp, delta_free/kjmol, self.rate_consts[i]/self.kinetic_model.unit
             )
         print >> f
         self.kinetic_model.dump(f)
@@ -294,7 +294,7 @@ class ReactionAnalysis(object):
         f.close()
 
     def plot_arrhenius(self, filename=None, label=None, color="red"):
-        """Plot the rate coefficients and the fitted line.
+        """Plot the rate constant and the fitted line.
 
            Optional arguments:
             | ``filename`` -- When given, the plot is written to that file,
@@ -312,7 +312,7 @@ class ReactionAnalysis(object):
         import pylab
 
         temps_inv_line = numpy.linspace(self.temps_inv.min(),self.temps_inv.max(),100)
-        ln_rate_coeffs_line = self.parameters[0] - self.parameters[1]/boltzmann*temps_inv_line
+        ln_rate_consts_line = self.parameters[0] - self.parameters[1]/boltzmann*temps_inv_line
 
         if filename is not None:
             pylab.clf()
@@ -328,11 +328,11 @@ class ReactionAnalysis(object):
             label_fit = label
             label_data = "_nolegend_"
         pylab.plot(
-            temps_inv_line,numpy.exp(ln_rate_coeffs_line)/self.kinetic_model.unit,
+            temps_inv_line,numpy.exp(ln_rate_consts_line)/self.kinetic_model.unit,
             color=color, linestyle="-", marker="None",label=label_fit
         )
         pylab.plot(
-            self.temps_inv,numpy.exp(self.ln_rate_coeffs)/self.kinetic_model.unit,
+            self.temps_inv,numpy.exp(self.ln_rate_consts)/self.kinetic_model.unit,
             color=color, linestyle="None", marker="o",label=label_data
         )
         pylab.semilogy()

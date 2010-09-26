@@ -239,24 +239,24 @@ class ThermodynamicModel(BaseModel):
 
 
 class BaseKineticModel(BaseModel):
-    """A generic model for the rate of a chemical reaction."""
+    """A generic model for the rate constant of a chemical reaction."""
 
-    def rate(self, temp, do_log=False):
-        """Compute the rate coefficient of the reaction in this analysis
+    def rate_constant(self, temp, do_log=False):
+        """Compute the rate constant of the reaction in this analysis
 
            Arguments:
             | temp  -- The temperature.
 
            Optional argument:
-            | do_log  --  When True, the logarithm of the rate coefficient is
-                          returned instead of just the rate coefficient itself.
+            | do_log  --  When True, the logarithm of the rate constant is
+                          returned instead of just the rate constant itself.
                           [default=False]
         """
         raise NotImplementedError
 
 
 class KineticModel(BaseKineticModel):
-    """A model for the rate of a single-step chemical reaction."""
+    """A model for the rate constant of a single-step chemical reaction."""
     def __init__(self, pfs_react, pf_trans, tunneling=None):
         """
            Arguments:
@@ -270,9 +270,9 @@ class KineticModel(BaseKineticModel):
 
            Useful attributes:
             | unit_name  --  A string describing the conventional unit of
-                             the rate coefficient
+                             the rate constant
             | unit  --  The conversion factor to transform self.A into
-                        conventional units (rate/self.unit)
+                        conventional units (rate_const/self.unit)
         """
         if len(pfs_react) == 0:
             raise ValueError("At least one reactant must be given.")
@@ -282,8 +282,8 @@ class KineticModel(BaseKineticModel):
         self.unit, self.unit_name = get_unit(pfs_react, [pf_trans], per_second=True)
         BaseKineticModel.__init__(self, pfs_react + [pf_trans])
 
-    def rate(self, temp, do_log=False):
-        """See :meth:`BaseKineticModel.rate`
+    def rate_constant(self, temp, do_log=False):
+        """See :meth:`BaseKineticModel.rate_constant`
 
            The implementation is based on transition state theory.
         """
@@ -341,7 +341,7 @@ class KineticModel(BaseKineticModel):
 
 
 class ActivationKineticModel(BaseKineticModel):
-    """A model for the rate of a single-step chemical reaction with a pre-reactive complex."""
+    """A model for the rate constant of a single-step chemical reaction with a pre-reactive complex."""
     def __init__(self, tm, km):
         """
            Arguments:
@@ -364,14 +364,14 @@ class ActivationKineticModel(BaseKineticModel):
 
         BaseKineticModel.__init__(self, tm.pfs_all | km.pfs_all)
 
-    def rate(self, temp, do_log=False):
-        """See :meth:`BaseKineticModel.rate`"""
+    def rate_constant(self, temp, do_log=False):
+        """See :meth:`BaseKineticModel.rate_constant`"""
         if do_log:
             return self.tm.equilibrium_constant(temp, True) + \
-                   self.km.rate(temp, True)
+                   self.km.rate_constant(temp, True)
         else:
             return self.tm.equilibrium_constant(temp, False)* \
-                   self.km.rate(temp, False)
+                   self.km.rate_constant(temp, False)
 
     def free_energy_change(self, temp):
         """Compute the change in free energy from reactants to transition state.

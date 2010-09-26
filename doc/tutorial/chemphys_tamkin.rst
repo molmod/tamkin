@@ -367,6 +367,8 @@ of the :mod:`tamkin.partf` module, or by reading the source code.
 Generating tables
 ^^^^^^^^^^^^^^^^^
 
+See :class:`tamkin.pftools.ThermoAnalysis` for the details.
+
 Tables of thermodynamic quantities can be computed for given temperatures and
 sorting out all contributions from the components of the partition function to
 each quantity. The example below generates a CSV file that can be loaded into
@@ -400,6 +402,7 @@ logtt= :math:`\frac{\partial^2}{\partial T^2}\left(\frac{log(Z_N)}{N}\right)`   
 Thermodynamic equilibrium
 ~~~~~~~~~~~~~~~~~~~~~~~~~
 
+See :class:`tamkin.chemmod.ThermodynamicModel` for the details.
 
 Given a list of partition functions of reactants (``pfs_react``) and a list of
 product partition functions (``pfs_prod``), one can construct a
@@ -424,15 +427,15 @@ With a ``ThermodynamicModel`` object one can compute the following quantities:
       print "K_c at 350K [%s] = %.5e" % (tm.unit_name, kc/tm.unit)
 
   Currently TAMkin only supports ideal gases in the translational partition
-  function which means that :math:`K_c` does notdepend on the pressure set in
+  function which means that :math:`K_c` does not depend on the pressure set in
   ``ExtTrans.pressure`` or the density set in ``ExtTrans.density``. (When no
   translational freedom is included in the partition function, there is no
   pressure or density to worry about.)
 
 * **The change in free energy** is computed (and printed) as follows::
 
-      drf = tm.free_energy_change(temp)
-      print "Change in free energy [kJ/mol] = %.3f" % (drf/kjmol)
+      delta_fr = tm.free_energy_change(temp)
+      print "Change in free energy [kJ/mol] = %.3f" % (delta_fr/kjmol)
 
   The change in free energy does depend on the pressure (or density) in the
   translational part of the partition functions of the reactants and products.
@@ -447,17 +450,117 @@ With a ``ThermodynamicModel`` object one can compute the following quantities:
 
       delta_zpe = tm.zero_point_energy_difference(temp)
 
+A complete overview of the thermodynamic model, including the specification of
+the partition functions, is written to file as follows::
+
+    tm.write_to_file("thermodynamic_model.txt")
+
+
 Reaction kinetics
 ~~~~~~~~~~~~~~~~~
 
-KineticModel objects
---------------------
+See :class:`tamkin.chemmod.KineticModel` for the details.
+
+All kinetic properties in TAMkin are computed with the ``KineticModel`` object.
+For a given list of reactant partition functions, ``pfs_react`` and a transition
+state partition function, ``pf_trans``, the ``KineticModel`` object is created
+as follows::
+
+      km = KineticModel(pfs_react, pf_trans)
+
+The following kinetic properties can be computed with a ``KineticModel`` object:
+
+* **The rate constant** is the main property of interest. The following two
+  lines print the rate constant at 303K in SI units for a given kinetic model.
+  ::
+
+      rc = km.rate_constant(303)
+      print "Rate constant [%s] at 303K = %.5e" % (km.unit_name, rc/km.unit)
+
+  In the case of ideal gases, the rate constant does not depend on the pressure
+  (or density) set in the translation partition functions.
+
+* **The change in free energy** when going from reactants to products is
+  computed as follows for a given temperature ``temp``::
+
+      delta_fr = km.free_energy_change(temp)
+
+* **The electronic energy difference** between the reactants (-) and the
+  transition state (+) is computed as follows::
+
+      delta_e = km.energy_difference(temp)
+
+* **The zero-point energy difference** between the reactants (-) and the
+  transition state (+) can also be computed::
+
+      delta_zpe = km.zero_point_energy_difference(temp)
+
+A complete overview of the kinetic model, including the specification of the
+partition functions, is written to file as follows::
+
+    km.write_to_file("kinetic_model.txt")
+
 
 Tunneling corrections
-^^^^^^^^^^^^^^^^^^^^^
+---------------------
+
+Three tunneling correction models are implemented in :mod:`tamkin.tunneling`.
+One can include tunneling corrections in the kinetic model by giving a
+``TunnelingCorrection`` object as the third argument to the ``KineticModel``
+constructor. One must first create the tunneling object::
+
+    # Just take one of the three following
+    tunneling = Eckart(pfs_react, pf_trans, pfs_prod)
+    tunneling = Wigner(pf_trans)
+    tunneling = Miller(pf_trans)
+    # Then create a kinetic model
+    km = KineticModel(pfs_react, pf_trans, tunneling)
+
+In this snippet ``pfs_prod`` is the list of product partition functions. All
+rate constants computed with such a kinetic model include the tunneling
+correction. The other properties computed by the kinetic model are not affected.
+
 
 ReactionAnalysis objects -- fitting kinetic parameters A and E\ :sub:`a`
 ------------------------------------------------------------------------
 
-Error analysis
-^^^^^^^^^^^^^^
+See :class:`tamkin.pftools.ReactionAnalysis` for the details.
+
+The ultimate purpose of a ``KineticModel`` object is to estimate the kinetic
+parameters :math:`A` and :math:`E_a` in the empirical Arrhenius law. This can
+be accomplished with a ReactionAnalysis object. As soon as a reaction analysis
+object is created, the kinetic parameters are fitted and stored internally for
+post-processing or direct output:
+
+    ra = ReactionAnalysis(km, temp_low, temp_high)
+
+The first argument is a kinetic model, which may include a tunneling correction.
+The two following arguments are the boundaries for the grid on the temperature
+axis used to fit the kinetic parameters. A fourth optional argument fixes the
+spacing of the temperature grid. The default spacing is 10K.
+
+The kinetic parameters and some related data are accessible as attributes:
+
+* ``A`` and ``Ea`` -- The kinetic parameters in atomic units.
+* ``R2`` -- The Pearson R^2 of the fit.
+* ``temps`` -- An array with the temperature grid in Kelvin
+* ``rate_consts`` -- the rate constants at the grid points in atomic units
+* ``ln_rate_consts`` -- the logarithm of `the rate constants in atomic units`
+
+The pre-exponential factor can be printed in SI units, knowing that it has the
+same unit as the rate constant itself::
+
+    print "Pre-exponential factor [%s] = %.5e" % (km.unit_name, ra.A/km.unit)
+    print "The activation energy [kJ/mol] = %.2f" % (ra.Ea/kjmol)
+
+When performing a high-throughput level-of-theory study, it is very convenient
+to use the attributes of the ``ReactionAnalysis`` in a post-processing program.
+
+One can write an overview of the reaction analysis to a text file as follows::
+
+    ra.write_to_file("reaction_analysis.txt")
+
+The computed rate constants and the linear fit can be plotted in a typical
+Arrhenius plot as follows::
+
+    ra.plot_arrhenius("arrhenius.txt")

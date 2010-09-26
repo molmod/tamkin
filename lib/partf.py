@@ -448,6 +448,18 @@ class StatFys(object):
             helper = self.helper
         return -boltzmann*helper(temp, 1)
 
+    def zero_point_energy(self, helpern=None):
+        """Return the zero-point energy.
+
+           Optional argument:
+            | ``helper`` -- an alternative implementation of helpern
+                            [default=self.helpern]
+
+           In TAMkin the zero-point energy is defined as the limit of the
+           chemical potential for the temperature going towards zero.
+        """
+        return self.chemical_potential(0, helpern)
+
     def chemical_potential(self, temp, helpern=None):
         """Computes the chemical potential.
 
@@ -600,6 +612,13 @@ class StatFysTerms(StatFys):
         """
         return self.free_energy(temp, self.helper_terms)
 
+    def zero_point_energy_terms(self):
+        """Returns an array with zero_point_energy results for the distinct terms.
+
+           This is just an array version of :meth:`StatFys.chemical_potential`.
+        """
+        return self.zero_point_energy(self.helpern_terms)
+
     def chemical_potential_terms(self, temp):
         """Returns an array with chemical_potential results for the distinct terms.
 
@@ -747,12 +766,12 @@ class ExtTrans(Info, StatFys):
                         partition function to model a constant pressure (or
                         constant surface tension) ensemble instead of a constant
                         volume (or constant surface) ensemble.
-             | ``pressure`` -- (only allowed when cp==True)
-                               The external pressure exerted on the system in
-                               case of the NpT ensemble. The default is 1 atm
-                               for 3D gases. The default for 2D systems is 75.64
-                               miliNewton per meter, i.e. the surface tension of
-                               water. For other dimensions, the default is 1.0.
+            | ``pressure`` -- (only allowed when cp==True)
+                              The external pressure exerted on the system in
+                              case of the NpT ensemble. The default is 1 atm
+                              for 3D gases. The default for 2D systems is 75.64
+                              miliNewton per meter, i.e. the surface tension of
+                              water. For other dimensions, the default is 1.0.
             | ``density`` -- (only allowed when cp==False)
                              The density of the system in case of the NVT
                              ensemble. The default is 1.0 mol/meter**dim.
@@ -1040,7 +1059,7 @@ class PCMCorrection(Info, StatFys):
             print >> f, "       Temperature [K]: %.2f" % (self.point2[1])
         else:
             print >> f, "       Not Defined!! Only rely on computations on temperature of point 1!!"
-        print >> f, "    Zero-point contribution [kJ/mol]: %.7f" % (self.free_energy(0.0)/kjmol)
+        print >> f, "    Zero-point contribution [kJ/mol]: %.7f" % (self.zero_point_energy()/kjmol)
 
     def _eval_free(self, temp):
         if self.point2 is None:
@@ -1225,7 +1244,7 @@ class Vibrations(Info, StatFysTerms):
         self.dump_values(f, "Zero Wavenumbers [1/cm]", self.zero_freqs/(lightspeed/centimeter), "% 8.1f", 8)
         self.dump_values(f, "Real Wavenumbers [1/cm]", self.positive_freqs/(lightspeed/centimeter), "% 8.1f", 8)
         self.dump_values(f, "Imaginary Wavenumbers [1/cm]", self.negative_freqs/(lightspeed/centimeter), "% 8.1f", 8)
-        print >> f, "    Zero-point contribution [kJ/mol]: %.7f" % (self.free_energy(0.0)/kjmol)
+        print >> f, "    Zero-point contribution [kJ/mol]: %.7f" % (self.zero_point_energy()/kjmol)
 
     def helper_terms(self, temp, n):
         """See :meth:`StatFysTerms.helper_terms`."""
@@ -1320,9 +1339,9 @@ class PartFun(Info, StatFys):
     def dump(self, f):
         """See :meth:`Info.dump`."""
         print >> f, "Title:", self.title
-        print >> f, "Energy at T=0K [au]: %.5f" % self.energy
-        print >> f, "Zero-point contribution [kJ/mol]: %.7f" % ((self.free_energy(0.0) - self.energy)/kjmol)
-        print >> f, "Energy including zero-point contribution [au]: %.5f" % self.free_energy(0.0)
+        print >> f, "Electronic energy [au]: %.5f" % self.energy
+        print >> f, "Zero-point contribution [kJ/mol]: %.7f" % ((self.zero_point_energy() - self.energy)/kjmol)
+        print >> f, "Zero-point energy [au]: %.5f" % self.zero_point_energy()
         print >> f, "Contributions to the partition function:"
         for term in self.terms:
             term.dump(f)

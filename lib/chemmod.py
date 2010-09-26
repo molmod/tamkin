@@ -212,16 +212,21 @@ class ThermodynamicModel(BaseModel):
         return result
 
     def energy_difference(self):
-        """Compute the classical (microscopic) energy difference between (+) products and (-) reactants."""
+        """Compute the electronic energy difference between (+) products and (-) reactants."""
         return sum(pf_prod.energy for pf_prod in self.pfs_prod) - \
                sum(pf_react.energy for pf_react in self.pfs_react)
+
+    def zero_point_energy_difference(self):
+        """Compute the zero-point energy difference between (+) products and (-) reactants."""
+        return sum(pf_prod.zero_point_energy() for pf_prod in self.pfs_prod) - \
+               sum(pf_react.zero_point_energy() for pf_react in self.pfs_react)
 
     def dump(self, f):
         """Write all info about the thermodynamic model to a file."""
         delta_E = self.energy_difference()
-        print >> f, "Energy difference = %.1f" % (delta_E/kjmol)
-        delta_A0K = self.free_energy_change(0.0)
-        print >> f, "Free energy change at 0K [kJ/mol] = %.1f" % (delta_A0K/kjmol)
+        print >> f, "Electronic energy difference [kJ/mol] = %.1f" % (delta_E/kjmol)
+        delta_ZPE = self.zero_point_energy_difference()
+        print >> f, "Zero-point energy difference [kJ/mol] = %.1f" % (delta_ZPE/kjmol)
         print >> f
         for counter, pf_react in enumerate(self.pfs_react):
             print >> f, "Reactant %i partition function" % counter
@@ -311,16 +316,21 @@ class KineticModel(BaseKineticModel):
         return result
 
     def energy_difference(self):
-        """Compute the classical (microscopic) energy barrier of the reaction."""
+        """Compute the electronic energy barrier of the reaction."""
         return self.pf_trans.energy - \
                sum(pf_react.energy for pf_react in self.pfs_react)
+
+    def zero_point_energy_difference(self):
+        """Compute the zero-point energy barrier of the reaction."""
+        return self.pf_trans.zero_point_energy() - \
+               sum(pf_react.zero_point_energy() for pf_react in self.pfs_react)
 
     def dump(self, f):
         """Write all info about the kinetic model to a file."""
         delta_E = self.energy_difference()
-        print >> f, "Energy barrier [kJ/mol] = %.1f" % (delta_E/kjmol)
-        delta_mu0K = self.free_energy_change(0.0)
-        print >> f, "Free energy change at 0K [kJ/mol] = %.1f" % (delta_mu0K/kjmol)
+        print >> f, "Electronic energy barrier [kJ/mol] = %.1f" % (delta_E/kjmol)
+        delta_ZPE = self.zero_point_energy_difference()
+        print >> f, "Zero-point energy barrier [kJ/mol] = %.1f" % (delta_ZPE/kjmol)
         print >> f
         for counter, pf_react in enumerate(self.pfs_react):
             print >> f, "Reactant %i partition function" % counter
@@ -377,14 +387,24 @@ class ActivationKineticModel(BaseKineticModel):
                self.km.free_energy_change(temp)
 
     def energy_difference(self):
-        """Compute the classical (microscopic) energy barrier of the reaction."""
-        return self.tm.energy_difference(temp) + \
-               self.km.energy_difference(temp)
+        """Compute the electronic energy barrier of the reaction."""
+        return self.tm.energy_difference() + \
+               self.km.energy_difference()
+
+    def zero_point_energy_difference(self):
+        """Compute the zero-point energy barrier of the reaction."""
+        return self.tm.zero_point_energy_difference() + \
+               self.km.zero_point_energy_difference()
 
     def dump(self, f):
         """Write all info about the kinetic model to a file."""
-        print >> f, "Thermodynamic model"
+        delta_E = self.energy_difference()
+        print >> f, "Electronic energy barrier [kJ/mol] = %.1f" % (delta_E/kjmol)
+        delta_ZPE = self.zero_point_energy_difference()
+        print >> f, "Zero-point energy barrier [kJ/mol] = %.1f" % (delta_ZPE/kjmol)
+        print >> f
+        print >> f, "Thermodynamic submodel"
         self.tm.dump(f)
         print >> f
-        print >> f, "Kinetic model"
+        print >> f, "Kinetic submodel"
         self.km.dump(f)

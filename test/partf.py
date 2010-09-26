@@ -36,7 +36,7 @@
 from tamkin import *
 
 from molmod import lightspeed, boltzmann, second, atm, amu, meter, mol, \
-    kcalmol, calorie, kelvin, kjmol
+    kcalmol, calorie, kelvin, kjmol, planck
 
 import unittest, numpy
 
@@ -182,12 +182,12 @@ class PartFunTestCase(unittest.TestCase):
             self.assertAlmostEqual(numpy.log(k/unit), numpy.log(expected_ks[i]), 2)
 
     def test_derivatives(self):
+        molecule = load_molecule_g03fchk("input/ethane/gaussian.fchk")
+        nma = NMA(molecule)
+        rotscan = load_rotscan_g03log("input/rotor/gaussian.log")
+        rotor = Rotor(rotscan, molecule, rotsym=3, even=True)
         for classical in True, False:
             for cp in True, False:
-                molecule = load_molecule_g03fchk("input/ethane/gaussian.fchk")
-                nma = NMA(molecule)
-                rotscan = load_rotscan_g03log("input/rotor/gaussian.log")
-                rotor = Rotor(rotscan, molecule, rotsym=3, even=True)
                 pf = PartFun(nma, [
                     ExtTrans(cp), ExtRot(), rotor,
                     Vibrations(classical, 0.5, 0.7),
@@ -498,3 +498,26 @@ class PartFunTestCase(unittest.TestCase):
         pf2.heat_capacity(300)
         pf1.write_to_file("output/pcm_partf1.txt")
         pf2.write_to_file("output/pcm_partf2.txt")
+
+    def test_zero_point_energy(self):
+        molecule = load_molecule_g03fchk("input/ethane/gaussian.fchk")
+        nma = NMA(molecule)
+        rotscan = load_rotscan_g03log("input/rotor/gaussian.log")
+        rotor = Rotor(rotscan, molecule, rotsym=3, even=True)
+        pf = PartFun(nma, [ExtTrans(), ExtRot(), rotor, Vibrations()])
+        # check the vibrational part
+        zpe_sum = 0.0
+        zpes_vib = pf.vibrational.zero_point_energy_terms()
+        freqs = pf.vibrational.positive_freqs
+        for i in xrange(len(freqs)):
+            self.assertAlmostEqual(0.5*freqs[i]*planck, zpes_vib[i])
+            zpe_sum += zpes_vib[i]
+        # check the electronic part
+        self.assertAlmostEqual(pf.electronic.energy, pf.electronic.zero_point_energy())
+        zpe_sum += pf.electronic.energy
+        # check the other parts:
+        self.assertAlmostEqual(0.0, pf.rotational.zero_point_energy())
+        # just take the contribution from the rotor
+        zpe_sum += rotor.zero_point_energy()
+        # check the sum
+        self.assertAlmostEqual(zpe_sum, pf.zero_point_energy())

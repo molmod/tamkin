@@ -71,9 +71,9 @@ class ThermoAnalysis(object):
             ThermoTable("Free energy", "%.5f", kjmol, "kJ/mol", "free_energy", pf, temps),
             ThermoTable("Chemical potential", "%.5f", kjmol, "kJ/mol", "chemical_potential", pf, temps),
             ThermoTable("Entropy", "%.5f",  joule/mol/kelvin, "J/(mol*K)", "entropy", pf, temps),
-            ThermoTable("log(q)", "%.1f", 1/mol, "1/mol", "log", pf, temps),
-            ThermoTable("d log(q) / dT", "%.3e", 1/mol/kelvin, "1/(mol*K)", "logt", pf, temps),
-            ThermoTable("d^2 log(q) / dT^2", "%.1e", 1/mol/kelvin**2, "1/(mol*K^2)", "logtt", pf, temps),
+            ThermoTable("ln(q)", "%.1f", 1.0, "1", "log", pf, temps),
+            ThermoTable("d ln(q) / dT", "%.3e", 1.0/kelvin, "1/K", "logt", pf, temps),
+            ThermoTable("d^2 ln(q) / dT^2", "%.1e", 1.0/kelvin**2, "1/K^2", "logtt", pf, temps),
         ]
 
     def write_to_file(self, filename):

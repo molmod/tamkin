@@ -318,7 +318,7 @@ class ReactionAnalysis(object):
 
         if filename is not None:
             pylab.clf()
-            pylab.title("Arrhenius plot: A [%s] = %.3e    Ea [kJ/mol] = %.2f" % (
+            pylab.title("Arrhenius plot: A [%s] = %.3e    Ea [kJ/mol] = %.1f" % (
                 self.kinetic_model.unit_name, self.A/self.kinetic_model.unit, self.Ea/kjmol
             ))
         pylab.xlabel("1/T [1/K]")

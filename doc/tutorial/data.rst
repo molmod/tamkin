@@ -6,6 +6,12 @@ Q-CHEM and VASP. Some of these programs offer freedom in the amount of output
 that is printed to the output file. To produce output that TAMkin can read from,
 we suggest the following settings.
 
+Although most packages can do the standard frequency computation, the actual
+frequencies are never read by TAMkin. Instead, TAMkin reads all the ingredients
+(such as the Hessian and the atomic masses) required for the computation the
+frequencies. This makes it possible to compute frequencies with different types
+of normal mode analysis methods.
+
 
 CHARMM
 ~~~~~~

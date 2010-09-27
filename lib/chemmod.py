@@ -38,62 +38,97 @@ import numpy
 
 from molmod import boltzmann, kjmol, second, meter, mol, planck
 
+from tamkin.partf import PartFun
+
 
 __all__ = [
-    "get_unit", "BaseModel", "ThermodynamicModel", "BaseKineticModel",
+    "BaseModel", "ThermodynamicModel", "BaseKineticModel",
     "KineticModel", "ActivationKineticModel"
 ]
 
 
-def get_unit(pfs_A, pfs_B, per_second=False):
-    """Return the unit of the equilibrium constant or pre-exponential factor.
-
-       Arguments:
-        | pfs_A  --  The partition functions in the numerator
-        | pfs_B  --  The partition functions in the denominator
-
-       Optional argument:
-        | per_second  -- Boolean, when True the unit is divided by second.
-    """
-    meter_power = 0
-    mol_power = 0
-    for pf_A in pfs_A:
-        if hasattr(pf_A, "translational"):
-            meter_power += pf_A.translational.dim
-        mol_power += 1
-    for pf_B in pfs_B:
-        if hasattr(pf_B, "translational"):
-            meter_power -= pf_B.translational.dim
-        mol_power -= 1
-    unit = meter**meter_power/mol**mol_power
-    unit_name = ""
-    if meter_power != 0:
-        unit_name += "m**%i" % meter_power
-    if mol_power != 0:
-        if mol_power == -1:
-            unit_name += "*mol"
-        else:
-            unit_name += "*mol**%i" % (-mol_power)
-    if len(unit_name) == 0:
-        unit_name = "1"
-    if per_second:
-        unit /= second
-        unit_name += "/second"
-    return unit, unit_name
-
-
-
 class BaseModel(object):
     """Base class for all physico-chemical models."""
-    def __init__(self, pfs_all):
+    def __init__(self):
         """
-           Argument:
-            | pfs_all  --  All partition functions involved in the model.
+           Useful attribute:
+            | ``pfs_all`` -- A dictionary with all partition functions involved
+                             in the model. The values are the partition function
+                             objects. The keys are the corresponding signed
+                             stoichiometries.
 
            The methods in the base class are mainly used by the Monte Carlo
            routine in the ReactionAnalysis class.
         """
-        self.pfs_all = set(pfs_all)
+        self.pfs_all = {}
+        self.pfs_list = []
+
+    def _add_pfs(self, pfs, factor=1.0):
+        """Add partition functions to the global list.
+
+           Argument:
+            | ``pfs`` -- A list of partition functions.
+
+           Optional argument
+            | ``factor`` -- The stoichiometry of all partition functions will be
+                            multiplied with this factor.
+        """
+        for pf in pfs:
+            if isinstance(pf, PartFun):
+                add_st = 1.0
+            else:
+                # It may also be a tuple of a partition function and a
+                # stoichiometry.
+                pf, add_st = pf
+            st = self.pfs_all.get(pf)
+            if st is None:
+                # This is used to maintain an ordered list of partition functions
+                self.pfs_list.append(pf)
+                st = 0.0
+            self.pfs_all[pf] = st + factor*add_st
+
+    def _set_unit(self, per_second=False):
+        """Set the unit of the equilibrium constant or pre-exponential factor.
+
+           Optional argument:
+            | ``per_second`` -- Boolean, when True the unit is divided by
+                                second.
+
+           This functions is called by the constructor after all partition
+           functions are added. (See :meth:`_add_pfs`.)
+        """
+        meter_power = 0
+        mol_power = 0
+        for pf, st in self._iter_pfs():
+            if hasattr(pf, "translational"):
+                meter_power -= pf.translational.dim*st
+            mol_power += st
+        unit = mol**mol_power*meter**meter_power
+        unit_name = ""
+        if meter_power != 0:
+            if meter_power == 1:
+                unit_name += "m"
+            else:
+                unit_name += "m**%i" % meter_power
+        if mol_power != 0:
+            if mol_power == 1:
+                unit_name += "*mol"
+            else:
+                unit_name += "*mol**%i" % mol_power
+        if len(unit_name) == 0:
+            unit_name = "1"
+        if per_second:
+            unit /= second
+            unit_name += "/second"
+        self.unit = unit
+        self.unit_name = unit_name
+
+    def _iter_pfs(self):
+        """Iterate over all partition functions with their stoichiometries."""
+        for pf in self.pfs_list:
+            st = self.pfs_all[pf]
+            if abs(st) > 0:
+                yield pf, st
 
     def backup_freqs(self):
         """Keep a backup copy of the frequencies and the energy of each partition function."""
@@ -106,10 +141,10 @@ class BaseModel(object):
         """Randomly distort the frequencies and energies.
 
            Arguments:
-            | freq_error  --  The absolute error to be introduced in the
-                              frequencies.
-            | scale_energy  --  The relative error to be introduced in the
-                                (electronic) energies.
+            | ``freq_error`` -- The absolute error to be introduced in the
+                                frequencies.
+            | ``scale_energy`` -- The relative error to be introduced in the
+                                  (electronic) energies.
         """
         for pf in self.pfs_all:
             N = len(pf.vibrational.positive_freqs)
@@ -139,24 +174,80 @@ class BaseModel(object):
            ``ExtTrans`` contribution to the partition function, if such a
            contribution would be present.
 
-           Arguments:
-            | temp  -- the temperature
+           Argument:
+            | ``temp``  -- the temperature
         """
-        raise NotImplementedError
+        return sum(pf.chemical_potential(temp)*st for pf, st in self._iter_pfs())
 
     def energy_difference(self):
         """Compute the electronic energy difference between (+) products and (-) reactants."""
-        raise NotImplementedError
+        return sum(pf.electronic.energy*st for pf, st in self._iter_pfs())
 
     def zero_point_energy_difference(self):
         """Compute the zero-point energy difference between (+) products and (-) reactants."""
-        raise NotImplementedError
+        return sum(pf.zero_point_energy()*st for pf, st in self._iter_pfs())
+
+    def equilibrium_constant(self, temp, do_log=False):
+        """Compute the equilibrium constant at the given temperature.
+
+           Argument:
+            | ``temp`` -- The temperature.
+
+           Optional argument:
+            | ``do_log`` -- When True, the logarithm of the equilibrium constant
+                            is returned instead of just the equilibrium constant
+                            itself. [default=False]
+        """
+        log_K = sum(pf.logv(temp)*st for pf, st in self._iter_pfs())
+        if do_log:
+            return log_K
+        else:
+            return numpy.exp(log_K)
+
+    def write_table(self, temp, filename):
+        """Write a csv file with the principal energies.
+
+           Arguments:
+            | ``temp`` -- The temperature to use for the temperature-dependent
+                          quantities.
+            | ``filename`` -- The name of the csv file
+        """
+        f = file(filename, "w")
+        # header line
+        print >> f, "\"Quantity\",", \
+                    ", ".join("\"%s\"" % pf.title for pf, st in self._iter_pfs()), \
+                    ", \"Linear combination (always in kJ/mol)\""
+        print >> f, "\"Signed stoichiometry\",", \
+                    ", ".join(str(st) for pf, st in self._iter_pfs())
+        print >> f, "\"**Values in a.u.**\""
+        # electronic energy
+        print >> f, "\"Electronic energy\",", \
+                    ", ".join("%.5f" % pf.electronic.energy for pf, st in self._iter_pfs()), \
+                    ",", "%.1f" % (self.energy_difference()/kjmol)
+        # zero-point energy
+        print >> f, "\"Zero-point energy\",", \
+                    ", ".join("%.5f" % pf.zero_point_energy() for pf, st in self._iter_pfs()), \
+                    ",", "%.1f" % (self.zero_point_energy_difference()/kjmol)
+        # chemical potential
+        print >> f, "\"Chemical potential (%.2f)\"," % temp, \
+                    ", ".join("%.5f" % pf.chemical_potential(temp) for pf, st in self._iter_pfs()), \
+                    ",", "%.1f" % (self.free_energy_change(temp)/kjmol)
+        print >> f, "\"**Corrections in kJ/mol**\""
+        # zero-point energy correction
+        print >> f, "\"Zero-point energy\",", \
+                    ", ".join("%.1f" % ((pf.zero_point_energy() - pf.electronic.energy)/kjmol) for pf, st in self._iter_pfs()), \
+                    ",", "%.1f" % ((self.zero_point_energy_difference() - self.energy_difference())/kjmol)
+        # chemical potential correction
+        print >> f, "\"Chemical potential (%.2f)\"," % temp, \
+                    ", ".join("%.1f" % ((pf.chemical_potential(temp) - pf.electronic.energy)/kjmol) for pf, st in self._iter_pfs()), \
+                    ",", "%.1f" % ((self.free_energy_change(temp) - self.energy_difference())/kjmol)
+        f.close()
 
     def write_to_file(self, filename):
         """Write the model to a text file.
 
            One argument:
-            | filename  --  the file to write the output.
+            | ``filename`` -- The file to write the output.
         """
         f = file(filename, "w")
         self.dump(f)
@@ -164,7 +255,16 @@ class BaseModel(object):
 
     def dump(self, f):
         """Write all info about the model to a file."""
-        raise NotImplementedError
+        print >> f, "The chemical balance:"
+        print >> f, "  ", " + ".join("%s*(\"%s\")" % (-st, pf.title) for pf, st in self._iter_pfs() if st < 0),
+        print >> f, " <--> ",
+        print >> f, " + ".join("%s*(\"%s\")" % (st, pf.title) for pf, st in self._iter_pfs() if st > 0)
+        print >> f
+        for counter, (pf, st) in enumerate(self._iter_pfs()):
+            print >> f, "Partition function %i" % counter
+            print >> f, "Signed stoichiometry: %i" % st
+            pf.dump(f)
+            print >> f
 
 
 class ThermodynamicModel(BaseModel):
@@ -172,58 +272,24 @@ class ThermodynamicModel(BaseModel):
     def __init__(self, pfs_react, pfs_prod):
         """
            Arguments:
-            | pfs_react  --  A list with reactant partition functions.
-            | pfs_prod  --  A list with product partition functions.
+            | ``pfs_react`` -- A list with reactant partition functions.
+            | ``pfs_prod`` -- A list with product partition functions.
+
+           Both arguments are lists whose items should be PartFun objects.
+           One may also replace an item by a ``(pf, st)`` tuple, where ``pf`` is
+           the partition function and ``st`` is the stoichiometry.
+
+           Useful attributes:
+            | ``unit_name`` -- A string with the SI unit of the equilibrium
+                               constant
+            | ``unit`` -- The conversion factor to transform the equilibrium
+                          constant into SI units
+                          (``equilibrium_const/self.unit``)
         """
-        self.pfs_react = pfs_react
-        self.pfs_prod = pfs_prod
-        self.unit, self.unit_name = get_unit(pfs_react, pfs_prod)
-        BaseModel.__init__(self, pfs_react + pfs_prod)
-
-    def equilibrium_constant(self, temp, do_log=False):
-        """Compute the equilibrium constant at the given temperature.
-
-           Argument:
-            | temp  --  The temperature.
-
-           Optional argument:
-            | do_log  --  When True, the logarithm of the equilibrium constant
-                          is returned instead of just the equilibrium constant
-                          itself. [default=False]
-        """
-        log_K = 0.0
-        log_K -= sum(pf_react.logv(temp) for pf_react in self.pfs_react)
-        log_K += sum(pf_prod.logv(temp) for pf_prod in self.pfs_prod)
-
-        if do_log:
-            return log_K
-        else:
-            return numpy.exp(log_K)
-
-    def free_energy_change(self, temp):
-        """Compute the change in free energy from reactants to products.
-
-           The change in free energy depends on the the pressure in the
-           ``ExtTrans`` contribution to the partition function, if such a
-           contribution would be present.
-
-           Arguments:
-            | temp  --  The temperature.
-        """
-        result = 0.0
-        result -= sum(pf_react.chemical_potential(temp) for pf_react in self.pfs_react)
-        result += sum(pf_prod.chemical_potential(temp) for pf_prod in self.pfs_prod)
-        return result
-
-    def energy_difference(self):
-        """Compute the electronic energy difference between (+) products and (-) reactants."""
-        return sum(pf_prod.electronic.energy for pf_prod in self.pfs_prod) - \
-               sum(pf_react.electronic.energy for pf_react in self.pfs_react)
-
-    def zero_point_energy_difference(self):
-        """Compute the zero-point energy difference between (+) products and (-) reactants."""
-        return sum(pf_prod.zero_point_energy() for pf_prod in self.pfs_prod) - \
-               sum(pf_react.zero_point_energy() for pf_react in self.pfs_react)
+        BaseModel.__init__(self)
+        self._add_pfs(pfs_react, -1)
+        self._add_pfs(pfs_prod, +1)
+        self._set_unit()
 
     def dump(self, f):
         """Write all info about the thermodynamic model to a file."""
@@ -232,14 +298,7 @@ class ThermodynamicModel(BaseModel):
         delta_ZPE = self.zero_point_energy_difference()
         print >> f, "Zero-point energy difference [kJ/mol] = %.1f" % (delta_ZPE/kjmol)
         print >> f
-        for counter, pf_react in enumerate(self.pfs_react):
-            print >> f, "Reactant %i partition function" % counter
-            pf_react.dump(f)
-            print >> f
-        for counter, pf_prod in enumerate(self.pfs_prod):
-            print >> f, "Prodcut %i partition function" % counter
-            pf_prod.dump(f)
-            print >> f
+        BaseModel.dump(self, f)
 
 
 class BaseKineticModel(BaseModel):
@@ -249,12 +308,12 @@ class BaseKineticModel(BaseModel):
         """Compute the rate constant of the reaction in this analysis
 
            Arguments:
-            | temp  -- The temperature.
+            | ``temp`` -- The temperature.
 
            Optional argument:
-            | do_log  --  When True, the logarithm of the rate constant is
-                          returned instead of just the rate constant itself.
-                          [default=False]
+            | ``do_log`` -- When True, the logarithm of the rate constant is
+                            returned instead of just the rate constant itself.
+                            [default=False]
         """
         raise NotImplementedError
 
@@ -264,70 +323,47 @@ class KineticModel(BaseKineticModel):
     def __init__(self, pfs_react, pf_trans, tunneling=None):
         """
            Arguments:
-            | pfs_react  --  a list of partition functions for the reactants
-            | pf_trans  --  the partition function of the transition state
+            | ``pfs_react`` -- A list of partition functions for the reactants.
+            | ``pf_trans`` -- The partition function of the transition state.
 
-           Optional arguments:
-            | tunneling  --  A tunneling correction object. If not given, no
-                             tunneling correction is applied.
+           The first argument is a list whose items should be PartFun objects.
+           One may also replace an item by a ``(pf, st)`` tuple, where ``pf`` is
+           the partition function and ``st`` is the stoichiometry.
+
+           Optional argument:
+            | ``tunneling`` -- A tunneling correction object. If not given, no
+                               tunneling correction is applied.
 
 
            Useful attributes:
-            | unit_name  --  A string describing the conventional unit of
-                             the rate constant
-            | unit  --  The conversion factor to transform self.A into
-                        conventional units (rate_const/self.unit)
+            | ``unit_name`` -- A string containing the SI unit of the rate
+                               constant.
+            | ``unit`` -- The conversion factor to transform the rate constant
+                          to SI units (``rate_const/self.unit``)
         """
+        BaseKineticModel.__init__(self)
         if len(pfs_react) == 0:
             raise ValueError("At least one reactant must be given.")
-        self.pfs_react = pfs_react
-        self.pf_trans = pf_trans
+        self._add_pfs(pfs_react, -1)
+        self._add_pfs([pf_trans], +1)
         self.tunneling = tunneling
-        self.unit, self.unit_name = get_unit(pfs_react, [pf_trans], per_second=True)
-        BaseKineticModel.__init__(self, pfs_react + [pf_trans])
+        self._set_unit(per_second=True)
 
     def rate_constant(self, temp, do_log=False):
         """See :meth:`BaseKineticModel.rate_constant`
 
            The implementation is based on transition state theory.
         """
-        log_K = self.pf_trans.logv(temp)
-        log_K -= sum(pf_react.logv(temp) for pf_react in self.pfs_react)
+        result = self.equilibrium_constant(temp, do_log)
         if do_log:
-            result = numpy.log(boltzmann*temp/planck) + log_K
-        else:
-            result = boltzmann*temp/planck*numpy.exp(log_K)
-        if self.tunneling is not None:
-            if do_log:
+            result = numpy.log(boltzmann*temp/planck) + result
+            if self.tunneling is not None:
                 result += numpy.log(self.tunneling(temp))
-            else:
+        else:
+            result = boltzmann*temp/planck*result
+            if self.tunneling is not None:
                 result *= self.tunneling(temp)
         return result
-
-    def free_energy_change(self, temp):
-        """Compute the free energy change from reactants to transition state.
-
-           The change in free energy depends on the the pressure in the
-           ``ExtTrans`` contribution to the partition function, if such a
-           contribution would be present.
-
-           Arguments:
-            | temp  -- the temperature
-        """
-        result = 0.0
-        result -= sum(pf_react.chemical_potential(temp) for pf_react in self.pfs_react)
-        result += self.pf_trans.chemical_potential(temp)
-        return result
-
-    def energy_difference(self):
-        """Compute the electronic energy barrier of the reaction."""
-        return self.pf_trans.electronic.energy - \
-               sum(pf_react.electronic.energy for pf_react in self.pfs_react)
-
-    def zero_point_energy_difference(self):
-        """Compute the zero-point energy barrier of the reaction."""
-        return self.pf_trans.zero_point_energy() - \
-               sum(pf_react.zero_point_energy() for pf_react in self.pfs_react)
 
     def dump(self, f):
         """Write all info about the kinetic model to a file."""
@@ -336,12 +372,7 @@ class KineticModel(BaseKineticModel):
         delta_ZPE = self.zero_point_energy_difference()
         print >> f, "Zero-point energy barrier [kJ/mol] = %.1f" % (delta_ZPE/kjmol)
         print >> f
-        for counter, pf_react in enumerate(self.pfs_react):
-            print >> f, "Reactant %i partition function" % counter
-            pf_react.dump(f)
-            print >> f
-        print >> f, "Transition state partition function"
-        self.pf_trans.dump(f)
+        BaseKineticModel.dump(self, f)
 
 
 class ActivationKineticModel(BaseKineticModel):
@@ -349,24 +380,15 @@ class ActivationKineticModel(BaseKineticModel):
     def __init__(self, tm, km):
         """
            Arguments:
-            | tm  --  The thermodynamic model for the pre-reactive complex.
-            | km  --  The kinetic model for the single-step reaction.
+            | ``tm`` -- The thermodynamic model for the pre-reactive complex.
+            | ``km`` -- The kinetic model for the single-step reaction.
         """
+        BaseKineticModel.__init__(self)
         self.tm = tm
         self.km = km
-
-        # akm
-        self.unit = tm.unit*km.unit
-        if len(tm.pfs_react)==len(tm.pfs_prod):
-            self.unit_name = km.unit_name
-        elif len(tm.pfs_react)-len(tm.pfs_prod)+len(km.pfs_react)-1==0:
-            self.unit_name = "1/s"
-        elif len(tm.pfs_react)-len(tm.pfs_prod)+len(km.pfs_react)-1==1:
-            self.unit_name = "(m**3/mol)/s"
-        else:
-            self.unit_name = "(m**3/mol)**%i/s" % (len(tm.pfs_react)-len(tm.pfs_prod)+len(km.pfs_react)-1)
-
-        BaseKineticModel.__init__(self, tm.pfs_all | km.pfs_all)
+        self._add_pfs(tm.pfs_all.iteritems())
+        self._add_pfs(km.pfs_all.iteritems())
+        self._set_unit(per_second=True)
 
     def rate_constant(self, temp, do_log=False):
         """See :meth:`BaseKineticModel.rate_constant`"""
@@ -376,29 +398,6 @@ class ActivationKineticModel(BaseKineticModel):
         else:
             return self.tm.equilibrium_constant(temp, False)* \
                    self.km.rate_constant(temp, False)
-
-    def free_energy_change(self, temp):
-        """Compute the change in free energy from reactants to transition state.
-
-           The change in free energy depends on the the pressure in the
-           ``ExtTrans`` contribution to the partition function, if such a
-           contribution would be present.
-
-           Arguments:
-            | temp  -- the temperature
-        """
-        return self.tm.free_energy_change(temp) + \
-               self.km.free_energy_change(temp)
-
-    def energy_difference(self):
-        """Compute the electronic energy barrier of the reaction."""
-        return self.tm.energy_difference() + \
-               self.km.energy_difference()
-
-    def zero_point_energy_difference(self):
-        """Compute the zero-point energy barrier of the reaction."""
-        return self.tm.zero_point_energy_difference() + \
-               self.km.zero_point_energy_difference()
 
     def dump(self, f):
         """Write all info about the kinetic model to a file."""

@@ -53,19 +53,23 @@ class IOTestCase(unittest.TestCase):
 
     def test_load_molecule_g03fchk(self):
         atoms = 181
-        molecule = load_molecule_g03fchk("input/mat/Zp_p_react.28aug.fchk","input/mat/Zp_p_react.14mei.fchk")
-
+        molecule = load_molecule_g03fchk("input/mat/Zp_p_react.28aug.fchk")
         self.assertEqual(molecule.hessian.shape,(atoms*3,atoms*3))
+        self.assertAlmostEqual(molecule.energy, -3053.805846445570, 7)
+        molecule = load_molecule_g03fchk("input/mat/Zp_p_react.28aug.fchk", energy=-123.0)
+        self.assertAlmostEqual(molecule.energy, -123.0, 7)
+        molecule = load_molecule_g03fchk("input/mat/Zp_p_react.28aug.fchk", "input/mat/Zp_p_react.14mei.fchk")
         self.assertAlmostEqual(molecule.energy, -18613.135744186180, 7)
 
     def test_load_molecule_g98fchk(self):
         atoms = 6
         molecule = load_molecule_g98fchk("input/g98/freqs.fchk")
-
         self.assertEqual(molecule.hessian.shape,(atoms*3,atoms*3))
         self.assertAlmostEqual(molecule.masses[0]/amu, 12.011)
         self.assertAlmostEqual(molecule.masses[2]/amu, 1.0079)
         self.assertAlmostEqual(molecule.energy, -78.58745828877478, 7)
+        molecule = load_molecule_g98fchk("input/g98/freqs.fchk", energy=-123.0)
+        self.assertAlmostEqual(molecule.energy, -123.0, 7)
 
     def test_load_molecule_g03fchkvdw(self):
         atoms = 179

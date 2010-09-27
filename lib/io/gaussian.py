@@ -48,10 +48,10 @@ __all__ = [
 
 
 def load_fixed_g03com(filename):
-    """Load fixed atoms from a gaussian input file
+    """Load fixed atoms from a gaussian input file.
 
        Argument:
-        | filename  --  The gaussian input file
+        | ``filename`` -- The gaussian input file.
 
        A fixed atom is recognized by the '-1' after the atom symbol in the
        molecule specification. The '-1' is the second word in the line.
@@ -86,19 +86,19 @@ def load_fixed_g03com(filename):
 
 
 def load_molecule_g03fchk(fn_freq, fn_ener=None, fn_vdw=None, energy=None):
-    """Load a molecule from Gaussian03 formatted checkpoint files
+    """Load a molecule from Gaussian03 formatted checkpoint files.
 
        Arguments:
-         | fn_freq  --  the formatted checkpoint file of the frequency job
+         | ``fn_freq`` -- the formatted checkpoint file of the frequency job
 
        Optional arguments:
-         | fn_ener  --  the formatted checkpoint file of a single point
-                        computation for the energy. When not given, the energy
-                        is taken from the frequency job.
-         | fn_vdw  --  An orca output file containing a Van der Waals correction
-                       for the energy
-         | energy  --  override the energy from the formatted checkpoint file with
-                       the given value
+         | ``fn_ener`` -- the formatted checkpoint file of a single point
+                          computation for the energy. When not given, the energy
+                          is taken from the frequency job.
+         | ``fn_vdw`` -- An orca output file containing a Van der Waals
+                         correction for the energy.
+         | ``energy`` -- Override the energy from the formatted checkpoint file
+                         with the given value.
     """
 
     fchk_freq = FCHKFile(fn_freq, ignore_errors=True, field_labels=[
@@ -161,16 +161,18 @@ g98_masses = numpy.array([
 ])*amu
 
 
-def load_molecule_g98fchk(fn_freq, fn_ener=None):
-    """Load a molecule from Gaussian98 formatted checkpoint files
+def load_molecule_g98fchk(fn_freq, fn_ener=None, energy=None):
+    """Load a molecule from Gaussian98 formatted checkpoint files.
 
        Arguments:
-         | fn_freq  --  the formatted checkpoint file of the frequency job
+         | ``fn_freq`` -- The formatted checkpoint file of the frequency job.
 
        Optional arguments:
-         | fn_ener  --  the formatted checkpoint file of a single point
-                        computation for the energy. When not given, the energy
-                        is taken from the frequency job.
+         | ``fn_ener`` -- The formatted checkpoint file of a single point
+                          computation for the energy. When not given, the energy
+                          is taken from the frequency job.
+         | ``energy`` -- Override the energy from the formatted checkpoint file
+                         with the given value.
     """
 
     fchk_freq = FCHKFile(fn_freq, ignore_errors=True, field_labels=[
@@ -184,12 +186,14 @@ def load_molecule_g98fchk(fn_freq, fn_ener=None):
             "Total Energy"
         ])
     masses = numpy.array([g98_masses[n-1] for n in fchk_freq.molecule.numbers])
+    if energy is None:
+        energy = fchk_ener.fields["Total Energy"]
 
     return Molecule(
         fchk_freq.molecule.numbers,
         fchk_freq.molecule.coordinates,
         masses,
-        fchk_ener.fields["Total Energy"],
+        energy,
         numpy.reshape(numpy.array(fchk_freq.fields["Cartesian Gradient"]), (len(fchk_freq.molecule.numbers),3)),
         fchk_freq.get_hessian(),
         fchk_freq.fields["Multiplicity"],
@@ -199,17 +203,17 @@ def load_molecule_g98fchk(fn_freq, fn_ener=None):
 
 
 def load_rotscan_g03log(fn_log, top_indexes=None):
-    """Load the torsional potential from a Gaussian 03 log/output file
+    """Load the torsional potential from a Gaussian 03 log/output file.
 
        Argument:
-        | fn_log  --  The filename of the gaussian output
+        | ``fn_log`` -- The filename of the gaussian output.
 
        Optional argument:
-        | top_indexes  --  The atom indexes that define the rotor. These do not
-                           have to include the atoms that define the rotational
-                           axis. When not given, an attempt is made to derive
-                           this information from the dihedral angle used for the
-                           scan.
+        | ``top_indexes`` -- The atom indexes that define the rotor. These do
+                             not have to include the atoms that define the
+                             rotational axis. When not given, an attempt is made
+                             to derive this information from the dihedral angle
+                             used for the scan.
     """
     # find the line that specifies the dihedral angle
     f = file(fn_log)

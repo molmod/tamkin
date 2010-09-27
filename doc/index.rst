@@ -17,7 +17,7 @@ Tutorial
 
    tutorial/install.rst
    tutorial/getting_started.rst
-   tutorial/gendata.rst
+   tutorial/data.rst
    tutorial/chemphys_theory.rst
    tutorial/chemphys_tamkin.rst
    tutorial/development.rst

@@ -100,6 +100,13 @@ the (type of) machine where the computation was done. The formmated checkpoint
 file is a text file that is used by TAMkin to extract all the results from a
 Gaussian computation.
 
+For optimizations we recommend the ``opt(tight)`` option as it improves the
+reproducibility of the frequencies. For frequency calculations, one can use
+``freq(noraman)`` to skip the computation of Raman intensities. They are not
+used by TAMkin and require about 10% of the computation time in a frequency job.
+It is not recommended to work with link jobs because the formatted checkpoint
+file only contains information about the last link.
+
 
 Q-Chem
 ~~~~~~

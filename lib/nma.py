@@ -651,12 +651,16 @@ class ConstrainExt(Treatment):
            This matrix is already mass weigthed, such that no ConstrainExt mass
            matrix needs to be specified.
         """
-        if abs(molecule.gradient).max() > self.gradient_threshold:
+        # Compute the norm of the gradient per atom. The maximum of these norms
+        # should be below the threshold. This is a rotationally invariant test.
+        atom_gradient_norms = numpy.sqrt((molecule.gradient**2).sum(axis=1))
+        gradmax = (atom_gradient_norms).max()
+        if gradmax > self.gradient_threshold:
             raise ValueError(
-                "Some components of the gradient exceed the threshold "
-                "(%.1e > %.1e). The current implementation of the ConstrainExt "
-                "treatment only works on optimized geometries." % (
-                    abs(molecule.gradient).max(), self.gradient_threshold
+                "Some the norm of the gradient on some atoms exceeds the "
+                "threshold (%.1e > %.1e). The current implementation of the "
+                "ConstrainExt treatment only works on optimized geometries." % (
+                    gradmax, self.gradient_threshold
                 )
             )
         # project the hessian on the orthogonal complement of the basis of small

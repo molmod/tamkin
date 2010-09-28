@@ -36,7 +36,6 @@
 
 # Import libraries.
 from tamkin import *   # The TAMkin library
-from molmod import *   # The MolMod library (for the units)
 
 # Load the molecules (including the Hessian etc.)
 mol_ethyl = load_molecule_g03fchk("ethyl.fchk")

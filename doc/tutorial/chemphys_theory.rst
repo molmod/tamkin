@@ -194,10 +194,8 @@ is the particle density. Note that all derivatives are taken at constant volume.
 NpT ensemble
 ^^^^^^^^^^^^
 
-**TODO**: cite a book for the starting point of the derivation.
-
 The many-particle partition function of the NpT ensemble is related to the
-partition function of the NVT ensemble as follows:
+partition function of the NVT ensemble as follows [Hill1960]_:
 
 .. math:: Z(N,p,T) = \int_0^{+\infty} Z(N,V,T) \exp\left(-\frac{pV}{k_BT}\right) \frac{p}{k_BT} dV
 

@@ -88,6 +88,12 @@ a great tool for many tasks in computational chemistry, also far beyond the
 scope of TAMkin.
 
 
+Python for absolute beginners
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**TODO**
+
+
 Basic example
 ~~~~~~~~~~~~~
 

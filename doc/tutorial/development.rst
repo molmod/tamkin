@@ -1,7 +1,14 @@
 TAMkin programmer's guide
 =========================
 
-Work in progres ...
+
+**TODO**: introductory text
+
+Git Basics -- Get the latest development version
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**TODO**
+
 
 Have a look at the structure of the package
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
@@ -36,3 +43,27 @@ TAMkin files in the following way::
     $ ls lib/
     data.py  __init__.py  nma.py       partf.py    rotor.py  tunneling.py
     geom.py  io           nmatools.py  pftools.py  timer.py
+
+
+Coding guidelines
+~~~~~~~~~~~~~~~~~
+
+**TODO**
+
+
+Doc-string guidelines
+~~~~~~~~~~~~~~~~~~~~~
+
+**TODO**
+
+
+Test and example data guidelines
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**TODO**
+
+
+Documentation guidelines
+~~~~~~~~~~~~~~~~~~~~~~~~
+
+**TODO**

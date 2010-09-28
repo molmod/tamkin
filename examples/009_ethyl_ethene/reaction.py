@@ -98,9 +98,8 @@ ta_ts_trans.write_to_file("thermo_ts_trans.csv")
 #  1) a list of reactant partition functions
 #     (one for unimolecular, two for bimolecular, ...)
 #  2) the transition state partition function
-# There are two more optional arguments
-#  3) cp: model at constant pressure, default=True
-#  4) tunneling: a model for the tunelling correction
+# There is one more optional argument. (not used here).
+#  3) tunneling: a model for the tunelling correction
 km_gauche = KineticModel([pf_ethyl, pf_ethene], pf_ts_gauche)
 km_trans = KineticModel([pf_ethyl, pf_ethene], pf_ts_trans)
 

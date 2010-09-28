@@ -73,9 +73,8 @@ for s, color in cases:
     #  1) a list of reactant partition functions
     #     (one for unimolecular, two for bimolecular, ...)
     #  2) the transition state partition function
-    # There are two more optional arguments
-    #  3) cp: model at constant pressure, default=True
-    #  4) tunneling: a model for the tunelling correction
+    # There is one more optional argument.
+    #  3) tunneling: a model for the tunelling correction
     km_gauche = KineticModel([pf_ethyl, pf_ethene], pf_ts_gauche)
 
     # Analyze the chemical reaction. These are the arguments:

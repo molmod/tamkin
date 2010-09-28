@@ -428,3 +428,15 @@ following data::
         Imaginary Wavenumbers [1/cm]:
           -383.6
         Zero-point contribution [kJ/mol]: 299.2533370
+
+
+Thermodynamic isotope effects
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**TODO**
+
+
+Kinetic isotope effects
+~~~~~~~~~~~~~~~~~~~~~~~
+
+**TODO**

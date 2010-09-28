@@ -1,13 +1,174 @@
 Chemical Physics -- Practical examples
 ======================================
 
-**TODO**: add some more introductory text.
+**TODO**: add introductory text.
+
+
+Thermodynamic properties of a molecule
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**TODO**
 
 
 Conformational Equilibrium
 ~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**TODO**
+We will study the thermodynamic equilibrium between the two butane conformers:
+trans and gauche. The balance is as follows:
+
+.. math::
+    :nowrap:
+
+    butane (trans,gas) $\leftrightharpoons$ butane (gauche,gas)
+
+Both butane geometries are optimized using the B3LYP/6-31G(d) level of theory,
+and consequently frequency computations are carried out using Gaussian03. The
+formatted checkpoint files of the frequency jobs are ``trans.fchk`` and
+``gauche.fchk`` respectively. This is a trivial example, but one must not forget
+to take into account the degeneracy of the gauche ground state, i.e. there as a
+left-handed and a right-handed gauche state.
+
+The script below computes the equilibrium constant of the conformational
+equilibrium constant at different temperatures: 300K, 400K, 500K and 600K. The
+multiplicity option of the electronic contribution is (ab)used to take into
+account the geometrical gauche multiplicity.
+
+File: ``examples/020_butane_conformers/equilibrium.py``
+
+.. literalinclude:: ../../examples/020_butane_conformers/equilibrium.py
+   :lines: 37-
+
+The scripts writes several output files discussed in the subsections below.
+
+CSV Files with energetic analysis
+---------------------------------
+
+The file ``conformation_energies300.csv`` Contains the following information.
+
+.. csv-table::
+
+    Temperature [K],300,,
+    ,,,
+    **Quantity**,**Trans**,**Gauche**,**Linear combination** (always in kJ/mol)
+    Signed stoichiometry,-1,1,
+    **Values in a.u.**,,,
+    Electronic energy,-158.4581,-158.4567,3.5
+    Zero-point energy,-158.3252,-158.3237,3.8
+    Internal heat (300.00K),-158.3184,-158.3170,3.7
+    Chemical potential (300.00K),-158.3528,-158.3520,2.0
+    **Corrections in kJ/mol**,,,
+    Zero-point energy,348.8,349.1,0.3
+    Internal heat (300.00K),366.6,366.7,0.1
+    Chemical potential (300.00K),276.5,274.9,-1.5
+    ,,,
+    **Other quantities**,Unit,Value,
+    Equilibrium constant,1,0.449691770568,
+
+The numbers in this table are rounded to improve the readability, but the actual
+CSV file contains all numbers in full machine precision. The linear combination
+of the chemical potentials is also known as the `change in free energy`
+associated with the reaction.
+
+From the equilibrium constant one can derive the probability of finding a trans
+or a gauche conformer at 300K:
+
+.. math:: K_c = \frac{p_\text{gauche}}{p_\text{trans}}
+
+Given that the probabilities sum to unity, one gets:
+
+.. math:: p_\text{trans} = \frac{1}{1+K_c} \approx 69\%
+
+.. math:: p_\text{gauche} = \frac{K_c}{1+K_c} \approx 31\%
+
+
+A log file with an description of the equilibrium
+-------------------------------------------------
+
+The file ``equilibrium.txt`` contains the following data::
+
+    Electronic energy difference [kJ/mol] = 3.5
+    Zero-point energy difference [kJ/mol] = 3.8
+
+    The chemical balance:
+       1.0*("Trans")  <-->  1.0*("Gauche")
+
+    Partition function 0
+    Signed stoichiometry: -1
+    Title: Trans
+    Electronic energy [au]: -158.45806
+    Zero-point contribution [kJ/mol]: 348.7969543
+    Zero-point energy [au]: -158.32521
+    Contributions to the partition function:
+      ELECTRONIC
+        Multiplicity: 1
+        Electronic energy: -158.4580557
+      ROTATIONAL
+        Rotational symmetry number: 2
+        Moments of inertia [amu*bohr**2]: 77.114693  501.601343 533.985400
+        Threshold for non-zero moments of inertia [amu*bohr**2]: 5.485799e-04
+        Non-zero moments of inertia: 3
+      TRANSLATIONAL
+        Dimension: 3
+        Constant pressure: True
+        Pressure [bar]: 1.01325
+          BIG FAT WARNING!!!
+          This is an NpT partition function.
+          Internal heat contains a PV term (and is therefore the enthalpy).
+          Free energy contains a PV term (and is therefore the Gibbs free energy).
+          The heat capacity is computed at constant pressure.
+        Mass [amu]: 58.078250
+      VIBRATIONAL
+        Number of zero wavenumbers: 0
+        Number of real wavenumbers: 36
+        Number of imaginary wavenumbers: 0
+        Frequency scaling factor: 1.0000
+        Zero-point scaling factor: 1.0000
+        Real Wavenumbers [1/cm]:
+           126.0   221.0   257.8   260.9   424.2   744.3   821.0   847.3
+           973.7   988.5  1027.2  1072.5  1180.5  1225.4  1306.7  1340.8
+          1348.9  1418.7  1439.6  1442.0  1517.4  1522.0  1528.8  1530.0
+          1536.2  1543.7  3020.4  3028.1  3041.0  3041.7  3042.3  3064.3
+          3103.4  3107.5  3110.0  3110.8
+        Zero-point contribution [kJ/mol]: 348.7969543
+
+    Partition function 1
+    Signed stoichiometry: 1
+    Title: Gauche
+    Electronic energy [au]: -158.45671
+    Zero-point contribution [kJ/mol]: 349.0988179
+    Zero-point energy [au]: -158.32375
+    Contributions to the partition function:
+      ELECTRONIC
+        Multiplicity: 2
+        Electronic energy: -158.4567137
+      ROTATIONAL
+        Rotational symmetry number: 2
+        Moments of inertia [amu*bohr**2]: 135.679032  386.092746 451.000474
+        Threshold for non-zero moments of inertia [amu*bohr**2]: 5.485799e-04
+        Non-zero moments of inertia: 3
+      TRANSLATIONAL
+        Dimension: 3
+        Constant pressure: True
+        Pressure [bar]: 1.01325
+          BIG FAT WARNING!!!
+          This is an NpT partition function.
+          Internal heat contains a PV term (and is therefore the enthalpy).
+          Free energy contains a PV term (and is therefore the Gibbs free energy).
+          The heat capacity is computed at constant pressure.
+        Mass [amu]: 58.078250
+      VIBRATIONAL
+        Number of zero wavenumbers: 0
+        Number of real wavenumbers: 36
+        Number of imaginary wavenumbers: 0
+        Frequency scaling factor: 1.0000
+        Zero-point scaling factor: 1.0000
+        Real Wavenumbers [1/cm]:
+           112.6   216.7   266.5   324.1   433.1   756.2   799.6   840.7
+           972.6   979.8  1003.4  1093.9  1166.1  1209.4  1305.1  1328.6
+          1391.4  1397.9  1442.2  1443.2  1514.0  1517.0  1528.1  1536.6
+          1537.1  1542.6  3024.4  3024.9  3043.4  3045.6  3058.1  3062.0
+          3106.4  3107.7  3113.6  3120.2
+        Zero-point contribution [kJ/mol]: 349.0988179
 
 
 Chemical Equilibrium
@@ -18,6 +179,12 @@ Chemical Equilibrium
 
 Heat of formation
 ~~~~~~~~~~~~~~~~~
+
+**TODO**
+
+
+Reaction Kinetics (unimolecular)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 **TODO**
 
@@ -69,7 +236,7 @@ The file at 300 K contains the following data:
 
     Temperature [K],300,,,
     ,,,,
-    **Quantity**,**Ethyl**,**Ethene**,**Transition state**,**Linear combination (always in kJ/mol)**
+    **Quantity**,**Ethyl**,**Ethene**,**Transition state**,**Linear combination** (always in kJ/mol)
     Signed stoichiometry,-1,-1,1,
     **Values in a.u.**,,,,
     Electronic energy,-79.1579,-78.5875,-157.7371,22
@@ -84,23 +251,24 @@ The file at 300 K contains the following data:
     **Other quantities**,Unit,Value,,
     Rate constant,m**3*mol**-1/second,4.52253403913e-11,,
 
-The numbers in this table are rounded at some precision to improve the
-readability, but the actual CSV file contains all numbers in full machine
-precision. The linear combination of the chemical potentials is also known as
-the `change in free energy` associated with the reaction.
+The numbers in this table are rounded to improve the readability, but the actual
+CSV file contains all numbers in full machine precision. The linear combination
+of the chemical potentials is also known as the `change in free energy`
+associated with the reaction.
 
-An Arrhenius plot
------------------
+Arrhenius plot
+--------------
 
-This plot can be used for a visual check of the linear regression analysis to
-estimate the kinetic parameters
+The file ``arrhenius.png`` contains the Arrhenius plot. This plot can be used
+for a visual check of the linear regression analysis to estimate the kinetic
+parameters.
 
 .. image:: arrhenius_bimolecular_gas_phase.png
 
 A log file with an analysis of the kinetic parameters
 -----------------------------------------------------
 
-This file is written to the file ``kinetic_parameters.txt``. It contains the
+This file is written to the file ``kinetic.txt``. It contains the
 following data::
 
     Summary

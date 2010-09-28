@@ -90,3 +90,7 @@
 ( cd 019_ethyl_ethene_simple
   rm -v *.png *.txt *.csv
 )
+
+( cd 020_butane_conformers
+  rm -v *.txt *.csv
+)

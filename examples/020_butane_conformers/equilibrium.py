@@ -38,27 +38,20 @@
 from tamkin import *   # The TAMkin library
 
 # Load the molecules (including the Hessian etc.)
-mol_ethyl = load_molecule_g03fchk("ethyl.fchk")
-mol_ethene = load_molecule_g03fchk("ethene.fchk")
-mol_ts_trans = load_molecule_g03fchk("ts_trans.fchk")
+mol_trans = load_molecule_g03fchk("trans.fchk")
+mol_gauche = load_molecule_g03fchk("gauche.fchk")
 # Perform normal mode analysis on the molecules
-nma_ethyl = NMA(mol_ethyl, ConstrainExt())
-nma_ethene = NMA(mol_ethene, ConstrainExt())
-nma_ts_trans = NMA(mol_ts_trans, ConstrainExt())
+nma_trans = NMA(mol_trans, ConstrainExt())
+nma_gauche = NMA(mol_gauche, ConstrainExt())
 # Construct the partition functions.
-pf_ethyl = PartFun(nma_ethyl, [ExtTrans(), ExtRot()])
-pf_ethene = PartFun(nma_ethene, [ExtTrans(), ExtRot()])
-pf_ts_trans = PartFun(nma_ts_trans, [ExtTrans(), ExtRot()])
+pf_trans = PartFun(nma_trans, [ExtTrans(), ExtRot()])
+pf_gauche = PartFun(nma_gauche, [ExtTrans(), ExtRot(), Electronic(multiplicity=2)])
 # Define a kinetic model for the chemical reaction.
-km_trans = KineticModel([pf_ethyl, pf_ethene], pf_ts_trans)
+tm = ThermodynamicModel([pf_trans], [pf_gauche])
 # Write tables with the principal energies at 300K, 400K, 500K and 600K
-km_trans.write_table(300, "kinetic300.csv")
-km_trans.write_table(400, "kinetic400.csv")
-km_trans.write_table(500, "kinetic500.csv")
-km_trans.write_table(600, "kinetic600.csv")
-# Analyze the chemical reactions.
-ra_trans = ReactionAnalysis(km_trans, 300, 600)
-# Make the Arrhenius plot
-ra_trans.plot_arrhenius("arrhenius.png")
-# Write the analysis to a file
-ra_trans.write_to_file("kinetic.txt")
+tm.write_table(300, "equilibrium300.csv")
+tm.write_table(400, "equilibrium400.csv")
+tm.write_table(500, "equilibrium500.csv")
+tm.write_table(600, "equilibrium600.csv")
+# Write an overview of the thermodynamic model to a file
+tm.write_to_file("equilibrium.txt")

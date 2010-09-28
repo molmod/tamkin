@@ -1,7 +1,10 @@
 Chemical Physics -- Basic TAMkin recipes
 ========================================
 
-**TODO**: add introductory text.
+In this chapter, we discuss a few example scripts for TAMkin in detail. They
+can be used as a template for writing new scripts, which is much easier than
+starting from scratch. There are more examples int the ``examples`` directory
+than those discussed here.
 
 
 Thermodynamic properties of a molecule

@@ -28,7 +28,7 @@ TAMkin files in the following way::
 * The ``cleancode.sh``, ``cleanfiles.sh`` and ``HEADER.py`` files are only
   relevant for code developers, but not for the general user.
 * The file ``COPYING`` contains the license under which TAMKin is distributed.
-* The directory ``test/`` contains the testing routines. This is mainly intented
+* The directory ``test/`` contains the testing routines. This is mainly intended
   for developers, but a regular user can also use it to test the validity of its
   installation. ::
 
@@ -60,7 +60,26 @@ Doc-string guidelines
 Test and example data guidelines
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**TODO**
+The smaller the total size of the source tree, the better. Before you ``git
+commit`` an example into the git repository, try to keep the data files
+from computational chemistry packages as small as possible. Try to do at least
+the following
+
+1. Keep the molecular systems in the examples small, i.e. at most 20 atoms.
+
+2. Strip all the trailing white spaces from every line in the output files.
+
+3. Strip all sections from the output files that are not used by TAMkin.
+
+Gaussian fchk files
+-------------------
+
+The script ``examples/fchkstripper.py`` takes care of steps 2 and 3. It is used
+as follows::
+
+    ./fchkstripper.py file1.fchk file2.fchk
+
+The files will be stripped in-place. No backup copy is made.
 
 
 Documentation guidelines

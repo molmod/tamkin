@@ -1,115 +1,14 @@
-Who cares about the title?                                              
-Freq      RMP2-FC                                                     CC-pVDZ             
-Number of atoms                            I                3
-Charge                                     I                0
+Who cares about the title?
+Freq      RMP2-FC                                                     CC-pVDZ
 Multiplicity                               I                1
-Number of electrons                        I               22
-Number of alpha electrons                  I               11
-Number of beta electrons                   I               11
-Number of basis functions                  I               42
-Number of independant functions            I               42
-Number of point charges in /Mol/           I                0
-Number of translation vectors              I                0
-Info1-9                                    I   N=           9
-          12          12        1002           0           0         100
-           6           2           1
-Num ILSW                                   I              100
-ILSW                                       I   N=         100
-           0           0           0           0           2           0
-           0           0           0           0           0     1000000
-           0           0           0           0           0           0
-           0     1000000           1           0           1           0
-           1           1           0           0     1000000           0
-           0           0      100000           0          -1           0
-           0           0           0           0           0           0
-           0           0           0           1           1           0
-           0           0           1     1000000     1000000           0
-           0           0           0           0           0           0
-           0           0           0           0           0           0
-           0           0           0           0           0           0
-           0           0           0           0           0           0
-           0           0           0           0           0           0
-           0           0           0           0           0           0
-           0           0           0           0           0           0
-           0           0           0           0
-Number of contracted shells                I               18
-Highest angular momentum                   I                2
-Largest degree of contraction              I                7
-Number of primitive shells                 I               60
-Pure/Cartesian d shells                    I                0
-Pure/Cartesian f shells                    I                0
-Virial Ratio                               R      2.002356970335739E+00
-SCF Energy                                 R     -1.876468226866441E+02
-MP2 Energy                                 R     -1.881335526691791E+02
 Total Energy                               R     -1.881335526691791E+02
-Post-SCF wavefunction norm                 R      1.513879323475351E+00
-RMS Force                                  R      9.165054017142550E-08
-RMS Density                                R      1.523376364541604E-10
 Atomic numbers                             I   N=           3
            6           8           8
-Nuclear charges                            R   N=           3
-  6.00000000E+00  8.00000000E+00  8.00000000E+00
 Current cartesian coordinates              R   N=           9
   1.79286428E-11 -2.16155220E-11 -2.62649162E-12 -8.96432141E-12  1.08077610E-11
   2.22436575E+00 -8.96432141E-12  1.08077610E-11 -2.22436575E+00
-Int Atom Types                             I   N=           3
-           0           0           0
-Force Field                                I                0
-MM charges                                 R   N=           3
-  0.00000000E+00  0.00000000E+00  0.00000000E+00
-Integer atomic weights                     I   N=           3
-          12          16          16
 Real atomic weights                        R   N=           3
   1.20000000E+01  1.59949146E+01  1.59949146E+01
-Atom residue info                          I   N=           3
-           0           0           0
-Atom fragment info                         I   N=           3
-           0           0           0
-Atom residue num                           I   N=           3
-           0           0           0
-Nuclear spins                              I   N=           3
-           0           0           0
-Nuclear ZEff                               R   N=           3
- -3.60000000E+00 -5.60000000E+00 -5.60000000E+00
-Nuclear QMom                               R   N=           3
-  0.00000000E+00  0.00000000E+00  0.00000000E+00
-Nuclear GFac                               R   N=           3
-  0.00000000E+00  0.00000000E+00  0.00000000E+00
-MicOpt                                     I   N=           3
-          -1          -1          -1
-Constraint Structure                       R   N=           9
-  1.79286428E-11 -2.16155220E-11 -2.62649162E-12 -8.96432141E-12  1.08077610E-11
-  2.22436575E+00 -8.96432141E-12  1.08077610E-11 -2.22436575E+00
-ONIOM Charges                              I   N=          16
-           0           0           0           0           0           0
-           0           0           0           0           0           0
-           0           0           0           0
-ONIOM Multiplicities                       I   N=          16
-           1           0           0           0           0           0
-           0           0           0           0           0           0
-           0           0           0           0
-Atom Layers                                I   N=           3
-           0           0           0
-Atom Modifiers                             I   N=           3
-           0           0           0
-Int Atom Modified Types                    I   N=           3
-           0           0           0
-Link Atoms                                 I   N=           3
-           0           0           0
-Atom Modified MM Charges                   R   N=           3
-  0.00000000E+00  0.00000000E+00  0.00000000E+00
-Link Distances                             R   N=          12
-  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
-  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
-  0.00000000E+00  0.00000000E+00
-MxBond                                     I                2
-NBond                                      I   N=           3
-           2           1           1
-IBond                                      I   N=           6
-           2           3           1           0           1           0
-RBond                                      R   N=           6
-  1.00000000E+00  1.00000000E+00  1.00000000E+00  0.00000000E+00  1.00000000E+00
-  0.00000000E+00
 Cartesian Gradient                         R   N=           9
   3.24960188E-12 -4.55793509E-12 -7.42391462E-12 -1.62467370E-12  2.27906706E-12
  -1.94416454E-07 -1.62492819E-12  2.27886803E-12  1.94423857E-07
@@ -123,36 +22,3 @@ Cartesian Force Constants                  R   N=          45
   1.12510276E-11 -1.42450459E-15  3.46225576E-02 -9.06066787E-13  5.24939202E-16
   3.46224649E-02 -7.90509989E-12  9.49518032E-12 -9.84071684E-01 -3.84254725E-13
   8.85369127E-13 -4.20714367E-02  8.28296368E-12 -1.03471171E-11  1.02614312E+00
-Dipole Moment                              R   N=           3
-  1.16479043E-11 -1.42740535E-11 -9.61167214E-12
-Dipole Derivatives                         R   N=          27
-  4.53549517E-01 -1.78555824E-16 -1.96040686E-15 -1.66806592E-16  4.53549517E-01
-  3.38128756E-15 -1.18294451E-15  1.01108151E-15  2.06383403E+00 -2.26774758E-01
-  2.25045227E-14  1.32153875E-11 -2.22968519E-14 -2.26774758E-01 -1.45843157E-11
- -8.33545325E-12  1.08081326E-11 -1.03191701E+00 -2.26774758E-01 -2.23294761E-14
- -1.32133947E-11  2.24253136E-14 -2.26774758E-01  1.45803620E-11  8.33656507E-12
- -1.08092336E-11 -1.03191701E+00
-Polarizability                             R   N=           6
-  7.65951603E+00 -1.72272128E-15  7.65951603E+00 -2.03348225E-15 -4.54500540E-15
-  2.34545051E+01
-QEq coupling tensors                       R   N=          18
- -1.22503494E-01  7.80509500E-18 -1.22503494E-01  2.29912487E-16 -5.56101479E-16
-  2.45006988E-01  3.78309226E-01 -1.34427614E-13  3.78309226E-01  4.49473169E-11
- -5.31402974E-11 -7.56618453E-01  3.78309226E-01  1.43416845E-13  3.78309226E-01
- -4.49461077E-11  5.31434257E-11 -7.56618453E-01
-Mulliken Charges                           R   N=           3
-  5.33906528E-01 -2.66953264E-01 -2.66953264E-01
-Optimization MaxStp                        I                2
-Optimization Job offset                    I                0
-Optimization Num results per geometry      I                2
-Optimization Num geometry variables        I                9
-Opt point       1 Results for each geome   R   N=           2
- -1.88133553E+02  0.00000000E+00
-Opt point       1 Geometries               R   N=           9
-  1.79286428E-11 -2.16155220E-11 -2.62649162E-12 -8.96432141E-12  1.08077610E-11
-  2.22436575E+00 -8.96432141E-12  1.08077610E-11 -2.22436575E+00
-Opt point       1 Gradient at each geome   R   N=           9
-  3.24960188E-12 -4.55793509E-12 -7.42391462E-12 -1.62467370E-12  2.27906706E-12
- -1.94416454E-07 -1.62492819E-12  2.27886803E-12  1.94423857E-07
-Optimization Number of geometries          I   N=           1
-           1

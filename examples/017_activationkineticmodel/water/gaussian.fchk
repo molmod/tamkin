@@ -1,12 +1,7 @@
-test                                                                    
-Freq      RB3LYP                                                      6-31+G(d)           
-Number of atoms                            I                3
-Charge                                     I                0
+test
+Freq      RB3LYP                                                      6-31+G(d)
 Multiplicity                               I                1
-SCF Energy                                 R     -7.642257206498184E+01
 Total Energy                               R     -7.642257206498184E+01
-RMS Force                                  R      1.143998974301352E-04
-RMS Density                                R      5.227711407278554E-10
 Atomic numbers                             I   N=           3
            8           1           1
 Real atomic weights                        R   N=           3
@@ -27,4 +22,3 @@ Cartesian Force Constants                  R   N=          45
  -1.15251171E-12  3.19175935E-02  1.38134541E-02  3.07767016E-12  2.22103883E-01
   2.07221142E-01 -5.50911367E-12  3.79390021E-12  3.24393713E-05  5.92123951E-12
  -1.67519907E-12  1.30477119E-04 -1.47641958E-13 -2.07703436E-12 -1.62916479E-04
-

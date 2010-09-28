@@ -1,44 +1,4 @@
-no comment                                                              
-SP        ONIOM(B3LYP/6-31+G(d):HF/6-31+G(d))                         Mixed               
-Number of atoms                            I              179
-Charge                                     I                0
+no comment
+SP        ONIOM(B3LYP/6-31+G(d):HF/6-31+G(d))                         Mixed
 Multiplicity                               I                1
-Number of electrons                        I              674
-Number of alpha electrons                  I              337
-Number of beta electrons                   I              337
-Number of basis functions                  I              539
-Number of independant functions            I              539
-Number of point charges in /Mol/           I                0
-Number of translation vectors              I                0
-Info1-9                                    I   N=           9
-           9           5           0           0           0         211
-           1           1           2
-Num ILSW                                   I              100
-ILSW                                       I   N=         100
-           0           1           0           0           2           0
-           0           0           0           0           0     1000000
-           5           0           0           0           0           0
-           0     1000000           0           0           0           0
-           1           0           0           0     1000000           0
-           0           0      100000        8193          -1           0
-           0           0           0           0           0           0
-           0           0           0           1           0           0
-           0           0           1     1000000     1000000           0
-           0           0           0           0           0           0
-           0           0           0           0           0           0
-           0           0           0           0           0           0
-           0           0           0           0           0           0
-           0           0           0           0           0           0
-           0           0           0           0           0           0
-           0           0           0           0           0           0
-           0           0           0           0
-Number of contracted shells                I              764
-Highest angular momentum                   I                2
-Largest degree of contraction              I                6
-Number of primitive shells                 I             1952
-Pure/Cartesian d shells                    I                1
-Pure/Cartesian f shells                    I                0
-Virial Ratio                               R      2.000618174217975E+00
-SCF Energy                                 R     -3.032864085311348E+03
 Total Energy                               R     -1.861194848668928E+04
-RMS Density                                R      3.092642434897084E-09

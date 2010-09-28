@@ -1,12 +1,7 @@
-test                                                                    
-Freq      RB3LYP                                                      6-31+G(d)           
-Number of atoms                            I               16
-Charge                                     I                0
+test
+Freq      RB3LYP                                                      6-31+G(d)
 Multiplicity                               I                1
-SCF Energy                                 R     -2.346562056393941E+02
 Total Energy                               R     -2.346562056393941E+02
-RMS Force                                  R      1.014581680918355E-05
-RMS Density                                R      1.228254722291971E-09
 Atomic numbers                             I   N=          16
            6           6           6           6           6           6
            1           1           1           1           1           1

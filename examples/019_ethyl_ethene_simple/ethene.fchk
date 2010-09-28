@@ -1,9 +1,6 @@
 Ethene
-Freq      RB3LYP                                                      6-31G(d)            
-Number of atoms                            I                6
-Charge                                     I                0
+Freq      RB3LYP                                                      6-31G(d)
 Multiplicity                               I                1
-SCF Energy                                 R     -7.858745868716800E+01
 Total Energy                               R     -7.858745868716800E+01
 Atomic numbers                             I   N=           6
            6           6           1           1           1           1

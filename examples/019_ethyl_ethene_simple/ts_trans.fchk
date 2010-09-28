@@ -1,9 +1,6 @@
 Transition state
-Freq      UB3LYP                                                      6-31G(d)            
-Number of atoms                            I               13
-Charge                                     I                0
+Freq      UB3LYP                                                      6-31G(d)
 Multiplicity                               I                2
-SCF Energy                                 R     -1.577371094502940E+02
 Total Energy                               R     -1.577371094502940E+02
 Atomic numbers                             I   N=          13
            6           6           6           6           1           1

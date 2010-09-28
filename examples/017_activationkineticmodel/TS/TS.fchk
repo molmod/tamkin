@@ -1,14 +1,7 @@
-title                                                                   
-Freq      UB3LYP                                                      Gen                 
-Number of atoms                            I               40
-Charge                                     I                0
+title
+Freq      UB3LYP                                                      Gen
 Multiplicity                               I                2
-SCF Energy                                 R     -9.180551639479108E+02
 Total Energy                               R     -9.180551639479108E+02
-S**2                                       R      7.670474136382666E-01
-S**2 after annihilation                    R      7.502511805603531E-01
-RMS Force                                  R      7.061447770676769E-07
-RMS Density                                R      3.948028025393782E-09
 Atomic numbers                             I   N=          40
            6           1           1           6           1           6
            1           1           1           6           1           1

@@ -212,35 +212,31 @@ class BaseModel(object):
                           quantities.
             | ``filename`` -- The name of the csv file
         """
+        import csv
         f = file(filename, "w")
-        # header line
-        print >> f, "\"Quantity\",", \
-                    ", ".join("\"%s\"" % pf.title for pf, st in self._iter_pfs()), \
-                    ", \"Linear combination (always in kJ/mol)\""
-        print >> f, "\"Signed stoichiometry\",", \
-                    ", ".join(str(st) for pf, st in self._iter_pfs())
-        print >> f, "\"**Values in a.u.**\""
-        # electronic energy
-        print >> f, "\"Electronic energy\",", \
-                    ", ".join("%.5f" % pf.electronic.energy for pf, st in self._iter_pfs()), \
-                    ",", "%.1f" % (self.energy_difference()/kjmol)
-        # zero-point energy
-        print >> f, "\"Zero-point energy\",", \
-                    ", ".join("%.5f" % pf.zero_point_energy() for pf, st in self._iter_pfs()), \
-                    ",", "%.1f" % (self.zero_point_energy_difference()/kjmol)
-        # chemical potential
-        print >> f, "\"Chemical potential (%.2f)\"," % temp, \
-                    ", ".join("%.5f" % pf.chemical_potential(temp) for pf, st in self._iter_pfs()), \
-                    ",", "%.1f" % (self.free_energy_change(temp)/kjmol)
-        print >> f, "\"**Corrections in kJ/mol**\""
-        # zero-point energy correction
-        print >> f, "\"Zero-point energy\",", \
-                    ", ".join("%.1f" % ((pf.zero_point_energy() - pf.electronic.energy)/kjmol) for pf, st in self._iter_pfs()), \
-                    ",", "%.1f" % ((self.zero_point_energy_difference() - self.energy_difference())/kjmol)
-        # chemical potential correction
-        print >> f, "\"Chemical potential (%.2f)\"," % temp, \
-                    ", ".join("%.1f" % ((pf.chemical_potential(temp) - pf.electronic.energy)/kjmol) for pf, st in self._iter_pfs()), \
-                    ",", "%.1f" % ((self.free_energy_change(temp) - self.energy_difference())/kjmol)
+        c = csv.writer(f)
+        c.writerow(["Quantity"] +
+                   [pf.title for pf, st in self._iter_pfs()] +
+                   ["Linear combination (always in kJ/mol)"])
+        c.writerow(["Signed stoichiometry"] +
+                   [st for pf, st in self._iter_pfs()])
+        c.writerow(["**Values in a.u.**"])
+        c.writerow(["Electronic energy"] +
+                   [pf.electronic.energy for pf, st in self._iter_pfs()] +
+                   [self.energy_difference()/kjmol])
+        c.writerow(["Zero-point energy"] +
+                   [pf.zero_point_energy() for pf, st in self._iter_pfs()] +
+                   [self.zero_point_energy_difference()/kjmol])
+        c.writerow(["Chemical potential (%.2f)" % temp] +
+                   [pf.chemical_potential(temp) for pf, st in self._iter_pfs()] +
+                   [self.free_energy_change(temp)/kjmol])
+        c.writerow(["**Corrections in kJ/mol**"])
+        c.writerow(["Zero-point energy"] +
+                   [(pf.zero_point_energy() - pf.electronic.energy)/kjmol for pf, st in self._iter_pfs()] +
+                   [(self.zero_point_energy_difference() - self.energy_difference())/kjmol])
+        c.writerow(["Chemical potential (%.2f)" % temp] +
+                   [(pf.chemical_potential(temp) - pf.electronic.energy)/kjmol for pf, st in self._iter_pfs()] +
+                   [(self.free_energy_change(temp) - self.energy_difference())/kjmol])
         f.close()
 
     def write_to_file(self, filename):

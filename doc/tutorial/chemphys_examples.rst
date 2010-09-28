@@ -54,19 +54,21 @@ Such files are generated for different temperatures: 300K, 400K, 500K and 600K.
 The file at 300 K contains the following data:
 
 .. csv-table::
-    :header: "Quantity", "Ethyl", "Ethene", "Transition state" , "Linear combination (always in kJ/mol)"
+    :header: Quantity,Ethyl,Ethene,Transition state,Linear combination (always in kJ/mol)
 
-    "Signed stoichiometry", -1.0, -1.0, 1.0
-    "**Values in a.u.**"
-    "Electronic energy", -79.15787, -78.58746, -157.73711 , 21.6
-    "Zero-point energy", -79.09822, -78.53624, -157.62313 , 29.7
-    "Chemical potential (300.00)", -79.12253, -78.55726, -157.65362 , 68.7
-    "**Corrections in kJ/mol**"
-    "Zero-point energy", 156.6, 134.5, 299.3 , 8.2
-    "Chemical potential (300.00)", 92.8, 79.3, 219.2 , 47.1
+    Signed stoichiometry",-1.0,-1.0,1.0
+    **Values in a.u.**
+    Electronic energy,-79.15787,-78.58746,-157.73711,21.6
+    Zero-point energy,-79.09822,-78.53624,-157.62313,29.7
+    Chemical potential (300.00),-79.12253,-78.55726,-157.65362,68.7
+    **Corrections in kJ/mol**
+    Zero-point energy,156.6,134.5,299.3,8.2
+    Chemical potential (300.00)",92.8,79.3,219.2,47.1
 
-The linear combination of the chemical potentials is also known as the `change
-in free energy` associated with the reaction.
+The numbers in this table are rounded at some precision to improve the
+readability, but the actual CSV file contains all numbers in full machine
+precision. The linear combination of the chemical potentials is also known as
+the `change in free energy` associated with the reaction.
 
 An Arrhenius plot
 -----------------

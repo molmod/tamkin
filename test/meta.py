@@ -96,6 +96,12 @@ class MetaTestCase(unittest.TestCase):
     def test_example_019(self):
         self.check_example("019_ethyl_ethene_simple", "./kinetic.py")
 
+    def test_example_020(self):
+        self.check_example("020_butane_conformers", "./equilibrium.py")
+
+    def test_example_021(self):
+        self.check_example("021_water_formation", "./formation.py")
+
     def test_code_quality(self):
         root = "../lib"
         self.assert_(os.path.isdir(root))

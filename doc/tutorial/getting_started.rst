@@ -91,7 +91,11 @@ scope of TAMkin.
 Python for absolute beginners
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**TODO**
+If you have no Python experience yet, it may be a good time to learn the basics
+of the language. The following slides explain Python step-by-step from the
+very beginning:
+
+    `Python for absolute beginners <http://molmod.ugent.be/code/static/python_beginners.pdf>`_
 
 
 Basic example

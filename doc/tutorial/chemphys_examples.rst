@@ -1,5 +1,5 @@
-Chemical Physics -- Practical examples
-======================================
+Chemical Physics -- Basic TAMkin recipes
+========================================
 
 **TODO**: add introductory text.
 
@@ -40,8 +40,9 @@ File: ``examples/020_butane_conformers/equilibrium.py``
 
 The scripts writes several output files discussed in the subsections below.
 
-CSV Files with energetic analysis
----------------------------------
+
+CSV Files with the energetic analysis
+-------------------------------------
 
 The file ``conformation_energies300.csv`` Contains the following information.
 
@@ -401,8 +402,8 @@ File: ``examples/019_ethyl_ethene_simple/kinetic.py``
 
 The scripts writes several output files discussed in the subsections below.
 
-CSV Files with energetic analysis
----------------------------------
+CSV Files with the energetic analysis
+-------------------------------------
 
 CSV files are created for different temperatures: 300K, 400K, 500K and 600K.
 The file at 300 K contains the following data:
@@ -605,6 +606,18 @@ following data::
         Zero-point contribution [kJ/mol]: 299.2533370
 
 
+Reaction Kinetics with BSSE corrections (bimolecular)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**TODO**
+
+
+Reaction Kinetics with internal rotors (bimolecular)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**TODO**
+
+
 Thermodynamic isotope effects
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -613,5 +626,29 @@ Thermodynamic isotope effects
 
 Kinetic isotope effects
 ~~~~~~~~~~~~~~~~~~~~~~~
+
+**TODO**
+
+
+Physisorption
+~~~~~~~~~~~~~
+
+**TODO**
+
+
+Chemisorption
+~~~~~~~~~~~~~
+
+**TODO**
+
+
+Reaction kinetics on a surface
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+
+**TODO**
+
+
+Reactions with a pre-reactive complex
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 **TODO**

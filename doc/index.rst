@@ -21,6 +21,7 @@ Tutorial
    tutorial/chemphys_theory.rst
    tutorial/chemphys_tamkin.rst
    tutorial/chemphys_examples.rst
+   tutorial/chemphys_advanced.rst
    tutorial/development.rst
 
 Library Reference

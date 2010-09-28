@@ -56,18 +56,18 @@
 
    **Important**: Partition functions can be constructed for NpT gases, NVT
    gases and many other systems. The return values of methods such as
-   ``free_energy``, ``internal_energy`` and ``heat_capacity`` are often given
+   ``free_energy``, ``internal_heat`` and ``heat_capacity`` are often given
    specialized names in the context of different partition functions. For
    example, chemists tend to use the following names:
 
    * 3D NVT gas:
        - ``PartFun.free_energy`` -> the Helmholtz free energy
-       - ``PartFun.internal_energy`` -> the internal energy
+       - ``PartFun.internal_heat`` -> the internal energy
        - ``PartFun.heat_capacity`` -> the heat capacity at constant volume
 
    * 3D NpT gas:
        - ``PartFun.free_energy`` -> the Gibbs free energy
-       - ``PartFun.internal_energy`` -> the enthalpy
+       - ``PartFun.internal_heat`` -> the enthalpy
        - ``PartFun.heat_capacity`` -> the heat capacity at constant pressure
 
    Don't say we did not warn you. Terminology can be very confusing.
@@ -384,8 +384,8 @@ class StatFys(object):
             helperv = self.helperv
         return helperv(temp, 0)
 
-    def internal_energy(self, temp, helpert=None):
-        """Computes the internal energy per molecule.
+    def internal_heat(self, temp, helpert=None):
+        """Computes the internal heat per molecule.
 
            Argument:
             | ``temp`` -- the temperature
@@ -584,12 +584,12 @@ class StatFysTerms(StatFys):
         """
         return self.logn(temp, self.helperv_terms)
 
-    def internal_energy_terms(self, temp):
-        """Returns an array with internal_energy results for the distinct terms.
+    def internal_heat_terms(self, temp):
+        """Returns an array with internal_heat results for the distinct terms.
 
-           This is just an array version of :meth:`StatFys.internal_energy`.
+           This is just an array version of :meth:`StatFys.internal_heat`.
         """
-        return self.internal_energy(temp, self.helpert_terms)
+        return self.internal_heat(temp, self.helpert_terms)
 
     def heat_capacity_terms(self, temp):
         """Returns an array with heat_capacity results for the distinct terms.
@@ -880,13 +880,13 @@ class ExtTrans(Info, StatFys):
         if self.cp:
             print >> f, "      BIG FAT WARNING!!!"
             print >> f, "      This is an NpT partition function."
-            print >> f, "      Internal energy contains a PV term (and is therefore the enthalpy)."
+            print >> f, "      Internal heat contains a PV term (and is therefore the enthalpy)."
             print >> f, "      Free energy contains a PV term (and is therefore the Gibbs free energy)."
             print >> f, "      The heat capacity is computed at constant pressure."
         else:
             print >> f, "      BIG FAT WARNING!!!"
             print >> f, "      This is an NVT partition function."
-            print >> f, "      Internal energy does NOT contain a PV term."
+            print >> f, "      Internal heat does NOT contain a PV term."
             print >> f, "      Free energy does NOT contain a PV term (and is therefore the Helmholtz free energy)."
             print >> f, "      The heat capacity is computed at constant volume."
         print >> f, "    Mass [amu]: %f" % (self.mass/amu)

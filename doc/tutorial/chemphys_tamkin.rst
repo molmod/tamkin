@@ -329,7 +329,7 @@ methods to the meaning of the returned numbers for two common ensembles.
 ========================= ====================== ======================================================================================== ====================================================
 ``PartFun`` method        Internal unit          NVT Ensemble (3D gas)                                                                    NpT Ensemble (3D gas)
 ========================= ====================== ======================================================================================== ====================================================
-``internal_energy``       Hartree/particle       Internal energy (per particle)                                                           Enthalpy (per particle)
+``internal_heat``         Hartree/particle       Internal energy (per particle)                                                           Enthalpy (per particle)
 ``heat_capacity``         Hartree/(K*particle)   Heat capacity at constant volume (per particle)                                          Heat capacity at constant pressure (per particle)
 ``free_energy``           Hartree/particle       Helmholtz free energy (per particle)                                                     Gibbs free energy (per particle)
 ``chemical_potential``    Hartree/particle       Chemical potential                                                                       (idem)
@@ -345,7 +345,7 @@ One can print any of these quantities in a TAMkin script::
 
     from molmod import *  # for the unit conversion
     pf = ...
-    print "The internal energy at 300K [kJ/mol]", pf.internal_energy(300)/kjmol
+    print "The internal heat at 300K [kJ/mol]", pf.internal_heat(300)/kjmol
     print "The heat capacity at 300K [J/mol/K]", pf.heat_capacity(300)/(joule/(mol*kelvin))
 
 
@@ -358,7 +358,7 @@ computes the translational contribution to the free energy as follows::
 
     from molmod import *  # for the unit conversion
     pf = ...
-    print "The free energy at 300K due to translation [kJ/mol]", pf.translational.internal_energy(300)/kjmol
+    print "The free energy at 300K due to translation [kJ/mol]", pf.translational.internal_heat(300)/kjmol
 
 A complete overview of internals can be found in the reference documentation
 of the :mod:`tamkin.partf` module, or by reading the source code.
@@ -388,14 +388,14 @@ the ``PartFun`` methods as explained the table below.
 =============================================================================== ============ ==========================
 Name in CSV file                                                                Unit         ``PartFun`` method name
 =============================================================================== ============ ==========================
-Energy                                                                          kJ/mol       ``internal_energy``
+Internal Heat                                                                   kJ/mol       ``internal_heat``
 Heat capacity                                                                   J/(mol*K)    ``heat_capacity``
 Free energy                                                                     kJ/mol       ``free_energy``
 Chemical potential                                                              kJ/mol       ``chemical_potential``
 Entropy                                                                         J/(mol*K)    ``entropy``
-log= :math:`\frac{log(Z_N)}{N}`                                                 1/mol        ``log``
-logt= :math:`\frac{\partial}{\partial T}\left(\frac{log(Z_N)}{N}\right)`        1/(mol*K)    ``logt``
-logtt= :math:`\frac{\partial^2}{\partial T^2}\left(\frac{log(Z_N)}{N}\right)`   1/(mol*K^2)  ``logtt``
+log= :math:`\frac{log(Z_N)}{N}`                                                 1            ``log``
+logt= :math:`\frac{\partial}{\partial T}\left(\frac{log(Z_N)}{N}\right)`        1/K          ``logt``
+logtt= :math:`\frac{\partial^2}{\partial T^2}\left(\frac{log(Z_N)}{N}\right)`   1/K^2        ``logtt``
 =============================================================================== ============ ==========================
 
 

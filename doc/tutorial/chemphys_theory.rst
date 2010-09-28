@@ -67,7 +67,7 @@ each factor in the partition function will be discussed:
 
 These are all intensive quantities, and we will refer to them in the remainder
 of the text as the `basic` quantities. All other thermodynamic functions (free
-energy, internal energy, heat capacity, zero-point energy, entropy and chemical
+energy, internal heat, heat capacity, zero-point energy, entropy and chemical
 potential) will be derived from the `basic` quantities in a general fashion.
 
 The first step is to rewrite these quantities in terms of the
@@ -488,7 +488,7 @@ are:
 Symbol                    Name
 ========================= =====================
 :math:`F`                 Free energy
-:math:`E`                 Internal Energy
+:math:`E`                 Internal heat
 :math:`C`                 Heat capacity
 :math:`E_{\text{ZPE}}`    Zero-point energy
 :math:`S`                 Entropy
@@ -533,10 +533,10 @@ all adhere to the definition given above. It is only the form of :math:`Z_N`
 that changes.
 
 
-Internal energy
----------------
+Internal heat
+-------------
 
-The internal energy per particle is defined as
+The internal heat per particle is defined as
 
 .. math::
     :nowrap:
@@ -548,13 +548,17 @@ The internal energy per particle is defined as
 
 When this definition is applied to a partition function of an NVT ensemble of
 3D particles, one gets the conventional internal energy. In the case of an NpT
-3D gas, this definition leads to the enthalpy.
+3D gas, this definition leads to the enthalpy. We prefer to use a general name,
+`internal heat` instead of internal energy of enthalpy. The physical
+interpretation is in both cases the amount of thermal energy that can be
+extracted from the system by cooling it down to zero kelvin, and by keeping the
+other `natural variables` of the system constant.
 
 
 Heat capacity
 -------------
 
-The heat capacity per particle is the derivative of the internal energy towards
+The heat capacity per particle is the derivative of the internal heat towards
 the temperature:
 
 .. math::
@@ -613,7 +617,7 @@ contribution:
 
 .. math:: \mu = E + TS_1
 
-where :math:`E` is the internal energy per particle and :math:`S_1` is slightly
+where :math:`E` is the internal heat per particle and :math:`S_1` is slightly
 different from the normal entropy:
 
 .. math::
@@ -932,7 +936,7 @@ The energetic part is:
 .. math:: \Delta_r E = \nu_C E_C(1, \ldots) + \nu_D E_D(1, \ldots)
                      - \nu_A E_A(1, \ldots) - \nu_B E_B(1, \ldots)
 
-where :math:`E_X(1, \ldots)` is the internal energy per molecule of species `X`.
+where :math:`E_X(1, \ldots)` is the internal heat per molecule of species `X`.
 
 The rate constant -- Transition State Theory
 --------------------------------------------
@@ -1161,7 +1165,7 @@ The energetic part is:
 .. math:: \Delta_r E = E_T(1, \ldots)
                      - \nu_A E_A(1, \ldots) - \nu_B E_B(1, \ldots)
 
-where :math:`E_X(1, \ldots)` is the internal energy per molecule of species `X`.
+where :math:`E_X(1, \ldots)` is the internal heat per molecule of species `X`.
 
 
 Kinetic parameters (A and E\ :sub:`a`)

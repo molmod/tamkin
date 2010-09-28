@@ -66,7 +66,7 @@ class ThermoAnalysis(object):
         self.pf = pf
         self.temps = temps
         self.tables = [
-            ThermoTable("Energy", kjmol, "kJ/mol", "internal_energy", pf, temps),
+            ThermoTable("Internal heat", kjmol, "kJ/mol", "internal_heat", pf, temps),
             ThermoTable("Heat capacity", joule/mol/kelvin, "J/(mol*K)", "heat_capacity", pf, temps),
             ThermoTable("Free energy", kjmol, "kJ/mol", "free_energy", pf, temps),
             ThermoTable("Chemical potential", kjmol, "kJ/mol", "chemical_potential", pf, temps),

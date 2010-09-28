@@ -310,36 +310,36 @@ class PartFunTestCase(unittest.TestCase):
         temp = 298.15
         RT = R*temp*0.001 # RT in kcal/(mol*K)
         # electronic
-        self.assertAlmostEqual(pf.electronic.internal_energy(temp), pf.electronic.energy)
+        self.assertAlmostEqual(pf.electronic.internal_heat(temp), pf.electronic.energy)
         self.assertAlmostEqual(pf.electronic.heat_capacity(temp)/(calmolK), 0.0)
         self.assertAlmostEqual(pf.electronic.entropy(temp)/(calmolK), 0.0)
         # translational
-        # WARNING: pf returns enthalpy, turn it into internal energy
-        self.assertAlmostEqual(pf.translational.internal_energy(temp)/(kcalmol)-RT, 0.889, 2)
-        # WARNING: pf returns heat capacity at constant pressure,
+        # WARNING: internal_heat returns enthalpy, turn it into internal energy
+        self.assertAlmostEqual(pf.translational.internal_heat(temp)/(kcalmol)-RT, 0.889, 2)
+        # WARNING: heat_capacity returns heat capacity at constant pressure,
         #          turn it into heat capacity at constant volume
         self.assertAlmostEqual(pf.translational.heat_capacity(temp)/(calmolK)-R, 2.981, 2)
         self.assertAlmostEqual(pf.translational.entropy(temp)/(calmolK), 38.699, 2)
         # rotational
-        self.assertAlmostEqual(pf.rotational.internal_energy(temp)/(kcalmol), 0.889, 2)
+        self.assertAlmostEqual(pf.rotational.internal_heat(temp)/(kcalmol), 0.889, 2)
         self.assertAlmostEqual(pf.rotational.heat_capacity(temp)/(calmolK), 2.981, 2)
         self.assertAlmostEqual(pf.rotational.entropy(temp)/(calmolK), 25.287, 2)
         # vibrational
-        self.assertAlmostEqual(pf.vibrational.internal_energy(temp)/(kcalmol), 51.343, 2)
+        self.assertAlmostEqual(pf.vibrational.internal_heat(temp)/(kcalmol), 51.343, 2)
         self.assertAlmostEqual(pf.vibrational.heat_capacity(temp)/(calmolK), 13.264, 2)
         self.assertAlmostEqual(pf.vibrational.entropy(temp)/(calmolK), 10.710, 2)
         # total
-        # WARNING: pf returns enthalpy, turn it into internal energy
-        # WARNING: pf returns enthalpy that includes the electronic energy
-        self.assertAlmostEqual((pf.internal_energy(temp)-pf.electronic.energy)/(kcalmol)-RT, 53.121, 2)
-        # WARNING: pf returns heat capacity at constant pressure,
+        # WARNING: internal_heat returns enthalpy, turn it into internal energy
+        # WARNING: internal_heat returns enthalpy that includes the electronic energy
+        self.assertAlmostEqual((pf.internal_heat(temp)-pf.electronic.energy)/(kcalmol)-RT, 53.121, 2)
+        # WARNING: heat_capacity returns heat capacity at constant pressure,
         #          turn it into heat capacity at constant volume
         self.assertAlmostEqual(pf.heat_capacity(temp)/(calmolK)-R, 19.225, 2)
         self.assertAlmostEqual(pf.entropy(temp)/(calmolK), 74.696, 2)
         self.assertAlmostEqual(pf.free_energy(0.0), -247.228749, 2) # Zero-point energy
-        self.assertAlmostEqual(pf.internal_energy(temp), -247.222989, 2)
+        self.assertAlmostEqual(pf.internal_heat(temp), -247.222989, 2)
         # switch to constant pressure for the enthalpy and Gibbs free energy.
-        self.assertAlmostEqual(pf.internal_energy(temp), -247.222045, 2)
+        self.assertAlmostEqual(pf.internal_heat(temp), -247.222045, 2)
         self.assertAlmostEqual(pf.free_energy(temp), -247.257535, 5)
 
 
@@ -389,9 +389,9 @@ class PartFunTestCase(unittest.TestCase):
         molecule = load_molecule_g03fchk("input/sterck/aa.fchk")
         pf = PartFun(NMA(molecule, ConstrainExt()), [ExtTrans(cp=True)])
         # translational
-        # WARNING: pf.translational returns enthalpy, turn it into internal energy
-        self.assertAlmostEqual(pf.translational.internal_energy(temp)/(kcalmol)-RT, 0.889, 2)
-        # WARNING: pf.translational returns heat capacity at constant pressure,
+        # WARNING: internal_heat returns enthalpy, turn it into internal energy
+        self.assertAlmostEqual(pf.translational.internal_heat(temp)/(kcalmol)-RT, 0.889, 2)
+        # WARNING: heat_capacity returns heat capacity at constant pressure,
         #          turn it into heat capacity at constant volume
         self.assertAlmostEqual(pf.translational.heat_capacity(temp)/(calmolK)-R, 2.981, 2)
         self.assertAlmostEqual(pf.translational.entropy(temp)/(calmolK), 38.699, 2)
@@ -399,7 +399,7 @@ class PartFunTestCase(unittest.TestCase):
         molecule = load_molecule_g03fchk("input/sterck/aa.fchk")
         pf = PartFun(NMA(molecule, ConstrainExt()), [ExtRot(1)])
         # rotational
-        self.assertAlmostEqual(pf.rotational.internal_energy(temp)/(kcalmol), 0.889, 2)
+        self.assertAlmostEqual(pf.rotational.internal_heat(temp)/(kcalmol), 0.889, 2)
         self.assertAlmostEqual(pf.rotational.heat_capacity(temp)/(calmolK), 2.981, 2)
         self.assertAlmostEqual(pf.rotational.entropy(temp)/(calmolK), 25.287, 2)
 
@@ -425,7 +425,7 @@ class PartFunTestCase(unittest.TestCase):
         self.assertEqual(pf.rotational.count, 2)
         # derived quantities
         calmolK = calorie/mol/kelvin
-        self.assertAlmostEqual(pf.rotational.internal_energy(298.15)/(kcalmol), 0.592, 2)
+        self.assertAlmostEqual(pf.rotational.internal_heat(298.15)/(kcalmol), 0.592, 2)
         self.assertAlmostEqual(pf.rotational.heat_capacity(298.15)/(calmolK), 1.987, 2)
         self.assertAlmostEqual(pf.rotational.entropy(298.15)/(calmolK), 13.130, 2)
 
@@ -463,7 +463,7 @@ class PartFunTestCase(unittest.TestCase):
         pf = PartFun(NMA(proton), [ExtTrans(cp=True)])
         temp = 298.15
         self.assertAlmostEqual(pf.heat_capacity(temp), 2.5*boltzmann)
-        self.assertAlmostEqual(pf.internal_energy(temp), 2.5*boltzmann*temp)
+        self.assertAlmostEqual(pf.internal_heat(temp), 2.5*boltzmann*temp)
         self.assertAlmostEqual(pf.translational.helpert(temp, 1), 2.5)
         self.assertAlmostEqual(
             pf.translational.log(temp),
@@ -476,7 +476,7 @@ class PartFunTestCase(unittest.TestCase):
         pf = PartFun(NMA(proton), [ExtTrans(cp=False)])
         temp = 298.15
         self.assertAlmostEqual(pf.heat_capacity(temp), 1.5*boltzmann)
-        self.assertAlmostEqual(pf.internal_energy(temp), 1.5*boltzmann*temp)
+        self.assertAlmostEqual(pf.internal_heat(temp), 1.5*boltzmann*temp)
         self.assertAlmostEqual(pf.translational.helpert(temp, 1), 1.5)
         self.assertAlmostEqual(
             pf.translational.log(temp),

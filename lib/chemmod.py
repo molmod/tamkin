@@ -34,7 +34,7 @@
 """Convenient interfaces to define thermodynamic and kinetic models"""
 
 
-import numpy
+import numpy, csv
 
 from molmod import boltzmann, kjmol, second, meter, mol, planck
 

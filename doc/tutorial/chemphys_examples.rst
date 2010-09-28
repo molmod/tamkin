@@ -56,7 +56,7 @@ The file at 300 K contains the following data:
 .. csv-table::
     :header: Quantity,Ethyl,Ethene,Transition state,Linear combination (always in kJ/mol)
 
-    Signed stoichiometry",-1.0,-1.0,1.0
+    Signed stoichiometry,-1.0,-1.0,1.0
     **Values in a.u.**
     Electronic energy,-79.15787,-78.58746,-157.73711,21.6
     Zero-point energy,-79.09822,-78.53624,-157.62313,29.7

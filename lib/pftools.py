@@ -34,12 +34,12 @@
 """High level utilities for partition functions"""
 
 
-from tamkin.partf import PartFun
+import sys, numpy, types, csv
 
 from molmod.units import kjmol, mol, kelvin, joule, centimeter
 from molmod.constants import boltzmann, lightspeed
 
-import sys, numpy, types
+from tamkin.partf import PartFun
 
 
 __all__ = ["ThermoAnalysis", "ThermoTable", "ReactionAnalysis"]
@@ -66,14 +66,14 @@ class ThermoAnalysis(object):
         self.pf = pf
         self.temps = temps
         self.tables = [
-            ThermoTable("Energy", "%.5f", kjmol, "kJ/mol", "internal_energy", pf, temps),
-            ThermoTable("Heat capacity", "%.3f", joule/mol/kelvin, "J/(mol*K)", "heat_capacity", pf, temps),
-            ThermoTable("Free energy", "%.5f", kjmol, "kJ/mol", "free_energy", pf, temps),
-            ThermoTable("Chemical potential", "%.5f", kjmol, "kJ/mol", "chemical_potential", pf, temps),
-            ThermoTable("Entropy", "%.5f",  joule/mol/kelvin, "J/(mol*K)", "entropy", pf, temps),
-            ThermoTable("ln(q)", "%.4e", 1.0, "1", "log", pf, temps),
-            ThermoTable("d ln(q) / dT", "%.4e", 1.0/kelvin, "1/K", "logt", pf, temps),
-            ThermoTable("d^2 ln(q) / dT^2", "%.4e", 1.0/kelvin**2, "1/K^2", "logtt", pf, temps),
+            ThermoTable("Energy", kjmol, "kJ/mol", "internal_energy", pf, temps),
+            ThermoTable("Heat capacity", joule/mol/kelvin, "J/(mol*K)", "heat_capacity", pf, temps),
+            ThermoTable("Free energy", kjmol, "kJ/mol", "free_energy", pf, temps),
+            ThermoTable("Chemical potential", kjmol, "kJ/mol", "chemical_potential", pf, temps),
+            ThermoTable("Entropy", joule/mol/kelvin, "J/(mol*K)", "entropy", pf, temps),
+            ThermoTable("ln(q)", 1.0, "1", "log", pf, temps),
+            ThermoTable("d ln(q) / dT", 1.0/kelvin, "1/K", "logt", pf, temps),
+            ThermoTable("d^2 ln(q) / dT^2", 1.0/kelvin**2, "1/K^2", "logtt", pf, temps),
         ]
 
     def write_to_file(self, filename):
@@ -87,7 +87,7 @@ class ThermoAnalysis(object):
         f.close()
 
     def dump(self, f):
-        """Write the entire thermochemistry analysis to screen or to a stream in csv format.
+        """Write the entire thermochemistry analysis in csv format.
 
            Argument:
             | ``f`` -- the stream to write to.
@@ -102,13 +102,12 @@ class ThermoTable(object):
        specific thermodynamic quantity.
     """
 
-    def __init__(self, label, format, unit, unit_name, method_name, pf, temps, pf_method_name=None):
+    def __init__(self, label, unit, unit_name, method_name, pf, temps, pf_method_name=None):
         """This object is used by the ThermoAnalysis class and should probably
            never be used directly.
 
            Arguments:
             | ``label`` -- a string to identify the thermodynamic quantity.
-            | ``format`` -- the floating point format, e.g. "%.3f"
             | ``unit`` -- the conversion factor from the conventional unit to
                           atomic units
             | ``unit_name`` -- a human readable string that describes the
@@ -136,7 +135,6 @@ class ThermoTable(object):
             pf_method_name = method_name
 
         self.label = label
-        self.format = format
         self.unit = unit
         self.unit_name = unit_name
         self.method_name = method_name
@@ -173,10 +171,11 @@ class ThermoTable(object):
            Arguments:
             | ``f`` -- the file object to write to
         """
-        print >> f, '"%s","[%s]"' % (self.label, self.unit_name)
-        print >> f, '"Temperatures",%s' % ",".join("%.1f" % temp for temp in self.temps)
+        c = csv.writer(f)
+        c.writerow([self.label, "[%s]" % self.unit_name])
+        c.writerow(["Temperatures"] + [temp for temp in self.temps])
         for key, row in zip(self.keys, self.data):
-            print >> f, '"%s",%s' % (key, ",".join(self.format % (value/self.unit) for value in row))
+            c.writerow([key] + [value/self.unit for value in row])
 
 
 class ReactionAnalysis(object):

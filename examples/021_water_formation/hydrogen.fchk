@@ -1,0 +1,159 @@
+Hydrogen                                                                
+Freq      RB3LYP                                                      6-31G(d)            
+Number of atoms                            I                2
+Charge                                     I                0
+Multiplicity                               I                1
+Number of electrons                        I                2
+Number of alpha electrons                  I                1
+Number of beta electrons                   I                1
+Number of basis functions                  I                4
+Number of independant functions            I                4
+Number of point charges in /Mol/           I                0
+Number of translation vectors              I                0
+Info1-9                                    I   N=           9
+          13          11           0           0           0         100
+           6          18        -502
+Num ILSW                                   I              100
+ILSW                                       I   N=         100
+           0           1           0           0           2           0
+           0           0           0           0         402      200000
+           0           0           0           0           0           0
+           0      800000           0           0           1           0
+           1           0           0           0     1000000           0
+           0           0      100000           0          -1           0
+           0           0           0           0           0           0
+           0           0           0           1           0           0
+           0           0           1      720000      810000           0
+           0           0           0           0           0           0
+           0           0           0           0           0           0
+           0           0           0           0           0           0
+           0           0           0           0           0           0
+           0           0           0           0           0           0
+           0           0           0           0           0           0
+           0           0           0           0           0           0
+           0           0           0           0
+Number of contracted shells                I                4
+Highest angular momentum                   I                0
+Largest degree of contraction              I                3
+Number of primitive shells                 I                8
+Pure/Cartesian d shells                    I                1
+Pure/Cartesian f shells                    I                0
+Virial Ratio                               R      2.028231661082816E+00
+SCF Energy                                 R     -1.175482387705091E+00
+Total Energy                               R     -1.175482387705091E+00
+RMS Force                                  R      6.599982548824388E-09
+RMS Density                                R      4.922141452321569E-15
+Atomic numbers                             I   N=           2
+           1           1
+Nuclear charges                            R   N=           2
+  1.00000000E+00  1.00000000E+00
+Current cartesian coordinates              R   N=           6
+  0.00000000E+00  0.00000000E+00  7.01833069E-01  8.59497621E-17  0.00000000E+00
+ -7.01833069E-01
+Int Atom Types                             I   N=           2
+           0           0
+Force Field                                I                0
+MM charges                                 R   N=           2
+  0.00000000E+00  0.00000000E+00
+Integer atomic weights                     I   N=           2
+           1           1
+Real atomic weights                        R   N=           2
+  1.00782504E+00  1.00782504E+00
+Atom residue info                          I   N=           2
+           0           0
+Atom fragment info                         I   N=           2
+           0           0
+Atom residue num                           I   N=           2
+           0           0
+Nuclear spins                              I   N=           2
+           1           1
+Nuclear ZEff                               R   N=           2
+ -1.00000000E+00 -1.00000000E+00
+Nuclear QMom                               R   N=           2
+  0.00000000E+00  0.00000000E+00
+Nuclear GFac                               R   N=           2
+  2.79284600E+00  2.79284600E+00
+MicOpt                                     I   N=           2
+          -1          -1
+Constraint Structure                       R   N=           6
+  0.00000000E+00  0.00000000E+00  7.01833069E-01  8.59497621E-17  0.00000000E+00
+ -7.01833069E-01
+ONIOM Charges                              I   N=          16
+           0           0           0           0           0           0
+           0           0           0           0           0           0
+           0           0           0           0
+ONIOM Multiplicities                       I   N=          16
+           1           0           0           0           0           0
+           0           0           0           0           0           0
+           0           0           0           0
+Atom Layers                                I   N=           2
+           1           1
+Atom Modifiers                             I   N=           2
+           0           0
+Int Atom Modified Types                    I   N=           2
+           0           0
+Link Atoms                                 I   N=           2
+           0           0
+Atom Modified MM Charges                   R   N=           2
+  0.00000000E+00  0.00000000E+00
+Link Distances                             R   N=           8
+  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00  0.00000000E+00
+  0.00000000E+00  0.00000000E+00  0.00000000E+00
+MxBond                                     I                1
+NBond                                      I   N=           2
+           1           1
+IBond                                      I   N=           2
+           2           1
+RBond                                      R   N=           2
+  1.00000000E+00  1.00000000E+00
+Shell types                                I   N=           4
+           0           0           0           0
+Number of primitives per shell             I   N=           4
+           3           1           3           1
+Shell to atom map                          I   N=           4
+           1           1           2           2
+Primitive exponents                        R   N=           8
+  1.87311370E+01  2.82539436E+00  6.40121692E-01  1.61277759E-01  1.87311370E+01
+  2.82539436E+00  6.40121692E-01  1.61277759E-01
+Contraction coefficients                   R   N=           8
+  3.34946043E-02  2.34726953E-01  8.13757326E-01  1.00000000E+00  3.34946043E-02
+  2.34726953E-01  8.13757326E-01  1.00000000E+00
+Coordinates of each shell                  R   N=          12
+  0.00000000E+00  0.00000000E+00  7.01833069E-01  0.00000000E+00  0.00000000E+00
+  7.01833069E-01  8.59497621E-17  0.00000000E+00 -7.01833069E-01  8.59497621E-17
+  0.00000000E+00 -7.01833069E-01
+Alpha Orbital Energies                     R   N=           4
+ -4.33957558E-01  1.00087657E-01  5.81381150E-01  1.10720206E+00
+Alpha MO coefficients                      R   N=          16
+  3.32632686E-01  2.66984763E-01  3.32632686E-01  2.66984763E-01  1.80205209E-01
+  1.63688703E+00 -1.80205209E-01 -1.63688703E+00  7.64906551E-01 -6.88591707E-01
+  7.64906551E-01 -6.88591707E-01 -1.11259972E+00  1.43267487E+00  1.11259972E+00
+ -1.43267487E+00
+Total SCF Density                          R   N=          10
+  2.21289007E-01  1.77615717E-01  1.42561727E-01  2.21289007E-01  1.77615717E-01
+  2.21289007E-01  1.77615717E-01  1.42561727E-01  1.77615717E-01  1.42561727E-01
+Cartesian Gradient                         R   N=           6
+ -2.64243085E-17  0.00000000E+00 -1.14315051E-08  2.64243085E-17  0.00000000E+00
+  1.14315051E-08
+Cartesian Force Constants                  R   N=          21
+ -2.51368125E-06  0.00000000E+00 -2.51368125E-06  1.34743797E-17  1.10549435E-17
+  3.78155220E-01  2.51368125E-06  0.00000000E+00 -1.16388340E-17 -2.51368125E-06
+  0.00000000E+00  2.51368125E-06 -1.10549435E-17  0.00000000E+00 -2.51368125E-06
+ -1.16388340E-17 -1.10549435E-17 -3.78155220E-01  9.80328822E-18  1.10549435E-17
+  3.78155220E-01
+Dipole Moment                              R   N=           3
+  6.16297582E-32  0.00000000E+00 -1.38777878E-17
+Dipole Derivatives                         R   N=          18
+  5.55111512E-16  0.00000000E+00  4.52055749E-28  0.00000000E+00  5.55111512E-16
+  0.00000000E+00 -5.42406584E-27  0.00000000E+00  8.85725640E-11  6.66133815E-16
+  0.00000000E+00  1.13479605E-26  0.00000000E+00  6.66133815E-16  0.00000000E+00
+ -1.70954691E-17  0.00000000E+00  8.83680510E-11
+Polarizability                             R   N=           6
+  2.39117995E-32  0.00000000E+00  0.00000000E+00 -3.90509321E-16  0.00000000E+00
+  6.37750119E+00
+QEq coupling tensors                       R   N=          12
+  1.85204417E-01  0.00000000E+00  1.85204417E-01  4.40909618E-17  0.00000000E+00
+ -3.70408834E-01  1.85204417E-01  0.00000000E+00  1.85204417E-01  1.75192092E-17
+  0.00000000E+00 -3.70408834E-01
+Mulliken Charges                           R   N=           2
+  5.55111512E-16  5.55111512E-16

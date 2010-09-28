@@ -180,7 +180,182 @@ Chemical Equilibrium
 Heat of formation
 ~~~~~~~~~~~~~~~~~
 
-**TODO**
+In this example we compute the heat of formation of the water molecule. This
+comes down to the computation of the chemical equilibrium properties of the
+following reaction:
+
+.. math::
+    :nowrap:
+
+    O$_2$ (gas) + 2H$_2$ (gas) $\leftrightharpoons$ 2H$_2$O (gas)
+
+As we will see below, this is not an equilibrium reaction, so the term `chemical
+equilibrium` is somewhat misleading. The point is that the underlying
+computation is exactly that of any other thermodynamic equilibrium with TAMkin.
+
+We prepared optimized geometries and frequency computations for the three
+components at the B3LYP/6-31G(d) level using Gaussian03. The
+formatted checkpoint files of the frequency jobs are ``oxygen.fchk``,
+``hydrogen.fchk`` and ``water.fchk``.
+
+The following script computes the heat of formation at 298.15K.
+
+File: ``examples/021_water_formation/formation.py``
+
+.. literalinclude:: ../../examples/021_water_formation/formation.py
+   :lines: 37-
+
+Pay special attention to the way the stoichiometry of the balance is passed to
+the ``ThermodynamicModel`` constructor. One can always replace a partition
+function, ``pf``, with a tuple ``(pf, st)`` where ``st`` is the stoichiometry,
+which does not have to be an integer. The same can be done with the
+``KineticModel`` constructor.
+
+
+
+CSV Files with the energetic analysis
+-------------------------------------
+
+The thermodynamic equilibrium properties at 298.15 K are summarized in the file
+``formation.csv``.
+
+.. csv-table::
+
+    Temperature [K],298.15,,,
+    ,,,,
+    **Quantity**,**Oxygen**,**Hydrogen**,**Water**,**Linear combination** (always in kJ/mol)
+    Signed stoichiometry,-1,-2,2,
+    **Values in a.u.**,,,,
+    Electronic energy,-150.2574,-1.1755,-76.4090,-550
+    Zero-point energy,-150.2537,-1.1653,-76.3878,-502
+    Internal heat (298.15K),-150.2504,-1.1620,-76.3840,-508
+    Chemical potential (298.15K),-150.2726,-1.1768,-76.4055,-485
+    **Corrections in kJ/mol**,,,,
+    Zero-point energy,10,27,56,48
+    Internal heat (298.15K),19,35,65,42
+    Chemical potential (298.15K),-40,-4,9,65
+    ,,,,
+    **Other quantities**,Unit,Value,,
+    Equilibrium constant,m**3*mol**-1,2.31765309697e+90,,
+
+The linear combination of internal heats is the heat of formation.
+
+
+A log file with an description of the equilibrium
+-------------------------------------------------
+
+The file ``formation.txt`` contains the following data::
+
+    Electronic energy difference [kJ/mol] = -550.1
+    Zero-point energy difference [kJ/mol] = -502.1
+
+    The chemical balance:
+       1.0*("Oxygen") + 2.0*("Hydrogen")  <-->  2.0*("Water")
+
+    Partition function 0
+    Signed stoichiometry: -1
+    Title: Oxygen
+    Electronic energy [au]: -150.25743
+    Zero-point contribution [kJ/mol]: 9.8303186
+    Zero-point energy [au]: -150.25368
+    Contributions to the partition function:
+      ELECTRONIC
+        Multiplicity: 1
+        Electronic energy: -150.2574266
+      ROTATIONAL
+        Rotational symmetry number: 2
+        Moments of inertia [amu*bohr**2]: -0.000000  42.224541 42.224541
+        Threshold for non-zero moments of inertia [amu*bohr**2]: 5.485799e-04
+        Non-zero moments of inertia: 2
+      TRANSLATIONAL
+        Dimension: 3
+        Constant pressure: True
+        Pressure [bar]: 1.01325
+          BIG FAT WARNING!!!
+          This is an NpT partition function.
+          Internal heat contains a PV term (and is therefore the enthalpy).
+          Free energy contains a PV term (and is therefore the Gibbs free energy).
+          The heat capacity is computed at constant pressure.
+        Mass [amu]: 31.989829
+      VIBRATIONAL
+        Number of zero wavenumbers: 0
+        Number of real wavenumbers: 1
+        Number of imaginary wavenumbers: 0
+        Frequency scaling factor: 1.0000
+        Zero-point scaling factor: 1.0000
+        Real Wavenumbers [1/cm]:
+          1643.5
+        Zero-point contribution [kJ/mol]: 9.8303186
+
+    Partition function 1
+    Signed stoichiometry: -2
+    Title: Hydrogen
+    Electronic energy [au]: -1.17548
+    Zero-point contribution [kJ/mol]: 26.6354070
+    Zero-point energy [au]: -1.16534
+    Contributions to the partition function:
+      ELECTRONIC
+        Multiplicity: 1
+        Electronic energy: -1.1754824
+      ROTATIONAL
+        Rotational symmetry number: 2
+        Moments of inertia [amu*bohr**2]: -0.000000  0.992848 0.992848
+        Threshold for non-zero moments of inertia [amu*bohr**2]: 5.485799e-04
+        Non-zero moments of inertia: 2
+      TRANSLATIONAL
+        Dimension: 3
+        Constant pressure: True
+        Pressure [bar]: 1.01325
+          BIG FAT WARNING!!!
+          This is an NpT partition function.
+          Internal heat contains a PV term (and is therefore the enthalpy).
+          Free energy contains a PV term (and is therefore the Gibbs free energy).
+          The heat capacity is computed at constant pressure.
+        Mass [amu]: 2.015650
+      VIBRATIONAL
+        Number of zero wavenumbers: 0
+        Number of real wavenumbers: 1
+        Number of imaginary wavenumbers: 0
+        Frequency scaling factor: 1.0000
+        Zero-point scaling factor: 1.0000
+        Real Wavenumbers [1/cm]:
+          4453.1
+        Zero-point contribution [kJ/mol]: 26.6354070
+
+    Partition function 2
+    Signed stoichiometry: 2
+    Title: Water
+    Electronic energy [au]: -76.40895
+    Zero-point contribution [kJ/mol]: 55.5664022
+    Zero-point energy [au]: -76.38779
+    Contributions to the partition function:
+      ELECTRONIC
+        Multiplicity: 1
+        Electronic energy: -76.4089533
+      ROTATIONAL
+        Rotational symmetry number: 2
+        Moments of inertia [amu*bohr**2]: 2.291774  4.174463 6.466237
+        Threshold for non-zero moments of inertia [amu*bohr**2]: 5.485799e-04
+        Non-zero moments of inertia: 3
+      TRANSLATIONAL
+        Dimension: 3
+        Constant pressure: True
+        Pressure [bar]: 1.01325
+          BIG FAT WARNING!!!
+          This is an NpT partition function.
+          Internal heat contains a PV term (and is therefore the enthalpy).
+          Free energy contains a PV term (and is therefore the Gibbs free energy).
+          The heat capacity is computed at constant pressure.
+        Mass [amu]: 18.010565
+      VIBRATIONAL
+        Number of zero wavenumbers: 0
+        Number of real wavenumbers: 3
+        Number of imaginary wavenumbers: 0
+        Frequency scaling factor: 1.0000
+        Zero-point scaling factor: 1.0000
+        Real Wavenumbers [1/cm]:
+          1713.1  3727.4  3849.4
+        Zero-point contribution [kJ/mol]: 55.5664022
 
 
 Reaction Kinetics (unimolecular)

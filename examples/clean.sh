@@ -94,3 +94,7 @@
 ( cd 020_butane_conformers
   rm -v *.txt *.csv
 )
+
+( cd 021_water_formation
+  rm -v *.txt *.csv
+)

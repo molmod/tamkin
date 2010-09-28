@@ -86,3 +86,7 @@
 ( cd 018_physisorption
   rm -v *.png *.txt
 )
+
+( cd 019_ethyl_ethene_simple
+  rm -v *.png *.txt *.csv
+)

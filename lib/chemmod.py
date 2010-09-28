@@ -187,6 +187,14 @@ class BaseModel(object):
         """Compute the zero-point energy difference between (+) products and (-) reactants."""
         return sum(pf.zero_point_energy()*st for pf, st in self._iter_pfs())
 
+    def internal_heat_difference(self, temp):
+        """Compute the internal_heat difference between (+) products and (-) reactants.
+
+           Argument:
+            | ``temp`` -- The temperature.
+        """
+        return sum(pf.internal_heat(temp)*st for pf, st in self._iter_pfs())
+
     def equilibrium_constant(self, temp, do_log=False):
         """Compute the equilibrium constant at the given temperature.
 
@@ -205,16 +213,29 @@ class BaseModel(object):
             return numpy.exp(log_K)
 
     def write_table(self, temp, filename):
-        """Write a csv file with the principal energies.
+        """Write a CSV file with the principal energies to a file.
 
            Arguments:
             | ``temp`` -- The temperature to use for the temperature-dependent
                           quantities.
-            | ``filename`` -- The name of the csv file
+            | ``filename`` -- The name of the CSV file.
         """
-        import csv
         f = file(filename, "w")
         c = csv.writer(f)
+        self.dump_table(temp, c)
+        f.close()
+
+
+    def dump_table(self, temp, c):
+        """Write a CSV file with the principal energies to a stream .
+
+           Arguments:
+            | ``temp`` -- The temperature to use for the temperature-dependent
+                          quantities.
+            | ``c`` -- A csv.writer object from the built-in Python csv module.
+        """
+        c.writerow(["Temperature [K]", temp])
+        c.writerow([])
         c.writerow(["Quantity"] +
                    [pf.title for pf, st in self._iter_pfs()] +
                    ["Linear combination (always in kJ/mol)"])
@@ -227,17 +248,24 @@ class BaseModel(object):
         c.writerow(["Zero-point energy"] +
                    [pf.zero_point_energy() for pf, st in self._iter_pfs()] +
                    [self.zero_point_energy_difference()/kjmol])
-        c.writerow(["Chemical potential (%.2f)" % temp] +
+        c.writerow(["Internal heat (%.2fK)" % temp] +
+                   [pf.internal_heat(temp) for pf, st in self._iter_pfs()] +
+                   [self.internal_heat_difference(temp)/kjmol])
+        c.writerow(["Chemical potential (%.2fK)" % temp] +
                    [pf.chemical_potential(temp) for pf, st in self._iter_pfs()] +
                    [self.free_energy_change(temp)/kjmol])
         c.writerow(["**Corrections in kJ/mol**"])
         c.writerow(["Zero-point energy"] +
                    [(pf.zero_point_energy() - pf.electronic.energy)/kjmol for pf, st in self._iter_pfs()] +
                    [(self.zero_point_energy_difference() - self.energy_difference())/kjmol])
-        c.writerow(["Chemical potential (%.2f)" % temp] +
+        c.writerow(["Internal heat (%.2fK)" % temp] +
+                   [(pf.internal_heat(temp) - pf.electronic.energy)/kjmol for pf, st in self._iter_pfs()] +
+                   [(self.internal_heat_difference(temp) - self.energy_difference())/kjmol])
+        c.writerow(["Chemical potential (%.2fK)" % temp] +
                    [(pf.chemical_potential(temp) - pf.electronic.energy)/kjmol for pf, st in self._iter_pfs()] +
                    [(self.free_energy_change(temp) - self.energy_difference())/kjmol])
-        f.close()
+        c.writerow([])
+        c.writerow(["**Other quantities**", "Unit", "Value"])
 
     def write_to_file(self, filename):
         """Write the model to a text file.
@@ -286,6 +314,17 @@ class ThermodynamicModel(BaseModel):
         self._add_pfs(pfs_react, -1)
         self._add_pfs(pfs_prod, +1)
         self._set_unit()
+
+    def dump_table(self, temp, c):
+        """Write a CSV file with the principal energies to a stream .
+
+           Arguments:
+            | ``temp`` -- The temperature to use for the temperature-dependent
+                          quantities.
+            | ``c`` -- A csv.writer object from the built-in Python csv module.
+        """
+        BaseModel.dump_table(self, temp, c)
+        c.writerow(["Equilibrium constant", self.unit_name, self.equilibrium_constant(temp)])
 
     def dump(self, f):
         """Write all info about the thermodynamic model to a file."""
@@ -360,6 +399,17 @@ class KineticModel(BaseKineticModel):
             if self.tunneling is not None:
                 result *= self.tunneling(temp)
         return result
+
+    def dump_table(self, temp, c):
+        """Write a CSV file with the principal energies to a stream .
+
+           Arguments:
+            | ``temp`` -- The temperature to use for the temperature-dependent
+                          quantities.
+            | ``c`` -- A csv.writer object from the built-in Python csv module.
+        """
+        BaseKineticModel.dump_table(self, temp, c)
+        c.writerow(["Rate constant", self.unit_name, self.rate_constant(temp)])
 
     def dump(self, f):
         """Write all info about the kinetic model to a file."""

@@ -4,14 +4,26 @@ Chemical Physics -- Practical examples
 **TODO**: add some more introductory text.
 
 
-Thermodynamic Equilibrium -- Gas Phase
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Conformational Equilibrium
+~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 **TODO**
 
 
-Reaction Kinetics -- Bimolecular, Gas Phase
-~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+Chemical Equilibrium
+~~~~~~~~~~~~~~~~~~~~
+
+**TODO**
+
+
+Heat of formation
+~~~~~~~~~~~~~~~~~
+
+**TODO**
+
+
+Reaction Kinetics (bimolecular)
+~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 In this example we show how one estimates kinetic parameters for the addition of
 ethene to ethyl in the gas phase at constant pressure. The reaction balance is
@@ -50,20 +62,27 @@ The scripts writes several output files discussed in the subsections below.
 CSV Files with energetic analysis
 ---------------------------------
 
-Such files are generated for different temperatures: 300K, 400K, 500K and 600K.
+CSV files are created for different temperatures: 300K, 400K, 500K and 600K.
 The file at 300 K contains the following data:
 
 .. csv-table::
-    :header: Quantity,Ethyl,Ethene,Transition state,Linear combination (always in kJ/mol)
 
-    Signed stoichiometry,-1.0,-1.0,1.0
-    **Values in a.u.**
-    Electronic energy,-79.15787,-78.58746,-157.73711,21.6
-    Zero-point energy,-79.09822,-78.53624,-157.62313,29.7
-    Chemical potential (300.00),-79.12253,-78.55726,-157.65362,68.7
-    **Corrections in kJ/mol**
-    Zero-point energy,156.6,134.5,299.3,8.2
-    Chemical potential (300.00)",92.8,79.3,219.2,47.1
+    Temperature [K],300,,,
+    ,,,,
+    **Quantity**,**Ethyl**,**Ethene**,**Transition state**,**Linear combination (always in kJ/mol)**
+    Signed stoichiometry,-1,-1,1,
+    **Values in a.u.**,,,,
+    Electronic energy,-79.1579,-78.5875,-157.7371,22
+    Zero-point energy,-79.0982,-78.5362,-157.6231,30
+    Internal heat (300.00K),-79.0933,-78.5322,-157.6157,26
+    Chemical potential (300.00K),-79.1225,-78.5573,-157.6536,69
+    **Corrections in kJ/mol**,,,,
+    Zero-point energy,157,134,299,8
+    Internal heat (300.00K),170,145,319,4
+    Chemical potential (300.00K),93,79,219,47
+    ,,,,
+    **Other quantities**,Unit,Value,,
+    Rate constant,m**3*mol**-1/second,4.52253403913e-11,,
 
 The numbers in this table are rounded at some precision to improve the
 readability, but the actual CSV file contains all numbers in full machine

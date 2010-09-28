@@ -52,10 +52,10 @@ pf_ts_trans = PartFun(nma_ts_trans, [ExtTrans(), ExtRot()])
 # Define a kinetic model for the chemical reaction.
 km_trans = KineticModel([pf_ethyl, pf_ethene], pf_ts_trans)
 # Write tables with the principal energies at 300K, 400K, 500K and 600K
-km_trans.write_table(300, "barrier_energies300.csv")
-km_trans.write_table(400, "barrier_energies400.csv")
-km_trans.write_table(500, "barrier_energies500.csv")
-km_trans.write_table(600, "barrier_energies600.csv")
+km_trans.write_table(300, "kinetic300.csv")
+km_trans.write_table(400, "kinetic400.csv")
+km_trans.write_table(500, "kinetic500.csv")
+km_trans.write_table(600, "kinetic600.csv")
 # Analyze the chemical reactions.
 ra_trans = ReactionAnalysis(km_trans, 300, 600)
 # Make the Arrhenius plot

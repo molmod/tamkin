@@ -3,14 +3,26 @@ Chemical Physics -- Basic TAMkin recipes
 
 In this chapter, we discuss a few example scripts for TAMkin in detail. They
 can be used as a template for writing new scripts, which is much easier than
-starting from scratch. There are more examples int the ``examples`` directory
-than those discussed here.
+starting from scratch. There are more examples in the ``examples/`` directory
+than those discussed here. Assuming TAMkin is downloaded in a directory
+``~/code/``, then one will find the examples on the following location::
+
+    toon@poony ~> cd ~/code/tamkin/examples
+    toon@poony ~/code/tamkin/examples> ls
+    001_ethane
+    002_linear_co2
+    003_pentane
+    004_alkanes
+    005_acrylamide_reaction
+    006_5T_ethene_reaction
+    007_mfi_propene_reaction
+    ...
 
 
 Thermodynamic properties of a molecule
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**TODO**
+**TODO**: see ``examples/001_ethane`` for now.
 
 
 Conformational Equilibrium
@@ -184,9 +196,9 @@ Chemical Equilibrium
 Heat of formation
 ~~~~~~~~~~~~~~~~~
 
-In this example we compute the heat of formation of the water molecule. This
-comes down to the computation of the chemical equilibrium properties of the
-following reaction:
+In this example we compute the heat of formation of the water molecule (in gas
+phase). This comes down to the computation of the chemical equilibrium
+properties of the following reaction:
 
 .. math::
     :nowrap:
@@ -216,7 +228,6 @@ which does not have to be an integer. The same can be done with the
 ``KineticModel`` constructor.
 
 
-
 CSV Files with the energetic analysis
 -------------------------------------
 
@@ -242,7 +253,11 @@ The thermodynamic equilibrium properties at 298.15 K are summarized in the file
     **Other quantities**,Unit,Value,,
     Equilibrium constant,m**3*mol**-1,2.31765309697e+90,,
 
-The linear combination of internal heats is the heat of formation.
+The linear combination of internal heats is the heat of formation of two water
+molecules (due to the stoichiometry). For a single water molecule, one gets
+about 254 kJ/mol. The experimental value reported on the `NIST Chemistry webbook
+<http://webbook.nist.gov/cgi/cbook.cgi?ID=C7732185&Units=SI&Mask=1#Thermo-Gas>`_
+is about 242 kJ/mol.
 
 
 A log file with an description of the equilibrium
@@ -362,6 +377,10 @@ The file ``formation.txt`` contains the following data::
         Zero-point contribution [kJ/mol]: 55.5664022
 
 
+Note how TAMkin picks up the right rotational symmetry numbers and the non-zero
+moments of inertia.
+
+
 Reaction Kinetics (unimolecular)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
@@ -405,6 +424,7 @@ File: ``examples/019_ethyl_ethene_simple/kinetic.py``
 
 The scripts writes several output files discussed in the subsections below.
 
+
 CSV Files with the energetic analysis
 -------------------------------------
 
@@ -435,6 +455,7 @@ CSV file contains all numbers in full machine precision. The linear combination
 of the chemical potentials is also known as the `change in free energy`
 associated with the reaction.
 
+
 Arrhenius plot
 --------------
 
@@ -443,6 +464,7 @@ for a visual check of the linear regression analysis to estimate the kinetic
 parameters.
 
 .. image:: arrhenius_bimolecular_gas_phase.png
+
 
 A log file with an analysis of the kinetic parameters
 -----------------------------------------------------
@@ -612,7 +634,20 @@ following data::
 Reaction Kinetics with BSSE corrections (bimolecular)
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**TODO**
+There is little special required to include BSSE corrected energies for
+transition states or complexes. In addition to the frequency computation output,
+TAMkin also requires an output file from a BSSE computation.
+
+In the case of a Gaussian computation, one justs replaces the normal way to load
+the molecule, ::
+
+    mol = load_molecule_g03fchk("freq.fchk")
+
+by ::
+
+    mol = load_molecule_g03fchk("freq.fchk", "bsse.fchk")
+
+One may compute the BSSE corrected energy at a refined level of theory.
 
 
 Reaction Kinetics with internal rotors (bimolecular)
@@ -630,13 +665,13 @@ Thermodynamic isotope effects
 Kinetic isotope effects
 ~~~~~~~~~~~~~~~~~~~~~~~
 
-**TODO**
+**TODO**: see ``examples/015_kie`` for now.
 
 
 Physisorption
 ~~~~~~~~~~~~~
 
-**TODO**
+**TODO**: see ``examples/018_physisorption`` for now.
 
 
 Chemisorption
@@ -654,4 +689,4 @@ Reaction kinetics on a surface
 Reactions with a pre-reactive complex
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**TODO**
+**TODO**: see ``examples/017_activationkineticmodel`` for now.

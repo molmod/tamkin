@@ -92,8 +92,10 @@ Python for absolute beginners
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
 If you have no Python experience yet, it may be a good time to learn the basics
-of the language. The following slides explain Python step-by-step from the
-very beginning:
+of the language. It may not be necessary to understand the basic TAMkin
+examples, but it will be beneficial in the long run.
+
+The following slides explain Python step-by-step from the very beginning:
 
     `Python for absolute beginners <http://molmod.ugent.be/code/static/python_beginners.pdf>`_
 
@@ -171,21 +173,3 @@ The typical ingredients of a script are the following:
 
    will write the information about the partition function to a file
    ``partfun.txt``.
-
-
-Try out the examples
-~~~~~~~~~~~~~~~~~~~~
-
-A good way to continue, is to try the examples in the ``examples/`` directory of
-the distribution. Assuming TAMkin is downloaded in a directory ``~/code/``, then
-one will find the examples on the following location::
-
-    $ cd ~/code/tamkin/examples
-    $ ls
-    001_ethane                008_ethane_rotor          015_kie
-    002_linear_co2            009_ethyl_ethene          016_modes
-    003_pentane               010_adk                   017_activationkineticmodel
-    004_alkanes               011_ethyl_ethene_lot      clean.sh
-    005_acrylamide_reaction   012_ethyl_ethene_scaling
-    006_5T_ethene_reaction    013_butane
-    007_mfi_propene_reaction  014_pentane_mbh

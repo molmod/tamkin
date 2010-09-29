@@ -1313,6 +1313,7 @@ class PartFun(Info, StatFys):
             term.init_part_fun(nma, self)
 
         self.title = nma.title
+        self.chemical_formula = nma.chemical_formula
         Info.__init__(self, "total")
 
     def helper(self, temp, n):
@@ -1338,6 +1339,7 @@ class PartFun(Info, StatFys):
     def dump(self, f):
         """See :meth:`Info.dump`."""
         print >> f, "Title:", self.title
+        print >> f, "Chemical formula:", self.chemical_formula
         print >> f, "Electronic energy [au]: %.5f" % self.electronic.energy
         print >> f, "Zero-point contribution [kJ/mol]: %.7f" % ((self.zero_point_energy() - self.electronic.energy)/kjmol)
         print >> f, "Zero-point energy [au]: %.5f" % self.zero_point_energy()

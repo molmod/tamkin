@@ -215,6 +215,7 @@ class NMA(object):
         self.periodic = molecule.periodic
         self.energy = molecule.energy
         self.title = molecule.title
+        self.chemical_formula = molecule.chemical_formula
 
     def write_to_file(self, filename, fields='all'):
         """Write the NMA results to a human-readable checkpoint file.
@@ -238,6 +239,7 @@ class NMA(object):
             keys = [
                 "freqs", "mass", "masses3", "inertia_tensor", "multiplicity",
                 "symmetry_number", "periodic", "energy", "zeros", "title",
+                "chemical_formula",
             ]
             data = dict((key, self.__dict__[key]) for key in keys)
         dump_chk(filename, data)
@@ -262,7 +264,7 @@ class NMA(object):
         possible_fields = set([
             "freqs", "modes", "mass", "masses", "masses3", "numbers",
             "coordinates", "inertia_tensor", "multiplicity", "symmetry_number",
-            "periodic", "energy", "zeros", "title",
+            "periodic", "energy", "zeros", "title", "chemical_formula",
         ])
         if not set(data.iterkeys()).issubset(possible_fields):
             raise IOError("The Checkpoint file does not contain the correct fields.")

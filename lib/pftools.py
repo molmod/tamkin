@@ -71,9 +71,11 @@ class ThermoAnalysis(object):
             ThermoTable("Free energy", kjmol, "kJ/mol", "free_energy", pf, temps),
             ThermoTable("Chemical potential", kjmol, "kJ/mol", "chemical_potential", pf, temps),
             ThermoTable("Entropy", joule/mol/kelvin, "J/(mol*K)", "entropy", pf, temps),
-            ThermoTable("ln(q)", 1.0, "1", "log", pf, temps),
-            ThermoTable("d ln(q) / dT", 1.0/kelvin, "1/K", "logt", pf, temps),
-            ThermoTable("d^2 ln(q) / dT^2", 1.0/kelvin**2, "1/K^2", "logtt", pf, temps),
+            ThermoTable("ln(Z_N)/N", 1.0, "1", "log", pf, temps),
+            ThermoTable("1/N d ln(Z_N) / dT", 1.0/kelvin, "1/K", "logt", pf, temps),
+            ThermoTable("1/N d^2 ln(Z_N) / dT^2", 1.0/kelvin**2, "1/K^2", "logtt", pf, temps),
+            ThermoTable("d ln(Z_N) / dN", 1.0, "1", "logn", pf, temps),
+            ThermoTable("d ln(Z_N) / dN - log(V/N)", 1.0, "mixed: 1 or log(1/bohr**dim)", "logv", pf, temps),
         ]
 
     def write_to_file(self, filename):

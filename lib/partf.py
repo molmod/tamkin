@@ -336,7 +336,7 @@ class StatFys(object):
             helpertt = self.helpertt
         return helpertt(temp, 0)
 
-    def logn(self, temp, helperv=None):
+    def logn(self, temp, helpern=None):
         r"""Log function N
 
            The derivative of the logarithm of the many-particle partition
@@ -354,12 +354,12 @@ class StatFys(object):
             | ``temp`` -- the temperature
 
            Optional argument:
-            | ``helperv`` -- an alternative implementation of helperv
-                             [default=self.helperv]
+            | ``helpern`` -- an alternative implementation of helpern
+                             [default=self.helpern]
         """
-        if helperv is None:
-            helperv = self.helperv
-        return helperv(temp, 0)
+        if helpern is None:
+            helpern = self.helpern
+        return helpern(temp, 0)
 
     def logv(self, temp, helperv=None):
         r"""Log function V

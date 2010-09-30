@@ -286,6 +286,19 @@ class PartFunTestCase(unittest.TestCase):
             self.assertAlmostEqual(pf.helpern(temp, 0) - pf.helper(temp, 0), -1)
             self.assertAlmostEqual(pf.chemical_potential(temp), pf.free_energy(temp) + boltzmann*temp)
 
+    def test_logn(self):
+        for cp in False, True:
+            molecule = load_molecule_g03fchk("input/ethane/gaussian.fchk")
+            nma = NMA(molecule)
+            pf = PartFun(nma, [ExtTrans(cp=cp), ExtRot()])
+            temps = numpy.array([300.0,400.0,500.0,600.0,700.0])
+            for temp in temps:
+                if cp:
+                    density = pf.translational.pressure/(boltzmann*temp)
+                else:
+                    density = pf.translational.density
+                self.assertAlmostEqual(pf.translational.logn(temp) - pf.translational.logv(temp), -numpy.log(density))
+
     def test_logv(self):
         for cp in False, True:
             molecule = load_molecule_g03fchk("input/ethane/gaussian.fchk")

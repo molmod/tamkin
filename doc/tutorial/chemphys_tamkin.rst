@@ -385,18 +385,20 @@ The CSV file contains tables with thermodynamic quantities, at the temperatures
 in the second argument of the ``ThermoAnalysis`` constructor, corresponding to
 the ``PartFun`` methods as explained the table below.
 
-=============================================================================== ============ ==========================
-Name in CSV file                                                                Unit         ``PartFun`` method name
-=============================================================================== ============ ==========================
-Internal Heat                                                                   kJ/mol       ``internal_heat``
-Heat capacity                                                                   J/(mol*K)    ``heat_capacity``
-Free energy                                                                     kJ/mol       ``free_energy``
-Chemical potential                                                              kJ/mol       ``chemical_potential``
-Entropy                                                                         J/(mol*K)    ``entropy``
-log= :math:`\frac{log(Z_N)}{N}`                                                 1            ``log``
-logt= :math:`\frac{\partial}{\partial T}\left(\frac{log(Z_N)}{N}\right)`        1/K          ``logt``
-logtt= :math:`\frac{\partial^2}{\partial T^2}\left(\frac{log(Z_N)}{N}\right)`   1/K^2        ``logtt``
-=============================================================================== ============ ==========================
+=============================================================================== ===================== ==========================
+Name in CSV file                                                                Unit                  ``PartFun`` method name
+=============================================================================== ===================== ==========================
+Internal Heat                                                                   kJ/mol                ``internal_heat``
+Heat capacity                                                                   J/(mol*K)             ``heat_capacity``
+Free energy                                                                     kJ/mol                ``free_energy``
+Chemical potential                                                              kJ/mol                ``chemical_potential``
+Entropy                                                                         J/(mol*K)             ``entropy``
+log= :math:`\frac{log(Z_N)}{N}`                                                 1                     ``log``
+logt= :math:`\frac{\partial}{\partial T}\left(\frac{log(Z_N)}{N}\right)`        1/K                   ``logt``
+logtt= :math:`\frac{\partial^2}{\partial T^2}\left(\frac{log(Z_N)}{N}\right)`   1/K^2                 ``logtt``
+logn= :math:`\frac{\partial log(Z_N)}{\partial N}`                              1                     ``logn``
+logv= :math:`\frac{\partial log(Z_N)}{\partial N} - \ln(V/N)`                   1 or ln(bohr^-dim)    ``logv``
+=============================================================================== ===================== ==========================
 
 
 Thermodynamic equilibrium

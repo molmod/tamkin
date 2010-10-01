@@ -57,6 +57,7 @@ class PFToolsTestCase(unittest.TestCase):
         # in the fancy excel file where these numbers come from.
         self.assertAlmostEqual(ra.Ea/kjmol, 25.96, 1)
         self.assertAlmostEqual(km.unit, meter**3/mol/second)
+        self.assertEqual(km.unit_name, "m^3 mol^-1 s^-1")
         self.assertAlmostEqual(numpy.log(ra.A/km.unit), numpy.log(2.29E+02), 1)
 
         ra.plot_arrhenius("output/arrhenius_aa.png")
@@ -74,6 +75,7 @@ class PFToolsTestCase(unittest.TestCase):
         # in the fancy excel file where these numbers come from.
         self.assertAlmostEqual(ra.Ea/kjmol, 160.6, 0)
         self.assertAlmostEqual(km.unit, 1.0/second)
+        self.assertEqual(km.unit_name, "s^-1")
         self.assertAlmostEqual(numpy.log(ra.A/km.unit), numpy.log(3.33e10), 0)
         ra.plot_arrhenius("output/arrhenius_mat1.png")
         ra.monte_carlo()

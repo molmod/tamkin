@@ -603,7 +603,7 @@ of particles.
     \begin{align*}
         \mu & = \frac{\partial F}{\partial N} \\
             & = -k_B T \frac{\partial \ln Z_N}{\partial N} \\
-            & = -k_B \mathsf{(logn)}
+            & = -k_B T \mathsf{(logn)}
     \end{align*}
 
 A closer look a the definition of :math:`\mathsf{(logn)}` reveals that the
@@ -847,6 +847,36 @@ We can finally write down the general form of :math:`K_c`:
                         {\rho_{A,\text{eq}}^{\nu_A}\,\rho_{B,\text{eq}}^{\nu_B}}
                  = \frac{Z'^{\nu_C}_C(1, \ldots)\,Z'^{\nu_D}_D(1, \ldots)}
                         {Z'^{\nu_A}_A(1, \ldots)\,Z'^{\nu_B}_B(1, \ldots)}
+
+In terms of basic quantities
+^^^^^^^^^^^^^^^^^^^^^^^^^^^^
+
+In the case of non-ideal gases, where the gas-particles of different species are
+still non-interacting, one can derive a more general the expression for
+equilibrium constant. One gets the same final form, except that the logarithm of
+the auxiliary partition function must be defined as:
+
+.. math:: \ln Z'_X(N_X, \ldots) = -\frac{\mu_X}{kT} - \ln\left( \frac{V_X}{N} \right)
+
+where V is a generalized volume, e.g. a surface in 2D or a conventional volume
+in 3D. In case there is no translational degree of freedom, the last term can
+be omitted. In terms of basic quantities, this becomes:
+
+.. math::
+    :nowrap:
+
+    \begin{align*}
+        \ln Z'_X(N_X, \ldots) & = \mathsf{(logn)}_X - \ln\left( \frac{V_X}{N} \right) \\
+                              & = \mathsf{(logv)}_X
+    \end{align*}
+
+This can be used to write the logarithm of the equilibrium constant as:
+
+.. math:: \ln K_c(T) = \nu_C \mathsf{(logv)}_C + \nu_D \mathsf{(logv)}_D
+                     - \nu_A \mathsf{(logv)}_A - \nu_B \mathsf{(logv)}_B
+
+This form is also suitable for numerical applications because all logarithms are
+well-behaved.
 
 The unit of K\ :sub:`c`
 ^^^^^^^^^^^^^^^^^^^^^^^

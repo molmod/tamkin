@@ -501,9 +501,9 @@ not required for the implementation.
 All extensive quantities (all derived quantities except the chemical potential)
 are made intensive by dividing through the number of particles.
 
-In all the derivatives in the following subsections, the derivatives are taken
-such that all other natural variables of the ensemble are kept constant, except
-the quantity that is derived.
+In all the derivations in the following subsections, the derivatives are taken
+such that all natural variables of the ensemble are kept constant, except the
+quantity that is derived.
 
 Free energy
 -----------
@@ -514,8 +514,8 @@ The free energy per particle is defined as
     :nowrap:
 
     \begin{align*}
-        F & = -k_BT \frac{\ln(Z_N)}{N} \\
-          & = -k_BT \mathsf{(log)}
+        \frac{F}{N} & = -k_BT \frac{\ln(Z_N)}{N} \\
+                    & = -k_BT \mathsf{(log)}
     \end{align*}
 
 One may wonder how TAMkin makes a distinction between the Gibbs and the
@@ -540,8 +540,8 @@ The internal heat per particle is defined as
     :nowrap:
 
     \begin{align*}
-        E & = k_BT^2 \frac{1}{N}\frac{\partial \ln(Z_N)}{\partial T} \\
-          & = k_BT^2 \mathsf{(logt)}
+        \frac{E}{N} & = k_BT^2 \frac{1}{N}\frac{\partial \ln(Z_N)}{\partial T} \\
+                    & = k_BT^2 \mathsf{(logt)}
     \end{align*}
 
 When this definition is applied to a partition function of an NVT ensemble of
@@ -563,9 +563,10 @@ the temperature:
     :nowrap:
 
     \begin{align*}
-        C & = \frac{\partial E}{\partial T} \\
-          & = 2 k_BT \frac{1}{N}\frac{\partial \ln(Z_N)}{\partial T} + k_B T^2 \frac{\partial^2 \ln(Z_N)}{\partial T^2} \\
-          & = 2 k_BT \mathsf{(logt)} + k_BT^2 \mathsf{(logtt)}
+        \frac{C}{N} & = \frac{1}{N} \frac{\partial E}{\partial T} \\
+                    & = 2 k_BT \frac{1}{N}\frac{\partial \ln(Z_N)}{\partial T} +
+                        k_B T^2 \frac{1}{N} \frac{\partial^2 \ln(Z_N)}{\partial T^2} \\
+                    & = 2 k_BT \mathsf{(logt)} + k_BT^2 \mathsf{(logtt)}
     \end{align*}
 
 This quantity is called the heat capacity at constant volume in the case of an
@@ -582,9 +583,9 @@ The entropy per particle is defined as:
     :nowrap:
 
     \begin{align*}
-        S & = \frac{F - E}{T} \\
-          & = -k_B \frac{\ln Z_N}{N} - k_B T \frac{1}{N} \frac{\partial \ln Z_N}{\partial T} \\
-          & = -k_B (\mathsf{(log)} - T \mathsf{(logt)})
+        \frac{S}{N} & = \frac{F - E}{NT} \\
+                    & = -k_B \frac{\ln Z_N}{N} - k_B T \frac{1}{N} \frac{\partial \ln Z_N}{\partial T} \\
+                    & = -k_B (\mathsf{(log)} - T \mathsf{(logt)})
     \end{align*}
 
 The entropy in the chemical context is typically the entropy in the NVT
@@ -594,14 +595,13 @@ Chemical potential
 ------------------
 
 The chemical potential is the derivative of the free energy towards the number
-of particles. We must multiply our definition of :math:`F` with the number of
-particles to get back the extensive quantity before taking the derivative:
+of particles.
 
 .. math::
     :nowrap:
 
     \begin{align*}
-        \mu & = \frac{\partial FN}{\partial N} \\
+        \mu & = \frac{\partial F}{\partial N} \\
             & = -k_B T \frac{\partial \ln Z_N}{\partial N} \\
             & = -k_B \mathsf{(logn)}
     \end{align*}
@@ -613,7 +613,7 @@ is convenient, but it may also cause some confusion. Because of this anology,
 one can split the chemical potential into an energetic and entropic
 contribution:
 
-.. math:: \mu = E + TS_1
+.. math:: \mu = \frac{E + TS_1}{N}
 
 where :math:`E` is the internal heat per particle and :math:`S_1` is slightly
 different from the normal entropy:
@@ -622,9 +622,9 @@ different from the normal entropy:
     :nowrap:
 
     \begin{align*}
-        S_1 & = \frac{\mu - E}{T} \\
-            & = -k_B \frac{\partial \ln Z_N}{\partial N} - k_B T \frac{1}{N} \frac{\partial \ln Z_N}{\partial T} \\
-            & = -k_B (\mathsf{(logn)} - T \mathsf{(logt)})
+        \frac{S_1}{N} & = \frac{\mu - \frac{E}{N}}{T} \\
+                      & = -k_B \frac{\partial \ln Z_N}{\partial N} - k_B T \frac{1}{N} \frac{\partial \ln Z_N}{\partial T} \\
+                      & = -k_B (\mathsf{(logn)} - T \mathsf{(logt)})
     \end{align*}
 
 This also reveals that the chemical potential in the limit of the temperature
@@ -646,8 +646,8 @@ is also a computationally beneficial definition.
     :nowrap:
 
     \begin{align*}
-        E_{ZPE} & = \lim_{T \rightarrow 0} \mu \\
-                & = \lim_{T \rightarrow 0} -kT \mathsf{(logn)}
+        \frac{E_{ZPE}}{N} & = \lim_{T \rightarrow 0} \mu \\
+                          & = \lim_{T \rightarrow 0} -kT \mathsf{(logn)}
     \end{align*}
 
 Some remarks:

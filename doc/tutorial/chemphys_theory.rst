@@ -957,7 +957,7 @@ the reference state at which the change in free energy is computed.
 One may split the change in free energy into two parts, an energetic and an
 entropic contribution:
 
-.. math:: \Delta_r F = \Delta_r E - T \Delta_r S
+.. math:: \Delta_r F = \Delta_r E - T \Delta_r S_1
 
 The energetic part is:
 
@@ -1210,7 +1210,7 @@ in the last factor. The free energy can be split up in an energetic and an
 entropic contribution:
 
 .. math:: k(T) = \frac{k_B T}{h}
-                 \exp\left( \frac{\Delta^{\ddagger} \tilde{S}}{k_B} \right)
+                 \exp\left( \frac{\Delta^{\ddagger} \tilde{S}_1}{k_B} \right)
                  \frac{\rho^{\nu_T}_{T,0}}{\rho^{\nu_A}_{A,0} \rho^{\nu_B}_{B,0}}
                  \exp\left( -\frac{\Delta^{\ddagger} E}{k_B T} \right)
 
@@ -1222,7 +1222,7 @@ of the rate constant with the empirical Arrhenius law,
 with the kinetic parameters
 
 .. math:: A = \frac{k_B T}{h}
-              \exp\left( \frac{\Delta^{\ddagger} \tilde{S}}{k_B} \right)
+              \exp\left( \frac{\Delta^{\ddagger} \tilde{S}_1}{k_B} \right)
               \frac{\rho^{\nu_T}_{T,0}}{\rho^{\nu_A}_{A,0} \rho^{\nu_B}_{B,0}}
 
 and

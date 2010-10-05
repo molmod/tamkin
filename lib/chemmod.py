@@ -115,10 +115,10 @@ class BaseModel(object):
                 unit_name += " mol"
             else:
                 unit_name += " mol^%i" % mol_power
-        if len(unit_name) != 0:
-            unit_name += " "
         if per_second:
             unit /= second
+            if len(unit_name) != 0:
+                unit_name += " "
             unit_name += "s^-1"
         self.unit = unit
         self.unit_name = unit_name

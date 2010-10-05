@@ -455,9 +455,9 @@ class PartFunTestCase(unittest.TestCase):
         km2 = KineticModel([pf_complex], pf_trans)
         tm = ThermodynamicModel([pf_react1, pf_react2], [pf_complex])
         self.assertAlmostEqual(tm.unit*km2.unit, km1.unit)
-        self.assertEqual(tm.unit_name, "m**3*mol**-1")
-        self.assertEqual(km1.unit_name, "m**3*mol**-1/second")
-        self.assertEqual(km2.unit_name, "1/second")
+        self.assertEqual(tm.unit_name, "m^3 mol^-1")
+        self.assertEqual(km1.unit_name, "m^3 mol^-1 s^-1")
+        self.assertEqual(km2.unit_name, "s^-1")
 
         for temp in numpy.arange(100,1000,10.0):
             K = tm.equilibrium_constant(temp)

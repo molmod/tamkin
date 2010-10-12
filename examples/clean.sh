@@ -51,8 +51,8 @@
   rm -v arrhenius.png parameters.png reaction.txt
 )
 
-( cd 006_5T_ethene_reaction/
-  rm -v arrhenius.png parameters.png reaction.txt
+( cd 006_5T_ethyl_ethene_addition/
+  rm -v arrhenius.png reaction.txt
 )
 
 ( cd 007_mfi_propene_reaction/

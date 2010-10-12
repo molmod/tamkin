@@ -61,7 +61,7 @@ class MetaTestCase(unittest.TestCase):
         self.check_example("005_acrylamide_reaction", "./reaction.py")
 
     def test_example_006(self):
-        self.check_example("006_5T_ethene_reaction", "./reaction.py")
+        self.check_example("006_5T_ethyl_ethene_addition", "./reaction.py")
 
     def test_example_007(self):
         self.check_example("007_mfi_propene_reaction", "./reaction.py")

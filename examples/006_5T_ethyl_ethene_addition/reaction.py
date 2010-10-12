@@ -38,14 +38,14 @@
 from tamkin import *
 
 # Load the gaussian data:
-mol_react = load_molecule_g03fchk("5Te_etheen_react_deel2.fchk")
-mol_trans = load_molecule_g03fchk("5Te_etheen_ts_deel2_punt108_freq.fchk")
+mol_react = load_molecule_g03fchk("react.fchk")
+mol_ts = load_molecule_g03fchk("ts.fchk")
 # Perform the normal mode analysis
-nma_react = NMA(mol_react, ConstrainExt(1e-3))
-nma_trans = NMA(mol_trans, ConstrainExt(1e-3))
+nma_react = NMA(mol_react, ConstrainExt())
+nma_ts = NMA(mol_ts, ConstrainExt(2e-4))
 # Construct the two partition functions.
-pf_react = PartFun(nma_react, [ExtTrans(), ExtRot(1)])
-pf_trans = PartFun(nma_trans, [ExtTrans(), ExtRot(1)])
+pf_react = PartFun(nma_react, [])
+pf_ts = PartFun(nma_ts, [])
 
 # Define a kinetic model for the chemical reaction. These are the mandatory arguments:
 #  1) a list of reactant partition functions
@@ -53,7 +53,7 @@ pf_trans = PartFun(nma_trans, [ExtTrans(), ExtRot(1)])
 #  2) the transition state partition function
 # There is one more optional argument:
 #  3) tunneling: a model for the tunelling correction
-km = KineticModel([pf_react], pf_trans, tunneling=None)
+km = KineticModel([pf_react], pf_ts, tunneling=None)
 
 # Analyze the chemical reaction. These are the arguments:
 #  1) A kinetic model
@@ -62,16 +62,7 @@ km = KineticModel([pf_react], pf_trans, tunneling=None)
 # The following argument is optional:
 #  4) temp_step: The interval on the temperature grid in Kelvin, 10 is default
 ra = ReactionAnalysis(km, 670, 770)
-ra.plot_arrhenius("arrhenius.png") # make the Arrhenius plot
-
-# Estimate the error on the kinetic parameters due to level of theory artifacts
-# with Monte Carlo sampling. The monte_carlo method takes three optional
-# arguments:
-#  1) freq_error: the absolute stochastic error on the frequencies (default=1*invcm)
-#  2) energy_error: the absolute error on the energy (default=0.0)
-#  3) num_iter: the number of monte carlo samples (default=100)
-ra.monte_carlo()
-# plot the parameters, this includes the monte carlo results
-ra.plot_parameters("parameters.png")
-# write all results to a file.
-ra.write_to_file("reaction.txt") # summary of the analysis
+# Make the Arrhenius plot
+ra.plot_arrhenius("arrhenius.png")
+# Write all results to a file.
+ra.write_to_file("reaction.txt")

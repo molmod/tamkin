@@ -49,9 +49,9 @@ class PFToolsTestCase(unittest.TestCase):
     def test_reaction_analysis_sterck(self):
         pf_react1 = PartFun(NMA(load_molecule_g03fchk("input/sterck/aa.fchk")), [ExtTrans(cp=False), ExtRot(1)])
         pf_react2 = PartFun(NMA(load_molecule_g03fchk("input/sterck/aarad.fchk")), [ExtTrans(cp=False), ExtRot(1)])
-        pf_trans = PartFun(NMA(load_molecule_g03fchk("input/sterck/paats.fchk")), [ExtTrans(cp=False), ExtRot(1)])
+        pf_ts = PartFun(NMA(load_molecule_g03fchk("input/sterck/paats.fchk")), [ExtTrans(cp=False), ExtRot(1)])
 
-        km = KineticModel([pf_react1, pf_react2], pf_trans)
+        km = KineticModel([pf_react1, pf_react2], pf_ts)
         ra = ReactionAnalysis(km, 280, 360)
         # not a very accurate check because the fit is carried out differently
         # in the fancy excel file where these numbers come from.
@@ -66,10 +66,10 @@ class PFToolsTestCase(unittest.TestCase):
         ra.plot_parameters("output/parameters_aa.png")
 
     def test_reaction_analysis_mat(self):
-        pf_react = PartFun(NMA(load_molecule_g03fchk("input/mat/5Te_etheen_react_deel2.fchk")), [])
-        pf_trans = PartFun(NMA(load_molecule_g03fchk("input/mat/5Te_etheen_ts_deel2_punt108_freq.fchk")), [])
+        pf_react = PartFun(NMA(load_molecule_g03fchk("input/mat5T/react.fchk")), [])
+        pf_ts = PartFun(NMA(load_molecule_g03fchk("input/mat5T/ts.fchk")), [])
 
-        km = KineticModel([pf_react], pf_trans)
+        km = KineticModel([pf_react], pf_ts)
         ra = ReactionAnalysis(km, 100, 1200, temp_step=50)
         # not a very accurate check because the fit is carried out differently
         # in the fancy excel file where these numbers come from.
@@ -82,16 +82,16 @@ class PFToolsTestCase(unittest.TestCase):
         ra.write_to_file("output/reaction_mat1.txt")
         ra.plot_parameters("output/parameters_mat1.png")
 
-        wigner = Wigner(pf_trans) # Blind test of the wigner correction and
+        wigner = Wigner(pf_ts) # Blind test of the wigner correction and
         # the corrected reaction analysis.
-        km = KineticModel([pf_react], pf_trans, tunneling=wigner)
+        km = KineticModel([pf_react], pf_ts, tunneling=wigner)
         ra = ReactionAnalysis(km, 100, 1200, temp_step=50)
         ra.plot_arrhenius("output/arrhenius_mat1w.png")
         ra.monte_carlo()
         ra.write_to_file("output/reaction_mat1w.txt")
         ra.plot_parameters("output/parameters_mat1w.png")
 
-        km = KineticModel([pf_react], pf_trans)
+        km = KineticModel([pf_react], pf_ts)
         ra = ReactionAnalysis(km, 670, 770)
         # not a very accurate check because the fit is carried out differently
         # in the fancy excel file where these numbers come from.
@@ -104,6 +104,6 @@ class PFToolsTestCase(unittest.TestCase):
 
     def test_thermo_analysis_mat(self):
         # just a blind test to see test whether the code does not crash.
-        pf = PartFun(NMA(load_molecule_g03fchk("input/mat/5Te_etheen_react_deel2.fchk")), [ExtTrans(), ExtRot(1)])
+        pf = PartFun(NMA(load_molecule_g03fchk("input/mat5T/react.fchk")), [ExtTrans(), ExtRot(1)])
         ta = ThermoAnalysis(pf, [200,300,400,500,600,700,800,900])
         ta.write_to_file("output/thermo_mat2.csv")

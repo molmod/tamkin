@@ -324,7 +324,7 @@ class ThermodynamicModel(BaseModel):
             | ``c`` -- A csv.writer object from the built-in Python csv module.
         """
         BaseModel.dump_table(self, temp, c)
-        c.writerow(["Equilibrium constant", self.unit_name, self.equilibrium_constant(temp)])
+        c.writerow(["Equilibrium constant", self.unit_name, self.equilibrium_constant(temp)/self.unit])
 
     def dump(self, f):
         """Write all info about the thermodynamic model to a file."""
@@ -409,7 +409,7 @@ class KineticModel(BaseKineticModel):
             | ``c`` -- A csv.writer object from the built-in Python csv module.
         """
         BaseKineticModel.dump_table(self, temp, c)
-        c.writerow(["Rate constant", self.unit_name, self.rate_constant(temp)])
+        c.writerow(["Rate constant", self.unit_name, self.rate_constant(temp)/self.unit])
 
     def dump(self, f):
         """Write all info about the kinetic model to a file."""

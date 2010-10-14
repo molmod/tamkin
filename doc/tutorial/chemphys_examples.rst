@@ -78,7 +78,7 @@ The file ``conformation_energies300.csv`` Contains the following information.
     Chemical potential (300.00K),276.5,274.9,-1.5
     ,,,
     **Other quantities**,Unit,Value,
-    Equilibrium constant,1,0.449691770568,
+    Equilibrium constant,1,0.450,
 
 The numbers in this table are rounded to improve the readability, but the actual
 CSV file contains all numbers in full machine precision. The linear combination
@@ -251,7 +251,7 @@ The thermodynamic equilibrium properties at 298.15 K are summarized in the file
     Chemical potential (298.15K),-40,-4,9,65
     ,,,,
     **Other quantities**,Unit,Value,,
-    Equilibrium constant,m**3*mol**-1,2.31765309697e+90,,
+    Equilibrium constant,m**3*mol**-1,2.068e+83,,
 
 The linear combination of internal heats is the heat of formation of two water
 molecules (due to the stoichiometry). For a single water molecule, one gets
@@ -448,7 +448,7 @@ The file at 300 K contains the following data:
     Chemical potential (300.00K),93,79,219,47
     ,,,,
     **Other quantities**,Unit,Value,,
-    Rate constant,m**3*mol**-1/second,4.52253403913e-11,,
+    Rate constant,m**3*mol**-1/second,0.167,,
 
 The numbers in this table are rounded to improve the readability, but the actual
 CSV file contains all numbers in full machine precision. The linear combination

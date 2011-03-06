@@ -305,6 +305,116 @@ class Molecule(BaseMolecule):
         return Molecule(**constructor_args)
 
 
+    def raise_ext(self, shift=1e0):
+        """Raise the eigenvalues of the global translations and rotations
+        to a high value, such that their coupling with the internal vibrations
+        becomes negligible, and they can easily be isolated from the vibrations."""
+
+        # Construct basis for global translations and rotations
+        D = self.external_basis.transpose() # mass-weighted
+        # make it orthonormal
+        svd_threshold = 1e-5
+        U, W, Vt = numpy.linalg.svd(D, full_matrices=False)
+        rank = (abs(W) > abs(W[0])*svd_threshold).sum()
+        D = U[:,:rank]
+        proj = numpy.dot(D,D.transpose())
+
+        proj1 = proj * (self.masses3.reshape((1,-1)))**(0.5)
+        proj2 = proj1* (self.masses3.reshape((-1,1)))**(0.5)
+
+        # Add the shift to the Hessian. The gradient is not changed I guess TODO check this.
+        hessian = self.hessian + shift*proj2
+
+        # Use the attributes of the original molecule if they exist
+        if hasattr(self,"title"): # check if attribute exists
+            title = self.title
+        else: title = None
+        if hasattr(self,"graph"): # check if attribute exists
+            graph = self.graph
+        else: graph = None
+        if hasattr(self,"symbols"): # check if attribute exists
+            symbols = self.symbols
+        else: symbols = None
+        if hasattr(self,"unit_cell"): # check if attribute exists
+            unit_cell = self.unit_cell
+        else: unit_cell = None
+
+        return Molecule(
+            self.numbers,
+            self.coordinates,
+            self.masses,
+            self.energy,
+            self.gradient,
+            hessian,             # replace Hessian by new one
+            self.multiplicity,
+            symmetry_number = self.symmetry_number,
+            periodic = self.periodic,
+            title = title,
+            graph = graph,
+            symbols = symbols,
+            unit_cell = unit_cell,
+        )
+
+
+
+
+    def constrain_ext(self):
+        """Project the global translational and rotational vectors
+        out of the Hessian and the gradient and return a new Molecule instance."""
+
+        # Construct projector
+        D = self.external_basis.transpose() # mass-weighted
+        # make it orthonormal
+        svd_threshold = 1e-5
+        U, W, Vt = numpy.linalg.svd(D, full_matrices=False)
+        rank = (abs(W) > abs(W[0])*svd_threshold).sum()
+        D = U[:,:rank]
+        proj = numpy.dot(D,D.transpose())
+        #print numpy.sum((proj-numpy.dot(proj,proj))**2)
+
+        proj1 = proj * (self.masses3.reshape((1,-1)))**(0.5)
+        proj2 = proj1* (self.masses3.reshape((-1,1)))**(-0.5)
+        projL = numpy.identity(len(D)) - proj2.transpose()
+        projR = numpy.identity(len(D)) - proj2
+        # test
+        #print numpy.sum((projR-numpy.dot(projR,projR))**2)
+        #print numpy.sum((projL-numpy.dot(projL,projL))**2)
+
+        # Project hessian and gradient
+        hessian = numpy.dot(numpy.dot(projL,self.hessian),projR)
+        gradient = numpy.dot(projL, self.gradient.reshape((-1,1))).reshape((-1,3))
+
+        # Use the attributes of the original molecule if they exist
+        if hasattr(self,"title"): # check if attribute exists
+            title = self.title
+        else: title = None
+        if hasattr(self,"graph"): # check if attribute exists
+            graph = self.graph
+        else: graph = None
+        if hasattr(self,"symbols"): # check if attribute exists
+            symbols = self.symbols
+        else: symbols = None
+        if hasattr(self,"unit_cell"): # check if attribute exists
+            unit_cell = self.unit_cell
+        else: unit_cell = None
+
+        return Molecule(
+            self.numbers,
+            self.coordinates,
+            self.masses,
+            self.energy,
+            gradient,       # replace gradient by new one
+            hessian,             # replace Hessian by new one
+            self.multiplicity,
+            symmetry_number = self.symmetry_number,
+            periodic = self.periodic,
+            title = title,
+            graph = graph,
+            symbols = symbols,
+            unit_cell = unit_cell,
+        )
+
+
 class BareNucleus(Molecule):
     """A molecule object for bare nuclei"""
 

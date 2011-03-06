@@ -534,6 +534,62 @@ class NMATestCase(unittest.TestCase):
         non_zero = [i for i in xrange(7) if i not in nma.zeros][0]
         self.assertAlmostEqual(nma.freqs[non_zero]/lightspeed*centimeter, 314, 0)
 
+    def test_mbhconstrainext(self):
+        # load the plain Hessian
+        molecule = load_molecule_g03fchk("input/sterck/aa.fchk")
+        blocks = [[3,2,6],[6,7,8]]
+        nma1 = NMA(molecule)
+        nma2 = NMA(molecule, ConstrainExt(gradient_threshold=1e-2))
+        nma3 = NMA(molecule, MBH(blocks))
+        nma4 = NMA(molecule, MBHConstrainExt(blocks))
+        # construct a molecule with the projected Hessian and projected gradient
+        molecule = molecule.constrain_ext()
+        nma5 = NMA(molecule)
+        nma6 = NMA(molecule, ConstrainExt(gradient_threshold=1e-2))
+        nma7 = NMA(molecule, MBH(blocks))
+        nma8 = NMA(molecule, MBHConstrainExt(blocks))
+        #for i in range(10):
+        #    print "%10.6f %10.6f %10.6f %10.6f %10.6f" % (
+        #      nma1.freqs[i]/lightspeed*centimeter,  #full
+        #      nma3.freqs[i]/lightspeed*centimeter, nma4.freqs[i]/lightspeed*centimeter,
+        #      nma7.freqs[i]/lightspeed*centimeter, nma8.freqs[i]/lightspeed*centimeter,)
+        self.check_freqs(nma3.freqs/lightspeed*centimeter, nma4, 1, check_zeros=True)
+        # the lowest freqs are expected to be different
+        self.check_freqs(nma3.freqs[6:]/lightspeed*centimeter, nma7, 0, check_zeros=False)
+        self.check_freqs(nma7.freqs/lightspeed*centimeter, nma8, 1, check_zeros=True)
+
+    def test_mbh_raise_ext(self):
+        # load the plain Hessian
+        molecule = load_molecule_charmm("input/an/ethanol.cor","input/an/ethanol.hess.full")
+        blocks = [[3,2,6],[6,7,8]]
+        nma1 = NMA(molecule)
+        nma2 = NMA(molecule, MBH(blocks))
+        nma3 = NMA(molecule, MBHConstrainExt(blocks))
+        # raise the eigenvalue of the six global translationas/rotations
+        molecule = molecule.raise_ext()
+        nma5 = NMA(molecule)
+        nma7 = NMA(molecule, MBH(blocks))
+        #print "First freqs"
+        #for i in range(10):
+        #    print "%10.6f %10.6f %10.6f %10.6f %10.6f" % (
+        #      nma1.freqs[i]/lightspeed*centimeter, nma5.freqs[i]/lightspeed*centimeter, #full
+        #      nma2.freqs[i]/lightspeed*centimeter,  # mbh
+        #      nma3.freqs[i]/lightspeed*centimeter, nma7.freqs[i]/lightspeed*centimeter,)
+        #print "Last freqs"
+        #for i in range(10):
+        #    print "%10.6f %10.6f %10.6f %10.6f %10.6f" % (
+        #      nma1.freqs[-i]/lightspeed*centimeter, nma5.freqs[-i]/lightspeed*centimeter, #full
+        #      nma2.freqs[-i]/lightspeed*centimeter, # mbh
+        #      nma3.freqs[-i]/lightspeed*centimeter, nma7.freqs[-i]/lightspeed*centimeter,)
+        # compare full, not the zeros
+        for i in range(len(nma1.freqs)-6):
+            self.assertAlmostEqual( nma1.freqs[i+6],nma5.freqs[i],7)
+        # compare mbh, not the zeros
+        for i in range(len(nma2.freqs)-6):
+            self.assertAlmostEqual( nma2.freqs[i+6],nma3.freqs[i+6],7)
+            self.assertAlmostEqual( nma2.freqs[i+6],nma7.freqs[i],7)
+
+
     def test_phva_mbh(self):
         molecule = load_molecule_charmm("input/an/ethanol.cor","input/an/ethanol.hess.full")
         blocks = load_indices("input/an/fixed.07.txt", groups=True)

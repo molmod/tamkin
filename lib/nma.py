@@ -63,7 +63,7 @@ of freedom::
 The second argument is an instance of a class that derives from the
 :class:`Treatment` class. Other treatments include: :class:`Full` (the default),
 :class:`PHVA`, :class:`VSA`, :class:`VSANoMass`, :class:`MBH`,
-:class:`PHVA_MBH`, and :class:`Constrain`.
+:class:`PHVA_MBH`, :class:`Constrain`, and :class:`MBHConstrainExt`.
 """
 
 # A few conventions for the variables names:
@@ -78,6 +78,7 @@ The second argument is an instance of a class that derives from the
 #   weighted Hessian in the new coordinates.
 
 
+from tamkin.data import Molecule
 from tamkin.geom import transrot_basis, rank_linearity
 from tamkin.io.internal import load_chk, dump_chk
 
@@ -87,7 +88,7 @@ import numpy
 __all__ = [
     "NMA", "AtomDivision", "Transform", "MassMatrix", "Treatment",
     "Full", "ConstrainExt", "PHVA", "VSA", "VSANoMass", "MBH",
-    "Blocks","PHVA_MBH", "Constrain",
+    "Blocks","PHVA_MBH", "Constrain", "MBHConstrainExt",
 ]
 
 
@@ -1327,6 +1328,37 @@ class MBH(Treatment):
             n[:r_null,:c_null] = nullspace
             n[r_null:,c_null:] = numpy.identity(3*len(blkinfo.free),float)
             return n
+
+
+class MBHConstrainExt(MBH):
+    """The Mobile Block Hessian approach with the Eckart constraints imposed
+
+       This method is completely similar to the MBH, except that first the
+       global translations and rotations are first projected out of the
+       Hessian before applying the block partitioning and projecting by
+       the MBH. The contribution of the gradient is also adapted.
+       In case of a periodic simulation, only the global translations
+       are projected out."""
+    def __init__(self, blocks, do_gradient_correction=True, svd_threshold=1e-5):
+        MBH.__init__(self,blocks)
+
+    def compute_zeros(self, molecule, do_modes):
+        MBH.compute_zeros(self,molecule,do_modes)
+
+    def compute_hessian(self, molecule, do_modes):
+        # perform projection of Hessian and gradient
+        D = transrot_basis(molecule.coordinates, rot=molecule.periodic).transpose()
+        for i in range(D.shape[1]):
+            D[:,i] /= numpy.sqrt(numpy.sum(D[:,i]**2))
+        proj = numpy.identity(D.shape[0]) - numpy.dot(D,D.transpose())
+        hessian = numpy.dot(proj,molecule.hessian)
+        gradient = (numpy.dot(proj,molecule.gradient.reshape(3*molecule.size,-1))).reshape(molecule.size,3)
+        # construct a new Molecule instance
+        mol = Molecule(molecule.numbers, molecule.coordinates, molecule.masses,
+                       molecule.energy, gradient, hessian, molecule.multiplicity,
+                       periodic=molecule.periodic)
+        # do the usual MBH
+        MBH.compute_hessian(self,mol,do_modes)
 
 
 class Blocks(object):

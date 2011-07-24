@@ -122,7 +122,7 @@ class NMA(object):
            Extra attributes:
             | ``freqs`` -- array of frequencies
             | ``modes`` -- array of mass-weighted Cartesian modes (if do_modes
-                           is True)
+                           is True). Each column corresponds to one mode.
             | ``zeros`` -- list of indices of zero frequencies
 
         """

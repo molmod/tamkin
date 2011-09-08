@@ -261,7 +261,7 @@ def load_rotscan_g03log(fn_log, top_indexes=None):
             words = line.split()
             if words[0] == "D" and (words[5] == "S" or words[5] == "F"):
                 if dihedral is None:
-                    dihedral = tuple(int(word)-1 for word in words[1:5])
+                    dihedral = list(int(word)-1 for word in words[1:5])
                 else:
                     raise IOError("Found multiple dihedral angle scan, which is not supported.")
 
@@ -299,10 +299,7 @@ def load_rotscan_g03log(fn_log, top_indexes=None):
             energies.append(last_energy)
             last_coordinates = numpy.array(last_coordinates)*angstrom
             geometries.append(last_coordinates)
-            angles.append(dihed_angle(
-                last_coordinates[dihedral[0]], last_coordinates[dihedral[1]],
-                last_coordinates[dihedral[2]], last_coordinates[dihedral[3]],
-            )[0])
+            angles.append(dihed_angle(last_coordinates[dihedral])[0])
 
     if len(energies) == 0:
         raise IOError("Could not find any stationary point")

@@ -291,3 +291,9 @@ class IOTestCase(unittest.TestCase):
                 self.assertEqual([indices_flat], check)
                 check = load_indices("output/indices_flat.txt", shift=-shift)
                 self.assertEqual(indices_flat, check)
+
+    def test_punch(self):
+        mol0 = load_molecule_g03fchk('input/punch/gaussian.fchk')
+        mol1 = load_molecule_g03fchk('input/punch/gaussian.fchk', fn_punch='input/punch/fort.7')
+        assert abs(mol0.gradient - mol1.gradient).max() < 1e-8
+        assert abs(mol0.hessian - mol1.hessian).max() < 1e-8

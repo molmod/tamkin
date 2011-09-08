@@ -85,7 +85,16 @@ def load_fixed_g03com(filename):
     return fixed_atoms
 
 
-def load_molecule_g03fchk(fn_freq, fn_ener=None, fn_vdw=None, energy=None):
+def iter_floats_file(fn):
+    f = file(fn)
+    for line in f:
+        words = line.split()
+        for w in words:
+            yield float(w.replace('D', 'E'))
+    f.close()
+
+
+def load_molecule_g03fchk(fn_freq, fn_ener=None, fn_vdw=None, energy=None, fn_punch=None):
     """Load a molecule from Gaussian03 formatted checkpoint files.
 
        Arguments:
@@ -99,6 +108,9 @@ def load_molecule_g03fchk(fn_freq, fn_ener=None, fn_vdw=None, energy=None):
                          correction for the energy.
          | ``energy`` -- Override the energy from the formatted checkpoint file
                          with the given value.
+         | ``punch`` -- A Gaussian derivatives punch file. When given, the
+                        gradient and the Hessian are read from this file
+                        instead.
     """
 
     fchk_freq = FCHKFile(fn_freq, ignore_errors=True, field_labels=[
@@ -123,14 +135,27 @@ def load_molecule_g03fchk(fn_freq, fn_ener=None, fn_vdw=None, energy=None):
                  break
          f.close()
 
+    natom = fchk_freq.molecule.size
     if fchk_freq.molecule.size == 1 and \
        "Cartesian Force Constants" not in fchk_freq.fields:
         gradient = numpy.zeros((1,3), float)
         hessian = numpy.zeros((3,3), float)
-    else:
+    elif fn_punch is None:
         gradient = fchk_freq.fields["Cartesian Gradient"].copy()
-        gradient.shape = (fchk_freq.molecule.size, 3)
+        gradient.shape = (natom, 3)
         hessian = fchk_freq.get_hessian()
+    else:
+        gradient = numpy.zeros((natom, 3), float)
+        hessian = numpy.zeros((3*natom, 3*natom), float)
+        iterator = iter_floats_file(fn_punch)
+        for i in xrange(natom):
+            for j in xrange(3):
+                gradient[i,j] = iterator.next()
+        for i in xrange(3*natom):
+            for j in xrange(i+1):
+                v = iterator.next()
+                hessian[i,j] = v
+                hessian[j,i] = v
 
     return Molecule(
         fchk_freq.molecule.numbers,

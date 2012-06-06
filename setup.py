@@ -43,7 +43,7 @@ setup(name='TAMkin',
     author='Toon Verstraelen, Matthias Vandichel, An Ghysels',
     author_email='Toon.Verstraelen@UGent.be, Matthias.Vandichel@UGent.be, An.Ghysels@UGent.be',
     url='http://molmod.ugent.be/code/',
-    package_dir = {'tamkin': 'lib'},
+    package_dir = {'tamkin': 'tamkin'},
     packages = ['tamkin', 'tamkin.io'],
     classifiers=[
         'Development Status :: 3 - Alpha',

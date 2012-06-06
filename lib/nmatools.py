@@ -1,9 +1,10 @@
 # -*- coding: utf-8 -*-
-# TAMkin is a post-processing toolkit for thermochemistry and kinetics analysis.
-# Copyright (C) 2008-2010 Toon Verstraelen <Toon.Verstraelen@UGent.be>,
-# Matthias Vandichel <Matthias.Vandichel@UGent.be> and
-# An Ghysels <An.Ghysels@UGent.be>, Center for Molecular Modeling (CMM), Ghent
-# University, Ghent, Belgium; all rights reserved unless otherwise stated.
+# TAMkin is a post-processing toolkit for normal mode analysis, thermochemistry
+# and reaction kinetics.
+# Copyright (C) 2008-2012 Toon Verstraelen <Toon.Verstraelen@UGent.be>, An Ghysels
+# <An.Ghysels@UGent.be> and Matthias Vandichel <Matthias.Vandichel@UGent.be>
+# Center for Molecular Modeling (CMM), Ghent University, Ghent, Belgium; all
+# rights reserved unless otherwise stated.
 #
 # This file is part of TAMkin.
 #
@@ -14,12 +15,12 @@
 #
 # In addition to the regulations of the GNU General Public License,
 # publications and communications based in parts on this program or on
-# parts of this program are required to cite the following five articles:
+# parts of this program are required to cite the following article:
 #
 # "TAMkin: A Versatile Package for Vibrational Analysis and Chemical Kinetics",
 # An Ghysels, Toon Verstraelen, Karen Hemelsoet, Michel Waroquier and Veronique
-# Van Speybroeck, Journal of Chemical Information and Modeling, Articles ASAP
-# (As Soon As Publishable)
+# Van Speybroeck, Journal of Chemical Information and Modeling, 2010, 50,
+# 1736-1750W
 # http://dx.doi.org/10.1021/ci100099g
 #
 # TAMkin is distributed in the hope that it will be useful,
@@ -30,7 +31,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
-# --
+#--
 """Tools for further investigation of a normal mode analysis"""
 
 from tamkin.data import Molecule

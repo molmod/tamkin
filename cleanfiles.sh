@@ -1,5 +1,5 @@
 #!/bin/bash
-for i in $(find lib test | egrep "\.pyc$|\.py~$|\.pyc~$|\.bak$") ; do rm -v ${i}; done
+for i in $(find tamkin test | egrep "\.pyc$|\.py~$|\.pyc~$|\.bak$") ; do rm -v ${i}; done
 
 rm -vr debian/python-*
 rm -vr debian/pycompat

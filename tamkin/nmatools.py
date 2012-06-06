@@ -520,7 +520,7 @@ def plot_spectrum_dos(filename, all_freqs, low=None, high=None, imax=None,
     if low is not None:
         pylab.xlim(xmin=low/invcm)
     if high is not None:
-        pylab.xlim(ymax=high/invcm)
+        pylab.xlim(xmax=high/invcm)
     pylab.legend([str(nb) for nb in range(1,len(all_freqs)+1)])
     pylab.xlabel("Frequency in cm-1")
     pylab.ylabel("Intensity")

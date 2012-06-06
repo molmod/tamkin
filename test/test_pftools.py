@@ -48,9 +48,9 @@ __all__ = ["PFToolsTestCase"]
 
 class PFToolsTestCase(unittest.TestCase):
     def test_reaction_analysis_sterck(self):
-        pf_react1 = PartFun(NMA(load_molecule_g03fchk("input/sterck/aa.fchk")), [ExtTrans(cp=False), ExtRot(1)])
-        pf_react2 = PartFun(NMA(load_molecule_g03fchk("input/sterck/aarad.fchk")), [ExtTrans(cp=False), ExtRot(1)])
-        pf_ts = PartFun(NMA(load_molecule_g03fchk("input/sterck/paats.fchk")), [ExtTrans(cp=False), ExtRot(1)])
+        pf_react1 = PartFun(NMA(load_molecule_g03fchk("test/input/sterck/aa.fchk")), [ExtTrans(cp=False), ExtRot(1)])
+        pf_react2 = PartFun(NMA(load_molecule_g03fchk("test/input/sterck/aarad.fchk")), [ExtTrans(cp=False), ExtRot(1)])
+        pf_ts = PartFun(NMA(load_molecule_g03fchk("test/input/sterck/paats.fchk")), [ExtTrans(cp=False), ExtRot(1)])
 
         km = KineticModel([pf_react1, pf_react2], pf_ts)
         ra = ReactionAnalysis(km, 280, 360)
@@ -61,14 +61,14 @@ class PFToolsTestCase(unittest.TestCase):
         self.assertEqual(km.unit_name, "m^3 mol^-1 s^-1")
         self.assertAlmostEqual(numpy.log(ra.A/km.unit), numpy.log(2.29E+02), 1)
 
-        ra.plot_arrhenius("output/arrhenius_aa.png")
+        ra.plot_arrhenius("test/output/arrhenius_aa.png")
         ra.monte_carlo()
-        ra.write_to_file("output/reaction_aa.txt")
-        ra.plot_parameters("output/parameters_aa.png")
+        ra.write_to_file("test/output/reaction_aa.txt")
+        ra.plot_parameters("test/output/parameters_aa.png")
 
     def test_reaction_analysis_mat(self):
-        pf_react = PartFun(NMA(load_molecule_g03fchk("input/mat5T/react.fchk")), [])
-        pf_ts = PartFun(NMA(load_molecule_g03fchk("input/mat5T/ts.fchk")), [])
+        pf_react = PartFun(NMA(load_molecule_g03fchk("test/input/mat5T/react.fchk")), [])
+        pf_ts = PartFun(NMA(load_molecule_g03fchk("test/input/mat5T/ts.fchk")), [])
 
         km = KineticModel([pf_react], pf_ts)
         ra = ReactionAnalysis(km, 100, 1200, temp_step=50)
@@ -78,19 +78,19 @@ class PFToolsTestCase(unittest.TestCase):
         self.assertAlmostEqual(km.unit, 1.0/second)
         self.assertEqual(km.unit_name, "s^-1")
         self.assertAlmostEqual(numpy.log(ra.A/km.unit), numpy.log(3.33e10), 0)
-        ra.plot_arrhenius("output/arrhenius_mat1.png")
+        ra.plot_arrhenius("test/output/arrhenius_mat1.png")
         ra.monte_carlo()
-        ra.write_to_file("output/reaction_mat1.txt")
-        ra.plot_parameters("output/parameters_mat1.png")
+        ra.write_to_file("test/output/reaction_mat1.txt")
+        ra.plot_parameters("test/output/parameters_mat1.png")
 
         wigner = Wigner(pf_ts) # Blind test of the wigner correction and
         # the corrected reaction analysis.
         km = KineticModel([pf_react], pf_ts, tunneling=wigner)
         ra = ReactionAnalysis(km, 100, 1200, temp_step=50)
-        ra.plot_arrhenius("output/arrhenius_mat1w.png")
+        ra.plot_arrhenius("test/output/arrhenius_mat1w.png")
         ra.monte_carlo()
-        ra.write_to_file("output/reaction_mat1w.txt")
-        ra.plot_parameters("output/parameters_mat1w.png")
+        ra.write_to_file("test/output/reaction_mat1w.txt")
+        ra.plot_parameters("test/output/parameters_mat1w.png")
 
         km = KineticModel([pf_react], pf_ts)
         ra = ReactionAnalysis(km, 670, 770)
@@ -98,13 +98,13 @@ class PFToolsTestCase(unittest.TestCase):
         # in the fancy excel file where these numbers come from.
         self.assertAlmostEqual(ra.Ea/kjmol, 161.9, 1)
         self.assertAlmostEqual(numpy.log(ra.A/km.unit), numpy.log(4.08e10), 0)
-        ra.plot_arrhenius("output/arrhenius_mat2.png")
+        ra.plot_arrhenius("test/output/arrhenius_mat2.png")
         ra.monte_carlo()
-        ra.write_to_file("output/reaction_mat2.txt")
-        ra.plot_parameters("output/parameters_mat2.png")
+        ra.write_to_file("test/output/reaction_mat2.txt")
+        ra.plot_parameters("test/output/parameters_mat2.png")
 
     def test_thermo_analysis_mat(self):
         # just a blind test to see test whether the code does not crash.
-        pf = PartFun(NMA(load_molecule_g03fchk("input/mat5T/react.fchk")), [ExtTrans(), ExtRot(1)])
+        pf = PartFun(NMA(load_molecule_g03fchk("test/input/mat5T/react.fchk")), [ExtTrans(), ExtRot(1)])
         ta = ThermoAnalysis(pf, [200,300,400,500,600,700,800,900])
-        ta.write_to_file("output/thermo_mat2.csv")
+        ta.write_to_file("test/output/thermo_mat2.csv")

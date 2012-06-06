@@ -62,7 +62,7 @@ rotor.plot_levels("energy_levels.png", 300, do_levels=False, do_data=False)
 I = rotor.reduced_moment
 for angle, energy in array(rot_scan.potential).transpose():
     K = rotor.hb.eval_deriv2(array([angle]), rotor.v_coeffs)[0]
-    nu = sqrt(K/I)
+    nu = sqrt(abs(K/I))
     hertz = 1/second
     print "Angle in deg:", angle/deg
     print "Energy in kJ/mol", energy/joule

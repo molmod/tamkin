@@ -107,9 +107,9 @@ class TunnelingTestCase(unittest.TestCase):
                 #    print "%.1e" % our, "%.1e" % c
 
     def test_eckart_init(self):
-        fixed_atoms = load_fixed_g03com("input/mat/Zp_p_react.14mei.com")
-        mol_react = load_molecule_g03fchk("input/mat/Zp_p_react.28aug.fchk")
-        mol_trans = load_molecule_g03fchk("input/mat/Zp_p_TS.28aug.fchk")
+        fixed_atoms = load_fixed_g03com("test/input/mat/Zp_p_react.14mei.com")
+        mol_react = load_molecule_g03fchk("test/input/mat/Zp_p_react.28aug.fchk")
+        mol_trans = load_molecule_g03fchk("test/input/mat/Zp_p_TS.28aug.fchk")
 
         pf_react = PartFun(NMA(mol_react, PHVA(fixed_atoms)))
         pf_trans = PartFun(NMA(mol_trans, PHVA(fixed_atoms)))
@@ -117,10 +117,10 @@ class TunnelingTestCase(unittest.TestCase):
         Eckart([pf_react], pf_trans, [pf_react])
 
     def test_eckart_tugba(self):
-        mol_react1 = load_molecule_g03fchk("input/tugba/monomer.fchk")
-        mol_react2 = load_molecule_g03fchk("input/tugba/radical.fchk")
-        mol_trans = load_molecule_g03fchk("input/tugba/ts.fchk")
-        mol_prod = load_molecule_g03fchk("input/tugba/prod.fchk")
+        mol_react1 = load_molecule_g03fchk("test/input/tugba/monomer.fchk")
+        mol_react2 = load_molecule_g03fchk("test/input/tugba/radical.fchk")
+        mol_trans = load_molecule_g03fchk("test/input/tugba/ts.fchk")
+        mol_prod = load_molecule_g03fchk("test/input/tugba/prod.fchk")
 
         pf_react1 = PartFun(NMA(mol_react1))
         pf_react2 = PartFun(NMA(mol_react2))
@@ -131,7 +131,7 @@ class TunnelingTestCase(unittest.TestCase):
         eckart(numpy.array([620,770]))
 
     def test_miller_tugba(self):
-        mol_trans = load_molecule_g03fchk("input/tugba/ts.fchk")
+        mol_trans = load_molecule_g03fchk("test/input/tugba/ts.fchk")
         pf_trans = PartFun(NMA(mol_trans))
         miller = Miller(pf_trans)
         miller(numpy.array([620,770]))

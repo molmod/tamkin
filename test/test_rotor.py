@@ -128,7 +128,7 @@ class RotorTestCase(unittest.TestCase):
         pylab.clf()
         pylab.plot(grid, g, "k-", lw=2)
         pylab.plot(grid[:16], f, "rx", mew=2)
-        pylab.savefig("output/test_fit_fn_sym.png")
+        pylab.savefig("test/output/test_fit_fn_sym.png")
 
     def test_potential_op(self):
         a = 10.0
@@ -192,16 +192,16 @@ class RotorTestCase(unittest.TestCase):
         for i in xrange(10):
             f = hb.eval_fn(x, orbitals[:,i])
             pylab.plot(x, f+i)
-        pylab.savefig("output/flat_wavefunctions.png")
+        pylab.savefig("test/output/flat_wavefunctions.png")
 
         indexes = numpy.array([0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10])
         expected = 0.5/mass*(2*indexes*numpy.pi/a)**2
         self.assertArraysAlmostEqual(energies, expected, 1e-4)
 
     def test_flat2(self):
-        molecule = load_molecule_g03fchk("input/ethane/gaussian.fchk")
+        molecule = load_molecule_g03fchk("test/input/ethane/gaussian.fchk")
         nma = NMA(molecule)
-        rotscan1 = load_rotscan_g03log("input/rotor/gaussian.log")
+        rotscan1 = load_rotscan_g03log("test/input/rotor/gaussian.log")
         my_potential = rotscan1.potential.copy()
         my_potential[1][:] = nma.energy
         rotscan1 = rotscan1.copy_with(potential=my_potential)
@@ -236,19 +236,19 @@ class RotorTestCase(unittest.TestCase):
         for i in xrange(10):
             f = hb.eval_fn(x, orbitals[:,i])
             pylab.plot(x, f)
-        pylab.savefig("output/harmonic_wavefunctions.png")
+        pylab.savefig("test/output/harmonic_wavefunctions.png")
         pylab.clf()
         v = hb.eval_fn(x, v_coeffs)
         pylab.plot(x, v)
         for energy in energies[:10]:
             pylab.axhline(energy)
         pylab.xlim(0,a)
-        pylab.savefig("output/harmonic_levels.png")
+        pylab.savefig("test/output/harmonic_levels.png")
 
     def test_ethane_hindered(self):
-        molecule = load_molecule_g03fchk("input/ethane/gaussian.fchk")
+        molecule = load_molecule_g03fchk("test/input/ethane/gaussian.fchk")
         nma = NMA(molecule)
-        rot_scan = load_rotscan_g03log("input/rotor/gaussian.log")
+        rot_scan = load_rotscan_g03log("test/input/rotor/gaussian.log")
         rotor = Rotor(rot_scan, molecule, rotsym=3, even=True, cancel_freq='scan')
         pf = PartFun(nma, [ExtTrans(), ExtRot(6), rotor])
         self.assertAlmostEqual(rotor.cancel_freq/lightspeed*centimeter, 298, 0)
@@ -269,13 +269,13 @@ class RotorTestCase(unittest.TestCase):
         self.assertAlmostEqual(rotor.heat_capacity_terms(800.0)[1]/(joule/mol/kelvin), 6.346, 1)
         self.assertAlmostEqual(rotor.entropy_terms(800.0)[1]/(joule/mol), 14.824, 1)
 
-        rotor.plot_levels("output/ethane_hindered_levels.png", 300)
-        pf.write_to_file("output/ethane_hindered.txt")
+        rotor.plot_levels("test/output/ethane_hindered_levels.png", 300)
+        pf.write_to_file("test/output/ethane_hindered.txt")
         ta = ThermoAnalysis(pf, [200,300,400,500,600,700,800,900])
-        ta.write_to_file("output/ethane_hindered_thermo.csv")
+        ta.write_to_file("test/output/ethane_hindered_thermo.csv")
 
     def test_ethyl_free(self):
-        molecule = load_molecule_g03fchk("input/ethyl/gaussian.fchk")
+        molecule = load_molecule_g03fchk("test/input/ethyl/gaussian.fchk")
         nma = NMA(molecule)
         dihedral = [5, 1, 0, 2]
         rot_scan = RotScan(dihedral, molecule)
@@ -289,10 +289,10 @@ class RotorTestCase(unittest.TestCase):
         self.assertAlmostEqual(numpy.exp(rotor.log_terms(800.0)[1]), 1.8062, 1)
         self.assertAlmostEqual(numpy.exp(-rotor.log_terms(800.0)[0]), 3.9273, 1)
 
-        rotor.plot_levels("output/ethyl_free_levels.png", 300)
-        pf.write_to_file("output/ethyl_free.txt")
+        rotor.plot_levels("test/output/ethyl_free_levels.png", 300)
+        pf.write_to_file("test/output/ethyl_free.txt")
         ta = ThermoAnalysis(pf, [200,300,400,500,600,700,800,900])
-        ta.write_to_file("output/ethyl_free_thermo.csv")
+        ta.write_to_file("test/output/ethyl_free_thermo.csv")
 
     def test_imoms(self):
         cases = [
@@ -324,7 +324,7 @@ class RotorTestCase(unittest.TestCase):
         from molmod.io.xyz import XYZFile
         for fn_xyz, i0, i1, top, expected in cases:
             # preparation
-            mol = XYZFile(os.path.join("input/imom", fn_xyz)).get_molecule()
+            mol = XYZFile(os.path.join("test/input/imom", fn_xyz)).get_molecule()
             masses = numpy.array([periodic[n].mass for n in mol.numbers])
             masses3 = numpy.array([masses, masses, masses]).transpose().ravel()
             center = mol.coordinates[i0]
@@ -361,7 +361,7 @@ class RotorTestCase(unittest.TestCase):
         for i in xrange(10):
             f = hb.eval_fn(x, orbitals[:,i])
             pylab.plot(x, f+i)
-        pylab.savefig("output/legacy_wavefunctions.png")
+        pylab.savefig("test/output/legacy_wavefunctions.png")
 
         # check energy levels
         expected = numpy.array([

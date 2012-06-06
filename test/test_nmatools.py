@@ -47,19 +47,19 @@ __all__ = ["NMAToolsTestCase"]
 class NMAToolsTestCase(unittest.TestCase):
 
     def test_load_coordinates_charmm(self):
-        molecule = load_molecule_charmm("input/an/ethanol.cor", "input/an/ethanol.hess.full")
-        coordinates, masses, symbols = load_coordinates_charmm("input/an/ethanol.cor")
+        molecule = load_molecule_charmm("test/input/an/ethanol.cor", "test/input/an/ethanol.hess.full")
+        coordinates, masses, symbols = load_coordinates_charmm("test/input/an/ethanol.cor")
         for at in range(9):
             self.assertAlmostEqual(molecule.masses[at], masses[at], 3)
             for j in range(3):
                 self.assertAlmostEqual(molecule.coordinates[at,j], coordinates[at,j], 3)
 
     def test_load_modes_charmm(self):
-        molecule = load_molecule_charmm("input/an/ethanol.cor", "input/an/ethanol.hess.full")
+        molecule = load_molecule_charmm("test/input/an/ethanol.cor", "test/input/an/ethanol.hess.full")
 
         # full Hessian
         nma = NMA(molecule)
-        modes2, freqs2, masses2 = load_modes_charmm("input/an/ethanol.modes.full")
+        modes2, freqs2, masses2 = load_modes_charmm("test/input/an/ethanol.modes.full")
         for index in range(6,27):
             for j in range(27):
                 self.assertAlmostEqual(abs(nma.modes[j,index]), abs(modes2[j,index]), 7)
@@ -68,7 +68,7 @@ class NMAToolsTestCase(unittest.TestCase):
 
         # MBH
         nma = NMA(molecule, MBH([[5,6,7,8]]))
-        modes2, freqs2, masses2 = load_modes_charmm("input/an/ethanol.modes.mbh")
+        modes2, freqs2, masses2 = load_modes_charmm("test/input/an/ethanol.modes.mbh")
         for index in range(6,21):
             for j in range(27):
                 self.assertAlmostEqual(abs(nma.modes[j,index]), abs(modes2[j,index]), 7)
@@ -76,9 +76,9 @@ class NMAToolsTestCase(unittest.TestCase):
             self.assertAlmostEqual(nma.freqs[at], freqs2[at], 7)
 
     def test_overlap(self):
-        molecule = load_molecule_charmm("input/an/ethanol.cor","input/an/ethanol.hess.full")
+        molecule = load_molecule_charmm("test/input/an/ethanol.cor","test/input/an/ethanol.hess.full")
         nma1 = NMA(molecule)
-        fixed = load_indices("input/an/fixed.06.txt")
+        fixed = load_indices("test/input/an/fixed.06.txt")
         nma2 = NMA(molecule, PHVA(fixed))
         overlap = compute_overlap(nma1, nma2)
         overlap = compute_overlap((nma1.modes, nma1.freqs), (nma2.modes, nma2.freqs))
@@ -89,8 +89,8 @@ class NMAToolsTestCase(unittest.TestCase):
 
     def test_delta_vector(self):
         # from charmmcor
-        coor1,masses1,symb1 = load_coordinates_charmm("input/an/ethanol.cor")
-        coor2,masses2,symb2 = load_coordinates_charmm("input/an/ethanol.2.cor")
+        coor1,masses1,symb1 = load_coordinates_charmm("test/input/an/ethanol.cor")
+        coor2,masses2,symb2 = load_coordinates_charmm("test/input/an/ethanol.2.cor")
         delta = compute_delta(coor1, coor2)
         # TODO
         #self.assertAlmostEqual()
@@ -98,45 +98,45 @@ class NMAToolsTestCase(unittest.TestCase):
         #self.assertAlmostEqual()
 
     def test_eigenvalue_sensitivity(self):
-        molecule = load_molecule_charmm("input/an/ethanol.cor","input/an/ethanol.hess.full")
+        molecule = load_molecule_charmm("test/input/an/ethanol.cor","test/input/an/ethanol.hess.full")
         nma = NMA(molecule)
         for i in range(7,27):
             sensit = compute_sensitivity_freq(nma, i)
             self.assertAlmostEqual(numpy.sum((numpy.dot(sensit,nma.modes)-nma.modes)**2,0)[i],0.0,9)
 
     def test_create_blocks_peptide_charmm(self):
-        blocks1 = create_blocks_peptide_charmm("input/charmm/crambin.crd", "RTB",blocksize=1)
-        blocks2 = create_blocks_peptide_charmm("input/charmm/crambin.crd", "RTB",blocksize=2)
+        blocks1 = create_blocks_peptide_charmm("test/input/charmm/crambin.crd", "RTB",blocksize=1)
+        blocks2 = create_blocks_peptide_charmm("test/input/charmm/crambin.crd", "RTB",blocksize=2)
         self.assertEqual(len(blocks1)/2+1, len(blocks2))
-        subs1 = create_subs_peptide_charmm("input/charmm/crambin.crd", frequency=1)
-        subs2 = create_subs_peptide_charmm("input/charmm/crambin.crd", frequency=2)
+        subs1 = create_subs_peptide_charmm("test/input/charmm/crambin.crd", frequency=1)
+        subs2 = create_subs_peptide_charmm("test/input/charmm/crambin.crd", frequency=2)
         self.assertEqual(len(subs1)/2, len(subs2))
 
-        blocks = create_blocks_peptide_charmm("input/charmm/crambin.crd")
+        blocks = create_blocks_peptide_charmm("test/input/charmm/crambin.crd")
         self.assertEqual(len(blocks), 91)
-        blocks = create_blocks_peptide_charmm("input/charmm/crambin.crd", "dihedral")
+        blocks = create_blocks_peptide_charmm("test/input/charmm/crambin.crd", "dihedral")
         self.assertEqual(len(blocks), 91)
-        blocks = create_blocks_peptide_charmm("input/charmm/crambin.crd", "RHbending")
+        blocks = create_blocks_peptide_charmm("test/input/charmm/crambin.crd", "RHbending")
         self.assertEqual(len(blocks),136)
-        blocks = create_blocks_peptide_charmm("input/charmm/crambin.crd", "normal")
+        blocks = create_blocks_peptide_charmm("test/input/charmm/crambin.crd", "normal")
         self.assertEqual(len(blocks), 91)
 
     def test_plot_spectrum(self):
-        molecule = load_molecule_charmm("input/an/ethanol.cor", "input/an/ethanol.hess.full")
+        molecule = load_molecule_charmm("test/input/an/ethanol.cor", "test/input/an/ethanol.hess.full")
         nma = NMA(molecule)
         invcm = lightspeed/centimeter
-        plot_spectrum_lines("output/spectrum-lines.1.png", [nma.freqs, nma.freqs], title="standard settings")
-        plot_spectrum_lines("output/spectrum-lines.2.png", [nma.freqs, nma.freqs], low=-10.0*invcm, high=500.0*invcm, title="zoom")
+        plot_spectrum_lines("test/output/spectrum-lines.1.png", [nma.freqs, nma.freqs], title="standard settings")
+        plot_spectrum_lines("test/output/spectrum-lines.2.png", [nma.freqs, nma.freqs], low=-10.0*invcm, high=500.0*invcm, title="zoom")
 
-        plot_spectrum_dos("output/spectrum-dos.1.png", [nma.freqs], title="standard settings")
-        plot_spectrum_dos("output/spectrum-dos.2.png", [nma.freqs], low=-10.0*invcm, high=1500.0*invcm, title="zoom")
-        plot_spectrum_dos("output/spectrum-dos.3.png", [nma.freqs], low=-10.0*invcm, high=1500.0*invcm, width=50.0*invcm, title="width")
-        plot_spectrum_dos("output/spectrum-dos.4.png", [nma.freqs], low=-10.0*invcm, high=1500.0*invcm, width=50.0*invcm, step=20.0*invcm, title="step size")
-        plot_spectrum_dos("output/spectrum-dos.5.png", [nma.freqs, nma.freqs*1.1], title="two spectra")
-        plot_spectrum_dos("output/spectrum-dos.6.png", [nma.freqs, nma.freqs*1.1], all_amps=[1.0,2.0], title="different amplitude")
+        plot_spectrum_dos("test/output/spectrum-dos.1.png", [nma.freqs], title="standard settings")
+        plot_spectrum_dos("test/output/spectrum-dos.2.png", [nma.freqs], low=-10.0*invcm, high=1500.0*invcm, title="zoom")
+        plot_spectrum_dos("test/output/spectrum-dos.3.png", [nma.freqs], low=-10.0*invcm, high=1500.0*invcm, width=50.0*invcm, title="width")
+        plot_spectrum_dos("test/output/spectrum-dos.4.png", [nma.freqs], low=-10.0*invcm, high=1500.0*invcm, width=50.0*invcm, step=20.0*invcm, title="step size")
+        plot_spectrum_dos("test/output/spectrum-dos.5.png", [nma.freqs, nma.freqs*1.1], title="two spectra")
+        plot_spectrum_dos("test/output/spectrum-dos.6.png", [nma.freqs, nma.freqs*1.1], all_amps=[1.0,2.0], title="different amplitude")
 
     def test_create_enm_molecule(self):
-        molecule = load_molecule_charmm("input/an/ethanol.cor", "input/an/ethanol.hess.full")
+        molecule = load_molecule_charmm("test/input/an/ethanol.cor", "test/input/an/ethanol.hess.full")
         selected = range(5)
         mol = create_enm_molecule(molecule, selected)
         nma = NMA(mol)

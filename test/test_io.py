@@ -48,39 +48,39 @@ __all__ = ["IOTestCase"]
 
 class IOTestCase(unittest.TestCase):
     def test_load_fixed_g03com(self):
-        fixed_atoms = load_fixed_g03com("input/mat/Zp_p_prod.18aug.com")
+        fixed_atoms = load_fixed_g03com("test/input/mat/Zp_p_prod.18aug.com")
         self.assertEqual(len(fixed_atoms), 48)
         self.assertEqual(fixed_atoms, range(114,114+48))
 
     def test_load_molecule_g03fchk(self):
         atoms = 181
-        molecule = load_molecule_g03fchk("input/mat/Zp_p_react.28aug.fchk")
+        molecule = load_molecule_g03fchk("test/input/mat/Zp_p_react.28aug.fchk")
         self.assertEqual(molecule.hessian.shape,(atoms*3,atoms*3))
         self.assertAlmostEqual(molecule.energy, -3053.805846445570, 7)
-        molecule = load_molecule_g03fchk("input/mat/Zp_p_react.28aug.fchk", energy=-123.0)
+        molecule = load_molecule_g03fchk("test/input/mat/Zp_p_react.28aug.fchk", energy=-123.0)
         self.assertAlmostEqual(molecule.energy, -123.0, 7)
-        molecule = load_molecule_g03fchk("input/mat/Zp_p_react.28aug.fchk", "input/mat/Zp_p_react.14mei.fchk")
+        molecule = load_molecule_g03fchk("test/input/mat/Zp_p_react.28aug.fchk", "test/input/mat/Zp_p_react.14mei.fchk")
         self.assertAlmostEqual(molecule.energy, -18613.135744186180, 7)
 
     def test_load_molecule_g98fchk(self):
         atoms = 6
-        molecule = load_molecule_g98fchk("input/g98/freqs.fchk")
+        molecule = load_molecule_g98fchk("test/input/g98/freqs.fchk")
         self.assertEqual(molecule.hessian.shape,(atoms*3,atoms*3))
         self.assertAlmostEqual(molecule.masses[0]/amu, 12.011)
         self.assertAlmostEqual(molecule.masses[2]/amu, 1.0079)
         self.assertAlmostEqual(molecule.energy, -78.58745828877478, 7)
-        molecule = load_molecule_g98fchk("input/g98/freqs.fchk", energy=-123.0)
+        molecule = load_molecule_g98fchk("test/input/g98/freqs.fchk", energy=-123.0)
         self.assertAlmostEqual(molecule.energy, -123.0, 7)
 
     def test_load_molecule_g03fchkvdw(self):
         atoms = 179
-        molecule = load_molecule_g03fchk("input/matvdw/R.fchk","input/matvdw/R_SCF.fchk","input/matvdw/R_b3lyp-d.out")
+        molecule = load_molecule_g03fchk("test/input/matvdw/R.fchk","test/input/matvdw/R_SCF.fchk","test/input/matvdw/R_b3lyp-d.out")
 
         self.assertEqual(molecule.hessian.shape,(atoms*3,atoms*3))
         self.assertAlmostEqual(molecule.energy,-18612.352569964281 , 7)
 
     def test_load_molecule_cp2k(self):
-        molecule = load_molecule_cp2k("input/cp2k/pentane/opt.xyz", "input/cp2k/pentane/sp.out", "input/cp2k/pentane/freq.out")
+        molecule = load_molecule_cp2k("test/input/cp2k/pentane/opt.xyz", "test/input/cp2k/pentane/sp.out", "test/input/cp2k/pentane/freq.out")
         self.assertAlmostEqual(molecule.energy, 0.012255059530862)
         self.assertEqual(molecule.multiplicity, 1)
         self.assertEqual(molecule.numbers[0], 6)
@@ -96,7 +96,7 @@ class IOTestCase(unittest.TestCase):
         self.assertAlmostEqual(molecule.unit_cell.matrix[1,2]/angstrom, 0.000,3)
 
     def test_load_molecule_cpmd(self):
-        molecule = load_molecule_cpmd("input/cpmd/damp.out", "input/cpmd/GEOMETRY.xyz", "input/cpmd/MOLVIB")
+        molecule = load_molecule_cpmd("test/input/cpmd/damp.out", "test/input/cpmd/GEOMETRY.xyz", "test/input/cpmd/MOLVIB")
         self.assertAlmostEqual(molecule.energy, -17.14142079)
         self.assertEqual(molecule.multiplicity, 1)
         self.assertEqual(molecule.numbers[0], 8)
@@ -110,7 +110,7 @@ class IOTestCase(unittest.TestCase):
         self.assertAlmostEqual(molecule.hessian[-1,-1], 0.921045226686428159E-01, 6)
 
     def test_load_molecule_charmm(self):
-        molecule = load_molecule_charmm("input/an/ethanol.cor","input/an/ethanol.hess.full")
+        molecule = load_molecule_charmm("test/input/an/ethanol.cor","test/input/an/ethanol.hess.full")
         self.assertAlmostEqual(molecule.energy/(1000*calorie/avogadro), -2.1303308955)
         self.assertEqual(molecule.multiplicity, 1)
         self.assertEqual(molecule.numbers[0], 6)
@@ -124,7 +124,7 @@ class IOTestCase(unittest.TestCase):
         self.assertAlmostEqual(molecule.hessian[-1,-1]/(1000*calorie/avogadro /angstrom**2), 474.7950312957, 6)
 
     def test_load_molecule_qchem(self):
-        molecule = load_molecule_qchem("input/qchem/h2o2.hf.sto-3g.freq.out", hessfile="input/qchem/hessian.dat")
+        molecule = load_molecule_qchem("test/input/qchem/h2o2.hf.sto-3g.freq.out", hessfile="test/input/qchem/hessian.dat")
         self.assertAlmostEqual(molecule.energy, -148.7649966058)
         self.assertEqual(molecule.multiplicity, 1)
         self.assertEqual(molecule.numbers[0], 1)
@@ -138,7 +138,7 @@ class IOTestCase(unittest.TestCase):
         self.assertAlmostEqual(molecule.hessian[-1,-1]/(1000*calorie/avogadro/angstrom**2), 338.870127396983150447, 6)
 
     def test_load_molecule_vasp(self):
-        molecule = load_molecule_vasp("input/vasp/xyz-structure","input/vasp/OUTCAR")
+        molecule = load_molecule_vasp("test/input/vasp/xyz-structure","test/input/vasp/OUTCAR")
         self.assertEqual(molecule.numbers[0],14)
         self.assertEqual(molecule.numbers[107],13)
         self.assertAlmostEqual(molecule.masses[0]/amu, 28.085)
@@ -151,7 +151,7 @@ class IOTestCase(unittest.TestCase):
         self.assertAlmostEqual(molecule.unit_cell.matrix[0,0]/angstrom, 11.329193060, 5)
         self.assertAlmostEqual(molecule.unit_cell.matrix[1,2]/angstrom, -0.017392342, 5)
         # if VASP contains only a partial Hessian
-        molecule = load_molecule_vasp("input/vasp/xyz-structure-part","input/vasp/OUTCAR-part")
+        molecule = load_molecule_vasp("test/input/vasp/xyz-structure-part","test/input/vasp/OUTCAR-part")
         self.assertEqual(molecule.numbers[0],14)
         self.assertEqual(molecule.numbers[107],13)
         self.assertAlmostEqual(molecule.masses[0]/amu, 28.085)
@@ -161,17 +161,17 @@ class IOTestCase(unittest.TestCase):
         self.assertAlmostEqual(molecule.gradient[8,0]/(electronvolt/angstrom), -0.036518, 5)
         self.assertAlmostEqual( - molecule.hessian[0,0]/(electronvolt/angstrom**2), -46.646216, 6)
         self.assertAlmostEqual( - molecule.hessian[-1,-1]/(electronvolt/angstrom**2), -5.524077, 6)
-        fixed = load_fixed_vasp("input/vasp/OUTCAR-part")
+        fixed = load_fixed_vasp("test/input/vasp/OUTCAR-part")
         self.assertEqual(fixed[0],2)
         self.assertEqual(fixed[30],53)
         self.assertAlmostEqual(molecule.unit_cell.matrix[0,0]/angstrom, 11.329193060, 5)
         self.assertAlmostEqual(molecule.unit_cell.matrix[1,2]/angstrom, -0.017392342, 5)
 
     def test_checkpoint(self):
-        molecule = load_molecule_cp2k("input/cp2k/pentane/opt.xyz", "input/cp2k/pentane/sp.out", "input/cp2k/pentane/freq.out")
+        molecule = load_molecule_cp2k("test/input/cp2k/pentane/opt.xyz", "test/input/cp2k/pentane/sp.out", "test/input/cp2k/pentane/freq.out")
         nma1 = NMA(molecule)
-        nma1.write_to_file("output/test.chk")
-        nma2 = NMA.read_from_file("output/test.chk")
+        nma1.write_to_file("test/output/test.chk")
+        nma2 = NMA.read_from_file("test/output/test.chk")
 
         self.assertEqual(nma1.freqs.shape, nma2.freqs.shape)
         self.assertEqual(nma1.modes.shape, nma2.modes.shape)
@@ -193,16 +193,16 @@ class IOTestCase(unittest.TestCase):
         self.assertEqual(nma1.symmetry_number, nma2.symmetry_number)
 
     def test_load_indices(self):
-        blocks = load_indices("input/an/fixed.07.txt", groups=True)
+        blocks = load_indices("test/input/an/fixed.07.txt", groups=True)
         self.assertEqual(blocks, [[3,2,6]])
-        blocks = load_indices("input/an/fixed.07.txt")
+        blocks = load_indices("test/input/an/fixed.07.txt")
         self.assertEqual(blocks, [3,2,6])
 
     def test_dump_modes_xyz(self):
-        molecule = load_molecule_charmm("input/an/ethanol.cor","input/an/ethanol.hess.full")
+        molecule = load_molecule_charmm("test/input/an/ethanol.cor","test/input/an/ethanol.hess.full")
         nma = NMA(molecule)
-        dump_modes_xyz(nma, 6, prefix="output/mode", amplitude=50.0)
-        f = file("output/mode.6.xyz")
+        dump_modes_xyz(nma, 6, prefix="test/output/mode", amplitude=50.0)
+        f = file("test/output/mode.6.xyz")
         # 1st line
         line = f.readline().strip()
         self.assertEqual(line,"9")
@@ -222,48 +222,48 @@ class IOTestCase(unittest.TestCase):
 
     def test_load_dump_indices1(self):
         subs = range(10)
-        dump_indices("output/subs-atoms.1.txt", subs, shift=0)
-        dump_indices("output/subs-atoms.2.txt", subs, shift=1)
-        dump_indices("output/subs-atoms.3.txt", subs)
+        dump_indices("test/output/subs-atoms.1.txt", subs, shift=0)
+        dump_indices("test/output/subs-atoms.2.txt", subs, shift=1)
+        dump_indices("test/output/subs-atoms.3.txt", subs)
 
-        subs1 = load_indices("output/subs-atoms.1.txt", shift=0)
+        subs1 = load_indices("test/output/subs-atoms.1.txt", shift=0)
         self.assertEqual(len(subs),len(subs1))
         for (i,j) in zip(subs,subs1):
             self.assertEqual(i,j)
-        subs2 = load_indices("output/subs-atoms.2.txt", shift=-1)
+        subs2 = load_indices("test/output/subs-atoms.2.txt", shift=-1)
         self.assertEqual(len(subs),len(subs2))
         for i,j in zip(subs,subs2):
             self.assertEqual(i,j)
-        subs22 = load_indices("output/subs-atoms.2.txt")  # should not matter
+        subs22 = load_indices("test/output/subs-atoms.2.txt")  # should not matter
         self.assertEqual(len(subs),len(subs22))
         for i,j in zip(subs,subs22):
             self.assertEqual(i,j)
-        subs3 = load_indices("output/subs-atoms.3.txt")
+        subs3 = load_indices("test/output/subs-atoms.3.txt")
         self.assertEqual(len(subs),len(subs3))
         for i,j in zip(subs,subs3):
             self.assertEqual(i,j)
 
         blocks = [range(10), range(10,20)]
-        dump_indices("output/blocks.1.txt", blocks, shift=0)
-        dump_indices("output/blocks.2.txt", blocks, shift=1)
-        dump_indices("output/blocks.3.txt", blocks)
+        dump_indices("test/output/blocks.1.txt", blocks, shift=0)
+        dump_indices("test/output/blocks.2.txt", blocks, shift=1)
+        dump_indices("test/output/blocks.3.txt", blocks)
 
-        blocks1 = load_indices("output/blocks.1.txt", shift=0, groups=True)
+        blocks1 = load_indices("test/output/blocks.1.txt", shift=0, groups=True)
         self.assertEqual(len(blocks),len(blocks1))
         for bl,bl1 in zip(blocks,blocks1):
             for i,j in zip(bl,bl1):
                 self.assertEqual(i,j)
-        blocks2 = load_indices("output/blocks.2.txt", shift=-1, groups=True)
+        blocks2 = load_indices("test/output/blocks.2.txt", shift=-1, groups=True)
         self.assertEqual(len(blocks),len(blocks2))
         for bl,bl1 in zip(blocks,blocks2):
             for i,j in zip(bl,bl1):
                 self.assertEqual(i,j)
-        blocks22 = load_indices("output/blocks.2.txt", groups=True)  # should not matter
+        blocks22 = load_indices("test/output/blocks.2.txt", groups=True)  # should not matter
         self.assertEqual(len(blocks),len(blocks2))
         for bl,bl1 in zip(blocks,blocks2):
             for i,j in zip(bl,bl1):
                 self.assertEqual(i,j)
-        blocks3 = load_indices("output/blocks.3.txt", groups=True)
+        blocks3 = load_indices("test/output/blocks.3.txt", groups=True)
         self.assertEqual(len(blocks),len(blocks3))
         for bl,bl1 in zip(blocks,blocks3):
             for i,j in zip(bl,bl1):
@@ -281,20 +281,20 @@ class IOTestCase(unittest.TestCase):
                         indices.append(l)
                 indices_flat = sum(indices, [])
 
-                dump_indices("output/indices_blocks.txt", indices, compact=compact, shift=shift)
-                dump_indices("output/indices_flat.txt", indices_flat, compact=compact, shift=shift)
+                dump_indices("test/output/indices_blocks.txt", indices, compact=compact, shift=shift)
+                dump_indices("test/output/indices_flat.txt", indices_flat, compact=compact, shift=shift)
 
-                check = load_indices("output/indices_blocks.txt", shift=-shift, groups=True)
+                check = load_indices("test/output/indices_blocks.txt", shift=-shift, groups=True)
                 self.assertEqual(indices, check)
-                check = load_indices("output/indices_blocks.txt", shift=-shift)
+                check = load_indices("test/output/indices_blocks.txt", shift=-shift)
                 self.assertEqual(indices_flat, check)
-                check = load_indices("output/indices_flat.txt", shift=-shift, groups=True)
+                check = load_indices("test/output/indices_flat.txt", shift=-shift, groups=True)
                 self.assertEqual([indices_flat], check)
-                check = load_indices("output/indices_flat.txt", shift=-shift)
+                check = load_indices("test/output/indices_flat.txt", shift=-shift)
                 self.assertEqual(indices_flat, check)
 
     def test_punch(self):
-        mol0 = load_molecule_g03fchk('input/punch/gaussian.fchk')
-        mol1 = load_molecule_g03fchk('input/punch/gaussian.fchk', fn_punch='input/punch/fort.7')
+        mol0 = load_molecule_g03fchk('test/input/punch/gaussian.fchk')
+        mol1 = load_molecule_g03fchk('test/input/punch/gaussian.fchk', fn_punch='test/input/punch/fort.7')
         assert abs(mol0.gradient - mol1.gradient).max() < 1e-8
         assert abs(mol0.hessian - mol1.hessian).max() < 1e-8

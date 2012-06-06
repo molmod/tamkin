@@ -52,4 +52,4 @@ class TimerTestCase(unittest.TestCase):
         self.assertEqual(timer.labels[0], "start")
         self.assertEqual(timer.labels[1], "done")
         #timer.dump()  # to write logfile to screen
-        timer.write_to_file("output/logfile-timings.txt")  # just testing whether writing to file works
+        timer.write_to_file("test/output/logfile-timings.txt")  # just testing whether writing to file works

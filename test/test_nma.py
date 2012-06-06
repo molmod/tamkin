@@ -88,8 +88,8 @@ class NMATestCase(unittest.TestCase):
             )
 
     def test_phva_react_mat(self):
-        fixed_atoms = load_fixed_g03com("input/mat/Zp_p_react.14mei.com")
-        molecule = load_molecule_g03fchk("input/mat/Zp_p_react.28aug.fchk", "input/mat/Zp_p_react.14mei.fchk")
+        fixed_atoms = load_fixed_g03com("test/input/mat/Zp_p_react.14mei.com")
+        molecule = load_molecule_g03fchk("test/input/mat/Zp_p_react.28aug.fchk", "test/input/mat/Zp_p_react.14mei.fchk")
         nma = NMA(molecule, PHVA(fixed_atoms))
         self.check_ortho(nma.modes)
 
@@ -209,8 +209,8 @@ class NMATestCase(unittest.TestCase):
         self.check_mode(expected_eig_mode, molecule, nma, 360)
 
     def test_phva_trans_mat(self):
-        fixed_atoms = load_fixed_g03com("input/mat/Zp_p_TS.28aug.com")
-        molecule = load_molecule_g03fchk("input/mat/Zp_p_TS.28aug.fchk", "input/mat/5Tp_p_TS.oniom21apr_HF.fchk")
+        fixed_atoms = load_fixed_g03com("test/input/mat/Zp_p_TS.28aug.com")
+        molecule = load_molecule_g03fchk("test/input/mat/Zp_p_TS.28aug.fchk", "test/input/mat/5Tp_p_TS.oniom21apr_HF.fchk")
         nma = NMA(molecule, PHVA(fixed_atoms))
         self.check_ortho(nma.modes)
 
@@ -289,7 +289,7 @@ class NMATestCase(unittest.TestCase):
         # Test both Full and ConstrainExt:
         for treatment, precision_wn, shift in (Full(), 0, 6), (ConstrainExt(), 3, 0):
             ## aa.fchk
-            molecule = load_molecule_g03fchk("input/sterck/aa.fchk")
+            molecule = load_molecule_g03fchk("test/input/sterck/aa.fchk")
             nma = NMA(molecule, treatment)
             self.check_ortho(nma.modes)
 
@@ -311,7 +311,7 @@ class NMATestCase(unittest.TestCase):
             self.check_mode(expected_eig_mode, molecule, nma, 4+shift)
 
             ## aarad.fchk
-            molecule = load_molecule_g03fchk("input/sterck/aarad.fchk")
+            molecule = load_molecule_g03fchk("test/input/sterck/aarad.fchk")
             nma = NMA(molecule, treatment)
 
             # expected frequencies from aa.log
@@ -335,7 +335,7 @@ class NMATestCase(unittest.TestCase):
 
     def test_teller_redlich_gas_react_sterck(self):
         for treatment, precision_wn, shift in (Full(), 0, 6), (ConstrainExt(), 3, 0):
-            mol1 = load_molecule_g03fchk("input/sterck/aa.fchk")
+            mol1 = load_molecule_g03fchk("test/input/sterck/aa.fchk")
             nma1 = NMA(mol1, treatment)
             self.check_ortho(nma1.modes)
 
@@ -362,7 +362,7 @@ class NMATestCase(unittest.TestCase):
         # Test both Full and ConstrainExt:
         for treatment, precision_wn, shift in (Full(), 0, 6), (ConstrainExt(), 3, 0):
             ## paats.fchk
-            molecule = load_molecule_g03fchk("input/sterck/paats.fchk")
+            molecule = load_molecule_g03fchk("test/input/sterck/paats.fchk")
             nma = NMA(molecule, treatment)
             self.check_ortho(nma.modes)
 
@@ -425,7 +425,7 @@ class NMATestCase(unittest.TestCase):
             self.assert_(abs(evecs-expected_evecs).max() < 1e-3)
 
     def test_gas_pentane(self):
-        molecule = load_molecule_cp2k("input/cp2k/pentane/opt.xyz", "input/cp2k/pentane/sp.out", "input/cp2k/pentane/freq.out", is_periodic=False)
+        molecule = load_molecule_cp2k("test/input/cp2k/pentane/opt.xyz", "test/input/cp2k/pentane/sp.out", "test/input/cp2k/pentane/freq.out", is_periodic=False)
         nma = NMA(molecule, ConstrainExt(), do_modes=False)
 
         expected_freqs = numpy.array([ # taken from cp2k output file
@@ -442,7 +442,7 @@ class NMATestCase(unittest.TestCase):
         self.check_freqs(expected_freqs, nma, 1)
 
     def test_gas_water_cpmd(self):
-        molecule = load_molecule_cpmd("input/cpmd/damp.out", "input/cpmd/GEOMETRY.xyz", "input/cpmd/MOLVIB", is_periodic=True)
+        molecule = load_molecule_cpmd("test/input/cpmd/damp.out", "test/input/cpmd/GEOMETRY.xyz", "test/input/cpmd/MOLVIB", is_periodic=True)
         nma = NMA(molecule, Full(), do_modes=False)
         expected_freqs = numpy.array([
             -333.5480, -86.0913, -39.3998, 49.2809, 63.4021, 190.1188,
@@ -458,10 +458,10 @@ class NMATestCase(unittest.TestCase):
         self.check_freqs(expected_freqs, nma, 4)
 
     def test_vsa(self):
-        molecule = load_molecule_charmm("input/an/ethanol.cor","input/an/ethanol.hess.full")
+        molecule = load_molecule_charmm("test/input/an/ethanol.cor","test/input/an/ethanol.hess.full")
 
         #  --- single atom as subsystem: results should be three translations
-        subs = load_indices("input/an/fixed.01.txt")
+        subs = load_indices("test/input/an/fixed.01.txt")
         nma = NMA(molecule, VSA(subs))
         self.check_ortho(nma.modes)
         self.assert_(len(nma.zeros)==3)
@@ -469,7 +469,7 @@ class NMATestCase(unittest.TestCase):
         self.check_freqs(expected_freqs, nma, 0, check_zeros=True)
 
         #  ---  atoms of subsystem are collinear: not yet external_basis implemented...
-        subs = load_indices("input/an/fixed.02.txt")
+        subs = load_indices("test/input/an/fixed.02.txt")
         nma = NMA(molecule, VSA(subs))
         self.check_ortho(nma.modes)
         self.assert_(len(nma.zeros)==5)
@@ -478,7 +478,7 @@ class NMATestCase(unittest.TestCase):
         self.check_freqs(expected_freqs, nma, 0, check_zeros=True)
 
         #  --- atoms of subsystem are not collinear
-        subs = load_indices("input/an/fixed.03.txt")  # atom 1 to atom 7
+        subs = load_indices("test/input/an/fixed.03.txt")  # atom 1 to atom 7
         nma = NMA(molecule, VSA(subs))
         self.check_ortho(nma.modes)
         self.assert_(len(nma.zeros)==6)
@@ -491,17 +491,17 @@ class NMATestCase(unittest.TestCase):
 
     def test_vsa_no_mass(self):
         # Modes are a priori known to be non-orthogonal, so no 'self.check_ortho(nma.modes)'
-        molecule = load_molecule_charmm("input/an/ethanol.cor","input/an/ethanol.hess.full")
+        molecule = load_molecule_charmm("test/input/an/ethanol.cor","test/input/an/ethanol.hess.full")
 
         #  --- single atom as subsystem: results should be three translations
-        subs = load_indices("input/an/fixed.01.txt")
+        subs = load_indices("test/input/an/fixed.01.txt")
         nma = NMA(molecule, VSANoMass(subs))
         self.assert_(len(nma.zeros)==3)
         expected_freqs = numpy.array([-0.4205594, 0.03940166, 0.13774798])
         self.check_freqs(expected_freqs, nma, 0, check_zeros=True)
 
         #  ---  atoms of subsystem are collinear
-        subs = load_indices("input/an/fixed.02.txt")
+        subs = load_indices("test/input/an/fixed.02.txt")
         nma = NMA(molecule, VSANoMass(subs))
         self.assert_(len(nma.zeros)==5)
         expected_freqs = numpy.array([-6.07975753e-01,-3.47371852e-01,6.34080688e-02,
@@ -509,7 +509,7 @@ class NMATestCase(unittest.TestCase):
         self.check_freqs(expected_freqs, nma, -1, check_zeros=True)
 
         #  --- atoms of subsystem are not collinear
-        subs = load_indices("input/an/fixed.03.txt")  # atom 1 to atom 7
+        subs = load_indices("test/input/an/fixed.03.txt")  # atom 1 to atom 7
         nma = NMA(molecule, VSANoMass(subs))
         self.assert_(len(nma.zeros)==6)
         expected_freqs = numpy.array([ # taken from previous working python version
@@ -520,15 +520,15 @@ class NMATestCase(unittest.TestCase):
         self.check_freqs(expected_freqs, nma, 4, check_zeros=True)
 
     def test_mbh(self):
-        molecule = load_molecule_charmm("input/an/ethanol.cor","input/an/ethanol.hess.full")
-        blocks = load_indices("input/an/fixed.07.txt", groups=True)
+        molecule = load_molecule_charmm("test/input/an/ethanol.cor","test/input/an/ethanol.hess.full")
+        blocks = load_indices("test/input/an/fixed.07.txt", groups=True)
         nma = NMA(molecule, MBH(blocks))
         self.check_ortho(nma.modes)
-        dump_modes_molden("output/ethanol.mbh.molden.log", nma)
+        dump_modes_molden("test/output/ethanol.mbh.molden.log", nma)
         self.check_ortho(nma.modes)   # write_molden should not have changed this
 
     def test_mbh_ethane(self):
-        molecule = load_molecule_g03fchk("input/ethane/gaussian.fchk")
+        molecule = load_molecule_g03fchk("test/input/ethane/gaussian.fchk")
         blocks = [[1, 0, 2, 6, 7], [1, 0, 3, 4, 5 ]]
         nma = NMA(molecule, MBH(blocks))
         self.assertEqual(len(nma.freqs), 7)
@@ -537,7 +537,7 @@ class NMATestCase(unittest.TestCase):
 
     def test_mbhconstrainext(self):
         # load the plain Hessian
-        molecule = load_molecule_g03fchk("input/sterck/aa.fchk")
+        molecule = load_molecule_g03fchk("test/input/sterck/aa.fchk")
         blocks = [[3,2,6],[6,7,8]]
         nma1 = NMA(molecule)
         nma2 = NMA(molecule, ConstrainExt(gradient_threshold=1e-2))
@@ -561,7 +561,7 @@ class NMATestCase(unittest.TestCase):
 
     def test_mbh_raise_ext(self):
         # load the plain Hessian
-        molecule = load_molecule_charmm("input/an/ethanol.cor","input/an/ethanol.hess.full")
+        molecule = load_molecule_charmm("test/input/an/ethanol.cor","test/input/an/ethanol.hess.full")
         blocks = [[3,2,6],[6,7,8]]
         nma1 = NMA(molecule)
         nma2 = NMA(molecule, MBH(blocks))
@@ -592,9 +592,9 @@ class NMATestCase(unittest.TestCase):
 
 
     def test_phva_mbh(self):
-        molecule = load_molecule_charmm("input/an/ethanol.cor","input/an/ethanol.hess.full")
-        blocks = load_indices("input/an/fixed.07.txt", groups=True)
-        fixed = load_indices("input/an/fixed.06.txt")
+        molecule = load_molecule_charmm("test/input/an/ethanol.cor","test/input/an/ethanol.hess.full")
+        blocks = load_indices("test/input/an/fixed.07.txt", groups=True)
+        fixed = load_indices("test/input/an/fixed.06.txt")
         nma = NMA(molecule, PHVA_MBH(fixed,blocks))
         expected_freqs = numpy.array([214.28936269,   596.97481532,   663.5290044,    787.84964637,
                  859.68400023, 1096.26899018,  1160.4094257, 1224.87768013,  1310.51036299,
@@ -606,7 +606,7 @@ class NMATestCase(unittest.TestCase):
         self.assertEqual(nma.modes.shape[1],15)
 
     def test_constrain(self):
-        molecule = load_molecule_charmm("input/an/ethanol.cor","input/an/ethanol.hess.full")
+        molecule = load_molecule_charmm("test/input/an/ethanol.cor","test/input/an/ethanol.hess.full")
         nma = NMA(molecule)
         #print nma.freqs/lightspeed*centimeter
         fixed = [[1,2]]
@@ -615,7 +615,7 @@ class NMATestCase(unittest.TestCase):
         self.check_ortho(nma.modes)
         self.assertEqual(nma.modes.shape[0],27)
         self.assertEqual(nma.modes.shape[1],26)
-        dump_modes_molden("output/ethanol.constr.molden.1.log", nma)
+        dump_modes_molden("test/output/ethanol.constr.molden.1.log", nma)
 
         fixed = [[1,2], [0,4], [0,5],[2,8],[3,4],[4,5],[5,6],[6,7],[7,8],[7,1],[7,3]]
         nma = NMA(molecule, Constrain(fixed))
@@ -623,13 +623,13 @@ class NMATestCase(unittest.TestCase):
         self.check_ortho(nma.modes)
         self.assertEqual(nma.modes.shape[0],27)
         self.assertEqual(nma.modes.shape[1],16)
-        dump_modes_molden("output/ethanol.constr.molden.2.log", nma)
+        dump_modes_molden("test/output/ethanol.constr.molden.2.log", nma)
 
     def test_sandra(self):
         cases = [
-            ("input/sandra/F_freq.fchk", []),
-            ("input/sandra/HF_freq.fchk", [4472.7168]),
-            ("input/sandra/ts_FHF_optfreq.fchk", [-4.1374, 2.0214, 13.3582, 106.6359]),
+            ("test/input/sandra/F_freq.fchk", []),
+            ("test/input/sandra/HF_freq.fchk", [4472.7168]),
+            ("test/input/sandra/ts_FHF_optfreq.fchk", [-4.1374, 2.0214, 13.3582, 106.6359]),
         ]
         for fn_fchk, expected_freqs in cases:
             molecule = load_molecule_g03fchk(fn_fchk)

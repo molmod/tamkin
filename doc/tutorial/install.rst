@@ -73,11 +73,10 @@ They are listed below for several popular Linux distributions:
 Installing the latest version of TAMkin
 =======================================
 
-The following series of commands will download the latest versions of the
-MolMod package (required) and TAMkin, and will then install them into your
-home directory. Make sure you execute these commands in some sort of temporary
-directory. ::
+The following series of commands will download the latest version of TAMkin, and
+will then install it into your home directory.  ::
 
+    cd ~/build/
     git clone git://github.com/molmod/tamkin.git
     (cd tamkin; ./setup.py install --home=~)
 
@@ -101,14 +100,13 @@ The Python modules should be accessible from any Python session. This can be
 checked by starting Python interactively and loading the modules manually. There
 should be no errors when importing the modules::
 
-    toon@poony ~> python
+    $ python
     Python 2.6.5 (r265:79063, Apr 16 2010, 13:57:41)
     [GCC 4.4.3] on linux2
     Type "help", "copyright", "credits" or "license" for more information.
     >>> import tamkin
     >>> import molmod
     >>> quit()
-    toon@poony ~>
 
 
 Upgrading to the latest version of MolMod and TAMkin
@@ -118,6 +116,7 @@ In case you want to upgrade TAMkin to the latests development version after a
 previous install, then execute the following commands (in the same directory
 that was originall used to install TAMkin)::
 
+    cd ~/build/
     (cd molmod; git pull; rm -r ~/lib*/python/molmod*; ./setup.py install --home=~)
     (cd tamkin; git pull; rm -r ~/lib*/python/tamkin*; ./setup.py install --home=~)
 
@@ -125,10 +124,38 @@ that was originall used to install TAMkin)::
 Testing your installation
 =========================
 
-The unit tests included in the source tree can be used to check if various
-components of TAMkin produces the correct results::
+For the development and testing one needs to install one additional package:
 
-    nostests -v
+* Nosetests >= 0.11: http://somethingaboutorange.com/mrl/projects/nose/0.11.2/
+
+Most Linux distributions can install this software with just a single command on
+the command line by the administrator.
+
+* Ubuntu 10.4::
+
+    sudo apt-get install python-nose
+
+* Debian 5::
+
+    su -
+    apt-get install python-nose
+    exit
+
+* Fedora 17::
+
+    sudo yum install python-nose
+
+* Suse 11.2::
+
+    sudo zypper install python-nose
+
+Once these dependecies are installed, execute the following commands to run the
+tests::
+
+    cd ~/build/
+    cd tamkin
+    nosetests -v
 
 If some tests fail, post the output of the tests on the `TAMkin
 mailing list <https://groups.google.com/forum/#!forum/tamkin>`_.
+

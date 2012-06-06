@@ -613,7 +613,7 @@ is convenient, but it may also cause some confusion. Because of this anology,
 one can split the chemical potential into an energetic and entropic
 contribution:
 
-.. math:: \mu = \frac{E + TS_1}{N}
+.. math:: \mu = \frac{E - TS_1}{N}
 
 where :math:`E` is the internal heat per particle and :math:`S_1` is slightly
 different from the normal entropy:

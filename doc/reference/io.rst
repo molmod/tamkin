@@ -44,7 +44,7 @@ VASP
    :members:
 
 
-File formats specific for Tamkin
+File formats specific for TAMkin
 ---------------------------------
 
 .. automodule:: tamkin.io.internal

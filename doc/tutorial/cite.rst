@@ -43,3 +43,37 @@ For Endnote users (RIS format)::
     PY  - 2010/08/26/
     UR  - http://dx.doi.org/10.1021/ci100099g
 
+
+In addition the the above paper, several other papers were published about the
+new normal mode analysis methods in TAMkin. If any of these methods are used,
+please cite the approriate papers:
+
+* "Vibrational Modes in partially optimized molecular systems.", An Ghysels,
+  Dimitri Van Neck, Veronique Van Speybroeck, Toon Verstraelen and Michel
+  Waroquier, *J. Chem. Phys.*, Vol. 126 (22): Art. No. 224102, **2007**
+  `10.1063/1.2737444 <http://dx.doi.org/10.1063/1.2737444>`_
+
+* "Cartesian formulation of the Mobile Block Hesian Approach to vibrational
+  analysis in partially optimized systems", An Ghysels, Dimitri Van Neck and
+  Michel Waroquier, *J. Chem. Phys.*, Vol. 127 (16), Art. No. 164108,
+  **2007** `10.1063/1.2789429 <http://dx.doi.org/10.1063/1.2789429>`_
+
+* "Calculating reaction rates with partial Hessians: validation of the MBH
+  approach", An Ghysels, Veronique Van Speybroeck, Toon Verstraelen, Dimitri Van
+  Neck and Michel Waroquier, *J. Chem. Theory Comput.*, Vol. 4
+  (4), 614-625, **2008** `10.1021/ct7002836 <http://dx.doi.org/10.1021/ct7002836>`_
+
+* "Mobile Block Hessian approach with linked blocks: an efficient approach for
+  the calculation of frequencies in macromolecules", An Ghysels, Veronique Van
+  Speybroeck, Ewald Pauwels, Dimitri Van Neck, Bernard R. Brooks and Michel
+  Waroquier, *J. Chem. Theory Comput.*, Vol. 5 (5), 1203-1215,
+  **2009** `10.1021/ct800489r <http://dx.doi.org/10.1021/ct800489r>`_
+
+* "Normal modes for large molecules with arbitrary link constraints in the
+  mobile block Hessian approach", An Ghysels, Dimitri Van Neck, Bernard R.
+  Brooks, Veronique Van Speybroeck and Michel Waroquier, *J. Chem.
+  Phys.*, Vol. 130 (18), Art. No. 084107, **2009** `10.1063/1.3071261
+  <http://dx.doi.org/10.1063/1.3071261>`_
+
+
+

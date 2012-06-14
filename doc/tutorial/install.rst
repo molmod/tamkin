@@ -42,8 +42,6 @@ The following software must be installed for TAMkin:
 * Python 2.5, 2.6 or 2.7 (including the header files): http://www.python.org/doc/
 * Numpy 1.0 or later: http://numpy.scipy.org/
 * Scipy 0.6 or later: http://www.scipy.org/
-* A Fortran and a C compiler supported by the F2PY module in Numpy, e.g.
-  gfortran and gcc: http://gcc.gnu.org/
 * Git: http://git-scm.com/
 
 Most Linux distributions can install this software with just a single command.
@@ -51,23 +49,23 @@ They are listed below for several popular Linux distributions:
 
 * Ubuntu 12.4::
 
-    sudo apt-get install python python-dev python-numpy python-scipy gfortran gcc git-core
+    sudo apt-get install python python-dev python-numpy python-scipy git-core
 
 * Debian 5. You first have to become root because the sudo program is not
   configured by default. ::
 
     su -
-    apt-get install python python-dev python-numpy python-scipy gfortran gcc git-core
+    apt-get install python python-dev python-numpy python-scipy git-core
     exit
 
 * Fedora 17.::
 
-    sudo yum install python-devel numpy numpy-f2py scipy gcc-gfortran gcc git
+    sudo yum install python-devel numpy numpy-f2py scipy git
 
 * Suse 11.2::
 
     sudo zypper ar http://download.opensuse.org/repositories/devel:/languages:/python/openSUSE_11.2/devel:languages:python.repo
-    sudo zypper install python-devel python-numpy python-scipy gcc gcc-fortran git
+    sudo zypper install python-devel python-numpy python-scipy git
 
 
 Installing the latest version of TAMkin
@@ -127,33 +125,32 @@ Testing your installation
 For the development and testing one needs to install one additional package:
 
 * Nosetests >= 0.11: http://somethingaboutorange.com/mrl/projects/nose/0.11.2/
+* Sphinx >= 1.0: http://sphinx.pocoo.org/
 
-Most Linux distributions can install this software with just a single command on
-the command line by the administrator.
+Most Linux distributions can install this software with just a single terminal command:
 
-* Ubuntu 10.4::
+* Ubuntu 12.4::
 
-    sudo apt-get install python-nose
+    sudo apt-get install python-nose python-sphinx
 
 * Debian 5::
 
     su -
-    apt-get install python-nose
+    apt-get install python-nose python-sphinx
     exit
 
 * Fedora 17::
 
-    sudo yum install python-nose
+    sudo yum install python-nose sphinx
 
 * Suse 11.2::
 
-    sudo zypper install python-nose
+    sudo zypper install python-nose sphinx
 
 Once these dependecies are installed, execute the following commands to run the
 tests::
 
-    cd ~/build/
-    cd tamkin
+    cd ~/build/tamkin
     nosetests -v
 
 If some tests fail, post the output of the tests on the `TAMkin

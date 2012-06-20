@@ -86,13 +86,8 @@ A few quick checks
 
 It may be interesting to double check your installation before proceeding,
 unless you `feel lucky`. The TAMkin and MolMod files are installed in the
-following directories:
-
-* Scripts: ``~/bin``
-* Modules: ``~/lib/python`` or ``~/lib64/python``
-* Data: ``~/share``
-
-There should be at least some files present in these directories.
+following directory: ``~/lib/python`` or ``~/lib64/python``. There should be at
+least some files present in these directories.
 
 The Python modules should be accessible from any Python session. This can be
 checked by starting Python interactively and loading the modules manually. There

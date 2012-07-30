@@ -74,6 +74,3 @@ please cite the approriate papers:
   Brooks, Veronique Van Speybroeck and Michel Waroquier, *J. Chem.
   Phys.*, Vol. 130 (18), Art. No. 084107, **2009** `10.1063/1.3071261
   <http://dx.doi.org/10.1063/1.3071261>`_
-
-
-

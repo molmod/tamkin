@@ -150,4 +150,3 @@ tests::
 
 If some tests fail, post the output of the tests on the `TAMkin
 mailing list <https://groups.google.com/forum/#!forum/tamkin>`_.
-

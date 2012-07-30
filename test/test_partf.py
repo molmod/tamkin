@@ -535,3 +535,12 @@ class PartFunTestCase(unittest.TestCase):
         zpe_sum += rotor.zero_point_energy()
         # check the sum
         self.assertAlmostEqual(zpe_sum, pf.zero_point_energy())
+
+    def test_freq_threshold(self):
+        molecule = load_molecule_g03fchk("test/input/ethane/gaussian.fchk")
+        nma = NMA(molecule)
+        pf = PartFun(nma, [ExtTrans(), ExtRot(), Vibrations()])
+        assert len(pf.vibrational.zero_freqs) == 6
+        pf = PartFun(nma, [ExtTrans(), ExtRot(), Vibrations(freq_threshold=1e-3)])
+        assert len(pf.vibrational.zero_freqs) == 12
+        assert (pf.vibrational.positive_freqs > 1e-3).all()

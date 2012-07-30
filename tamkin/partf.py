@@ -1207,7 +1207,7 @@ def helpertt_vibrations(temp, n, freqs, classical=False, freq_scaling=1, zp_scal
 
 class Vibrations(Info, StatFysTerms):
     """The vibrational contribution to the partition function."""
-    def __init__(self, classical=False, freq_scaling=1, zp_scaling=1):
+    def __init__(self, classical=False, freq_scaling=1, zp_scaling=1, freq_threshold=None):
         """
            Optional arguments:
             | ``classical`` -- When True, the vibrations are treated classically
@@ -1215,10 +1215,17 @@ class Vibrations(Info, StatFysTerms):
             | ``freq_scaling`` -- Scale factor for the frequencies [default=1]
             | ``zp_scaling`` -- Scale factor for the zero-point energy
                                 correction [default=1]
+            | ``freq_threshold`` -- Frequencies whose absolute value is below
+                                    this threshold will be left out of the
+                                    partition function, in addition to those
+                                    already indicated as 'almost' zero by the
+                                    NMA. This option is only needed to fix some
+                                    pathological cases.
         """
         self.classical = classical
         self.freq_scaling = freq_scaling
         self.zp_scaling = zp_scaling
+        self.freq_threshold = freq_threshold
         Info.__init__(self, "vibrational")
 
     def init_part_fun(self, nma, partf):
@@ -1226,9 +1233,11 @@ class Vibrations(Info, StatFysTerms):
         zero_indexes = nma.zeros
         nonzero_mask = numpy.ones(len(nma.freqs), dtype=bool)
         nonzero_mask[zero_indexes] = False
+        if self.freq_threshold is not None:
+            nonzero_mask[abs(nma.freqs) < self.freq_threshold] = False
 
         self.freqs = nma.freqs[nonzero_mask]
-        self.zero_freqs = nma.freqs[zero_indexes]
+        self.zero_freqs = nma.freqs[~nonzero_mask]
         self.positive_freqs = nma.freqs[(nma.freqs > 0) & nonzero_mask]
         self.negative_freqs = nma.freqs[(nma.freqs < 0) & nonzero_mask]
 

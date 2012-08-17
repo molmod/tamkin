@@ -5,7 +5,7 @@ Installation of TAMkin software
 Disclaimer
 ==========
 
-TAMkin is developed and tested in modern Linux environments. The
+TAMkin is developed and tested on modern Linux environments. The
 installation and usage will therefore be relatively easy on Linux. If you want
 to use TAMkin on other operating systems such as Windows or OSX, you should
 have a minimal computer geek status to get it working, and this document may
@@ -106,8 +106,7 @@ Upgrading to the latest version of MolMod and TAMkin
 ====================================================
 
 In case you want to upgrade TAMkin to the latests development version after a
-previous install, then execute the following commands (in the same directory
-that was originall used to install TAMkin)::
+previous install, then execute the following commands::
 
     cd ~/build/
     (cd molmod; git pull; rm -r ~/lib*/python/molmod*; ./setup.py install --home=~)

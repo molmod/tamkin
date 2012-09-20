@@ -983,11 +983,15 @@ class ExtRot(Info, StatFys):
         self.moments = numpy.linalg.eigvalsh(nma.inertia_tensor)
         if self.symmetry_number == None:
             self.symmetry_number = nma.symmetry_number
-            if self.symmetry_number == None:
+            natom = len(nma.numbers)
+            if self.symmetry_number == None and natom < 10:
                 from molmod import Molecule
                 # compute the rotational symmetry number
                 tmp_mol = Molecule(nma.numbers, nma.coordinates)
                 self.symmetry_number = tmp_mol.compute_rotsym()
+            else:
+                self.symmetry_number = 1
+                print 'WARNING: molecule is too large (%i atoms > 10) to quickly estimate the rotational symmetry number.' % natom
         self.factor = numpy.sqrt(numpy.product([
             2*numpy.pi*m*boltzmann for m in self.moments if m > self.im_threshold
         ]))/self.symmetry_number/numpy.pi

@@ -14,3 +14,4 @@ rm -vr test/output/*
 rm -v MANIFEST
 rm -vr dist
 rm -vr build
+rm -vr doc/_build

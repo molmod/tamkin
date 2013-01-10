@@ -63,7 +63,7 @@ def test_get_submolecule():
     assert molecule.energy == molecule2.energy
 
 def test_get_submolecule_cp2k():
-    molecule = load_molecule_cp2k("test/input/cp2k/pentane/opt.xyz", "test/input/cp2k/pentane/sp.out", "test/input/cp2k/pentane/freq.out")
+    molecule = load_molecule_cp2k("test/input/cp2k/pentane/sp.out", "test/input/cp2k/pentane/freq.out")
     select = range(5)+[9,11,14]
     molecule2 = molecule.get_submolecule(select, title="this is submol", energy=5., periodic=False, symmetry_number=6)  # just trying out something
     for i,at in enumerate(select):
@@ -81,13 +81,13 @@ def test_get_submolecule_cp2k():
     assert molecule2.energy == 5.
 
 def test_translate_pbc():
-    molecule = load_molecule_cp2k("test/input/cp2k/pentane/opt.xyz", "test/input/cp2k/pentane/sp.out", "test/input/cp2k/pentane/freq.out")
+    molecule = load_molecule_cp2k("test/input/cp2k/pentane/sp.out", "test/input/cp2k/pentane/freq.out")
     assert abs(molecule.unit_cell.matrix[1,1]/angstrom - 30.000) < 1e-3
     assert abs(molecule.unit_cell.matrix[0,1]/angstrom - 0.000) < 1e-3
-    assert abs(molecule.coordinates[5,1]/angstrom - 13.9457396458) < 1e-5
+    assert abs(molecule.coordinates[5,1]/angstrom - 13.928520) < 1e-5
     selected = range(6)+[11,14]
     molecule2 = translate_pbc(molecule, selected, [1,-1,0])
-    assert abs(molecule2.coordinates[5,1]/angstrom -  (13.9457396458-30.0)) < 1e-5
+    assert abs(molecule2.coordinates[5,1]/angstrom -  (13.928520-30.0)) < 1e-5
     for i in range(molecule.size):
         assert molecule.numbers[i] == molecule2.numbers[i]
         assert abs(molecule.masses[i] - molecule2.masses[i]) < 1e-3

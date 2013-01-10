@@ -36,25 +36,22 @@
 
 from tamkin.data import Molecule
 
-from molmod.molecules import Molecule as BaseMolecule
 from molmod.periodic import periodic
 from molmod.unit_cells import UnitCell
-from molmod.units import angstrom
+from molmod.units import angstrom, amu
 
-import numpy
+import numpy as np
 
 
 __all__ = ["load_molecule_cp2k"]
 
 
-def load_molecule_cp2k(fn_xyz, fn_sp, fn_freq, multiplicity=1, is_periodic=True):
+def load_molecule_cp2k(fn_sp, fn_freq, multiplicity=1, is_periodic=True):
     """Load a molecule with the Hessian from a CP2K computation
 
        Arguments:
-        | fn_xyz  --  The filename of the xyz file containing the (partially)
-                      optimized geometry.
         | fn_sp   --  The filename of the single point .out file containing the
-                      energy.
+                      energy and the forces.
         | fn_freq  --  The filename of the frequency .out file containing the
                        hessian
 
@@ -65,8 +62,56 @@ def load_molecule_cp2k(fn_xyz, fn_sp, fn_freq, multiplicity=1, is_periodic=True)
                            False when the systen is aperiodic. [default=True]
         | unit_cell  --  The unit cell vectors for periodic structures
     """
-    molecule = BaseMolecule.from_file(fn_xyz)
-    masses = numpy.array([periodic[number].mass for number in molecule.numbers])
+    # auxiliary routine to read atoms
+    def atom_helper(f):
+        # skip some lines
+        for i in xrange(3):
+            f.readline()
+        # read the atom lines until an empty line is encountered
+        numbers = []
+        coordinates = []
+        masses = []
+        while True:
+            line = f.readline()
+            if len(line.strip()) == 0:
+                break
+            symbol = line[14:19].strip()[:2]
+            atom = periodic[symbol]
+            if atom is None:
+                symbol = symbol[:1]
+                atom = periodic[symbol]
+            if atom is None:
+                numbers.append(0)
+            else:
+                numbers.append(atom.number)
+            coordinates.append([float(line[22:33]), float(line[34:45]), float(line[46:57])])
+            masses.append(float(line[72:]))
+
+        numbers = np.array(numbers)
+        coordinates = np.array(coordinates)*angstrom
+        masses = np.array(masses)*amu
+        return numbers, coordinates, masses
+
+
+    # auxiliary routine to read forces
+    def force_helper(f, skip, offset):
+        # skip some lines
+        for i in xrange(skip):
+            f.readline()
+        # Read the actual forces
+        tmp = []
+        while True:
+            line = f.readline()
+            if line == "\n":
+                break
+            if line == "":
+                raise IOError("End of file while reading gradient (forces).")
+            words = line.split()
+            try:
+                tmp.append([float(words[offset]), float(words[offset+1]), float(words[offset+2])])
+            except StandardError:
+                break
+        return -np.array(tmp) # force to gradient
 
     # go through the single point file: energy and gradient
     energy = None
@@ -78,17 +123,13 @@ def load_molecule_cp2k(fn_xyz, fn_sp, fn_freq, multiplicity=1, is_periodic=True)
             break
         if line.startswith(" ENERGY|"):
             energy = float(line[60:])
+        elif line.startswith(" MODULE") and "ATOMIC COORDINATES" in line:
+            numbers, coordinates, masses = atom_helper(f)
         elif line.startswith(" FORCES|"):
-            tmp = []
-            while True:
-                line = f.readline()
-                if line == "\n":
-                    break
-                if line == "":
-                    raise IOError("End of file while reading gradient (forces).")
-                words = line.split()
-                tmp.append([float(words[1]), float(words[2]), float(words[3])])
-            gradient = -numpy.array(tmp) # force to gradient
+            gradient = force_helper(f, 0, 1)
+            break
+        elif line.startswith(' ATOMIC FORCES in [a.u.]'):
+            gradient = force_helper(f, 2, 3)
             break
     if energy is None or gradient is None:
         raise IOError("Could not read energy and/or gradient (forces) from single point file.")
@@ -96,21 +137,21 @@ def load_molecule_cp2k(fn_xyz, fn_sp, fn_freq, multiplicity=1, is_periodic=True)
 
     # go through the freq file: lattic vectors and hessian
     f = file(fn_freq)
-    vectors = numpy.zeros((3,3),float)
+    vectors = np.zeros((3,3),float)
     while True:
         line = f.readline()
         if line.startswith(" CELL"): break
     for axis in range(3):
         line = f.readline()
-        vectors[:,axis] = numpy.array( [float(line[29:39]), float(line[39:49]), float(line[49:59])] )
+        vectors[:,axis] = np.array( [float(line[29:39]), float(line[39:49]), float(line[49:59])] )
     unit_cell = UnitCell(vectors*angstrom)
 
     hessian = None
     while True:
         line = f.readline()
         if line.startswith(" VIB| Hessian in cartesian coordinates"):
-            block_len = molecule.size*3
-            tmp = numpy.zeros((block_len,block_len), float)
+            block_len = coordinates.size
+            tmp = np.zeros((block_len,block_len), float)
             i2 = 0
             while i2 < block_len:
                 num_cols = min(5, block_len-i2)
@@ -134,11 +175,11 @@ def load_molecule_cp2k(fn_xyz, fn_sp, fn_freq, multiplicity=1, is_periodic=True)
     hessian = 0.5*(hessian+hessian.transpose())
     # cp2k prints a transformed hessian, here we convert it back to the normal
     # hessian in atomic units.
-    conv = 1e-3*numpy.array([masses, masses, masses]).transpose().ravel()**0.5
+    conv = 1e-3*np.array([masses, masses, masses]).transpose().ravel()**0.5
     hessian *= conv
     hessian *= conv.reshape((-1,1))
 
     return Molecule(
-        molecule.numbers, molecule.coordinates, masses, energy, gradient,
+        numbers, coordinates, masses, energy, gradient,
         hessian, multiplicity, 0, is_periodic, unit_cell=unit_cell
     )

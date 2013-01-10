@@ -80,19 +80,35 @@ class IOTestCase(unittest.TestCase):
         self.assertAlmostEqual(molecule.energy,-18612.352569964281 , 7)
 
     def test_load_molecule_cp2k(self):
-        molecule = load_molecule_cp2k("test/input/cp2k/pentane/opt.xyz", "test/input/cp2k/pentane/sp.out", "test/input/cp2k/pentane/freq.out")
+        molecule = load_molecule_cp2k("test/input/cp2k/pentane/sp.out", "test/input/cp2k/pentane/freq.out")
         self.assertAlmostEqual(molecule.energy, 0.012255059530862)
         self.assertEqual(molecule.multiplicity, 1)
         self.assertEqual(molecule.numbers[0], 6)
         self.assertEqual(molecule.numbers[4], 1)
-        self.assertAlmostEqual(molecule.masses[0], periodic[6].mass)
-        self.assertAlmostEqual(molecule.masses[4], periodic[1].mass)
-        self.assertAlmostEqual(molecule.coordinates[5,1]/angstrom, 13.9457396458)
+        self.assertAlmostEqual(molecule.masses[0], periodic[6].mass, 5)
+        self.assertAlmostEqual(molecule.masses[4], periodic[1].mass, 0)
+        self.assertAlmostEqual(molecule.coordinates[5,1]/angstrom, 13.928520)
         self.assertAlmostEqual(molecule.gradient[0,2], 0.0000000038, 9)
         self.assertAlmostEqual(molecule.gradient[11,0], 0.0000000177, 9)
-        self.assertAlmostEqual(molecule.hessian[0,0], 1.08660340, 6)
-        self.assertAlmostEqual(molecule.hessian[-1,-1], 0.528947590, 6)
+        self.assertAlmostEqual(molecule.hessian[0,0], 49.629809*1e-6*molecule.masses[0], 6)
+        self.assertAlmostEqual(molecule.hessian[-1,-1], 287.884198*1e-6*molecule.masses[-1], 6)
         self.assertAlmostEqual(molecule.unit_cell.matrix[0,0]/angstrom, 30.000,3)
+        self.assertAlmostEqual(molecule.unit_cell.matrix[1,2]/angstrom, 0.000,3)
+
+    def test_load_molecule_cp2k_23(self):
+        molecule = load_molecule_cp2k("test/input/cp2k/john/scf.out", "test/input/cp2k/john/quickie.out")
+        self.assertAlmostEqual(molecule.energy, -141.189006820072791)
+        self.assertEqual(molecule.multiplicity, 1)
+        self.assertEqual(molecule.numbers[0], 14)
+        self.assertEqual(molecule.numbers[4], 8)
+        self.assertAlmostEqual(molecule.masses[0], periodic[14].mass)
+        self.assertAlmostEqual(molecule.masses[4], periodic[8].mass)
+        self.assertAlmostEqual(molecule.coordinates[5,1]/angstrom, 12.150867)
+        self.assertAlmostEqual(molecule.gradient[0,2], -0.00008196, 9)
+        self.assertAlmostEqual(molecule.gradient[11,0], -0.00041872, 9)
+        self.assertAlmostEqual(molecule.hessian[0,0], 8.297378*1e-6*molecule.masses[0], 6)
+        self.assertAlmostEqual(molecule.hessian[-1,-1], 71.133554*1e-6*molecule.masses[-1], 6)
+        self.assertAlmostEqual(molecule.unit_cell.matrix[0,0]/angstrom, 20.000,3)
         self.assertAlmostEqual(molecule.unit_cell.matrix[1,2]/angstrom, 0.000,3)
 
     def test_load_molecule_cpmd(self):
@@ -168,7 +184,7 @@ class IOTestCase(unittest.TestCase):
         self.assertAlmostEqual(molecule.unit_cell.matrix[1,2]/angstrom, -0.017392342, 5)
 
     def test_checkpoint(self):
-        molecule = load_molecule_cp2k("test/input/cp2k/pentane/opt.xyz", "test/input/cp2k/pentane/sp.out", "test/input/cp2k/pentane/freq.out")
+        molecule = load_molecule_cp2k("test/input/cp2k/pentane/sp.out", "test/input/cp2k/pentane/freq.out")
         nma1 = NMA(molecule)
         nma1.write_to_file("test/output/test.chk")
         nma2 = NMA.read_from_file("test/output/test.chk")

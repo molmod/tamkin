@@ -425,7 +425,7 @@ class NMATestCase(unittest.TestCase):
             self.assert_(abs(evecs-expected_evecs).max() < 1e-3)
 
     def test_gas_pentane(self):
-        molecule = load_molecule_cp2k("test/input/cp2k/pentane/opt.xyz", "test/input/cp2k/pentane/sp.out", "test/input/cp2k/pentane/freq.out", is_periodic=False)
+        molecule = load_molecule_cp2k("test/input/cp2k/pentane/sp.out", "test/input/cp2k/pentane/freq.out", is_periodic=False)
         nma = NMA(molecule, ConstrainExt(), do_modes=False)
 
         expected_freqs = numpy.array([ # taken from cp2k output file

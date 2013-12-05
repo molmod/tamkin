@@ -5,19 +5,8 @@ Installation of TAMkin software
 Disclaimer
 ==========
 
-TAMkin is developed and tested on modern Linux environments. The
-installation and usage will therefore be relatively easy on Linux. If you want
-to use TAMkin on other operating systems such as Windows or OSX, you should
-have a minimal computer geek status to get it working, and this document may
-provide at best some clues. We are always interested in hearing from your
-installation adventures.
-
-Also note that TAMkin undergoes regular updates and improvements. You are
-supposed to simply check out the latests development version and try it out.
-There may be obvious and obscure bugs, although we try hard to get the code as
-reliable as possible. TAMkin is bundled with a large set of unit tests to
-validate the code, but that does not mean bugs are impossible. Note that this is
-Open Source software and that no warranty of any kind is implied or expressed.
+TAMkin is mainly developed and tested on Linux systems. If you run any other
+operating system, some of the instructions below may not work.
 
 
 MolMod dependency
@@ -42,7 +31,6 @@ The following software must be installed for TAMkin:
 * Python 2.5, 2.6 or 2.7 (including the header files): http://www.python.org/doc/
 * Numpy 1.0 or later: http://numpy.scipy.org/
 * Scipy 0.6 or later: http://www.scipy.org/
-* Git: http://git-scm.com/
 
 Most Linux distributions can install this software with just a single command.
 They are listed below for several popular Linux distributions:
@@ -68,26 +56,61 @@ They are listed below for several popular Linux distributions:
     sudo zypper install python-devel python-numpy python-scipy git
 
 
+Download the code
+=================
+
+Stable release (recommended)
+----------------------------
+
+The latest stable source code release can be downloaded here:
+
+    http://users.ugent.be/~tovrstra/tamkin/tamkin-1.0.0.tar.gz.
+
+Choose a suitable directory, e.g. ``~/build``, download and unpack the archive::
+
+    mkdir -p ~/build
+    cd ~/build
+    wget http://users.ugent.be/~tovrstra/tamkin/tamkin-1.0.0.tar.gz
+    tar -xvzf tamkin-1.0.0.tar.gz
+    cd tamkin-1.0.0
+
+
+Latest development code (experts only)
+--------------------------------------
+
+In order to get the latest development version of the source code, you need to
+work with git. Git is a version control system
+that makes life easy when a group of people are working on a common source code.
+All information about git (including downloads and tutorials) can be found here:
+http://git-scm.com/. The official git URL of TAMkin is:
+git://github.com/molmod/tamkin.git. In order to `clone` the public TAMkin
+repository, run this command::
+
+    git clone git://github.com/molmod/tamkin.git
+    cd tamkin
+
+The version history can be updated with the latest patches with the following
+command::
+
+    git pull
+
+There is also a web interface to TAMkin's git repository:
+https://github.com/molmod/tamkin
+
+
 Installing the latest version of TAMkin
 =======================================
 
-The following series of commands will download the latest version of TAMkin, and
-will then install it into your home directory.  ::
+Execute the following command in the TAMkin source directory to install TAMkin
+in your home directory. ::
 
-    cd ~/build/
-    git clone git://github.com/molmod/tamkin.git
-    (cd tamkin; ./setup.py install --home=~)
+    ./setup.py install --home=~
 
 You are now ready to start using TAMkin!
 
 
 A few quick checks
 ==================
-
-It may be interesting to double check your installation before proceeding,
-unless you `feel lucky`. The TAMkin and MolMod files are installed in the
-following directory: ``~/lib/python`` or ``~/lib64/python``. There should be at
-least some files present in these directories.
 
 The Python modules should be accessible from any Python session. This can be
 checked by starting Python interactively and loading the modules manually. There
@@ -102,21 +125,10 @@ should be no errors when importing the modules::
     >>> quit()
 
 
-Upgrading to the latest version of MolMod and TAMkin
-====================================================
-
-In case you want to upgrade TAMkin to the latests development version after a
-previous install, then execute the following commands::
-
-    cd ~/build/
-    (cd molmod; git pull; rm -r ~/lib*/python/molmod*; ./setup.py install --home=~)
-    (cd tamkin; git pull; rm -r ~/lib*/python/tamkin*; ./setup.py install --home=~)
-
-
 Testing your installation
 =========================
 
-For the development and testing one needs to install one additional package:
+For the development and testing, one needs to install one additional package:
 
 * Nosetests >= 0.11: http://somethingaboutorange.com/mrl/projects/nose/0.11.2/
 * Sphinx >= 1.0: http://sphinx.pocoo.org/
@@ -141,11 +153,10 @@ Most Linux distributions can install this software with just a single terminal c
 
     sudo zypper install python-nose sphinx
 
-Once these dependecies are installed, execute the following commands to run the
-tests::
+Once these dependecies are installed, execute the following command in the
+TAMkin source tree to run the tests::
 
-    cd ~/build/tamkin
-    nosetests -v
+    nosetests -v test
 
 If some tests fail, post the output of the tests on the `TAMkin
 mailing list <https://groups.google.com/forum/#!forum/tamkin>`_.

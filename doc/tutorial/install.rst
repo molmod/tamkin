@@ -64,15 +64,15 @@ Stable release (recommended)
 
 The latest stable source code release can be downloaded here:
 
-    http://users.ugent.be/~tovrstra/tamkin/tamkin-1.0.0.tar.gz.
+    http://users.ugent.be/~tovrstra/TAMkin/TAMkin-1.0.0.tar.gz.
 
 Choose a suitable directory, e.g. ``~/build``, download and unpack the archive::
 
     mkdir -p ~/build
     cd ~/build
-    wget http://users.ugent.be/~tovrstra/tamkin/tamkin-1.0.0.tar.gz
-    tar -xvzf tamkin-1.0.0.tar.gz
-    cd tamkin-1.0.0
+    wget http://users.ugent.be/~tovrstra/TAMkin/TAMkin-1.0.0.tar.gz
+    tar -xvzf TAMkin-1.0.0.tar.gz
+    cd TAMkin-1.0.0
 
 
 Latest development code (experts only)

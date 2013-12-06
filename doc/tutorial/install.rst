@@ -64,13 +64,13 @@ Stable release (recommended)
 
 The latest stable source code release can be downloaded here:
 
-    http://users.ugent.be/~tovrstra/TAMkin/TAMkin-1.0.0.tar.gz.
+    http://github.com/molmod/tamkin/releases/download/v1.0.0/TAMkin-1.0.0.tar.gz
 
 Choose a suitable directory, e.g. ``~/build``, download and unpack the archive::
 
     mkdir -p ~/build
     cd ~/build
-    wget http://users.ugent.be/~tovrstra/TAMkin/TAMkin-1.0.0.tar.gz
+    wget http://github.com/molmod/tamkin/releases/download/v1.0.0/TAMkin-1.0.0.tar.gz
     tar -xvzf TAMkin-1.0.0.tar.gz
     cd TAMkin-1.0.0
 

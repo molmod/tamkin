@@ -28,7 +28,7 @@ distribution to install these dependencies.
 
 The following software must be installed for TAMkin:
 
-* Python 2.5, 2.6 or 2.7 (including the header files): http://www.python.org/doc/
+* Python 2.6 or 2.7: http://www.python.org/doc/
 * Numpy 1.0 or later: http://numpy.scipy.org/
 * Scipy 0.6 or later: http://www.scipy.org/
 
@@ -37,23 +37,23 @@ They are listed below for several popular Linux distributions:
 
 * Ubuntu 12.4::
 
-    sudo apt-get install python python-dev python-numpy python-scipy git-core
+    sudo apt-get install python python-numpy python-scipy
 
 * Debian 5. You first have to become root because the sudo program is not
   configured by default. ::
 
     su -
-    apt-get install python python-dev python-numpy python-scipy git-core
+    apt-get install python python-numpy python-scipy
     exit
 
 * Fedora 17.::
 
-    sudo yum install python-devel numpy numpy-f2py scipy git
+    sudo yum install python numpy scipy
 
 * Suse 11.2::
 
     sudo zypper ar http://download.opensuse.org/repositories/devel:/languages:/python/openSUSE_11.2/devel:languages:python.repo
-    sudo zypper install python-devel python-numpy python-scipy git
+    sudo zypper install python-numpy python-scipy
 
 
 Download the code
@@ -104,7 +104,7 @@ Installing the latest version of TAMkin
 Execute the following command in the TAMkin source directory to install TAMkin
 in your home directory. ::
 
-    ./setup.py install --home=~
+    ./setup.py install --user
 
 You are now ready to start using TAMkin!
 

@@ -598,7 +598,7 @@ class Full(Treatment):
             # Mass-weighted and orthonormal basis vectors for external degrees
             # of freedom. These are used to detect which vibrational modes match
             # the external degrees of freedom.
-            U, W, Vt = numpy.linalg.svd(molecule.external_basis, full_matrices=False)
+            U, W, Vt = numpy.linalg.svd(molecule.get_external_basis_new(), full_matrices=False)
             self.external_basis = Vt
 
     def compute_hessian(self, molecule, do_modes):

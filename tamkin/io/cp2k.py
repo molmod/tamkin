@@ -122,7 +122,7 @@ def load_molecule_cp2k(fn_sp, fn_freq, multiplicity=1, is_periodic=True):
         if line == "":
             break
         if line.startswith(" ENERGY|"):
-            energy = float(line[60:])
+            energy = float(line[58:])
         elif line.startswith(" MODULE") and "ATOMIC COORDINATES" in line:
             numbers, coordinates, masses = atom_helper(f)
         elif line.startswith(" FORCES|"):

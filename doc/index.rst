@@ -16,6 +16,8 @@ Waroquier, M.; Van Speybroeck, V. *J. Chem. Inf. Model.* **2010**, 50,
 1736-1750.
 (`http://dx.doi.org/10.1021/ci100099g <http://dx.doi.org/10.1021/ci100099g>`_).
 
+A release history can be found here: :ref:`releases`.
+
 
 Tutorial
 --------

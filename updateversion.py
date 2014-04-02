@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # TAMkin is a post-processing toolkit for normal mode analysis, thermochemistry
 # and reaction kinetics.
@@ -32,18 +33,34 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 #--
-"""TAMkin is a post-processing toolkit for normal mode, thermochemistry and kinetics."""
+#!/usr/bin/env python
 
-__version__ = '1.0.1'
+import re, sys
 
-from tamkin.chemmod import *
-from tamkin.data import *
-from tamkin.io import *
-from tamkin.geom import *
-from tamkin.nma import *
-from tamkin.nmatools import *
-from tamkin.partf import *
-from tamkin.rotor import *
-from tamkin.timer import *
-from tamkin.pftools import *
-from tamkin.tunneling import *
+rules = [
+    ('setup.py', '^    version=\'(...+)\',$'),
+    ('tamkin/__init__.py', '^__version__ = \'(...+)\'$'),
+    ('doc/conf.py', '^version = \'(...+)\'$'),
+    ('doc/conf.py', '^release = \'(...+)\'$'),
+    ('doc/tutorial/install.rst', '^    http://github.com/molmod/tamkin/releases/download/v(...+)/TAMkin-(...+).tar.gz'),
+    ('doc/tutorial/install.rst', '^    wget http://github.com/molmod/tamkin/releases/download/v(...+)/TAMkin-(...+).tar.gz'),
+    ('doc/tutorial/install.rst', '^    tar -xvzf TAMkin-(...+).tar.gz$'),
+    ('doc/tutorial/install.rst', '^    cd TAMkin-(...+)$'),
+]
+
+if __name__ == '__main__':
+    newversion = sys.argv[1]
+
+    for fn, regex in rules:
+        r = re.compile(regex)
+        with open(fn) as f:
+            lines = f.readlines()
+        for iline in xrange(len(lines)):
+            line = lines[iline]
+            m = r.match(line)
+            if m is not None:
+                for igroup in xrange(m.lastindex, 0, -1):
+                    line = line[:m.start(igroup)] + newversion + line[m.end(igroup):]
+                lines[iline] = line
+        with open(fn, 'w') as f:
+            f.writelines(lines)

@@ -236,6 +236,12 @@ class IOTestCase(unittest.TestCase):
         self.assertEqual(line,"9")
         f.close()
 
+    def test_dump_modes_gaussian(self):
+        molecule = load_molecule_charmm("test/input/an/ethanol.cor","test/input/an/ethanol.hess.full")
+        nma = NMA(molecule)
+        dump_modes_gaussian("test/output/modes_gaussian.log", nma)
+        # blind test, no double checking of the output file
+
     def test_load_dump_indices1(self):
         subs = range(10)
         dump_indices("test/output/subs-atoms.1.txt", subs, shift=0)

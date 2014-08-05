@@ -63,7 +63,7 @@ print "Blocks:", blocks
 nma = NMA(molecule, MBH(blocks))
 print "The zero eigenmodes: %s" % nma.zeros
 # write the modes to file
-dump_modes_molden("molden.vib", nma)
+dump_modes_gaussian("molden.vib", nma)
 
 # B) Construct a partition function with the typical gas phase contributions.
 pf = PartFun(nma, [ExtTrans(), ExtRot()])

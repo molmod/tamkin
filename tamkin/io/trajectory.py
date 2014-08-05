@@ -43,7 +43,7 @@ from molmod.periodic import periodic
 import numpy
 
 
-__all__ = ["dump_modes_xyz", "dump_modes_molden"]
+__all__ = ["dump_modes_xyz", "dump_modes_molden", "dump_modes_gaussian"]
 
 
 def dump_modes_xyz(nma, indexes=0, prefix="mode", amplitude=5.0*angstrom, frames=36):
@@ -104,18 +104,15 @@ def dump_modes_xyz(nma, indexes=0, prefix="mode", amplitude=5.0*angstrom, frames
         del xyz_writer
 
 
-
-#======================================
-#    write logfile as Gaussian03 does
-#======================================
-
-def dump_modes_molden(filename, nma, selected=None):
-    """Write freqs and modes to a file in Gaussian-output-format.
+def dump_modes_gaussian(filename, nma, selected=None):
+    """Write freqs and modes to a file in the Gaussian log format.
 
        Arguments:
          | filename  --  modes are written to this file,
                          can be read by Molden (visualization program)
-         | nma  --  modes information (see below)
+         | nma  --  an NMA object or a tuple or list with five elements: modes,
+                    frequencies, masses, numbers, coordinates. See
+                    _make_moldenfile for details.
 
        Optional argument:
          | selected  --  Selection of modes for which to make
@@ -123,24 +120,22 @@ def dump_modes_molden(filename, nma, selected=None):
                          of mode indices (length <= N), or an
                          array of booleans (length = N).
 
-       The nma arguments can have different formats:
-
-       1) an NMA object
-       2) a tuple or list with five elements: modes,
-          frequencies, masses, numbers, coordinates
+       The output file will look like a stripped Gaussian03 or Gaussian09 log
+       file. It is sufficient to visualize the modes in Molden, Openbabel or
+       Avogadro.
     """
-    def parse_nma(nma):
-        if isinstance(nma, NMA):
-            # NMA object
-            return nma.modes, nma.freqs, nma.masses, nma.numbers, nma.coordinates
-        elif hasattr(nma, "__len__") and len(nma) == 5 and not isinstance(nma, numpy.ndarray):
-            # [modes,freqs,...] or (modes,freqs,...)
-            return nma
-        else:
-            raise TypeError("nma argument has wrong type")
+    ### A) Parse the NMA argument
+    if isinstance(nma, NMA):
+        # NMA object
+        modes, freqs, masses, numbers, coordinates = \
+            nma.modes, nma.freqs, nma.masses, nma.numbers, nma.coordinates
+    elif hasattr(nma, "__len__") and len(nma) == 5 and not isinstance(nma, numpy.ndarray):
+        # [modes, freqs, ...] or (modes, freqs, ...)
+        modes, freqs, masses, numbers, coordinates = nma
+    else:
+        raise TypeError("nma argument has wrong type")
 
-    modes, freqs, masses, numbers, coordinates = parse_nma(nma)
-
+    ### B) Select some modes
     if selected is not None:
         modes = numpy.take(modes, selected, 1)  # modes in columns
         freqs = freqs[selected]
@@ -148,167 +143,119 @@ def dump_modes_molden(filename, nma, selected=None):
         numbers = numbers[selected]
         coordinates = coordinates[selected]
 
-    _make_moldenfile(filename, masses, numbers, coordinates, modes, freqs)
-
-
-def _make_moldenfile(filename, masses, atomicnumbers, positions, modes, ev):
-    """This function produces a molden-readable file: coordinates + frequencies + modes
-
-    | positions  -- coordinates, convert to angstrom
-    | modes  -- each col is a mode in mass weighted Cartesian coordinates
-             un-mass-weighting necessary and renormalization (in order to see some movement)
-    | ev  -- eigenvalues (freqs), convert to cm-1
-    """
+    ### C) convert modes to the right convention
     masses3_sqrt1 = numpy.array(sum([[1/m,1/m,1/m] for m in numpy.sqrt(masses)],[]))
-    HEAD, head_coordinates, head_basisfunctions, \
-    head_freq0, head_freq1, head_freq2, head_freq3, head_end = _make_molden_texts()
+    nmode = modes.shape[1]
+    modes = modes.copy() # avoid modifying the given modes
+    for imode in xrange(nmode):
+        modes[:,imode] *= masses3_sqrt1
+        modes[:,imode] /= numpy.linalg.norm(modes[:,imode])
 
-    [rows,cols] = modes.shape
-    number_of_atoms = rows/3
-    number_of_modes = cols
-    number_of_iterations = number_of_modes/3    # organisation of file: per 3 modes
+    ### D) Define some multiline text blobs that are used below.
+    header = """\
+ Entering Gaussian System, Link 0=g09
 
-    #%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
-    # start writing
-    f = file(filename,"w+")
+ This file is generated from the dump_modes_gaussian function in the file
+ trajectory.py of TAMkin. Please note, that this is a "fake" output; TAMkin
+ doesn't compute intensities. This file should be readable by Molden, Openbabel
+ and Avogadro.
 
-    print >> f, HEAD
+ Gaussian, Inc
 
-    # ATOM PART
-    print >> f, head_coordinates
-    for at in range(number_of_atoms):
-       print >> f, '%5d %10d %13s %15f %11f %11f' %(
-                   at+1,atomicnumbers[at],"0",
-                   positions[at,0]/angstrom,
-                   positions[at,1]/angstrom,
-                   positions[at,2]/angstrom)
+ # Fake method line for openbabel
+ """
 
-    # ORBITAL PART
-    print >> f, head_basisfunctions
-    print >> f, " "   #this part is just empty
-
-    # FREQUENCY PART
-    print >> f, head_freq0
-
-    for iteration in range(number_of_iterations):
-        nb = 3*iteration   #number of mode
-        mode1 = modes[:,nb]  *masses3_sqrt1
-        mode2 = modes[:,nb+1]*masses3_sqrt1
-        mode3 = modes[:,nb+2]*masses3_sqrt1
-        mode1 = mode1/numpy.linalg.norm(mode1)
-        mode2 = mode2/numpy.linalg.norm(mode2)
-        mode3 = mode3/numpy.linalg.norm(mode3)
-        print >> f, '%22d %22d %22d' %(nb+1,nb+2,nb+3)
-        print >> f, head_freq1[2]
-        print >> f, '%s %10.4f %22.4f %22.4f' %(head_freq2,
-                                ev[nb]/lightspeed*centimeter,
-                                ev[nb+1]/lightspeed*centimeter,
-                                ev[nb+2]/lightspeed*centimeter)
-        print >> f, head_freq3[2]
-        for atomnb in range(number_of_atoms):
-            i = 3*atomnb
-            print >> f, '%4d %3d %8.2f %6.2f %6.2f %8.2f %6.2f %6.2f %8.2f %6.2f %6.2f' %(
-                   atomnb+1 , atomicnumbers[atomnb],
-                   mode1[i], mode1[i+1], mode1[i+2],
-                   mode2[i], mode2[i+1], mode2[i+2],
-                   mode3[i], mode3[i+1], mode3[i+2])
-
-    rest = number_of_modes - 3*number_of_iterations
-
-    if rest == 1:
-        nb = number_of_modes-1   #number of mode: the last one
-        mode1 = modes[:,nb]*masses3_sqrt1
-        mode1 = mode1/numpy.linalg.norm(mode1)
-        print >> f, '%22d' %(nb+1)
-        print >> f, head_freq1[0]
-        print >> f, '%s %10.4f' %(head_freq2, ev[nb]/lightspeed*centimeter)
-        print >> f, head_freq3[0]
-        for atomnb in range(number_of_atoms):
-            i = 3*atomnb
-            print >> f, '%4d %3d %8.2f %6.2f %6.2f' %(
-                   atomnb+1 , atomicnumbers[atomnb],
-                   mode1[i], mode1[i+1], mode1[i+2])
-
-    elif rest == 2:
-        nb = number_of_modes-2   #number of mode: the 2 last ones
-        mode1 = modes[:,nb]  *masses3_sqrt1
-        mode2 = modes[:,nb+1]*masses3_sqrt1
-        mode1 = mode1/numpy.linalg.norm(mode1)
-        mode2 = mode2/numpy.linalg.norm(mode2)
-        print >> f, '%22d %22d' %(nb+1,nb+2)
-        print >> f, head_freq1[1]
-        print >> f, '%s %10.4f %22.4f' %(head_freq2,
-                            ev[nb]  /lightspeed*centimeter,
-                            ev[nb+1]/lightspeed*centimeter)
-        print >> f, head_freq3[1]
-        for atomnb in range(number_of_atoms):
-            i = 3*atomnb
-            print >> f, '%4d %3d %8.2f %6.2f %6.2f %8.2f %6.2f %6.2f' %(
-                   atomnb+1 , atomicnumbers[atomnb],
-                   mode1[i], mode1[i+1], mode1[i+2],
-                   mode2[i], mode2[i+1], mode2[i+2],)
-
-    elif rest != 0:
-         print "error?! in number of iterations/number of atoms (writing molden file)"
-    print >> f, head_end
-
-    f.close()
-
-def _make_molden_texts():
-
-   HEAD = """ Entering Gaussian System
- this file is generated from the MLDGAU subroutine in the file secder.F
- Please note, that this is a "faked" output;
- there are no intensities computed in CPMD."""
-
-   head_coordinates = """ Standard orientation:
+    header_coordinates = """\
+                         Standard orientation:
  ---------------------------------------------------------------------
-Center     Atomic     Atomic              Coordinates (Angstroms)
-Number     Number      Type              X           Y           Z
+ Center     Atomic      Atomic             Coordinates (Angstroms)
+ Number     Number       Type             X           Y           Z
  ---------------------------------------------------------------------"""
 
-   head_basisfunctions = """ ---------------------------------------------------------------------
+    header_basisfunctions = """\
+ ---------------------------------------------------------------------
        basis functions          primitive gaussians
        alpha electrons          beta electrons
  **********************************************************************"""
 
-   head_end = " Normal termination of Gaussian 98."
-
-   head_freq0= """ Harmonic frequencies (cm**-1), IR intensities (KM/Mole),
+    header_freq = """\
+ Harmonic frequencies (cm**-1), IR intensities (KM/Mole),
  Raman scattering activities (A**4/AMU), Raman depolarization ratios,
  reduced masses (AMU), force constants (mDyne/A) and normal coordinates:"""
 
-   head_freq1_1 =  "                    ?A"
-   head_freq1_2 =  "                    ?A                     ?A"
-   head_freq1_3 =  "                    ?A                     ?A                     ?A"
-   head_freq1 = [head_freq1_1,head_freq1_2,head_freq1_3]
-
-   head_freq2 =  " Frequencies --"
-
-   head_freq3_1 = """ Red. masses --     0.0000
+    txt_freqbelow_1 = """\
+ Red. masses --     0.0000
  Frc consts  --     0.0000
  IR Inten    --     0.0000
- Raman Activ --     0.0000
- Depolar     --     0.0000
- Atom AN      X      Y      Z"""
-   head_freq3_2 = """ Red. masses --     0.0000                 0.0000
+  Atom  AN      X      Y      Z"""
+    txt_freqbelow_2 = """\
+ Red. masses --     0.0000                 0.0000
  Frc consts  --     0.0000                 0.0000
  IR Inten    --     0.0000                 0.0000
- Raman Activ --     0.0000                 0.0000
- Depolar     --     0.0000                 0.0000
- Atom AN      X      Y      Z        X      Y      Z"""
-   head_freq3_3 = """ Red. masses --     0.0000                 0.0000                 0.0000
+  Atom  AN      X      Y      Z        X      Y      Z"""
+    txt_freqbelow_3 = """\
+ Red. masses --     0.0000                 0.0000                 0.0000
  Frc consts  --     0.0000                 0.0000                 0.0000
  IR Inten    --     0.0000                 0.0000                 0.0000
- Raman Activ --     0.0000                 0.0000                 0.0000
- Depolar     --     0.0000                 0.0000                 0.0000
- Atom AN      X      Y      Z        X      Y      Z        X      Y      Z"""
-   head_freq3 = [head_freq3_1,head_freq3_2,head_freq3_3]
+  Atom  AN      X      Y      Z        X      Y      Z        X      Y      Z"""
+    txt_freqbelow = [txt_freqbelow_1, txt_freqbelow_2, txt_freqbelow_3]
 
-   return HEAD, head_coordinates, head_basisfunctions, \
-          head_freq0, head_freq1, head_freq2, head_freq3, head_end
+    ### E) Actual writing of the fake log file
+    with open(filename, "w") as f:
+        print >> f, header
 
+        ### E1) ATOM PART
+        assert modes.shape[0] % 3 == 0
+        natom = modes.shape[0]/3
+        print >> f, header_coordinates
+        for iatom in range(natom):
+           print >> f, '%5d %10d %13s %15f %11f %11f' %(
+                       iatom + 1, numbers[iatom], "0",
+                       coordinates[iatom,0]/angstrom,
+                       coordinates[iatom,1]/angstrom,
+                       coordinates[iatom,2]/angstrom)
 
-#======================================
-#    (END) write logfile as Gaussian03 does
-#======================================
+        ### E2) ORBITAL PART
+        print >> f, header_basisfunctions
+        print >> f, " "   #this part is just empty
+
+        ### D3) FREQUENCY PART
+        # Modes are written in sections with three columns each.
+        print >> f, header_freq
+        # istart: the current mode index, will be incremented by 3 in each iteration.
+        istart = 0
+        while istart < nmode:
+            # select modes and freqs for this block
+            iend = min(istart+3, nmode)
+            ncol = iend - istart # number of columns in section
+            # print stuff to file
+            #  - mode indexes
+            for imode in xrange(istart, iend):
+                print >> f, '%22d' % (imode + 1),
+            print >> f
+            #  - (fake) symmetry info
+            print >> f, ' '.join(["                    ?A"]*ncol)
+            #  - frequencies converted to inverse centimeters
+            print >> f, ' Frequencies --',
+            for imode in xrange(istart, iend):
+                print >> f, '%10.4f' % (freqs[imode]/lightspeed*centimeter),
+                if imode != iend-1:
+                    print >> f, '           ',
+            print >> f
+            #  - a blob of text below the frequencies
+            print >> f, txt_freqbelow[ncol-1]
+            #  - the modes
+            for iatom in range(natom):
+                print >> f, '%6d %3d' % (iatom + 1, numbers[iatom]),
+                for imode in xrange(istart, iend):
+                    print >> f, '%8.2f %6.2f %6.2f' % (
+                       modes[3*iatom, imode], modes[3*iatom+1, imode],
+                       modes[3*iatom+2, imode]),
+                print >> f
+            # prepare for next iteration
+            istart = iend
+
+        print >> f, " Normal termination of Gaussian 09."
+
+# For backward compatibility with TAMkin before version 1.0.2
+dump_modes_molden = dump_modes_gaussian

@@ -320,9 +320,15 @@ class ReactionAnalysis(object):
 
         if filename is not None:
             pylab.clf()
-            pylab.title("Arrhenius plot: A [%s] = %.3e    Ea [kJ/mol] = %.1f" % (
-                self.kinetic_model.unit_name, self.A/self.kinetic_model.unit, self.Ea/kjmol
-            ))
+            pylab.title('Arrhenius plot')
+        pylab.text(
+            0.05, 0.05,
+            "A [%s] = %.3e\nEa [kJ/mol] = %.1f\nR^2 [%%] = %.1f" % (
+                self.kinetic_model.unit_name, self.A/self.kinetic_model.unit,
+                self.Ea/kjmol, self.R2*100
+                ),
+            transform=pylab.gca().transAxes
+        )
         pylab.xlabel("1/T [1/K]")
         pylab.ylabel("Rate coefficient [%s]" % self.kinetic_model.unit_name)
         if label is None:
@@ -418,9 +424,15 @@ class ReactionAnalysis(object):
 
         if filename is not None:
             pylab.clf()
-            pylab.title("Parameter plot: A [%s] = %.3e    Ea [kJ/mol] = %.2f" % (
-                self.kinetic_model.unit_name, self.A/self.kinetic_model.unit, self.Ea/kjmol
-            ))
+            pylab.title("Parameter plot")
+        pylab.text(
+            0.05, 0.05,
+            "A [%s] = %.3e\nEa [kJ/mol] = %.1f\nR^2 [%%] = %.1f" % (
+                self.kinetic_model.unit_name, self.A/self.kinetic_model.unit,
+                self.Ea/kjmol, self.R2*100
+                ),
+            transform=pylab.gca().transAxes
+        )
         pylab.xlabel("E_a [kJ/mol]")
         pylab.ylabel("ln(A) [ln(%s)]" % self.kinetic_model.unit_name)
         if label is None:

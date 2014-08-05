@@ -536,6 +536,15 @@ class Rotor(Info, StatFysTerms):
             angles, energies = self.rot_scan.potential
             print >> f, "    This is a hindered rotor"
             print >> f, "    Maximum number of cosines in the fit: %i" % self.dofmax
+            angles, energies = self.potential
+            fit_energies = self.hb.eval_fn(angles, self.v_coeffs)
+            rmsd = ((fit_energies - energies)**2).mean()**0.5
+            rms = (energies**2).mean()**0.5
+            rrmsd = rmsd/rms
+            print >> f, "    RMSD of the fit [kJ/mol]: %.2f" % (rmsd/kjmol)
+            print >> f, "    Relative RMSD of the fit the fit [%%]: %.1f" % (rrmsd*100)
+            print >> f, "    Pearson R^2 of the fit [%%]: %.3f" % ((1-rrmsd**2)*100)
+
             print >> f, "    Potential: Angle [deg]    Energy [kJ/mol]"
             for i in xrange(len(angles)):
                 print >> f, "              % 7.2f         %6.1f" % (angles[i]/deg, energies[i]/kjmol)
@@ -600,7 +609,12 @@ class Rotor(Info, StatFysTerms):
                 energies.min()/kjmol,
                 1.5*energies.max()/kjmol
             )
-        pylab.xlim(0,360)
+            fit_energies = self.hb.eval_fn(angles, self.v_coeffs)
+            rmsd = ((fit_energies - energies)**2).mean()**0.5
+            rms = (energies**2).mean()**0.5
+            rrmsd = rmsd/rms
+            pylab.title('RMSD [kJ/mol] = %.1f    RRMSD [%%] = %.0f    R^2 [%%] = %.0f' % (rmsd, rrmsd*100, (1-rrmsd**2)*100))
+        pylab.xlim(0, 360)
         pylab.ylabel("Energy [kJ/mol]")
         pylab.xlabel("Dihedral angle [deg]")
         pylab.savefig(prefix)

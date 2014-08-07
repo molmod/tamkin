@@ -45,6 +45,7 @@ setup(name='TAMkin',
     url='http://molmod.ugent.be/code/',
     package_dir = {'tamkin': 'tamkin'},
     packages = ['tamkin', 'tamkin.io'],
+    scripts=["scripts/tamkin-driver.py"],
     classifiers=[
         'Development Status :: 3 - Alpha',
         'Environment :: Console',

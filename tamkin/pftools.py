@@ -275,6 +275,8 @@ class ReactionAnalysis(object):
         print >> f, "T_step [K] = %.1f" % self.temp_step
         print >> f, "Number of temperatures = %i" % len(self.temps)
         print >> f
+        if self.kinetic_model.tunneling is not None:
+            self.kinetic_model.tunneling.dump(f)
         print >> f, "Reaction rate constants"
         print >> f, "    T [K]    Delta_r F [kJ/mol]      k(T) [%s]" % (self.kinetic_model.unit_name)
         for i in xrange(len(self.temps)):

@@ -43,7 +43,7 @@
 """
 
 
-from molmod import boltzmann, planck, kjmol
+from molmod import boltzmann, planck, kjmol, lightspeed, centimeter
 
 import numpy
 
@@ -66,6 +66,10 @@ class TunnelingCorrection(object):
            computes the correction factors for the rate constant at the given
            temperatures.
         """
+        raise NotImplementedError
+
+    def dump(self, f):
+        '''Write descriptive info about the tunneling correction to a text file'''
         raise NotImplementedError
 
 
@@ -125,6 +129,14 @@ class Eckart(TunnelingCorrection):
         result.Er = Er
         result.nu = nu
         return result
+
+    def dump(self, f):
+        '''Write descriptive info about the tunneling correction to a text file'''
+        print >> f, 'Eckart Tunneling Correction'
+        print >> f, 'Forward Barrier [kJ/mol] = %.2f' % (self.Ef/kjmol)
+        print >> f, 'Reverse Barrier [kJ/mol] = %.2f' % (self.Er/kjmol)
+        print >> f, 'Imaginary frequeny [cm^-1] = %.1f' % (self.nu/(lightspeed/centimeter))
+        print >> f
 
     def _compute_one_temp(self, temp):
         """Computes the correction for one temperature
@@ -219,6 +231,12 @@ class Wigner(TunnelingCorrection):
         result.nu = nu
         return result
 
+    def dump(self, f):
+        '''Write descriptive info about the tunneling correction to a text file'''
+        print >> f, 'Wigner Tunneling Correction'
+        print >> f, 'Imaginary frequeny [cm^-1] = %.1f' % (self.nu/(lightspeed/centimeter))
+        print >> f
+
     def __call__(self, temps):
         """See :meth:`TunnelingCorrection.__call__`."""
         return 1+(planck*self.nu/(boltzmann*temps))**2/24
@@ -257,6 +275,12 @@ class Miller(TunnelingCorrection):
         result = cls.__new__(cls)
         result.nu = nu
         return result
+
+    def dump(self, f):
+        '''Write descriptive info about the tunneling correction to a text file'''
+        print >> f, 'Miller Tunneling Correction'
+        print >> f, 'Imaginary frequeny [cm^-1] = %.1f' % (self.nu/(lightspeed/centimeter))
+        print >> f
 
     def __call__(self, temps):
         """See :meth:`TunnelingCorrection.__call__`."""

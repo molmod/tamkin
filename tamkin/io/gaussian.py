@@ -237,79 +237,75 @@ def load_rotscan_g03log(fn_log, top_indexes=None):
                              used for the scan.
     """
     # find the line that specifies the dihedral angle
-    f = file(fn_log)
+    with open(fn_log) as f:
+        found_modredundant = False
+        for line in f:
+            if line.startswith(" The following ModRedundant input section has been read:"):
+                found_modredundant = True
+                break
+        if not found_modredundant:
+            raise IOError("Could not find the ModRedundant section in the log file.")
 
-    line = " "
-    while len(line) > 0:
-        line = f.readline()
-        if line.startswith(" The following ModRedundant input section has been read:"):
-            break
-    if len(line) == 0:
-        raise IOError("Could not find the ModRedundant section in the log file.")
+        dihedral = None
+        num_geoms = 0
+        for line in f:
+            line = line.strip()
+            if len(line) == 0:
+                break
+            else:
+                words = line.split()
+                if words[0] == "D" and (words[5] == "S" or words[5] == "F"):
+                    if dihedral is None:
+                        dihedral = list(int(word)-1 for word in words[1:5])
+                    else:
+                        raise IOError("Found multiple dihedral angle scan, which is not supported.")
 
-    dihedral = None
-    num_geoms = 0
-    while len(line) > 0:
-        line = f.readline()
-        if len(line) < 2 or line[1] == ' ':
-            break
+        if dihedral is None:
+            raise IOError("Could not find the dihedral angle of the rotational scan.")
+
+        # load all the energies and compute the corresponding angles
+        energies = []
+        angles = []
+        geometries = []
+        for line in f:
+            if line.startswith("                          Input orientation:") or \
+               line.startswith("                         Standard orientation:"):
+                # read the molecule
+                numbers = []
+                last_coordinates = []
+                ## skip four lines
+                for i in xrange(4):
+                    f.next()
+                # read atoms
+                for line in f:
+                    if line.startswith(" -----"):
+                        break
+                    words = line.split()
+                    numbers.append(int(words[1]))
+                    last_coordinates.append((float(words[3]), float(words[4]), float(words[5])))
+            if line.startswith(" SCF Done:"):
+                # read the energy
+                last_energy = float(line[line.find("=")+1:].split()[0])
+            if line.startswith("    -- Stationary point found."):
+                # store last emergy and geometry in list
+                energies.append(last_energy)
+                last_coordinates = numpy.array(last_coordinates)*angstrom
+                geometries.append(last_coordinates)
+                angles.append(dihed_angle(last_coordinates[dihedral])[0])
+
+        if len(energies) == 0:
+            raise IOError("Could not find any stationary point")
+
+        if top_indexes is None:
+            # Define the molecular geometry that is used in the constructor of
+            # RotScan to detect the top.
+            from molmod.molecules import Molecule as BaseMolecule
+            molecule = BaseMolecule(numbers, geometries[0])
         else:
-            words = line.split()
-            if words[0] == "D" and (words[5] == "S" or words[5] == "F"):
-                if dihedral is None:
-                    dihedral = list(int(word)-1 for word in words[1:5])
-                else:
-                    raise IOError("Found multiple dihedral angle scan, which is not supported.")
-
-    if dihedral is None:
-        raise IOError("Could not find the dihedral angle of the rotational scan.")
-
-    # load all the energies and compute the corresponding angles
-    energies = []
-    angles = []
-    geometries = []
-    while len(line) > 0:
-        line = f.readline()
-        if line.startswith("                          Input orientation:") or \
-           line.startswith("                         Standard orientation:"):
-            # read the molecule
-            numbers = []
-            last_coordinates = []
-            ## skip four lines
-            f.readline()
-            f.readline()
-            f.readline()
-            f.readline()
-            line = f.readline()
-            # read atoms
-            while len(line) > 0 and not line.startswith(" -----"):
-                words =  line.split()
-                numbers.append(int(words[1]))
-                last_coordinates.append((float(words[3]), float(words[4]), float(words[5])))
-                line = f.readline()
-        if line.startswith(" SCF Done:"):
-            # read the energy
-            last_energy = float(line[line.find("=")+1:].split()[0])
-        if line.startswith("    -- Stationary point found."):
-            # store last emergy and geometry in list
-            energies.append(last_energy)
-            last_coordinates = numpy.array(last_coordinates)*angstrom
-            geometries.append(last_coordinates)
-            angles.append(dihed_angle(last_coordinates[dihedral])[0])
-
-    if len(energies) == 0:
-        raise IOError("Could not find any stationary point")
-
-    if top_indexes is None:
-        # Define the molecular geometry that is used in the constructor of
-        # RotScan to detect the top.
-        from molmod.molecules import Molecule as BaseMolecule
-        molecule = BaseMolecule(numbers, geometries[0])
-    else:
-        molecule = None
-    result = RotScan(
-        dihedral, molecule, top_indexes,
-        numpy.array([angles, energies])
-    )
-    result.geometries = numpy.array(geometries)
-    return result
+            molecule = None
+        result = RotScan(
+            dihedral, molecule, top_indexes,
+            numpy.array([angles, energies])
+        )
+        result.geometries = numpy.array(geometries)
+        return result

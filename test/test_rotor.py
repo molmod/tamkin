@@ -374,3 +374,8 @@ class RotorTestCase(unittest.TestCase):
         expected.sort()
         self.assertArraysAlmostEqual(energies[:10]/kjmol, expected[:10], 1e-3)
         self.assertAlmostEqual(numpy.exp(-energies/(100*boltzmann)).sum()/3.0, 0.12208E+00, 5)
+
+    def test_load_rotor_margot(self):
+        rot_scan = load_rotscan_g03log("test/input/rotor/margot.log")
+        assert rot_scan.potential.shape == (2, 1)
+        assert (rot_scan.dihedral == [2, 3, 4, 5]).all()

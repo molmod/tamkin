@@ -35,6 +35,9 @@
 '''Functions to load the dispersion correction from file'''
 
 
+__all__ = ['load_dftd3', 'load_dftd_orca']
+
+
 def load_dftd3(fn):
     '''Load the dispersion correction (in a.u.) from a DFT-D3 output file
 
@@ -45,3 +48,15 @@ def load_dftd3(fn):
         for line in f:
             if line.startswith(' Edisp /kcal,au:'):
                 return float(line.split()[-1])
+
+
+def load_dftd_orca(fn):
+    '''Load the dispersion correction (in a.u.) from on Orca output file
+
+       Arguments:
+        | ``fn`` -- The DFT-D3 output file.
+    '''
+    with open(fn) as f:
+        for line in f:
+            if line.startswith("Van der Waals correction ="):
+                return float(line.split()[5])

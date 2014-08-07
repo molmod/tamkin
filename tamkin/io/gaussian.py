@@ -128,13 +128,8 @@ def load_molecule_g03fchk(fn_freq, fn_ener=None, fn_vdw=None, energy=None, fn_pu
         energy = fchk_ener.fields["Total Energy"]
     vdw = 0
     if fn_vdw is not None:
-         f = file(fn_vdw)
-         for line in f:
-             if line.startswith("Van der Waals correction ="):
-                 words = line.split()
-                 vdw = float(words[5])
-                 break
-         f.close()
+        from tamkin.io.dispersion import load_dftd_orca
+        vdw = load_dftd_orca(fn_vdw)
 
     natom = fchk_freq.molecule.size
     if fchk_freq.molecule.size == 1 and \

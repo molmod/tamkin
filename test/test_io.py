@@ -323,3 +323,6 @@ class IOTestCase(unittest.TestCase):
 
     def test_dftd3(self):
         assert load_dftd3('test/input/dftd3/dftd3.out') == -0.00330057
+
+    def test_dftd_orca(self):
+        assert load_dftd_orca('test/input/matvdw/R_b3lyp-d.out') == -0.404083275

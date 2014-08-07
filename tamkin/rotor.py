@@ -267,7 +267,7 @@ class HarmonicBasis(object):
         residual = numpy.dot(A, coeffs) - v
         abs_threshold = max(1*kjmol, (v.max() - v.min())*v_threshold)
         if (abs(residual) > abs_threshold).any():
-            raise ValueError("Residual is too large. (poor Fourier expansion)")
+            raise ValueError("Residual is too large. (poor Fourier expansion.) abs=%s rel=%s" % (residual, residual/(v.max() - v.min())))
 
         # collect the parameters in a convenient array
         result = numpy.zeros(self.size)
@@ -527,7 +527,8 @@ class Rotor(Info, StatFysTerms):
         """
         Info.dump(self, f)
         # parameters
-        print >> f, "    Indexes: %s" % " ".join(str(i) for i in self.rot_scan.top_indexes)
+        print >> f, "    Dihedral indexes: %s" % " ".join(str(i) for i in self.rot_scan.dihedral)
+        print >> f, "    Top indexes: %s" % " ".join(str(i) for i in self.rot_scan.top_indexes)
         print >> f, "    Rotational symmetry: %i" % self.rotsym
         print >> f, "    Even potential: %s" % self.even
         if self.rot_scan.potential is None:

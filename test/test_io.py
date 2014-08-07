@@ -320,3 +320,6 @@ class IOTestCase(unittest.TestCase):
         mol1 = load_molecule_g03fchk('test/input/punch/gaussian.fchk', fn_punch='test/input/punch/fort.7')
         assert abs(mol0.gradient - mol1.gradient).max() < 1e-8
         assert abs(mol0.hessian - mol1.hessian).max() < 1e-8
+
+    def test_dftd3(self):
+        assert load_dftd3('test/input/dftd3/dftd3.out') == -0.00330057

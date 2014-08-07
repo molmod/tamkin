@@ -1,0 +1,59 @@
+  _________________________________
+
+ |         DFTD3 V3.0 Rev 1        |
+ | S.Grimme, University Bonn       |
+ |           May  2013             |
+ |   see dftd3 -h for options      |
+  _________________________________
+
+ Please cite DFT-D3 work done with this code as:
+ S. Grimme, J. Antony, S. Ehrlich and H. Krieg,
+ J. Chem. Phys. 132 (2010), 154104
+ If used with BJ-damping cite also
+ S. Grimme, S. Ehrlich and L. Goerigk,
+ J. Comput. Chem. 32 (2011), 1456-1465
+ For DFT-D2 the reference is
+ S. Grimme, J. Comput. Chem., 27 (2006), 1787-1799
+
+  files read :
+ gaussian.opt.xyz
+C6 coefficients used:
+           2  C6 for element            1
+Z=  1 CN= 0.912     C6(AA)=    3.03
+Z=  1 CN= 0.000     C6(AA)=    7.59
+           5  C6 for element            6
+Z=  6 CN= 0.000     C6(AA)=   49.11
+Z=  6 CN= 0.987     C6(AA)=   43.25
+Z=  6 CN= 1.998     C6(AA)=   29.36
+Z=  6 CN= 2.999     C6(AA)=   25.78
+Z=  6 CN= 3.984     C6(AA)=   18.21
+
+#               XYZ [au]               R0(AA) [Ang.]  CN       C6(AA)     C8(AA)   C10(AA) [au]
+   1   1.44613   0.00000   0.00000   c     0.610    3.980        18.3       530.6     18797.8
+   2  -1.44613  -0.00000  -0.00000   c     0.610    3.980        18.3       530.6     18797.8
+   3   2.20031  -1.31698   1.40986   h     0.395    0.996         3.1        37.4       553.5
+   4   2.20031   1.87946   0.43561   h     0.395    0.996         3.1        37.4       553.5
+   5   2.20032  -0.56248  -1.84546   h     0.395    0.996         3.1        37.4       553.5
+   6  -2.20032   0.56248   1.84546   h     0.395    0.996         3.1        37.4       553.5
+   7  -2.20031  -1.87946  -0.43561   h     0.395    0.996         3.1        37.4       553.5
+   8  -2.20031   1.31698  -1.40986   h     0.395    0.996         3.1        37.4       553.5
+
+molecular C6(AA) [au] =       364.03
+
+           DFT-D V3(BJ)
+ DF pbe
+ parameters
+ s6       :    1.0000
+ s8       :    0.7875
+ a1       :    0.4289
+ a2       :    4.4407
+ k1-k3    :   16.0000    1.3333   -4.0000
+ Cutoff   :   94.8683 a.u.
+ CN-Cutoff:   40.0000 a.u.
+
+ Edisp /kcal,au:    -2.0711 -0.00330057
+
+ E6    /kcal :    -1.5283
+ E8    /kcal :    -0.5429
+ % E8        : 26.21
+ normal termination of dftd3

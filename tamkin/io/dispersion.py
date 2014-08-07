@@ -32,15 +32,16 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 #--
+'''Functions to load the dispersion correction from file'''
 
 
-from tamkin.io.charmm import *
-from tamkin.io.cp2k import *
-from tamkin.io.cpmd import *
-from tamkin.io.dispersion import *
-from tamkin.io.gamess import *
-from tamkin.io.gaussian import *
-from tamkin.io.internal import *
-from tamkin.io.qchem import *
-from tamkin.io.trajectory import *
-from tamkin.io.vasp import *
+def load_dftd3(fn):
+    '''Load the dispersion correction (in a.u.) from a DFT-D3 output file
+
+       Arguments:
+        | ``fn`` -- The DFT-D3 output file.
+    '''
+    with open(fn) as f:
+        for line in f:
+            if line.startswith(' Edisp /kcal,au:'):
+                return float(line.split()[-1])

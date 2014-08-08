@@ -2,3 +2,10 @@
 *.png
 *.pdf
 *.xcf
+doc/reference/tamkin-driver.rst
+backup
+tmp
+apps
+doctrees
+doc/_build
+build

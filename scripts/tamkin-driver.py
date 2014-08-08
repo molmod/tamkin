@@ -34,16 +34,185 @@
 #
 #--
 #!/usr/bin/env python
+'''\
+
+The TAMkin driver script
+########################
+
+The TAMkin driver script (``tamkin-driver.py``) runs a standardized TAMkin
+computation based on the files and directories present in the current directory.
+This script needs no command line arguments. (When command line arguments are
+present, this documentation is printed on screen.)
 
 
-import os, numpy as np
+Assumed layout of the current directory
+=======================================
+
+This script assumes that the current directory has subdirectories as follows::
+
+    re_*/   # reactant subdirectories (at least one)
+    ts_*/   # transition state subdirectory (optional, at most one)
+    pr_*/   # reaction product subdirectories (optional)
+
+The layout of each 'molecule' subdirectory is documented below.
+
+Reaction products are mandatory. At least one transition state or product must
+be present. Depending on the available directories, the following two
+computations may take place:
+
+* When a transition state is present, the kinetic parameters are computed. In
+  this case, a config file ``kinetics.cfg`` must be present. It contains the
+  supports keys:
+
+    ``temp_low`` and ``temp_high`` (mandatory)
+        These specifiy the minimum and maximum temperature for the Arrhenius
+        plot.
+
+    ``temp_int`` (optional)
+        The temperature interval for the datapoints for the Arrhenius plot.
+        [default=10]
+
+  For example::
+
+    temp_low 300
+    temp_high 500
+
+* When reaction products are present, the equilibrium constant is computed. In
+  this case, one may add a file ``equilibrium.cfg`` which supports the following
+  key:
+
+    ``temps`` (optional)
+        A list of temperatures at which the equilibrium constant is computed.
+
+
+Assumed layout of a molecule directory (re_*/, ts_*/ or pr_*/)
+==============================================================
+
+The following file must be present in the directory::
+
+    freq/gaussian.fchk     # the formatted checkpoint file of a Gaussian03/09
+                           # computation
+
+The following files may be present in the directory::
+
+    molecule.cfg           # specifies additional parameters of the molecule.
+                           # (Details given below.)
+
+    dftd3/dftd3.out        # the screen output of the dftd3 program redirected
+                           # to a file. this adds an a posteriori Grimme
+                           # Dispersion correction to the energy.
+
+    sp/gaussian.fchk       # a Gaussian03/09 formatted checkpoint file to
+                           # replace the energy from the frequency job by a more
+                           # accurate one.
+
+    rotor_g_*/gaussian.log # adds a rotor based on a Gaussian 03/09 relaxed
+    rotor_g_*/rotor.cfg    # scan. (Details given below. More than one allowed.)
+
+    rotor_f_*/rotor.cfg    # specifies a free rotor. (Details given
+                           # below. More than one allowed.)
+
+    rotor_c_*/rotor.dat    # specifies a custom hindered rotor. (Details given
+    rotor_c_*/rotor.cfg    # below. More than one allowed.)
+
+All other files are simply ignored.
+
+All configuration files (``*.cfg``) have the following format. Every non-empty
+line consists of a key followed one or more values, all separated by whitespace.
+Comments can be added with a #, just as in Python source code. Each file has its
+specific keys that are processed. Unknown keys are ignored.
+
+**molecule.cfg:**
+
+    ``symnum`` (optional)
+        This keyword can be used to assign the rotational symmetry number. For
+        molecules with less than 10 atoms, this number is estimated
+        automatically when not given. For larger molecules, the default value is
+        1.
+
+**rotor_g_*/rotor.cfg**
+
+    ``rotsym`` (optional)
+        The rotational symmetry of the internal rotor. [default=1]
+
+    ``even`` (optional)
+        A boolean (True or False) to indicate that the torsional potential is
+        even. [default=False]
+
+    ``num_levels`` (optional)
+        The number of energy levels considered in the QM treatment of the rotor.
+        [default=50]
+
+    ``dofmax`` (optional)
+        The maximum number of cosines used to represent the torsional potential.
+        if the potential is not even, the same number of sines is also used.
+        [default=5]
+
+**rotor_f_*/rotor.cfg**
+
+    ``dihed`` (mandatory)
+        A list of four atom indexes that define the dihedral angle, separated by
+        whitespace.
+
+    ``fortran`` (optional)
+        A boolean (True or False) to indicate that the atom indexes are given in
+        Fortran convention. (Counting starts from one). [default=False]
+
+    ``rotsym`` (optional)
+        The rotational symmetry of the internal rotor. [default=1]
+
+    ``num_levels`` (optional)
+        The number of energy levels considered in the QM treatment of the rotor.
+        [default=50]
+
+    ``dofmax`` (optional)
+        The maximum number of cosines used to represent the torsional potential.
+        if the potential is not even, the same number of sines is also used.
+        [default=5]
+
+**rotor_c_*/rotor.dat**
+
+    This file just contains two columns of data, angles (radians) and energies
+    (hartree), that specify the custom torsional potential. It does not follow
+    the ``*.cfg`` format.
+
+**rotor_c_*/rotor.cfg**
+
+    ``dihed`` (mandatory)
+        A list of four atom indexes that define the dihedral angle, separated by
+        whitespace.
+
+    ``fortran`` (optional)
+        A boolean (True or False) to indicate that the atom indexes are given in
+        Fortran convention. (Counting starts from one). [default=False]
+
+    ``rotsym`` (optional)
+        The rotational symmetry of the internal rotor. [default=1]
+
+    ``even`` (optional)
+        A boolean (True or False) to indicate that the torsional potential is
+        even. [default=False]
+
+    ``num_levels`` (optional)
+        The number of energy levels considered in the QM treatment of the rotor.
+        [default=50]
+
+    ``dofmax`` (optional)
+        The maximum number of cosines used to represent the torsional potential.
+        if the potential is not even, the same number of sines is also used.
+        [default=5]
+'''
+
+
+import sys, os, numpy as np
 from glob import glob
 from tamkin import *
-
+from molmod.periodic import periodic
 
 # A few variables for debugging purposes only
 gradient_threshold = 1e-2
 v_threshold = 0.01
+
 
 def load_cfg(fn):
     '''Read a config file and return contents as a dictionary.'''
@@ -86,117 +255,12 @@ def load_cfg(fn):
 
 
 def get_pf(dn):
-    '''Construct a partition function from a standard directory layout.
+    '''Construct a partition function from a molecule directory.
 
        **Arguments:**
 
        dn
-            A directory name
-
-       The following file must be present in the directory::
-
-            freq/gaussian.fchk
-
-       The following files may be present in the directory::
-
-            molecule.cfg           # to specify additional parameters of the
-                                   # molecule. (Details given below.)
-
-            dftd3/dftd3.out        # to add an a posteriori Grimme Dispersion
-                                   # correction.
-
-            sp/gaussian.fchk       # to replace the energy from the frequency
-                                   # job by a more accurate one.
-
-            rotor_g_*/gaussian.log # to add a rotor based on a Gaussian relaxed
-            rotor_g_*/rotor.cfg    # scan. (More than one allowed.)
-
-            rotor_f_*/rotor.cfg    # to specify a free rotor. (Details given
-                                   # below. More than one allowed.)
-
-            rotor_c_*/rotor.dat    # to specify a custom hindered rotor.
-            rotor_c_*/rotor.cfg    # (Details given below. More than one
-                                   # allowed.)
-
-       All other files are simply ignored.
-
-       All configuration files (*.cfg) have the following format. Every
-       non-empty lines consists of a key and one or more values. Comments can
-       be added with a #, just as in Python source code. Each file has its
-       specific keys that are processed. Unknown keys are ignored.
-
-       **molecule.cfg:**
-
-       ``symnum``
-            This keywords can be used to assign the rotational symmetry number.
-            For molecules with less than 10 atoms, this number is estimated
-            automatically when not given. For larger molecules, the default
-            value is 1.
-
-       **rotor_g_*/rotor.cfg**
-
-       ``rotsym``
-            The rotational symmetry of the internal rotor. [default=1]
-
-       ``even``
-            A boolean (True of False) to indicate that the torsional potential
-            is even. [default=False]
-
-       ``num_levels``
-            The number of energy levels considered in the QM treatment of the
-            rotor. [default=50]
-
-       ``dofmax``
-            The maximum number of cosines used to represent the torsional
-            potential. if the potential is not even, the same number of sines is
-            also used. [default=5]
-
-       **rotor_f_*/rotor.cfg**
-
-       ``rotsym``
-            The rotational symmetry of the internal rotor. [default=1]
-
-       ``num_levels``
-            The number of energy levels considered in the QM treatment of the
-            rotor. [default=50]
-
-       ``dofmax``
-            The maximum number of cosines used to represent the torsional
-            potential. if the potential is not even, the same number of sines is
-            also used. [default=5]
-
-       **rotor_c_*/rotor.dat**
-
-       This file just contains two colums of data, angles (rad) and energies
-       (hartree), that specify the custom potential. It does not follow the cfg
-       format.
-
-       **rotor_c_*/rotor.cfg**
-
-       ``dihed``
-            A list of four atom indexes that define the dihedral angle,
-            separated by whitespace.
-
-       ``fortran``
-            A boolean (True of False) to indicate that the atom indexes are
-            given in Fortran convention (starting by one). [default=False]
-
-       ``rotsym``
-            The rotational symmetry of the internal rotor. [default=1]
-
-       ``even``
-            A boolean (True of False) to indicate that the torsional potential
-            is even. [default=False]
-
-       ``num_levels``
-            The number of energy levels considered in the QM treatment of the
-            rotor. [default=50]
-
-       ``dofmax``
-            The maximum number of cosines used to represent the torsional
-            potential. if the potential is not even, the same number of sines is
-            also used. [default=5]
-
+            A molecule directory name
     '''
     # A1) load the molecule
     molecule = load_molecule_g03fchk('%s/freq/gaussian.fchk' % dn)
@@ -204,14 +268,15 @@ def get_pf(dn):
     # A2) if present, load a more accurate energy
     fn_sp = '%s/sp/gaussian.fchk' % dn
     if os.path.isfile(fn_sp):
-        molecule_energy = load_molecule_g03fchk(fn_sp)
-        molecule = molecule.copywith(energy=molecule_energy.energy)
+        from molmod.io import FCHKFile
+        sp_energy = FCHKFile(fn_sp).fields['Total Energy']
+        molecule = molecule.copy_with(energy=sp_energy)
 
     # A3) if present add a grimme correction
     fn_dftd3 = '%s/dftd3/dftd3.out' % dn
     if os.path.isfile(fn_dftd3):
         disp_energy = load_dftd3(fn_dftd3)
-        molecule = molecule.copywith(energy=molecule.energy + disp_energy)
+        molecule = molecule.copy_with(energy=molecule.energy + disp_energy)
 
     # B) Load all rotors and keep directories of each rotor (dns_rotor).
     rotors = []
@@ -242,7 +307,7 @@ def get_pf(dn):
         # Load the config file
         rotor_cfg = load_cfg(fn_cfg)
         # Construct a Rotor object (solves Schrodinger equation etc.)
-        rotor_scan = RotScan(rotor_cfg['atoms'], molecule)
+        rotor_scan = RotScan(rotor_cfg['dihed'], molecule)
         rotor = Rotor(rotor_scan, molecule,
                       suffix=os.path.basename(dn_rotor)[6:],
                       rotsym=rotor_cfg.get('rotsym', 1),
@@ -277,12 +342,35 @@ def get_pf(dn):
     # D) Define the partition function
     mol_cfg = load_cfg('%s/molecule.cfg')
     pf = PartFun(nma, [ExtTrans(), ExtRot(mol_cfg.get('symnum', 1))] + rotors)
+    # store the atomic numbers as an attribute of the partition function (used
+    # to check that no atoms get lost in a reaction.
+    pf.numbers = molecule.numbers
 
     # E) Make plots of the rotor
     for dn_rotor, rotor in zip(dns_rotor, rotors):
         rotor.plot_levels('%s/levels.png' % dn_rotor, 300)
 
     return pf
+
+
+def get_chemical_formula(numbers):
+    tmp = dict((number, (numbers == number).sum()) for number in np.unique(numbers))
+    return ' '.join(['%s_%i' % (periodic[number].symbol, count) for number, count in tmp.iteritems()])
+
+
+def check_mass_balance(pfs1, pfs2, name1, name2):
+    cf1 = get_chemical_formula(np.concatenate([pf.numbers for pf in pfs1]))
+    cf2 = get_chemical_formula(np.concatenate([pf.numbers for pf in pfs2]))
+    if cf1 != cf2:
+        print 'Error: mass balance mismatch!'
+        print 'Chemical formula of the %s: %s' % (name1, cf1)
+        for pf in pfs1:
+            print '%30s:    %s' % (pf.title, get_chemical_formula(pf.numbers))
+        print 'Chemical formula of the %s: %s' % (name1, cf2)
+        for pf in pfs2:
+            print '%30s:    %s' % (pf.title, get_chemical_formula(pf.numbers))
+        print
+        raise RuntimeError('Mass balance mismatch')
 
 
 def main_kinetics(res, ts, prs):
@@ -301,37 +389,18 @@ def main_kinetics(res, ts, prs):
 
 
 def main_equilibrium(res, prs):
+    cfg = load_cfg('equilibrium.cfg')
+
     tm = ThermodynamicModel(res, prs)
     tm.write_to_file("equilibrium.txt")
+    for temp in cfg.get('temps', []):
+        tm.write_table(temp, "thermo_%04i.csv" % temp)
 
 
 def main():
-    '''Runs a standardized TAMkin computation.
+    if len(sys.argv) > 1:
+        raise ValueError('The TAMKin driver script takes no command line arguments.')
 
-       This script assumes that the current directory has subdirectories as
-       follows::
-
-            re_*/   # reactant subdirectories (at least one)
-            ts_*/   # on transition state subdirectory (optional, at most one)
-            pr_*/   # reaction product subdirectories (optional)
-
-       The layout of each directory is documented in the function get_pf. At
-       least one transition state or product must be present.
-
-       When a transition state is present, the kinetic parameters are computed.
-       In this case, a config file ``kinetics.cfg`` must be present. It contains
-       the following keys:
-
-       ``temp_low``, ``temp_high`` (mandatory)
-            These specifiy the minimum and maximum temperature for the Arrhenius
-            plot.
-
-       ``temp_int``
-            The temperature interval for the datapoints for the Arrhenius plot.
-            [default=10]
-
-       When reaction products are present, the equilibrium constant is computed.
-    '''
     reactants = []
     tss = []
     products = []
@@ -354,11 +423,24 @@ def main():
     if len(tss) == 0 and len(products) == 0:
         raise RuntimeError('At least a transition state or one product must be present.')
 
+
     if len(tss) == 1:
+        check_mass_balance(reactants, tss, 'reactants', 'transition state')
+        if len(products) > 0:
+            check_mass_balance(reactants, products, 'reactants', 'products')
         main_kinetics(reactants, tss[0], products)
     if len(products) > 0:
+        check_mass_balance(reactants, products, 'reactants', 'products')
         main_equilibrium(reactants, products)
 
 
 if __name__ == '__main__':
-    main()
+    if len(sys.argv) > 1:
+        print __doc__
+    else:
+        try:
+            main()
+        except:
+            print 'An Error Occured! For detailed documentation, run ``tamkin-driver.py -h``.'
+            print
+            raise

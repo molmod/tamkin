@@ -25,8 +25,8 @@ CPMD
 .. automodule:: tamkin.io.cpmd
    :members:
 
-Gaussian 03
-~~~~~~~~~~~
+Gaussian 03/09
+~~~~~~~~~~~~~~
 
 .. automodule:: tamkin.io.gaussian
    :members:

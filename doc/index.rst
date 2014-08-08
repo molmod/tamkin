@@ -44,6 +44,7 @@ Library Reference
    :maxdepth: 1
    :numbered:
 
+   reference/tamkin-driver.rst
    reference/io.rst
    reference/nma.rst
    reference/pf.rst

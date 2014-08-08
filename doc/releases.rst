@@ -3,11 +3,16 @@
 Release history
 ###############
 
+* **August 8, 2014. Version 1.0.4**
+
+    - Improved ``tamkin-driver.py`` with improved documentation.
+    - Added missing test file.
+
 * **August 7, 2014. Version 1.0.3**
 
     - Fix bug in load_rotscan_g03log. This function now also works with G09.
     - More output (rotors and tunneling correction)
-    - Initial version of the TAMkin deriver script
+    - Initial version of the TAMkin driver script
 
 * **August 5, 2014. Version 1.0.2**
 

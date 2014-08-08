@@ -50,9 +50,11 @@ Assumed layout of the current directory
 
 This script assumes that the current directory has subdirectories as follows::
 
-    re_*/   # reactant subdirectories (at least one)
-    ts_*/   # transition state subdirectory (optional, at most one)
-    pr_*/   # reaction product subdirectories (optional)
+    re_*/            # Reactant subdirectories (at least one).
+    ts_*/            # Transition state subdirectory (optional, at most one).
+    pr_*/            # Reaction product subdirectories (optional).
+    kinetics.cfg     # Contains parameters for reaction kinetics computation.
+    equilibrium.cfg  # Contains parameters for chemical equilibrium computation.
 
 The layout of each 'molecule' subdirectory is documented below.
 
@@ -91,7 +93,7 @@ Assumed layout of a molecule directory (re_*/, ts_*/ or pr_*/)
 The following file must be present in the directory::
 
     freq/gaussian.fchk     # the formatted checkpoint file of a Gaussian03/09
-                           # computation
+                           # computation.
 
 The following files may be present in the directory::
 

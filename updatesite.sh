@@ -17,4 +17,4 @@ git checkout master && (
     git commit --amend -a -m 'Automatic documentation update'
     git push origin gh-pages:gh-pages -f
   )
-) && git checkout master
+) && git checkout master && rm -r doctrees

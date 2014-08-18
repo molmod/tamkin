@@ -341,7 +341,7 @@ def get_pf(dn):
 
     # D) Define the partition function
     mol_cfg = load_cfg('%s/molecule.cfg')
-    pf = PartFun(nma, [ExtTrans(), ExtRot(mol_cfg.get('symnum', 1))] + rotors)
+    pf = PartFun(nma, [ExtTrans(), ExtRot(mol_cfg.get('symnum', None))] + rotors)
     # store the atomic numbers as an attribute of the partition function (used
     # to check that no atoms get lost in a reaction.
     pf.numbers = molecule.numbers

@@ -628,7 +628,12 @@ class StatFysTerms(StatFys):
         return self.chemical_potential(temp, self.helpern_terms)
 
 
-def helper_levels(temp, n, energy_levels):
+def _check_levels(temp, bfs, Z):
+    if bfs[bfs.argmin()]/Z > 0.01:
+        raise ValueError('The highest energy level is occupied by more than 1%.')
+
+
+def helper_levels(temp, n, energy_levels, check=False):
     """Helper 0 function for a system with the given energy levels.
 
        Returns T^n ln(Z), where Z is the partition function
@@ -637,6 +642,11 @@ def helper_levels(temp, n, energy_levels):
         | ``temp`` -- the temperature
         | ``n`` -- the power for the temperature factor
         | ``energy_levels`` -- an array with energy levels
+
+       Optional argument:
+        | ``check`` -- when set to True, an error is raise when the highest
+                       energy level is occupied by more than 1% the the current
+                       temperature.
     """
     # this is defined as a function because multiple classes need it
     if temp == 0:
@@ -646,10 +656,13 @@ def helper_levels(temp, n, energy_levels):
             degeneracy += 1
         return temp**n*numpy.log(degeneracy) - temp**(n-1)*energy
     else:
-        Z = numpy.exp(-energy_levels/(boltzmann*temp)).sum()
+        bfs = numpy.exp(-energy_levels/(boltzmann*temp))
+        Z = bfs.sum()
+        if check:
+            _check_levels(temp, bfs, Z)
         return temp**n*numpy.log(Z)
 
-def helpert_levels(temp, n, energy_levels):
+def helpert_levels(temp, n, energy_levels, check=False):
     """Helper 1 function for a system with the given energy levels.
 
        Returns T^n (d ln(Z) / dT), where Z is the partition function
@@ -658,17 +671,23 @@ def helpert_levels(temp, n, energy_levels):
         | ``temp`` -- the temperature
         | ``n`` -- the power for the temperature factor
         | ``energy_levels`` -- an array with energy levels
+
+       Optional argument:
+        | ``check`` -- when set to True, an error is raise when the highest
+                       energy level is occupied by more than 1% the the current
+                       temperature.
     """
     # this is defined as a function because multiple classes need it
     if temp == 0:
         raise NotImplementedError
     else:
-        es = energy_levels
-        bfs = numpy.exp(-es/(boltzmann*temp))
+        bfs = numpy.exp(-energy_levels/(boltzmann*temp))
         Z = bfs.sum()
-        return temp**(n-2)*(bfs*es).sum()/Z/boltzmann
+        if check:
+            _check_levels(temp, bfs, Z)
+        return temp**(n-2)*(bfs*energy_levels).sum()/Z/boltzmann
 
-def helpertt_levels(temp, n, energy_levels):
+def helpertt_levels(temp, n, energy_levels, check=False):
     """Helper 2 function for a system with the given energy levels.
 
        Returns T^n (d^2 ln(Z) / dT^2), where Z is the partition function
@@ -677,17 +696,23 @@ def helpertt_levels(temp, n, energy_levels):
         | ``temp`` -- the temperature
         | ``n`` -- the power for the temperature factor
         | ``energy_levels`` -- an array with energy levels
+
+       Optional argument:
+        | ``check`` -- when set to True, an error is raise when the highest
+                       energy level is occupied by more than 1% the the current
+                       temperature.
     """
     # this is defined as a function because multiple classes need it
     if temp == 0:
         raise NotImplementedError
     else:
-        es = energy_levels
-        bfs = numpy.exp(-es/(boltzmann*temp))
+        bfs = numpy.exp(-energy_levels/(boltzmann*temp))
         Z = bfs.sum()
-        return temp**(n-4)/boltzmann**2*((bfs*es**2).sum()/Z) \
-               -2*temp**(n-3)/boltzmann*((bfs*es).sum()/Z) \
-               -temp**(n-4)/boltzmann**2*((bfs*es).sum()/Z)**2
+        if check:
+            _check_levels(temp, bfs, Z)
+        return temp**(n-4)/boltzmann**2*((bfs*energy_levels**2).sum()/Z) \
+               -2*temp**(n-3)/boltzmann*((bfs*energy_levels).sum()/Z) \
+               -temp**(n-4)/boltzmann**2*((bfs*energy_levels).sum()/Z)**2
 
 
 class Electronic(Info, StatFys):

@@ -632,7 +632,7 @@ class Rotor(Info, StatFysTerms):
         return numpy.array([
             -helper_vibrations(temp, n, self.cancel_freq, self.classical,
                                  self.freq_scaling, self.zp_scaling),
-            helper_levels(temp, n, self.energy_levels) - temp**n*numpy.log(self.rotsym),
+            helper_levels(temp, n, self.energy_levels, check=True) - temp**n*numpy.log(self.rotsym),
         ])
 
     def helpert_terms(self, temp, n):
@@ -640,7 +640,7 @@ class Rotor(Info, StatFysTerms):
         return numpy.array([
             -helpert_vibrations(temp, n, self.cancel_freq, self.classical,
                                   self.freq_scaling, self.zp_scaling),
-            helpert_levels(temp, n, self.energy_levels),
+            helpert_levels(temp, n, self.energy_levels, check=True),
         ])
 
     def helpertt_terms(self, temp, n):
@@ -648,5 +648,5 @@ class Rotor(Info, StatFysTerms):
         return numpy.array([
             -helpertt_vibrations(temp, n, self.cancel_freq, self.classical,
                                    self.freq_scaling, self.zp_scaling),
-            helpertt_levels(temp, n, self.energy_levels),
+            helpertt_levels(temp, n, self.energy_levels, check=True),
         ])

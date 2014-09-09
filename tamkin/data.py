@@ -467,7 +467,8 @@ class RotScan(ReadOnly):
             | ``molecule`` -- a molecule object. required when top_indexes is not
                               given
             | ``top_indexes`` -- a list of atom indexes involved in the rotor.
-                                 required when molecule is not given
+                                 required when molecule is not given or when the
+                                 top_indexes can not be derived automatically.
             | ``potential`` -- rotational potential info (if this is a hindered
                                rotor). must be a two-tuple containing the angles
                                and the corresponding energies.
@@ -481,6 +482,8 @@ class RotScan(ReadOnly):
             atom0, atom1 = dihedral[1:3]
             graph = MolecularGraph.from_geometry(molecule)
             half0, half1 = graph.get_halfs(atom0, atom1)
+            if (len(half0) + len(half1) != molecule.size) or len(half0) == 1 or len(half1) == 1:
+                raise ValueError("The rotating top could not be assigned properly. Specify the top_indexes manually.")
             if len(half1) > len(half0):
                 top_indexes = half0
                 top_indexes.discard(atom0)

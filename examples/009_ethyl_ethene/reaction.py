@@ -42,8 +42,8 @@ import pylab
 
 
 # Define an auxiliary function
-def load_rotor(mol, filename, rotsym, even):
-    rot_scan = load_rotscan_g03log(filename)
+def load_rotor(mol, filename, rotsym, even, top_indexes=None):
+    rot_scan = load_rotscan_g03log(filename, top_indexes)
     rotor = Rotor(rot_scan, mol, rotsym=rotsym, even=even)
     return rotor
 
@@ -57,12 +57,10 @@ nma_ethene = NMA(mol_ethene, ConstrainExt())
 nma_ts_gauche = NMA(mol_ts_gauche, ConstrainExt())
 nma_ts_trans = NMA(mol_ts_trans, ConstrainExt())
 # Construct the rotors
-print "begin"
 rotor_ethyl = load_rotor(mol_ethyl, "ethyl/scan/gaussian.log", 6, True)
-print "end"
-rotor1_ts_gauche = load_rotor(mol_ts_gauche, "ts_ad1/scan1/gaussian.log", 3, False)
+rotor1_ts_gauche = load_rotor(mol_ts_gauche, "ts_ad1/scan1/gaussian.log", 3, False, [4,5,6])
 rotor2_ts_gauche = load_rotor(mol_ts_gauche, "ts_ad1/scan2/gaussian.log", 1, True)
-rotor1_ts_trans = load_rotor(mol_ts_trans, "ts_ad1/scan1/gaussian.log", 3, False)
+rotor1_ts_trans = load_rotor(mol_ts_trans, "ts_ad1/scan1/gaussian.log", 3, False, [4,5,6])
 rotor2_ts_trans = load_rotor(mol_ts_trans, "ts_ad1/scan2/gaussian.log", 1, True)
 # Construct the partition functions.
 pf_ethyl = PartFun(nma_ethyl, [

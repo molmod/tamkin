@@ -209,3 +209,16 @@ def test_get_external_basis_new2():
     ib = numpy.array(ib)
     error = abs(numpy.dot(ib, eb.transpose())).max()
     assert error < 1e-5
+
+
+def test_rot_scan_ts():
+    # The select dihedral angles do not allow an automatic assignment of the top
+    # indexes.
+    mol = load_molecule_g03fchk("test/input/sterck/paats_1h2o_b_aa.fchk")
+    diheds = [[9, 6, 7, 10], [7, 10, 18, 11], [11, 18, 10, 7]]
+    for dihed in diheds:
+        try:
+            scan = RotScan(numpy.array(dihed)-1, mol)
+            assert False
+        except ValueError, e:
+            assert e.message == "The rotating top could not be assigned properly. Specify the top_indexes manually."

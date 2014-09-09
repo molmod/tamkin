@@ -143,12 +143,23 @@ specific keys that are processed. Unknown keys are ignored.
         A boolean (True or False) to indicate that the torsional potential is
         even. [default=False]
 
+    ``fortran`` (optional)
+        A boolean (True or False) to indicate that the atom indexes are given in
+        Fortran convention. (Counting starts from one). [default=False]
+
     ``num_levels`` (optional)
         The number of energy levels considered in the QM treatment of the rotor.
         [default=50]
 
     ``rotsym`` (optional)
         The rotational symmetry of the internal rotor. [default=1]
+    
+    ``top`` (optional)
+        The atoms in the rotating top. When not given, an attempt is made to
+        derive this top from the choice of the dihedral angle and the molecular
+        topology. (This attempt is often not successful for structures
+        containing multiple molecules. In that case, top_indexes must be
+        provided.
 
 **rotor_f_*/rotor.cfg**
 
@@ -171,6 +182,13 @@ specific keys that are processed. Unknown keys are ignored.
 
     ``rotsym`` (optional)
         The rotational symmetry of the internal rotor. [default=1]
+    
+    ``top`` (optional)
+        The atoms in the rotating top. When not given, an attempt is made to
+        derive this top from the choice of the dihedral angle and the molecular
+        topology. (This attempt is often not successful for structures
+        containing multiple molecules. In that case, top_indexes must be
+        provided.
 
 **rotor_c_*/rotor.dat**
 
@@ -203,6 +221,13 @@ specific keys that are processed. Unknown keys are ignored.
 
     ``rotsym`` (optional)
         The rotational symmetry of the internal rotor. [default=1]
+    
+    ``top`` (optional)
+        The atoms in the rotating top. When not given, an attempt is made to
+        derive this top from the choice of the dihedral angle and the molecular
+        topology. (This attempt is often not successful for structures
+        containing multiple molecules. In that case, top_indexes must be
+        provided.
 '''
 
 
@@ -256,6 +281,15 @@ def load_cfg(fn):
     return result
 
 
+def get_atom_indexes(cfg, key):
+    result = cfg.get(key)
+    if result is not None:
+        result = np.array(result)
+        if cfg.get('fortran'):
+            result -= 1
+    return result
+
+
 def get_pf(dn):
     '''Construct a partition function from a molecule directory.
 
@@ -288,10 +322,10 @@ def get_pf(dn):
     for fn_log in glob('%s/rotor_g_*/gaussian.log' % dn):
         dn_rotor = os.path.dirname(fn_log)
         dns_rotor.append(dn_rotor)
-        # Load the rotational scan data from the Gaussian log file.
-        rotor_scan = load_rotscan_g03log(fn_log)
         # Load the config file
         rotor_cfg = load_cfg(os.path.join(dn_rotor, 'rotor.cfg'))
+        # Load the rotational scan data from the Gaussian log file.
+        rotor_scan = load_rotscan_g03log(fn_log, get_atom_indexes(rotor_cfg, 'top'))
         # Construct a Rotor object (solves Schrodinger equation etc.)
         rotor = Rotor(rotor_scan, molecule,
                       suffix=os.path.basename(dn_rotor)[6:],
@@ -309,7 +343,9 @@ def get_pf(dn):
         # Load the config file
         rotor_cfg = load_cfg(fn_cfg)
         # Construct a Rotor object (solves Schrodinger equation etc.)
-        rotor_scan = RotScan(rotor_cfg['dihed'], molecule)
+        rotor_scan = RotScan(get_atom_indexes(rotor_cfg, 'dihed'),
+                             molecule,
+                             get_atom_indexes(rotor_cfg, 'top'))
         rotor = Rotor(rotor_scan, molecule,
                       suffix=os.path.basename(dn_rotor)[6:],
                       rotsym=rotor_cfg.get('rotsym', 1),
@@ -327,8 +363,10 @@ def get_pf(dn):
         # Load the config file
         rotor_cfg = load_cfg(os.path.join(dn_rotor, 'rotor.cfg'))
         # Construct a Rotor object (solves Schrodinger equation etc.)
-        dihed = np.array(rotor_cfg['dihed']) - rotor_cfg.get('fortran', False)
-        rotor_scan = RotScan(dihed, molecule, potential=potential)
+        rotor_scan = RotScan(get_atom_indexes(rotor_cfg, 'dihed'),
+                             molecule,
+                             get_atom_indexes(rotor_cfg, 'top'),
+                             potential)
         rotor = Rotor(rotor_scan, molecule,
                       suffix=os.path.basename(dn_rotor)[6:],
                       rotsym=rotor_cfg.get('rotsym', 1),

@@ -312,10 +312,10 @@ def get_pf(dn):
     dns_rotor = []
 
     # B1) load all rotors computed with Gaussian
-    for fn_log in glob('%s/rotor_g_*/gaussian.log' % dn):
-        dn_rotor = os.path.dirname(fn_log)
+    for dn_rotor in glob('%s/rotor_g_*' % dn):
         print '  Loading rotor', dn_rotor
         dns_rotor.append(dn_rotor)
+        fn_log = '%s/gaussian.log' % dn_rotor
         # Load the config file
         rotor_cfg = load_cfg(os.path.join(dn_rotor, 'rotor.cfg'))
         # Load the rotational scan data from the Gaussian log file.
@@ -331,10 +331,10 @@ def get_pf(dn):
         rotors.append(rotor)
 
     # B2) load all free rotors
-    for fn_cfg in glob('%s/rotor_f_*/rotor.cfg' % dn):
-        dn_rotor = os.path.dirname(fn_cfg)
+    for dn_rotor in glob('%s/rotor_f_*' % dn):
         print '  Loading rotor', dn_rotor
         dns_rotor.append(dn_rotor)
+        fn_cfg = '%s/rotor.cfg' % dn_rotor
         # Load the config file
         rotor_cfg = load_cfg(fn_cfg)
         # Construct a Rotor object (solves Schrodinger equation etc.)
@@ -350,10 +350,10 @@ def get_pf(dn):
         rotors.append(rotor)
 
     # B3) load all custom rotors
-    for fn_dat in glob('%s/rotor_c_*/rotor.dat' % dn):
-        dn_rotor = os.path.dirname(fn_dat)
+    for dn_rotor in glob('%s/rotor_c_*' % dn):
         print '  Loading rotor', dn_rotor
         dns_rotor.append(dn_rotor)
+        fn_dat = '%s/rotor.dat' % dn_rotor
         # Load the potential data
         potential = np.loadtxt(fn_dat).T
         # Load the config file

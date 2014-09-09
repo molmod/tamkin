@@ -70,7 +70,7 @@ computations may take place:
     These specifiy the minimum and maximum temperature for the Arrhenius
     plot.
 
-  ``temp_int`` (optional)
+  ``temp_step`` (optional)
     The temperature interval for the datapoints for the Arrhenius plot.
     [default=10]
 

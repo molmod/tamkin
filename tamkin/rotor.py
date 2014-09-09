@@ -265,9 +265,11 @@ class HarmonicBasis(object):
 
         # check the error
         residual = numpy.dot(A, coeffs) - v
-        abs_threshold = max(1*kjmol, (v.max() - v.min())*v_threshold)
-        if (abs(residual) > abs_threshold).any():
-            raise ValueError("Residual is too large. (poor Fourier expansion.) abs=%s rel=%s" % (residual, residual/(v.max() - v.min())))
+        rmsd = (residual**2).mean()**0.5
+        rms = (v**2).mean()**0.5
+        abs_threshold = max(1*kjmol, rms*v_threshold)
+        if (rmsd > abs_threshold).any():
+            raise ValueError("Residual is too large. (poor Fourier expansion.) rmsd [kJ/mol] = %f, rms [kJ/mol] = %f" % (rmsd/kjmol, rms/kjmol))
 
         # collect the parameters in a convenient array
         result = numpy.zeros(self.size)

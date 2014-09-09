@@ -34,7 +34,7 @@
 #
 #--
 #!/usr/bin/env python
-'''\
+u'''\
 
 The TAMkin driver script
 ########################
@@ -190,6 +190,26 @@ The keys (and values) are interpreted as follows:
 This file ``rotor_c_*/rotor.dat`` just contains two columns of data, angles
 (radians) and energies (hartree), that specify the custom torsional potential.
 It does not follow the ``*.cfg`` format.
+
+
+Notes
+=====
+
+* When hindered rotors are used, a truncated Fourier series is used to expand
+  the potential energy. The truncation can be controlled with the ``dofmax``
+  parameter. When the RMSD between the Fourier series and the data is larger
+  than 1 kJ/mol or 1%, the driver will stop with an error message. The simplest
+  solution is to increase ``dofmax`` (above the default of 5). However, one has
+  to check if the potential from the relaxed scan is sensible. If it contains a
+  rotational symmetry, limit the scan to one period and add the appropriate
+  ``rotsym`` keyword in the ``rotor.cfg`` file. If the scan is even, one can
+  again halve the range of the scan and add ``even true`` to the file
+  ``rotor.cfg``. For example, for a standard methyl top, the scan of the
+  dihedral angle must be limited to the interval [0°, 60°] and the following
+  lines must be added to the file ``rotor.cfg`` ::
+
+    rotsym 3
+    even true
 '''
 
 

@@ -134,8 +134,10 @@ specific keys that are processed. Unknown keys are ignored.
 
 **rotor_g_*/rotor.cfg**
 
-    ``rotsym`` (optional)
-        The rotational symmetry of the internal rotor. [default=1]
+    ``dofmax`` (optional)
+        The maximum number of cosines used to represent the torsional potential.
+        if the potential is not even, the same number of sines is also used.
+        [default=5]
 
     ``even`` (optional)
         A boolean (True or False) to indicate that the torsional potential is
@@ -145,10 +147,8 @@ specific keys that are processed. Unknown keys are ignored.
         The number of energy levels considered in the QM treatment of the rotor.
         [default=50]
 
-    ``dofmax`` (optional)
-        The maximum number of cosines used to represent the torsional potential.
-        if the potential is not even, the same number of sines is also used.
-        [default=5]
+    ``rotsym`` (optional)
+        The rotational symmetry of the internal rotor. [default=1]
 
 **rotor_f_*/rotor.cfg**
 
@@ -156,21 +156,21 @@ specific keys that are processed. Unknown keys are ignored.
         A list of four atom indexes that define the dihedral angle, separated by
         whitespace.
 
+    ``dofmax`` (optional)
+        The maximum number of cosines used to represent the torsional potential.
+        if the potential is not even, the same number of sines is also used.
+        [default=5]
+
     ``fortran`` (optional)
         A boolean (True or False) to indicate that the atom indexes are given in
         Fortran convention. (Counting starts from one). [default=False]
-
-    ``rotsym`` (optional)
-        The rotational symmetry of the internal rotor. [default=1]
 
     ``num_levels`` (optional)
         The number of energy levels considered in the QM treatment of the rotor.
         [default=50]
 
-    ``dofmax`` (optional)
-        The maximum number of cosines used to represent the torsional potential.
-        if the potential is not even, the same number of sines is also used.
-        [default=5]
+    ``rotsym`` (optional)
+        The rotational symmetry of the internal rotor. [default=1]
 
 **rotor_c_*/rotor.dat**
 
@@ -180,29 +180,29 @@ specific keys that are processed. Unknown keys are ignored.
 
 **rotor_c_*/rotor.cfg**
 
-    ``dihed`` (mandatory)
-        A list of four atom indexes that define the dihedral angle, separated by
-        whitespace.
-
-    ``fortran`` (optional)
-        A boolean (True or False) to indicate that the atom indexes are given in
-        Fortran convention. (Counting starts from one). [default=False]
-
-    ``rotsym`` (optional)
-        The rotational symmetry of the internal rotor. [default=1]
-
     ``even`` (optional)
         A boolean (True or False) to indicate that the torsional potential is
         even. [default=False]
 
-    ``num_levels`` (optional)
-        The number of energy levels considered in the QM treatment of the rotor.
-        [default=50]
+    ``dihed`` (mandatory)
+        A list of four atom indexes that define the dihedral angle, separated by
+        whitespace.
 
     ``dofmax`` (optional)
         The maximum number of cosines used to represent the torsional potential.
         if the potential is not even, the same number of sines is also used.
         [default=5]
+
+    ``fortran`` (optional)
+        A boolean (True or False) to indicate that the atom indexes are given in
+        Fortran convention. (Counting starts from one). [default=False]
+
+    ``num_levels`` (optional)
+        The number of energy levels considered in the QM treatment of the rotor.
+        [default=50]
+
+    ``rotsym`` (optional)
+        The rotational symmetry of the internal rotor. [default=1]
 '''
 
 

@@ -305,7 +305,6 @@ class Molecule(BaseMolecule):
         # construct the molecule object
         return Molecule(**constructor_args)
 
-
     def raise_ext(self, shift=1e0):
         """Raise the eigenvalues of the global translations and rotations
         to a high value, such that their coupling with the internal vibrations
@@ -355,9 +354,6 @@ class Molecule(BaseMolecule):
             symbols = symbols,
             unit_cell = unit_cell,
         )
-
-
-
 
     def constrain_ext(self):
         """Project the global translational and rotational vectors

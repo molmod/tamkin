@@ -62,6 +62,7 @@ def test_get_submolecule():
     assert molecule.periodic == molecule2.periodic
     assert molecule.energy == molecule2.energy
 
+
 def test_get_submolecule_cp2k():
     molecule = load_molecule_cp2k("test/input/cp2k/pentane/sp.out", "test/input/cp2k/pentane/freq.out")
     select = range(5)+[9,11,14]
@@ -79,6 +80,7 @@ def test_get_submolecule_cp2k():
     assert molecule2.symmetry_number == 6
     assert molecule2.periodic == False
     assert molecule2.energy == 5.
+
 
 def test_translate_pbc():
     molecule = load_molecule_cp2k("test/input/cp2k/pentane/sp.out", "test/input/cp2k/pentane/freq.out")
@@ -110,6 +112,7 @@ def test_translate_pbc():
     assert abs(molecule2.unit_cell.matrix[0,0]/angstrom - 30.000) < 1e-3
     assert abs(molecule2.unit_cell.matrix[1,2]/angstrom - 0.000) < 1e-3
 
+
 def test_molecule_checkpoint_basic():
     mol1 = load_molecule_g03fchk("test/input/sterck/aa.fchk")
     mol1.write_to_file("test/output/molecule_checkpoint_basic.chk")
@@ -129,6 +132,7 @@ def test_molecule_checkpoint_basic():
     assert mol1.multiplicity == mol2.multiplicity
     assert mol1.symmetry_number == mol2.symmetry_number
     assert mol1.periodic == mol2.periodic
+
 
 def test_molecule_checkpoint_full():
     mol1 = load_molecule_g03fchk("test/input/sterck/aa.fchk")
@@ -161,10 +165,12 @@ def test_molecule_checkpoint_full():
     assert (mol1.unit_cell.active == mol2.unit_cell.active).all()
     assert mol1.symbols == mol2.symbols
 
+
 def test_copy_with():
     mol1 = load_molecule_g03fchk("test/input/sterck/aa.fchk")
     mol2 = mol1.copy_with(title="foo")
     assert mol2.title == "foo"
+
 
 def test_get_external_basis_new1():
     mol = load_molecule_g03fchk("test/input/linear/gaussian.fchk")
@@ -181,6 +187,7 @@ def test_get_external_basis_new1():
     ])
     error = abs(numpy.dot(ib, eb.transpose())).max()
     assert error < 1e-5
+
 
 def test_get_external_basis_new2():
     mol = load_molecule_g03fchk("test/input/ethane/gaussian.fchk")

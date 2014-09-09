@@ -616,7 +616,12 @@ class Rotor(Info, StatFysTerms):
             rmsd = ((fit_energies - energies)**2).mean()**0.5
             rms = (energies**2).mean()**0.5
             rrmsd = rmsd/rms
-            pylab.title('RMSD [kJ/mol] = %.1f    RRMSD [%%] = %.0f    R^2 [%%] = %.0f' % (rmsd, rrmsd*100, (1-rrmsd**2)*100))
+            title = 'RMSD [kJ/mol] = %.1f    RRMSD [%%] = %.0f    dofmax = %i   rotsym = %i' % (
+                rmsd, rrmsd*100, self.dofmax, self.rotsym
+            )
+            if self.even:
+                title += '   even'
+            pylab.title(title)
         pylab.xlim(0, 360)
         pylab.ylabel("Energy [kJ/mol]")
         pylab.xlabel("Dihedral angle [deg]")

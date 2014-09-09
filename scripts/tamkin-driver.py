@@ -389,6 +389,9 @@ def get_pf(dn):
     for dn_rotor, rotor in zip(dns_rotor, rotors):
         rotor.plot_levels('%s/levels.png' % dn_rotor, 300)
 
+    # F) Write a partf.txt file
+    pf.write_to_file('%s/partf.txt' % dn)
+
     return pf
 
 

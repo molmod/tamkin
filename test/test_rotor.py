@@ -124,11 +124,11 @@ class RotorTestCase(unittest.TestCase):
         self.assertArraysAlmostEqual(f[::-1], g[45:61])
         self.assertArraysAlmostEqual(f[::-1], g[75:91])
 
-        import pylab
-        pylab.clf()
-        pylab.plot(grid, g, "k-", lw=2)
-        pylab.plot(grid[:16], f, "rx", mew=2)
-        pylab.savefig("test/output/test_fit_fn_sym.png")
+        import matplotlib.pyplot as pt
+        pt.clf()
+        pt.plot(grid, g, "k-", lw=2)
+        pt.plot(grid[:16], f, "rx", mew=2)
+        pt.savefig("test/output/test_fit_fn_sym.png")
 
     def test_potential_op(self):
         a = 10.0
@@ -186,13 +186,13 @@ class RotorTestCase(unittest.TestCase):
         hb = HarmonicBasis(10, a)
         energies, orbitals = hb.solve(mass, numpy.zeros(hb.size), evecs=True)
 
-        import pylab
+        import matplotlib.pyplot as pt
         x = numpy.arange(0.0, a, 0.001)
-        pylab.clf()
+        pt.clf()
         for i in xrange(10):
             f = hb.eval_fn(x, orbitals[:,i])
-            pylab.plot(x, f+i)
-        pylab.savefig("test/output/flat_wavefunctions.png")
+            pt.plot(x, f+i)
+        pt.savefig("test/output/flat_wavefunctions.png")
 
         indexes = numpy.array([0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10])
         expected = 0.5/mass*(2*indexes*numpy.pi/a)**2
@@ -230,20 +230,20 @@ class RotorTestCase(unittest.TestCase):
         self.assertAlmostEqual(energies[5], 5.5, 1)
         self.assertAlmostEqual(energies[6], 6.5, 1)
 
-        import pylab
+        import matplotlib.pyplot as pt
         x = numpy.arange(0.0, a, 0.001)
-        pylab.clf()
+        pt.clf()
         for i in xrange(10):
             f = hb.eval_fn(x, orbitals[:,i])
-            pylab.plot(x, f)
-        pylab.savefig("test/output/harmonic_wavefunctions.png")
-        pylab.clf()
+            pt.plot(x, f)
+        pt.savefig("test/output/harmonic_wavefunctions.png")
+        pt.clf()
         v = hb.eval_fn(x, v_coeffs)
-        pylab.plot(x, v)
+        pt.plot(x, v)
         for energy in energies[:10]:
-            pylab.axhline(energy)
-        pylab.xlim(0,a)
-        pylab.savefig("test/output/harmonic_levels.png")
+            pt.axhline(energy)
+        pt.xlim(0,a)
+        pt.savefig("test/output/harmonic_levels.png")
 
     def test_ethane_hindered(self):
         molecule = load_molecule_g03fchk("test/input/ethane/gaussian.fchk")
@@ -355,13 +355,13 @@ class RotorTestCase(unittest.TestCase):
         )
         energies, orbitals = hb.solve(mass, v_coeffs, evecs=True)
 
-        import pylab
+        import matplotlib.pyplot as pt
         x = numpy.arange(0.0, a, 0.001)
-        pylab.clf()
+        pt.clf()
         for i in xrange(10):
             f = hb.eval_fn(x, orbitals[:,i])
-            pylab.plot(x, f+i)
-        pylab.savefig("test/output/legacy_wavefunctions.png")
+            pt.plot(x, f+i)
+        pt.savefig("test/output/legacy_wavefunctions.png")
 
         # check energy levels
         expected = numpy.array([

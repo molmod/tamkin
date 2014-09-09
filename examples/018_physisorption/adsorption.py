@@ -246,14 +246,14 @@ mod_occupation = numpy.array(mod_occupation)
 # Langmuir model. Remaining deviations with experiment are due to (relatively
 # strong) Ar-Ar interactions on the graphite surface, i.e. the 2D gas is far
 # from ideal. One must do Monte-Carlo simulations to estimate these effects.
-import pylab
-pylab.clf()
-pylab.plot(exp_pressure/bar, exp_occupation, 'k-', lw=2, label='experiment')
-pylab.plot(exp_pressure/bar, mod_occupation, 'b-', lw=1, label='TAMkin ideal gas')
-pylab.plot(exp_pressure/bar, mod_occupation/(1+mod_occupation), 'g-', lw=1, label='TAMkin Langmuir')
-pylab.ylim(0,1.0)
-pylab.xlim(0,5e-3)
-pylab.ylabel("Fraction of occupied mono-layer\nArgon sites on graphite at T=87K")
-pylab.xlabel("Pressure [bar]")
-pylab.legend(loc=0)
-pylab.savefig("adsorption_%s_isotherm.png" % level)
+import matplotlib.pyplot as pt
+pt.clf()
+pt.plot(exp_pressure/bar, exp_occupation, 'k-', lw=2, label='experiment')
+pt.plot(exp_pressure/bar, mod_occupation, 'b-', lw=1, label='TAMkin ideal gas')
+pt.plot(exp_pressure/bar, mod_occupation/(1+mod_occupation), 'g-', lw=1, label='TAMkin Langmuir')
+pt.ylim(0,1.0)
+pt.xlim(0,5e-3)
+pt.ylabel("Fraction of occupied mono-layer\nArgon sites on graphite at T=87K")
+pt.xlabel("Pressure [bar]")
+pt.legend(loc=0)
+pt.savefig("adsorption_%s_isotherm.png" % level)

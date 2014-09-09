@@ -39,8 +39,8 @@
 from tamkin import *
 # Import units
 from molmod.units import kjmol
-# Import pylab for plotting
-import pylab
+# import matplotlib.pyplot as pt for plotting
+import matplotlib.pyplot as pt
 # Import standard python libraries
 import os, sys
 
@@ -186,11 +186,11 @@ def run(do_rotor, do_counterpoise, load_sp):
 
 
     # make the Arrhenius plots
-    pylab.clf()
+    pt.clf()
     ra_gauche.plot_arrhenius(label="gauche", color="red")
     ra_trans.plot_arrhenius(label="trans", color="blue")
-    pylab.legend(loc=0)
-    pylab.savefig("%s_arrhenius.png" % prefix)
+    pt.legend(loc=0)
+    pt.savefig("%s_arrhenius.png" % prefix)
 
     # Estimate the error on the kinetic parameters due to level of theory artifacts
     # with Monte Carlo sampling. The monte_carlo method takes three optional
@@ -201,11 +201,11 @@ def run(do_rotor, do_counterpoise, load_sp):
     ra_gauche.monte_carlo(num_iter=100)
     ra_trans.monte_carlo(num_iter=100)
     # plot the parameters, this includes the monte carlo results
-    pylab.clf()
+    pt.clf()
     ra_gauche.plot_parameters(label="gauche", color="red")
     ra_trans.plot_parameters(label="trans", color="blue")
-    pylab.legend(loc=0)
-    pylab.savefig("%s_parameters.png" % prefix)
+    pt.legend(loc=0)
+    pt.savefig("%s_parameters.png" % prefix)
     # write all results to a file.
     ra_gauche.write_to_file("%s_reaction_gauche.txt" % prefix)
     ra_trans.write_to_file("%s_reaction_trans.txt" % prefix)

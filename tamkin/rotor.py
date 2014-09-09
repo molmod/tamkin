@@ -583,20 +583,20 @@ class Rotor(Info, StatFysTerms):
            One image will be generated:
             | ``${prefix}.png`` -- The potential and the energy levels.
         """
-        import pylab
-        pylab.clf()
+        import matplotlib.pyplot as pt
+        pt.clf()
         if do_data:
             # plot the original potential data
             if self.rot_scan.potential is not None:
                 angles, energies = self.potential
-                pylab.plot(angles/deg, energies/kjmol, "rx", mew=2)
-            pylab.axvline(self.nma_angle/deg, color="silver")
+                pt.plot(angles/deg, energies/kjmol, "rx", mew=2)
+            pt.axvline(self.nma_angle/deg, color="silver")
         # plot the fitted potential
         if self.hb is not None:
             step = 0.001
             x = numpy.arange(0.0, 2*numpy.pi*(1+0.5*step), 2*numpy.pi*step)
             v = self.hb.eval_fn(x, self.v_coeffs)
-            pylab.plot(x/deg, v/kjmol, "k-", linewidth=2)
+            pt.plot(x/deg, v/kjmol, "k-", linewidth=2)
         if do_levels:
             # plot the energy levels
             eks = self.energy_levels/(temp*boltzmann)
@@ -604,11 +604,11 @@ class Rotor(Info, StatFysTerms):
             bfs /= bfs.sum()
             for i in xrange(min(num, self.num_levels)):
                 e = (self.energy_levels[i])/kjmol
-                pylab.axhline(e, color="b", linewidth=0.5)
-                pylab.axhline(e, xmax=bfs[i], color="b", linewidth=2)
+                pt.axhline(e, color="b", linewidth=0.5)
+                pt.axhline(e, xmax=bfs[i], color="b", linewidth=2)
         if self.rot_scan.potential is not None:
             angles, energies = self.potential
-            pylab.ylim(
+            pt.ylim(
                 energies.min()/kjmol,
                 1.5*energies.max()/kjmol
             )
@@ -621,11 +621,11 @@ class Rotor(Info, StatFysTerms):
             )
             if self.even:
                 title += '   even'
-            pylab.title(title)
-        pylab.xlim(0, 360)
-        pylab.ylabel("Energy [kJ/mol]")
-        pylab.xlabel("Dihedral angle [deg]")
-        pylab.savefig(prefix)
+            pt.title(title)
+        pt.xlim(0, 360)
+        pt.ylabel("Energy [kJ/mol]")
+        pt.xlabel("Dihedral angle [deg]")
+        pt.savefig(prefix)
 
     def helper_terms(self, temp, n):
         """See :meth:`tamkin.partf.StatFysTerms.helper_terms`"""

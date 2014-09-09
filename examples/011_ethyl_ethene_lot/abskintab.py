@@ -63,9 +63,6 @@ def overview(template, title, fn_img, rows):
             rows.append(["<th>%s</th>" % lot_label])
         try:
             ks = load_summary(template % lot_label)[0]
-            #line = pylab.plot(invtemps, ks, color=lot.color, linestyle=lot.linestyle, lw=2)
-            #lines.append(line)
-            #labels.append(lot_label)
             for j in xrange(4):
                 ln10ratio = numpy.log10(ks[j]/experimental_k[j])
                 color = get_error_color(ln10ratio)

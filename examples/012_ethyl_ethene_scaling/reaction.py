@@ -37,8 +37,8 @@
 
 # Import the tamkin library.
 from tamkin import *
-# Import pylab for plotting
-import pylab
+# import matplotlib.pyplot as pt for plotting
+import matplotlib.pyplot as pt
 
 
 # load the molecules
@@ -60,7 +60,7 @@ cases = [ #(freq_scaling, color)
 ]
 
 # start with clear figure:
-pylab.clf()
+pt.clf()
 
 for s, color in cases:
     # For each scaling factor, a new curve is plotted on the Arrhenius plot
@@ -90,6 +90,6 @@ for s, color in cases:
     ra_gauche.plot_arrhenius(label="gauche %.2f" % s, color=color)
 
 # Add a legend (loc=0 means that the legend is put on an empty place in the plot)
-pylab.legend(loc=0)
+pt.legend(loc=0)
 # Write the figure to file.
-pylab.savefig("arrhenius.png")
+pt.savefig("arrhenius.png")

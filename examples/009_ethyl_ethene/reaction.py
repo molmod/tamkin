@@ -37,8 +37,8 @@
 
 # Import the tamkin library.
 from tamkin import *
-# Import pylab for plotting
-import pylab
+# import matplotlib.pyplot as pt for plotting
+import matplotlib.pyplot as pt
 
 
 # Define an auxiliary function
@@ -112,11 +112,11 @@ ra_gauche = ReactionAnalysis(km_gauche, 300, 600)
 ra_trans = ReactionAnalysis(km_trans, 300, 600)
 
 # make the Arrhenius plots
-pylab.clf()
+pt.clf()
 ra_gauche.plot_arrhenius(label="gauche", color="red")
 ra_trans.plot_arrhenius(label="trans", color="blue")
-pylab.legend(loc=0)
-pylab.savefig("arrhenius.png")
+pt.legend(loc=0)
+pt.savefig("arrhenius.png")
 
 # Estimate the error on the kinetic parameters due to level of theory artifacts
 # with Monte Carlo sampling. The monte_carlo method takes three optional
@@ -127,14 +127,14 @@ pylab.savefig("arrhenius.png")
 ra_gauche.monte_carlo(num_iter=10)
 ra_trans.monte_carlo(num_iter=10)
 # plot the parameters, this includes the monte carlo results
-pylab.clf()
+pt.clf()
 ra_gauche.plot_parameters(label="gauche", color="red")
 ra_trans.plot_parameters(label="trans", color="blue", marker="^")
-pylab.legend(loc=0, numpoints=1)
-pylab.xlabel("E$_a$ [kJ mol$^{-1}$]")
-pylab.ylabel("ln(A) [ln(m$^3$ mol$^{-1}$ s$^{-1}$)]")
-pylab.xlim(33.24,33.75)
-pylab.savefig("parameters.png")
+pt.legend(loc=0, numpoints=1)
+pt.xlabel("E$_a$ [kJ mol$^{-1}$]")
+pt.ylabel("ln(A) [ln(m$^3$ mol$^{-1}$ s$^{-1}$)]")
+pt.xlim(33.24,33.75)
+pt.savefig("parameters.png")
 # write all results to a file.
 ra_gauche.write_to_file("reaction_gauche.txt")
 ra_trans.write_to_file("reaction_trans.txt")

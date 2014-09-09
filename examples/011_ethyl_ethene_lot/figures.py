@@ -42,7 +42,7 @@ from kin import *
 from molmod.units import kjmol
 from molmod.constants import boltzmann
 
-import pylab, numpy
+import matplotlib.pyplot as pt, numpy
 
 
 # ugly hack
@@ -83,11 +83,11 @@ get_data = get_rmsd
 
 
 def do_plot(data, legend, fn_png):
-    pylab.clf()
-    pylab.figure(0, (6,8))
-    #pylab.axes([left, bottom, width, height])
+    pt.clf()
+    pt.figure(0, (6,8))
+    #pt.axes([left, bottom, width, height])
     # in fractional coordinates
-    pylab.axes([0.20, 0.070, 0.76, 0.84])
+    pt.axes([0.20, 0.070, 0.76, 0.84])
     handles = []
     labels = []
     for key, symbol, label in legend:
@@ -98,29 +98,29 @@ def do_plot(data, legend, fn_png):
             if av is not None:
                 x.append(av)
                 y.append(-index)
-        handle = pylab.plot(x, y, symbol)
+        handle = pt.plot(x, y, symbol)
         handles.append(handle)
         labels.append(label)
     pos = -numpy.arange(len(lots_list))
     ylabels = [lot.key for lot in lots_list]
-    pylab.yticks(pos, ylabels, size="small")
-    pylab.xticks(size="small")
-    #pylab.xlabel(r"Geometric mean of $k_{\theory}/k_{\exp}$", size="small")
-    pylab.xlabel(r"$\exp(RMSD(\ln(k_{\theory}) - \ln($k_{\exp})))$", size="small")
-    pylab.semilogx()
-    pylab.axvline(0.1, color="k", zorder=-5)
-    pylab.axvline(1.0, color="k", zorder=-5)
-    pylab.axvline(10.0, color="k", zorder=-5)
+    pt.yticks(pos, ylabels, size="small")
+    pt.xticks(size="small")
+    #pt.xlabel(r"Geometric mean of $k_{\theory}/k_{\exp}$", size="small")
+    pt.xlabel(r"$\exp(RMSD(\ln(k_{\theory}) - \ln($k_{\exp})))$", size="small")
+    pt.semilogx()
+    pt.axvline(0.1, color="k", zorder=-5)
+    pt.axvline(1.0, color="k", zorder=-5)
+    pt.axvline(10.0, color="k", zorder=-5)
     for y in 0, -5, -10, -15, -20, -25, -30, -35, -40:
-        pylab.axhline(y, color="k", alpha=0.2, lw=10, zorder=-5)
+        pt.axhline(y, color="k", alpha=0.2, lw=10, zorder=-5)
     if len(legend) > 1:
-        legend = pylab.figlegend(handles, labels, (0.22,0.915), numpoints=1, handlelength=0, prop={"size":"small"})
+        legend = pt.figlegend(handles, labels, (0.22,0.915), numpoints=1, handlelength=0, prop={"size":"small"})
         frame = legend.get_frame()
         frame.set_lw(0.0)
-    #pylab.xlim(1e-8, 1e5)
-    pylab.xlim(1e0, 1e5)
-    pylab.ylim(pos[-1]-0.5, 0.5)
-    pylab.savefig(fn_png)
+    #pt.xlim(1e-8, 1e5)
+    pt.xlim(1e0, 1e5)
+    pt.ylim(pos[-1]-0.5, 0.5)
+    pt.savefig(fn_png)
 
 
 def figure1():

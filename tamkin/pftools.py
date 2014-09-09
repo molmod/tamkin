@@ -315,43 +315,43 @@ class ReactionAnalysis(object):
                            and RGB tuples are accepted. (See matplotlib docs for
                            more info.)
         """
-        import pylab
+        import matplotlib.pyplot as pt
 
         temps_inv_line = numpy.linspace(self.temps_inv.min(),self.temps_inv.max(),100)
         ln_rate_consts_line = self.parameters[0] - self.parameters[1]/boltzmann*temps_inv_line
 
         if filename is not None:
-            pylab.clf()
-            pylab.title('Arrhenius plot')
-        pylab.text(
+            pt.clf()
+            pt.title('Arrhenius plot')
+        pt.text(
             0.05, 0.05,
             "A [%s] = %.3e\nEa [kJ/mol] = %.1f\nR^2 [%%] = %.1f" % (
                 self.kinetic_model.unit_name, self.A/self.kinetic_model.unit,
                 self.Ea/kjmol, self.R2*100
                 ),
-            transform=pylab.gca().transAxes
+            transform=pt.gca().transAxes
         )
-        pylab.xlabel("1/T [1/K]")
-        pylab.ylabel("Rate coefficient [%s]" % self.kinetic_model.unit_name)
+        pt.xlabel("1/T [1/K]")
+        pt.ylabel("Rate coefficient [%s]" % self.kinetic_model.unit_name)
         if label is None:
             label_fit = "Fitted line"
             label_data = "Computed values"
         else:
             label_fit = label
             label_data = "_nolegend_"
-        pylab.plot(
+        pt.plot(
             temps_inv_line,numpy.exp(ln_rate_consts_line)/self.kinetic_model.unit,
             color=color, linestyle="-", marker="None",label=label_fit
         )
-        pylab.plot(
+        pt.plot(
             self.temps_inv,numpy.exp(self.ln_rate_consts)/self.kinetic_model.unit,
             color=color, linestyle="None", marker="o",label=label_data
         )
-        pylab.semilogy()
+        pt.semilogy()
         if label is None:
-            pylab.legend(loc=0)
+            pt.legend(loc=0)
         if filename is not None:
-            pylab.savefig(filename)
+            pt.savefig(filename)
 
 
     def monte_carlo(self, freq_error=1*(lightspeed/centimeter), energy_error=0.00, num_iter=100):
@@ -422,21 +422,21 @@ class ReactionAnalysis(object):
                            results are plotted when they are available.
                            [default=True]
         """
-        import pylab
+        import matplotlib.pyplot as pt
 
         if filename is not None:
-            pylab.clf()
-            pylab.title("Parameter plot")
-        pylab.text(
+            pt.clf()
+            pt.title("Parameter plot")
+        pt.text(
             0.05, 0.05,
             "A [%s] = %.3e\nEa [kJ/mol] = %.1f\nR^2 [%%] = %.1f" % (
                 self.kinetic_model.unit_name, self.A/self.kinetic_model.unit,
                 self.Ea/kjmol, self.R2*100
                 ),
-            transform=pylab.gca().transAxes
+            transform=pt.gca().transAxes
         )
-        pylab.xlabel("E_a [kJ/mol]")
-        pylab.ylabel("ln(A) [ln(%s)]" % self.kinetic_model.unit_name)
+        pt.xlabel("E_a [kJ/mol]")
+        pt.ylabel("ln(A) [ln(%s)]" % self.kinetic_model.unit_name)
         if label is None:
             label_point = "Optimal parameters"
             label_error = "Relative uncertainty"
@@ -457,20 +457,20 @@ class ReactionAnalysis(object):
             angles = numpy.arange(0.0,360.5,1.0)/180*numpy.pi
             data = numpy.outer(evecs[:,0],numpy.cos(angles))*numpy.sqrt(evals[0]) + \
                    numpy.outer(evecs[:,1],numpy.sin(angles))*numpy.sqrt(evals[1])
-            pylab.plot(
+            pt.plot(
                 (self.Ea + data[1])/kjmol,
                 self.parameters[0] + data[0] - numpy.log(self.kinetic_model.unit),
                 color=color, linestyle="-", marker="None",label=label_error
             )
-            pylab.plot(
+            pt.plot(
                 self.monte_carlo_samples[:,1]/kjmol,
                 self.monte_carlo_samples[:,0] - numpy.log(self.kinetic_model.unit),
                 color=color, marker=".", label=label_scatter, linestyle="None",
                 markersize=1.2
             )
-        pylab.plot([self.Ea/kjmol],[numpy.log(self.A/self.kinetic_model.unit)], color=color,
+        pt.plot([self.Ea/kjmol],[numpy.log(self.A/self.kinetic_model.unit)], color=color,
                    marker=marker, label=label_point, mew=2, mec="white", ms=10)
         if label is None:
-            pylab.legend(loc=0, numpoints=1)
+            pt.legend(loc=0, numpoints=1)
         if filename is not None:
-            pylab.savefig(filename)
+            pt.savefig(filename)

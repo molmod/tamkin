@@ -42,7 +42,7 @@ from kin import *
 from molmod.units import kjmol
 from molmod.constants import boltzmann
 
-import pylab, numpy
+import matplotlib.pyplot as pt, numpy
 
 from matplotlib.backend_bases import GraphicsContextBase
 GraphicsContextBase.dashd["dashed"] = (0, (6.0, 3.0))
@@ -61,8 +61,8 @@ def overview(template, title, fn_img, rows):
         rows[1].append("<td style='font-size:small'>%.0fK</td>" % temp)
     lines = []
     labels = []
-    pylab.clf()
-    line = pylab.plot(invtemps, experimental_k, color="k", linestyle="-", lw=4)
+    pt.clf()
+    line = pt.plot(invtemps, experimental_k, color="k", linestyle="-", lw=4)
     lines.append(line)
     labels.append("experiment")
     counter = 2
@@ -75,7 +75,7 @@ def overview(template, title, fn_img, rows):
             rows.append(["<th>%s</th>" % lot_label])
         try:
             ks = load_summary(template % lot_label)[0]
-            line = pylab.plot(invtemps, ks, color=lot.color, linestyle=lot.linestyle, lw=2)
+            line = pt.plot(invtemps, ks, color=lot.color, linestyle=lot.linestyle, lw=2)
             lines.append(line)
             labels.append(lot_label)
             for j in xrange(4):
@@ -85,33 +85,33 @@ def overview(template, title, fn_img, rows):
         except IOError, StopIteration:
             rows[counter].append("<td>&nbsp</td><td>&nbsp</td><td>&nbsp</td><td>&nbsp</td>")
         counter += 1
-    pylab.semilogy()
-    pylab.fill(
+    pt.semilogy()
+    pt.fill(
         numpy.concatenate((invtemps, invtemps[::-1])),
         numpy.concatenate((experimental_k*10, experimental_k[::-1]/10)),
         "k", alpha=0.2, lw=0,
     )
-    pylab.xticks(
+    pt.xticks(
         1/numpy.array([300, 350, 400, 450, 500, 550, 600], float),
         ["300", "350", "400", "450", "500", "550", "600"],
     )
-    pylab.title(title)
-    pylab.xlabel("T [K]")
-    pylab.ylabel("k [(m**3/mol)/s]")
-    pylab.ylim(1e-8,1e7)
-    legend = pylab.figlegend(
+    pt.title(title)
+    pt.xlabel("T [K]")
+    pt.ylabel("k [(m**3/mol)/s]")
+    pt.ylim(1e-8,1e7)
+    legend = pt.figlegend(
         lines, labels, (0.07,0.06), ncol=3, prop={"size":11},
         handlelength=3, labelspacing=0.1, columnspacing=1
     )
     #legend.get_frame().set_linewidth(0)
     legend.get_frame().set_fill(True)
     legend.get_frame().set_alpha(0.5)
-    pylab.savefig(fn_img % "rates")
+    pt.savefig(fn_img % "rates")
 
-    pylab.clf()
+    pt.clf()
     lines = []
     labels = []
-    line = pylab.plot([experimental_Ea], [experimental_A], color="k", marker="o", ms=11, mew=2, lw=0, ls=" ")
+    line = pt.plot([experimental_Ea], [experimental_A], color="k", marker="o", ms=11, mew=2, lw=0, ls=" ")
     lines.append(line)
     labels.append("experiment")
     for lot in lots_list:
@@ -122,17 +122,17 @@ def overview(template, title, fn_img, rows):
         try:
             A, Ea = load_summary(template % label)[1]
             marker = {"-": "o", "--": "s", ":": "v", "-.": "h"}[lot.linestyle]
-            line = pylab.plot([Ea], [A], color=lot.color, marker=marker, ms=11, mew=2, lw=0, ls=" ")
+            line = pt.plot([Ea], [A], color=lot.color, marker=marker, ms=11, mew=2, lw=0, ls=" ")
             lines.append(line)
             labels.append(label)
             continue
         except IOError, StopIteration:
             pass
 
-    pylab.title(title)
-    pylab.xlabel("Activation energy [kJ/mol]")
-    pylab.ylabel("Pre-exponential factor [(m**3/mol)/s]")
-    pylab.semilogy()
+    pt.title(title)
+    pt.xlabel("Activation energy [kJ/mol]")
+    pt.ylabel("Pre-exponential factor [(m**3/mol)/s]")
+    pt.semilogy()
     # error margin around experimental data point
     x = []
     y = []
@@ -140,23 +140,23 @@ def overview(template, title, fn_img, rows):
     angles = numpy.arange(0.0,360.5,1.0)/180*numpy.pi
     data = numpy.outer(evecs[:,0],numpy.cos(angles))*numpy.sqrt(evals[0]) + \
            numpy.outer(evecs[:,1],numpy.sin(angles))*numpy.sqrt(evals[1])
-    pylab.fill(
+    pt.fill(
         experimental_parameters[1] + data[1],
         numpy.exp(experimental_parameters[0] + data[0]),
         color="k", alpha=0.2, lw=0
     )
     # end error margin
-    legend = pylab.legend(
+    legend = pt.legend(
         lines, labels, loc=4, ncol=4, prop={"size":11},
         handlelength=1, labelspacing=0.2, columnspacing=2,
         numpoints=1,
     )
-    pylab.xlim(0,90)
-    pylab.ylim(1e3,1e7)
+    pt.xlim(0,90)
+    pt.ylim(1e3,1e7)
     #legend.get_frame().set_linewidth(0)
     legend.get_frame().set_fill(True)
     legend.get_frame().set_alpha(0.5)
-    pylab.savefig(fn_img % "params")
+    pt.savefig(fn_img % "params")
 
 
 

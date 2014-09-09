@@ -449,21 +449,21 @@ def plot_spectrum_lines(filename, all_freqs, low=None, high=None, title=None):
          | high  --  maximum on x-axis, in atomic units
          | title  --  title for plot (a string)
     """
-    import pylab
-    pylab.clf()
+    import matplotlib.pyplot as pt
+    pt.clf()
     for i, freqs in enumerate(all_freqs):
         for freq in freqs:
             if (freq>low or low is None) and (freq<high or high is None):
-                pylab.plot([i+0.75,i+1.25],[freq/invcm,freq/invcm],"k-")
-    pylab.xticks(range(1,len(all_freqs)+1))
+                pt.plot([i+0.75,i+1.25],[freq/invcm,freq/invcm],"k-")
+    pt.xticks(range(1,len(all_freqs)+1))
     if low is not None:
-        pylab.ylim(ymin=low/invcm)
+        pt.ylim(ymin=low/invcm)
     if high is not None:
-        pylab.ylim(ymax=high/invcm)
-    pylab.ylabel("Frequency in cm-1")
+        pt.ylim(ymax=high/invcm)
+    pt.ylabel("Frequency in cm-1")
     if title is not None:
-        pylab.title(title)
-    pylab.savefig(filename)
+        pt.title(title)
+    pt.savefig(filename)
 
 
 def plot_spectrum_dos(filename, all_freqs, low=None, high=None, imax=None,
@@ -486,7 +486,7 @@ def plot_spectrum_dos(filename, all_freqs, low=None, high=None, imax=None,
                          amplitude for each individual frequency
          | title  --  title for plot (a string)
     """
-    import pylab
+    import matplotlib.pyplot as pt
 
     def plot_single_dos(freqs, low, high, step, width, amps):
         if low is None:
@@ -507,26 +507,26 @@ def plot_spectrum_dos(filename, all_freqs, low=None, high=None, imax=None,
                     else:
                         tmp *= amps
                 intensity += tmp
-        pylab.plot(nu/invcm, intensity)
+        pt.plot(nu/invcm, intensity)
 
-    pylab.clf()
+    pt.clf()
     for i, freqs in enumerate(all_freqs):
         if all_amps is None:
             amps = None
         else:
             amps = all_amps[i]
         plot_single_dos(freqs, low, high, step, width, amps)
-    pylab.ylim(0.0, imax)
+    pt.ylim(0.0, imax)
     if low is not None:
-        pylab.xlim(xmin=low/invcm)
+        pt.xlim(xmin=low/invcm)
     if high is not None:
-        pylab.xlim(xmax=high/invcm)
-    pylab.legend([str(nb) for nb in range(1,len(all_freqs)+1)])
-    pylab.xlabel("Frequency in cm-1")
-    pylab.ylabel("Intensity")
+        pt.xlim(xmax=high/invcm)
+    pt.legend([str(nb) for nb in range(1,len(all_freqs)+1)])
+    pt.xlabel("Frequency in cm-1")
+    pt.ylabel("Intensity")
     if title is not None:
-        pylab.title(title)
-    pylab.savefig(filename)
+        pt.title(title)
+    pt.savefig(filename)
 
 
 def create_enm_molecule(molecule, selected=None, numbers=None, masses=None,

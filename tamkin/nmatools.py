@@ -153,7 +153,7 @@ def write_overlap(freqs1, freqs2, overlap, filename="overlap.csv", unit="au"):
             print >> f, str(freqs1[r]*centimeter/lightspeed)+";"+";".join(str(g) for g in overlap[r,:].tolist())
 
     else:
-        raise ImplementationError("this unit is not implemented/recognized")
+        raise NotImplementedError("this unit is not implemented/recognized")
     f.close()
 
 

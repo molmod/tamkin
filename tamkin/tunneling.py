@@ -96,7 +96,7 @@ class Eckart(TunnelingCorrection):
            with only one imaginary frequency.
         """
         if len(pf_trans.vibrational.negative_freqs) != 1:
-            raise ValueError("The partition function of the transition state must have exactly one negative frequency, found %i" % len(pf_prod.negative_freqs))
+            raise ValueError("The partition function of the transition state must have exactly one negative frequency, found %i" % len(pf_trans.negative_freqs))
         if len(pfs_react) == 0:
             raise ValueError("At least one reactant is required.")
         if len(pfs_react) == 0:
@@ -215,7 +215,7 @@ class Wigner(TunnelingCorrection):
            with only one imaginary frequency.
         """
         if len(pf_trans.vibrational.negative_freqs) != 1:
-            raise ValueError("The partition function of the transition state must have exactly one negative frequency, found %i" % len(pf_prod.negative_freqs))
+            raise ValueError("The partition function of the transition state must have exactly one negative frequency, found %i" % len(pf_trans.negative_freqs))
         self.nu = pf_trans.vibrational.negative_freqs[0]
 
     @classmethod
@@ -260,7 +260,7 @@ class Miller(TunnelingCorrection):
            with only one imaginary frequency.
         """
         if len(pf_trans.vibrational.negative_freqs) != 1:
-            raise ValueError("The partition function of the transition state must have exactly one negative frequency, found %i" % len(pf_prod.negative_freqs))
+            raise ValueError("The partition function of the transition state must have exactly one negative frequency, found %i" % len(pf_trans.negative_freqs))
         self.nu = pf_trans.vibrational.negative_freqs[0]
 
     @classmethod

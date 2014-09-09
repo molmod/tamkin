@@ -352,7 +352,7 @@ class Transform(object):
             # Quality Assurance:
             if matrix.shape[0] != 3*len(atom_division.transformed):
                 raise ValueError("The matrix must have %i columns (matching the number of transformed atoms), got %i." %
-                    3*len(transformed_atoms), matrix.shape[0]
+                    3*len(atom_division.transformed), matrix.shape[0]
                 )
             # internal usage only:
             self._num_reduced = matrix.shape[1] + 3*len(atom_division.free)

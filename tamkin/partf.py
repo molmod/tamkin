@@ -1331,7 +1331,7 @@ class PartFun(Info, StatFys):
         # perform a sanity check on the names of the contributions:
         for term in self.terms:
             if term.name in self.__reserved_names__:
-                raise ValueError("An additional partition function term can not have the name '%s'" % mod.name)
+                raise ValueError("An additional partition function term can not have the name '%s'" % term.name)
         # done testing, start initialization
         self.vibrational = None
         self.electronic = None

@@ -63,16 +63,20 @@ be present. Depending on the available directories, the following two
 computations may take place:
 
 * When a transition state is present, the kinetic parameters are computed. In
-  this case, a config file ``kinetics.cfg`` must be present. It contains the
-  supports keys:
+  this case, a config file ``kinetics.cfg`` must be present. It supports the
+  following keys:
 
-    ``temp_low`` and ``temp_high`` (mandatory)
-        These specifiy the minimum and maximum temperature for the Arrhenius
-        plot.
+  ``temp_low`` and ``temp_high`` (mandatory)
+    These specifiy the minimum and maximum temperature for the Arrhenius
+    plot.
 
-    ``temp_int`` (optional)
-        The temperature interval for the datapoints for the Arrhenius plot.
-        [default=10]
+  ``temp_int`` (optional)
+    The temperature interval for the datapoints for the Arrhenius plot.
+    [default=10]
+
+  ``tunneling`` (optional)
+    When set to True, the Eckart tunneling is applied to the computation
+    of reaction rates.
 
   For example::
 
@@ -124,110 +128,68 @@ line consists of a key followed one or more values, all separated by whitespace.
 Comments can be added with a #, just as in Python source code. Each file has its
 specific keys that are processed. Unknown keys are ignored.
 
-**molecule.cfg:**
+* **molecule.cfg**: ``symnum``, ``freq_scaling``, ``zp_scaling``
+* **rotor_g_*/rotor.cfg**: ``dofmax``, ``even``, ``fortran``, ``num_levels``,
+  ``rotsym``, ``top``
+* **rotor_f_*/rotor.cfg**: ``dihed``, ``dofmax``, ``fortran``, ``num_levels``,
+  ``rotsym``, ``top``
+* **rotor_c_*/rotor.cfg**: ``even``, ``dihed``, ``dofmax``, ``fortran``,
+  ``num_levels``, ``rotsym``, ``top``
 
-    ``symnum`` (optional)
-        This keyword can be used to assign the rotational symmetry number. For
-        molecules with less than 10 atoms, this number is estimated
-        automatically when not given. For larger molecules, the default value is
-        1.
+The keys (and values) are interpreted as follows:
 
-**rotor_g_*/rotor.cfg**
+``even`` (optional)
+    A boolean (True or False) to indicate that the torsional potential is
+    even. [default=False]
 
-    ``dofmax`` (optional)
-        The maximum number of cosines used to represent the torsional potential.
-        if the potential is not even, the same number of sines is also used.
-        [default=5]
+``dihed`` (mandatory)
+    A list of four atom indexes that define the dihedral angle, separated by
+    whitespace.
 
-    ``even`` (optional)
-        A boolean (True or False) to indicate that the torsional potential is
-        even. [default=False]
+``dofmax`` (optional)
+    The maximum number of cosines used to represent the torsional potential.
+    if the potential is not even, the same number of sines is also used.
+    [default=5]
 
-    ``fortran`` (optional)
-        A boolean (True or False) to indicate that the atom indexes are given in
-        Fortran convention. (Counting starts from one). [default=False]
+``fortran`` (optional)
+    A boolean (True or False) to indicate that the atom indexes are given in
+    Fortran convention. (Counting starts from one instead of zero). This is
+    option relevant for the keys ``dihed`` and ``top``. [default=False]
 
-    ``num_levels`` (optional)
-        The number of energy levels considered in the QM treatment of the rotor.
-        [default=50]
+``freq_scaling``
+    The frequency scaling factor to correct for systematic deviations of the
+    level theory used to compute the Hessian. [default=1.0]
 
-    ``rotsym`` (optional)
-        The rotational symmetry of the internal rotor. [default=1]
-    
-    ``top`` (optional)
-        The atoms in the rotating top. When not given, an attempt is made to
-        derive this top from the choice of the dihedral angle and the molecular
-        topology. (This attempt is often not successful for structures
-        containing multiple molecules. In that case, top_indexes must be
-        provided.
+``num_levels`` (optional)
+    The number of energy levels considered in the QM treatment of the rotor.
+    [default=50]
 
-**rotor_f_*/rotor.cfg**
+``rotsym`` (optional)
+    The rotational symmetry of the internal rotor. [default=1]
 
-    ``dihed`` (mandatory)
-        A list of four atom indexes that define the dihedral angle, separated by
-        whitespace.
+``symnum`` (optional)
+    This keyword can be used to assign the rotational symmetry number. For
+    molecules with less than 10 atoms, this number is estimated
+    automatically when not given. For larger molecules, the default value is
+    1.
 
-    ``dofmax`` (optional)
-        The maximum number of cosines used to represent the torsional potential.
-        if the potential is not even, the same number of sines is also used.
-        [default=5]
+``top`` (optional)
+    The atoms in the rotating top. When not given, an attempt is made to
+    derive this top from the choice of the dihedral angle and the molecular
+    topology. (This attempt is often not successful for structures
+    containing multiple molecules. In that case, top_indexes must be
+    provided.
 
-    ``fortran`` (optional)
-        A boolean (True or False) to indicate that the atom indexes are given in
-        Fortran convention. (Counting starts from one). [default=False]
+``zp_scaling`` (optional)
+    The zero-point scaling factor to correct for systematic deviations of the
+    level theory used to compute the Hessian. [default=1.0]
 
-    ``num_levels`` (optional)
-        The number of energy levels considered in the QM treatment of the rotor.
-        [default=50]
-
-    ``rotsym`` (optional)
-        The rotational symmetry of the internal rotor. [default=1]
-    
-    ``top`` (optional)
-        The atoms in the rotating top. When not given, an attempt is made to
-        derive this top from the choice of the dihedral angle and the molecular
-        topology. (This attempt is often not successful for structures
-        containing multiple molecules. In that case, top_indexes must be
-        provided.
 
 **rotor_c_*/rotor.dat**
 
-    This file just contains two columns of data, angles (radians) and energies
-    (hartree), that specify the custom torsional potential. It does not follow
-    the ``*.cfg`` format.
-
-**rotor_c_*/rotor.cfg**
-
-    ``even`` (optional)
-        A boolean (True or False) to indicate that the torsional potential is
-        even. [default=False]
-
-    ``dihed`` (mandatory)
-        A list of four atom indexes that define the dihedral angle, separated by
-        whitespace.
-
-    ``dofmax`` (optional)
-        The maximum number of cosines used to represent the torsional potential.
-        if the potential is not even, the same number of sines is also used.
-        [default=5]
-
-    ``fortran`` (optional)
-        A boolean (True or False) to indicate that the atom indexes are given in
-        Fortran convention. (Counting starts from one). [default=False]
-
-    ``num_levels`` (optional)
-        The number of energy levels considered in the QM treatment of the rotor.
-        [default=50]
-
-    ``rotsym`` (optional)
-        The rotational symmetry of the internal rotor. [default=1]
-    
-    ``top`` (optional)
-        The atoms in the rotating top. When not given, an attempt is made to
-        derive this top from the choice of the dihedral angle and the molecular
-        topology. (This attempt is often not successful for structures
-        containing multiple molecules. In that case, top_indexes must be
-        provided.
+This file ``rotor_c_*/rotor.dat`` just contains two columns of data, angles
+(radians) and energies (hartree), that specify the custom torsional potential.
+It does not follow the ``*.cfg`` format.
 '''
 
 
@@ -298,6 +260,8 @@ def get_pf(dn):
        dn
             A molecule directory name
     '''
+    print 'Loading partition function from', dn
+
     # A1) load the molecule
     molecule = load_molecule_g03fchk('%s/freq/gaussian.fchk' % dn)
 
@@ -321,6 +285,7 @@ def get_pf(dn):
     # B1) load all rotors computed with Gaussian
     for fn_log in glob('%s/rotor_g_*/gaussian.log' % dn):
         dn_rotor = os.path.dirname(fn_log)
+        print '  Loading rotor', dn_rotor
         dns_rotor.append(dn_rotor)
         # Load the config file
         rotor_cfg = load_cfg(os.path.join(dn_rotor, 'rotor.cfg'))
@@ -339,6 +304,7 @@ def get_pf(dn):
     # B2) load all free rotors
     for fn_cfg in glob('%s/rotor_f_*/rotor.cfg' % dn):
         dn_rotor = os.path.dirname(fn_cfg)
+        print '  Loading rotor', dn_rotor
         dns_rotor.append(dn_rotor)
         # Load the config file
         rotor_cfg = load_cfg(fn_cfg)
@@ -357,6 +323,7 @@ def get_pf(dn):
     # B3) load all custom rotors
     for fn_dat in glob('%s/rotor_c_*/rotor.dat' % dn):
         dn_rotor = os.path.dirname(fn_dat)
+        print '  Loading rotor', dn_rotor
         dns_rotor.append(dn_rotor)
         # Load the potential data
         potential = np.loadtxt(fn_dat).T
@@ -381,7 +348,10 @@ def get_pf(dn):
 
     # D) Define the partition function
     mol_cfg = load_cfg('%s/molecule.cfg' % dn)
-    pf = PartFun(nma, [ExtTrans(), ExtRot(mol_cfg.get('symnum', None))] + rotors)
+    pf = PartFun(nma, [Vibrations(freq_scaling=mol_cfg.get('freq_scaling', 1.0),
+                                  zp_scaling=mol_cfg.get('zp_scaling', 1.0)),
+                       ExtTrans(),
+                       ExtRot(mol_cfg.get('symnum', None))] + rotors)
     # store the atomic numbers as an attribute of the partition function (used
     # to check that no atoms get lost in a reaction.
     pf.numbers = molecule.numbers

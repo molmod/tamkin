@@ -491,6 +491,12 @@ class RotScan(ReadOnly):
                 top_indexes = half1
                 top_indexes.discard(atom1)
             top_indexes = tuple(top_indexes)
+        else:
+            # check the sanity of the top indexes
+            if not ((self.dihedral[0] in top_indexes) ^ (self.dihedral[3] in top_indexes)):
+                raise ValueError('The top must contain either first or the last atom of the dihedral angle.')
+            if ((self.dihedral[1] in top_indexes) | (self.dihedral[2] in top_indexes)):
+                raise ValueError('The top may not contain atoms from the central bond of the dihedral angle.')
         self.top_indexes = top_indexes
         self.potential = potential
 

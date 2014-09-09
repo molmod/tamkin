@@ -1389,6 +1389,8 @@ class Blocks(object):
                 raise ValueError("block "+str(b)+": atoms should be in range [0,N-1], N="+str(N))
             elif min(block)<0:
                 raise ValueError("block "+str(b)+": atoms should be in range [0,N-1], N="+str(N))
+            elif len(block) != len(set(block)):
+                raise ValueError("Duplicate atoms encountered in block %i." % b)
         #remove single atoms and empty blocks
         for i in range(len(to_remove)):
             del blocks[to_remove[len(to_remove)-i-1]]   #remove starting from largests b

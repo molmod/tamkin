@@ -1091,12 +1091,12 @@ class MBH(Treatment):
         # QA:
         if len(blocks) == 0:
             raise ValueError("At least one block is required.")
+        if not isinstance(do_gradient_correction, bool):
+            raise TypeError("Optional argument do_gradient_correction should be boolean.")
         # Rest of init:
         self.blocks = blocks
         self.svd_threshold = svd_threshold
-        if type(do_gradient_correction).__name__ == 'bool':
-            self.do_gradient_correction = do_gradient_correction
-        else: raise TypeError("Optional argument do_gradient_correction should be boolean.")
+        self.do_gradient_correction = do_gradient_correction
         Treatment.__init__(self)
 
     def compute_zeros(self, molecule, do_modes):
@@ -1279,59 +1279,59 @@ class MBH(Treatment):
     def _construct_nullspace_K(self,molecule,mbhdim1,blkinfo):
         # SECOND TRANSFORM: from BLOCK PARAMETERS to Y VARIABLES
         # Necessary if blocks are linked to each other.
-            # Construct K matrix, with constraints
-            D = transrot_basis(molecule.coordinates)   # is NOT mass-weighted
-            nbrows = (numpy.sum(blkinfo.sharenbs)-molecule.size)*3
-            K = numpy.zeros(( nbrows, mbhdim1-3*len(blkinfo.free)), float)
-            row = 0
-            for (at,apps) in blkinfo.appearances.iteritems():
-                if len(apps) >= 2:
-                    # the first block
-                    b0 = apps[0]
+        # Construct K matrix, with constraints
+        D = transrot_basis(molecule.coordinates)   # is NOT mass-weighted
+        nbrows = (numpy.sum(blkinfo.sharenbs)-molecule.size)*3
+        K = numpy.zeros(( nbrows, mbhdim1-3*len(blkinfo.free)), float)
+        row = 0
+        for (at,apps) in blkinfo.appearances.iteritems():
+            if len(apps) >= 2:
+                # the first block
+                b0 = apps[0]
+                D0 = D[:,3*at:3*(at+1)]
+
+                if b0 < blkinfo.nb_nlin:  # if b0 is nonlinear block
+                    sta0 = 6*b0
+                    end0 = 6*(b0+1)
                     D0 = D[:,3*at:3*(at+1)]
 
-                    if b0 < blkinfo.nb_nlin:  # if b0 is nonlinear block
-                        sta0 = 6*b0
-                        end0 = 6*(b0+1)
-                        D0 = D[:,3*at:3*(at+1)]
+                else:   # if b0 is a linear block
+                    b0 = b0 - blkinfo.nb_nlin     # reset
+                    sta0 = 6*blkinfo.nb_nlin + 5*b0       # offset
+                    end0 = 6*blkinfo.nb_nlin + 5*(b0+1)
+                    alphas = [index for index in range(6) if index != blkinfo.skip_axis_lin[b0]]
+                    D0 = numpy.take(D[:,3*at:3*(at+1)],alphas,0)
 
-                    else:   # if b0 is a linear block
-                        b0 = b0 - blkinfo.nb_nlin     # reset
-                        sta0 = 6*blkinfo.nb_nlin + 5*b0       # offset
-                        end0 = 6*blkinfo.nb_nlin + 5*(b0+1)
-                        alphas = [index for index in range(6) if index != blkinfo.skip_axis_lin[b0]]
-                        D0 = numpy.take(D[:,3*at:3*(at+1)],alphas,0)
+                for b1 in apps[1:]:
+                    # add 3 rows to K, for each block connected to b0
+                    K[row:row+3, sta0:end0] = D0.transpose()
 
-                    for b1 in apps[1:]:
-                        # add 3 rows to K, for each block connected to b0
-                        K[row:row+3, sta0:end0] = D0.transpose()
+                    if b1 < blkinfo.nb_nlin:  # if b1 is nonlinear block
+                        sta1 = 6*b1
+                        end1 = 6*(b1+1)
+                        D1 = D[:,3*at:3*(at+1)]
 
-                        if b1 < blkinfo.nb_nlin:  # if b1 is nonlinear block
-                            sta1 = 6*b1
-                            end1 = 6*(b1+1)
-                            D1 = D[:,3*at:3*(at+1)]
+                    else:   # if b1 is a linear block
+                        b1 = b1 - blkinfo.nb_nlin     # reset
+                        sta1 = 6*blkinfo.nb_nlin + 5*b1       # offset
+                        end1 = 6*blkinfo.nb_nlin + 5*(b1+1)
+                        alphas = [index for index in range(6) if index != blkinfo.skip_axis_lin[b1]]
+                        D1 = numpy.take(D[:,3*at:3*(at+1)],alphas,0)
 
-                        else:   # if b1 is a linear block
-                            b1 = b1 - blkinfo.nb_nlin     # reset
-                            sta1 = 6*blkinfo.nb_nlin + 5*b1       # offset
-                            end1 = 6*blkinfo.nb_nlin + 5*(b1+1)
-                            alphas = [index for index in range(6) if index != blkinfo.skip_axis_lin[b1]]
-                            D1 = numpy.take(D[:,3*at:3*(at+1)],alphas,0)
+                    K[row:row+3,sta1:end1] = -D1.transpose()
+                    row += 3
 
-                        K[row:row+3,sta1:end1] = -D1.transpose()
-                        row += 3
+        # Do SVD of matrix K
+        u,s,vh = numpy.linalg.svd(K)
 
-            # Do SVD of matrix K
-            u,s,vh = numpy.linalg.svd(K)
-
-            # construct nullspace of K
-            rank = sum(s>max(s)*self.svd_threshold)
-            nullspace = vh[rank:,:].transpose()
-            [r_null,c_null] = nullspace.shape
-            n = numpy.zeros((mbhdim1,c_null+3*len(blkinfo.free)),float)
-            n[:r_null,:c_null] = nullspace
-            n[r_null:,c_null:] = numpy.identity(3*len(blkinfo.free),float)
-            return n
+        # construct nullspace of K
+        rank = sum(s>max(s)*self.svd_threshold)
+        nullspace = vh[rank:,:].transpose()
+        [r_null,c_null] = nullspace.shape
+        n = numpy.zeros((mbhdim1,c_null+3*len(blkinfo.free)),float)
+        n[:r_null,:c_null] = nullspace
+        n[r_null:,c_null:] = numpy.identity(3*len(blkinfo.free),float)
+        return n
 
 
 class MBHConstrainExt(MBH):

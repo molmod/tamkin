@@ -33,7 +33,7 @@
 #
 #--
 
-import numpy, sys
+import numpy as np, sys
 
 from molmod.units import bar, liter, meter, mol, second, kjmol
 from molmod.constants import boltzmann
@@ -76,16 +76,16 @@ def get_error_color(ratio):
     return result
 
 
-temps = numpy.array([300, 400, 500, 600], float)
-#temps = numpy.arange(300.0, 601.0, 10.0)
+temps = np.array([300, 400, 500, 600], float)
+#temps = np.arange(300.0, 601.0, 10.0)
 invtemps = 1/temps
 N = len(temps)
 
 centimeter = meter*0.01
-experimental_k = 7.19e-15 * (temps/298)**2.44*numpy.exp(-22.45*kjmol/(boltzmann*temps))
+experimental_k = 7.19e-15 * (temps/298)**2.44*np.exp(-22.45*kjmol/(boltzmann*temps))
 experimental_k *= (centimeter**3/second)
 experimental_k /= (meter**3/mol/second)
-experimental_lnk = numpy.log(experimental_k)
+experimental_lnk = np.log(experimental_k)
 print "unit conversion: %e" % (7.19e-15*(centimeter**3/second)/(meter**3/mol/second))
 print "experimental_k:"
 print experimental_k
@@ -94,19 +94,19 @@ print experimental_lnk
 
 # fit experimental A and Ea and also sensitivity to errors
 
-design_matrix = numpy.array([numpy.ones(N), -invtemps/boltzmann*kjmol]).transpose()
+design_matrix = np.array([np.ones(N), -invtemps/boltzmann*kjmol]).transpose()
 expected_values = experimental_lnk
 
-A = numpy.dot(design_matrix.transpose(), design_matrix)
-B = numpy.dot(design_matrix.transpose(), expected_values)
+A = np.dot(design_matrix.transpose(), design_matrix)
+B = np.dot(design_matrix.transpose(), expected_values)
 
-experimental_parameters = numpy.linalg.solve(A, B)
-experimental_A = numpy.exp(experimental_parameters[0])
+experimental_parameters = np.linalg.solve(A, B)
+experimental_A = np.exp(experimental_parameters[0])
 experimental_Ea = experimental_parameters[1]
-covariance_lnk = numpy.ones((N,N),float)*numpy.log(10)**2 + numpy.identity(N,float)*numpy.log(2)**2
-#covariance_lnk = numpy.identity(4,float)*numpy.log(10)**2
-sensitivity = numpy.linalg.solve(A, design_matrix.transpose())
-covariance_parameters = numpy.dot(numpy.dot(sensitivity, covariance_lnk), sensitivity.transpose())
+covariance_lnk = np.ones((N,N),float)*np.log(10)**2 + np.identity(N,float)*np.log(2)**2
+#covariance_lnk = np.identity(4,float)*np.log(10)**2
+sensitivity = np.linalg.solve(A, design_matrix.transpose())
+covariance_parameters = np.dot(np.dot(sensitivity, covariance_lnk), sensitivity.transpose())
 
 print "experimental_A: %e" % experimental_A
 print "experimental_Ea", experimental_Ea

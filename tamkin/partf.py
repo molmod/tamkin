@@ -86,7 +86,7 @@
 from molmod import boltzmann, lightspeed, atm, bar, amu, centimeter, kjmol, \
     planck, mol, meter, newton
 
-import numpy
+import numpy as np
 
 
 __all__ = [
@@ -654,13 +654,13 @@ def helper_levels(temp, n, energy_levels, check=False):
         degeneracy = 1
         while (degeneracy<len(energy_levels) and energy_levels[0]==energy_levels[degeneracy]):
             degeneracy += 1
-        return temp**n*numpy.log(degeneracy) - temp**(n-1)*energy
+        return temp**n*np.log(degeneracy) - temp**(n-1)*energy
     else:
-        bfs = numpy.exp(-energy_levels/(boltzmann*temp))
+        bfs = np.exp(-energy_levels/(boltzmann*temp))
         Z = bfs.sum()
         if check:
             _check_levels(temp, bfs, Z)
-        return temp**n*numpy.log(Z)
+        return temp**n*np.log(Z)
 
 def helpert_levels(temp, n, energy_levels, check=False):
     """Helper 1 function for a system with the given energy levels.
@@ -681,7 +681,7 @@ def helpert_levels(temp, n, energy_levels, check=False):
     if temp == 0:
         raise NotImplementedError
     else:
-        bfs = numpy.exp(-energy_levels/(boltzmann*temp))
+        bfs = np.exp(-energy_levels/(boltzmann*temp))
         Z = bfs.sum()
         if check:
             _check_levels(temp, bfs, Z)
@@ -706,7 +706,7 @@ def helpertt_levels(temp, n, energy_levels, check=False):
     if temp == 0:
         raise NotImplementedError
     else:
-        bfs = numpy.exp(-energy_levels/(boltzmann*temp))
+        bfs = np.exp(-energy_levels/(boltzmann*temp))
         Z = bfs.sum()
         if check:
             _check_levels(temp, bfs, Z)
@@ -747,7 +747,7 @@ class Electronic(Info, StatFys):
 
     def helper(self, temp, n):
         """See :meth:`StatFys.helper`."""
-        result = temp**n*numpy.log(self.multiplicity)
+        result = temp**n*np.log(self.multiplicity)
         if temp == 0.0:
             if n < 1:
                 raise NotImplementedError
@@ -918,7 +918,7 @@ class ExtTrans(Info, StatFys):
         print >> f, "    Mass [amu]: %f" % (self.mass/amu)
 
     def _z1(self, temp):
-        return 0.5*self.dim*numpy.log(2*numpy.pi*self.mass*boltzmann*temp/planck**2)
+        return 0.5*self.dim*np.log(2*np.pi*self.mass*boltzmann*temp/planck**2)
 
     def helper(self, temp, n):
         """See :meth:`StatFys.helper`."""
@@ -930,9 +930,9 @@ class ExtTrans(Info, StatFys):
         else:
             result = self._z1(temp)
             if self.cp:
-                result += numpy.log(boltzmann*temp/self._pressure)
+                result += np.log(boltzmann*temp/self._pressure)
             else:
-                result += 1.0 - numpy.log(self.density)
+                result += 1.0 - np.log(self.density)
             return result*temp**n
 
     def helpert(self, temp, n):
@@ -965,9 +965,9 @@ class ExtTrans(Info, StatFys):
         else:
             result = self._z1(temp)
             if self.cp:
-                result += numpy.log(boltzmann*temp/self._pressure)
+                result += np.log(boltzmann*temp/self._pressure)
             else:
-                result += -numpy.log(self._density)
+                result += -np.log(self._density)
             return result*temp**n
 
     def helperv(self, temp, n):
@@ -1005,7 +1005,7 @@ class ExtRot(Info, StatFys):
         if nma.periodic:
             raise ValueError("There is no external rotation in periodic systems.")
         self.inertia_tensor = nma.inertia_tensor
-        self.moments = numpy.linalg.eigvalsh(nma.inertia_tensor)
+        self.moments = np.linalg.eigvalsh(nma.inertia_tensor)
         if self.symmetry_number == None:
             self.symmetry_number = nma.symmetry_number
             natom = len(nma.numbers)
@@ -1017,9 +1017,9 @@ class ExtRot(Info, StatFys):
             else:
                 self.symmetry_number = 1
                 print 'WARNING: molecule is too large (%i atoms > 10) to quickly estimate the rotational symmetry number.' % natom
-        self.factor = numpy.sqrt(numpy.product([
-            2*numpy.pi*m*boltzmann for m in self.moments if m > self.im_threshold
-        ]))/self.symmetry_number/numpy.pi
+        self.factor = np.sqrt(np.product([
+            2*np.pi*m*boltzmann for m in self.moments if m > self.im_threshold
+        ]))/self.symmetry_number/np.pi
         self.count = (self.moments > self.im_threshold).sum()
 
     def dump(self, f):
@@ -1038,7 +1038,7 @@ class ExtRot(Info, StatFys):
             else:
                 raise NotImplementedError
         else:
-            return temp**n*(numpy.log(temp)*0.5*self.count + numpy.log(self.factor))
+            return temp**n*(np.log(temp)*0.5*self.count + np.log(self.factor))
 
     def helpert(self, temp, n):
         """See :meth:`StatFys.helpert`."""
@@ -1140,12 +1140,12 @@ def helper_vibrations(temp, n, freqs, classical=False, freq_scaling=1, zp_scalin
     if classical:
         if temp == 0:
             if n >= 1:
-                return numpy.zeros(len(freqs))
+                return np.zeros(len(freqs))
             else:
                 raise NotImplementedError
         else:
             Af = planck*freqs*freq_scaling/(boltzmann*temp)
-            return -temp**n*numpy.log(Af)
+            return -temp**n*np.log(Af)
     else:
         # The zero point correction is included in the vibrational partition
         # function.
@@ -1157,8 +1157,8 @@ def helper_vibrations(temp, n, freqs, classical=False, freq_scaling=1, zp_scalin
                 raise NotImplementedError
         else:
             A = freqs*(planck/(boltzmann*temp))
-            B = numpy.exp(-freq_scaling*A)
-            return -((0.5*zp_scaling)*A + numpy.log(1 - B))*temp**n
+            B = np.exp(-freq_scaling*A)
+            return -((0.5*zp_scaling)*A + np.log(1 - B))*temp**n
 
 def helpert_vibrations(temp, n, freqs, classical=False, freq_scaling=1, zp_scaling=1):
     """Helper 1 function for a set of harmonic oscillators.
@@ -1185,14 +1185,14 @@ def helpert_vibrations(temp, n, freqs, classical=False, freq_scaling=1, zp_scali
         else:
             result = temp**(n-1)
             if hasattr(freqs, "__len__"):
-                result *= numpy.ones(len(freqs))
+                result *= np.ones(len(freqs))
             return result
     else:
         if temp == 0:
             raise NotImplementedError
         else:
             A = freqs*(planck/(boltzmann*temp))
-            B = numpy.exp(-freq_scaling*A)
+            B = np.exp(-freq_scaling*A)
             C = B/(1 - B)
             return A*temp**(n-1)*(0.5*zp_scaling + freq_scaling*C)
 
@@ -1221,7 +1221,7 @@ def helpertt_vibrations(temp, n, freqs, classical=False, freq_scaling=1, zp_scal
         else:
             result = -temp**(n-2)
             if hasattr(freqs, "__len__"):
-                result *= numpy.ones(len(freqs))
+                result *= np.ones(len(freqs))
             return result
     else:
         if temp == 0:
@@ -1229,7 +1229,7 @@ def helpertt_vibrations(temp, n, freqs, classical=False, freq_scaling=1, zp_scal
         else:
             A = freqs*(planck/(boltzmann*temp))
             Af = freq_scaling*A
-            B = numpy.exp(-Af)
+            B = np.exp(-Af)
             C = B/(1.0 - B)
             return -A*temp**(n-2)*(zp_scaling + freq_scaling*C*(2 - Af/(1-B)))
 
@@ -1260,7 +1260,7 @@ class Vibrations(Info, StatFysTerms):
     def init_part_fun(self, nma, partf):
         """See :meth:`StatFys.init_part_fun`."""
         zero_indexes = nma.zeros
-        nonzero_mask = numpy.ones(len(nma.freqs), dtype=bool)
+        nonzero_mask = np.ones(len(nma.freqs), dtype=bool)
         nonzero_mask[zero_indexes] = False
         if self.freq_threshold is not None:
             nonzero_mask[abs(nma.freqs) < self.freq_threshold] = False

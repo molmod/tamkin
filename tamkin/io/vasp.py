@@ -40,7 +40,7 @@ from molmod import electronvolt, angstrom, amu
 from molmod.periodic import periodic
 from molmod.unit_cells import UnitCell
 
-import numpy
+import numpy as np
 
 
 __all__ = ["load_molecule_vasp", "load_fixed_vasp"]
@@ -75,7 +75,7 @@ def load_molecule_vasp(vaspfile_xyz, vaspfile_out, energy = 0.0, multiplicity=1,
         if len(words) == 4:
             atomtypes.append(words[0])
     f.close()
-    atomtypes = numpy.array(atomtypes)
+    atomtypes = np.array(atomtypes)
 
     # Read other data from out-VASP-file OUTCAR
     f = open(vaspfile_out)
@@ -90,20 +90,20 @@ def load_molecule_vasp(vaspfile_xyz, vaspfile_out, energy = 0.0, multiplicity=1,
         break
 
     # read lattice vectors: store in columns
-    vectors = numpy.ones((3,3),float)
+    vectors = np.ones((3,3),float)
     for line in f:
         if line.startswith("      direct lattice vectors"): break
     axis = 0
     for line in f:
         words = line.split()
-        vectors[:,axis] = numpy.array([ float(word)*angstrom for word in words[:3]])
+        vectors[:,axis] = np.array([ float(word)*angstrom for word in words[:3]])
         axis += 1
         if axis >= 3: break
     unit_cell = UnitCell(vectors)
 
     # masses
     # TODO: should be made more general?
-    masses = numpy.zeros((N),float)
+    masses = np.zeros((N),float)
     for at,atomtype in enumerate(atomtypes):
         table = { "H": 1.000,   "C": 12.011, "O": 16.000,
                   "Al": 26.982, "Si": 28.085,
@@ -111,8 +111,8 @@ def load_molecule_vasp(vaspfile_xyz, vaspfile_out, energy = 0.0, multiplicity=1,
         masses[at] = table[atomtype]*amu
 
     # get corresponding atomic numbers
-    atomicnumbers = numpy.zeros(N, int)
-    mass_table = numpy.zeros(len(periodic))
+    atomicnumbers = np.zeros(N, int)
+    mass_table = np.zeros(len(periodic))
     for i in xrange(1, len(mass_table)):
         m1 = periodic[i].mass
         if m1 is None:
@@ -125,8 +125,8 @@ def load_molecule_vasp(vaspfile_xyz, vaspfile_out, energy = 0.0, multiplicity=1,
         atomicnumbers[i] = mass_table.searchsorted(mass)
 
     # positions, gradient
-    positions = numpy.zeros((N,3),float)
-    gradient = numpy.zeros((N,3),float)
+    positions = np.zeros((N,3),float)
+    gradient = np.zeros((N,3),float)
     for line in f:          # go to first time POSITION is printed (reference point)
         if line.strip().startswith("POSITION"): break
     f.next()
@@ -139,7 +139,7 @@ def load_molecule_vasp(vaspfile_xyz, vaspfile_out, energy = 0.0, multiplicity=1,
         if row >= N: break
 
     # hessian, not symmetrized, useful to find indices of Hessian elements
-    hessian = numpy.zeros((3*N,3*N),float)
+    hessian = np.zeros((3*N,3*N),float)
     for line in f:
         if line.strip().startswith("SECOND DERIVATIVES (NOT SYMMETRIZED)"):  break
     f.next()
@@ -160,7 +160,7 @@ def load_molecule_vasp(vaspfile_xyz, vaspfile_out, energy = 0.0, multiplicity=1,
         if row >= 3*Nfree: break
 
     # hessian, symmetrized, somehow with a negative sign
-    hessian = numpy.zeros((3*N,3*N),float)
+    hessian = np.zeros((3*N,3*N),float)
     for line in f:
         if line.strip().startswith("SECOND DERIVATIVES (SYMMETRYZED)"):  break
     f.next()
@@ -226,4 +226,4 @@ def load_fixed_vasp(filename):
     f.close()
 
     fixed_atoms = [at for at in xrange(N) if at not in atoms_free]
-    return numpy.array(fixed_atoms)
+    return np.array(fixed_atoms)

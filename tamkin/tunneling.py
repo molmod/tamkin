@@ -45,7 +45,7 @@
 
 from molmod import boltzmann, planck, kjmol, lightspeed, centimeter
 
-import numpy
+import numpy as np
 
 
 __all__ = ["TunnelingCorrection", "Eckart", "Wigner", "Miller"]
@@ -146,29 +146,29 @@ class Eckart(TunnelingCorrection):
         """
         from scipy.integrate import quad
 
-        h = 2*numpy.pi # the Planck constant in atomic units
-        l = (self.Ef**(-0.5) + self.Er**(-0.5))**(-1)*numpy.sqrt(2) / self.nu
+        h = 2*np.pi # the Planck constant in atomic units
+        l = (self.Ef**(-0.5) + self.Er**(-0.5))**(-1)*np.sqrt(2) / self.nu
 
         def alpha(E):
-            return numpy.sqrt(2*l**2*E/h**2)
+            return np.sqrt(2*l**2*E/h**2)
 
         def beta(E):
-            return numpy.sqrt(2*l**2*(E -(self.Ef-self.Er))/h**2)
+            return np.sqrt(2*l**2*(E -(self.Ef-self.Er))/h**2)
 
         def delta(E):
-            return numpy.sqrt(4*self.Ef*self.Er/(h*self.nu)**2-0.25)
+            return np.sqrt(4*self.Ef*self.Er/(h*self.nu)**2-0.25)
 
         def P(E):
             return (
-                numpy.cosh(2*numpy.pi*(alpha(E) + beta(E))) -
-                numpy.cosh(2*numpy.pi*(alpha(E) - beta(E)))
+                np.cosh(2*np.pi*(alpha(E) + beta(E))) -
+                np.cosh(2*np.pi*(alpha(E) - beta(E)))
             ) / (
-                numpy.cosh(2*numpy.pi*(alpha(E) + beta(E))) +
-                numpy.cosh(2*numpy.pi*(delta(E)))
+                np.cosh(2*np.pi*(alpha(E) + beta(E))) +
+                np.cosh(2*np.pi*(delta(E)))
             )
 
         def integrandum(E):
-            return P(E)*numpy.exp(-(E-self.Ef)/(boltzmann*temp))
+            return P(E)*np.exp(-(E-self.Ef)/(boltzmann*temp))
 
         # integration interval
         emin = max([0, self.Ef-self.Er])
@@ -176,8 +176,8 @@ class Eckart(TunnelingCorrection):
 
         # this is just a sanity check to see whether the integrandum is
         # negligible at the borders of the integration interval
-        energies = numpy.arange(emin, emax, 1*kjmol)
-        integranda = numpy.array([integrandum(energy) for energy in energies])
+        energies = np.arange(emin, emax, 1*kjmol)
+        integranda = np.array([integrandum(energy) for energy in energies])
         if max(integranda) * 1e-5 < max([integranda[0], integranda[-1]]):
             print "Integrandum is not negligible at borders.", integranda[0] / max(integranda), integranda[-1] / max(integranda)
 
@@ -189,7 +189,7 @@ class Eckart(TunnelingCorrection):
     def __call__(self, temps):
         """See :meth:`TunnelingCorrection.__call__`."""
         if hasattr(temps, "__len__"):
-            result = numpy.zeros(len(temps))
+            result = np.zeros(len(temps))
             for i, temp in enumerate(temps):
                 result[i] = self._compute_one_temp(temp)
             return result
@@ -285,4 +285,4 @@ class Miller(TunnelingCorrection):
     def __call__(self, temps):
         """See :meth:`TunnelingCorrection.__call__`."""
         x = 0.5*planck*self.nu/(boltzmann*temps)
-        return x/numpy.sin(x)
+        return x/np.sin(x)

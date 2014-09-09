@@ -39,7 +39,7 @@ from tamkin.data import Molecule
 from molmod import angstrom, amu
 from molmod.periodic import periodic
 
-import numpy
+import numpy as np
 
 
 __all__ = ["load_molecule_cpmd"]
@@ -84,9 +84,9 @@ def load_molecule_cpmd(fn_out, fn_geometry, fn_hessian, multiplicity=1, is_perio
     # load the optimal geometry
     f = file(fn_geometry)
     num_atoms = int(f.readline())
-    numbers = numpy.zeros(num_atoms, int)
-    coordinates = numpy.zeros((num_atoms,3), float)
-    gradient = numpy.zeros((num_atoms,3), float)
+    numbers = np.zeros(num_atoms, int)
+    coordinates = np.zeros((num_atoms,3), float)
+    gradient = np.zeros((num_atoms,3), float)
 
     f.readline()
     i = 0
@@ -116,7 +116,7 @@ def load_molecule_cpmd(fn_out, fn_geometry, fn_hessian, multiplicity=1, is_perio
     line = f.readline()
     if not line.startswith(" &CART"):
         raise IOError("File %s does not start with &CART." % fn_hessian)
-    masses = numpy.zeros(num_atoms, float)
+    masses = np.zeros(num_atoms, float)
     for i in xrange(num_atoms):
         line = f.readline()
         words = line.split()
@@ -127,7 +127,7 @@ def load_molecule_cpmd(fn_out, fn_geometry, fn_hessian, multiplicity=1, is_perio
     if not line.startswith(" &FCON"):
         raise IOError("File %s does not contain section &FCON." % fn_hessian)
     num_cart = num_atoms*3
-    hessian = numpy.zeros((num_cart, num_cart), float)
+    hessian = np.zeros((num_cart, num_cart), float)
     for i in xrange(num_cart):
         line = f.readline()
         words = line.split()

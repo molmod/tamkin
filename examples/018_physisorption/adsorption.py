@@ -35,7 +35,7 @@
 #--
 
 
-import numpy
+import numpy as np
 
 from tamkin import *
 from molmod import *
@@ -88,7 +88,7 @@ tm.write_to_file("adsorption_%s.txt" % level)
 #   g**-1 and can be treated as a macroscopic graphite surface. We model this
 #   surface as a graphene layer, which is further approximated by a single
 #   benzene molecule. ouch.
-ref_data = numpy.array([
+ref_data = np.array([
     (1.28e-6, 9.17e-5),
     (1.28e-4, 9.17e-3),
     (2.49e-4, 0.0184),
@@ -240,7 +240,7 @@ for p in exp_pressure:
     # from density to occupation using the cross section
     occupation = dens2d*cross_sec_ar
     mod_occupation.append(occupation)
-mod_occupation = numpy.array(mod_occupation)
+mod_occupation = np.array(mod_occupation)
 
 # Make a plot of the adsorption isotherm with the ideal gas and with the
 # Langmuir model. Remaining deviations with experiment are due to (relatively

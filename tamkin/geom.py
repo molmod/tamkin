@@ -34,7 +34,7 @@
 #--
 """Analysis of molecular geometries"""
 
-import numpy
+import numpy as np
 
 
 __all__ = ["transrot_basis", "rank_linearity"]
@@ -54,9 +54,9 @@ def transrot_basis(coordinates, rot=True):
        or 3 (``rot==False``) rows. The rows are not mass weighted.
     """
     if not rot:
-        result = numpy.zeros((3, coordinates.size), float)
+        result = np.zeros((3, coordinates.size), float)
     else:
-        result = numpy.zeros((6, coordinates.size), float)
+        result = np.zeros((6, coordinates.size), float)
     # translation
     result[0, 0::3] = 1
     result[1, 1::3] = 1
@@ -104,9 +104,9 @@ def rank_linearity(coordinates, svd_threshold=1e-5, masses3=None):
         center = (coordinates*masses3.reshape((-1,3))).sum(0)/(masses3.sum()/3)  # center of mass
         #print ((coordinates-center)*masses3.reshape((-1,3))).sum(0)  # check
         transrot = transrot_basis(coordinates - center)
-        transrot *= numpy.sqrt(masses3)
+        transrot *= np.sqrt(masses3)
 
-    U, W, Vt = numpy.linalg.svd(transrot, full_matrices=False)
+    U, W, Vt = np.linalg.svd(transrot, full_matrices=False)
     rank = (abs(W) > abs(W[0])*svd_threshold).sum()
     external_basis = Vt[:rank]
 

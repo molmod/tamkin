@@ -40,7 +40,7 @@ from molmod.units import kjmol, atm, meter, mol, second
 from molmod.constants import boltzmann
 
 import unittest
-import numpy
+import numpy as np
 
 
 __all__ = ["PFToolsTestCase"]
@@ -59,7 +59,7 @@ class PFToolsTestCase(unittest.TestCase):
         self.assertAlmostEqual(ra.Ea/kjmol, 25.96, 1)
         self.assertAlmostEqual(km.unit, meter**3/mol/second)
         self.assertEqual(km.unit_name, "m^3 mol^-1 s^-1")
-        self.assertAlmostEqual(numpy.log(ra.A/km.unit), numpy.log(2.29E+02), 1)
+        self.assertAlmostEqual(np.log(ra.A/km.unit), np.log(2.29E+02), 1)
 
         ra.plot_arrhenius("test/output/arrhenius_aa.png")
         ra.monte_carlo()
@@ -77,7 +77,7 @@ class PFToolsTestCase(unittest.TestCase):
         self.assertAlmostEqual(ra.Ea/kjmol, 160.6, 0)
         self.assertAlmostEqual(km.unit, 1.0/second)
         self.assertEqual(km.unit_name, "s^-1")
-        self.assertAlmostEqual(numpy.log(ra.A/km.unit), numpy.log(3.33e10), 0)
+        self.assertAlmostEqual(np.log(ra.A/km.unit), np.log(3.33e10), 0)
         ra.plot_arrhenius("test/output/arrhenius_mat1.png")
         ra.monte_carlo()
         ra.write_to_file("test/output/reaction_mat1.txt")
@@ -97,7 +97,7 @@ class PFToolsTestCase(unittest.TestCase):
         # not a very accurate check because the fit is carried out differently
         # in the fancy excel file where these numbers come from.
         self.assertAlmostEqual(ra.Ea/kjmol, 161.9, 1)
-        self.assertAlmostEqual(numpy.log(ra.A/km.unit), numpy.log(4.08e10), 0)
+        self.assertAlmostEqual(np.log(ra.A/km.unit), np.log(4.08e10), 0)
         ra.plot_arrhenius("test/output/arrhenius_mat2.png")
         ra.monte_carlo()
         ra.write_to_file("test/output/reaction_mat2.txt")

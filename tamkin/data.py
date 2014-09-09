@@ -46,7 +46,7 @@ from molmod import Molecule as BaseMolecule, MolecularGraph, ReadOnly, \
 from molmod.periodic import periodic
 from molmod.graphs import cached
 
-import numpy
+import numpy as np
 
 
 __all__ = ["Molecule", "BareNucleus", "Proton", "RotScan",
@@ -67,9 +67,9 @@ class Molecule(BaseMolecule):
                 "the number of atoms.")
 
     energy = ReadOnlyAttribute(float, none=False)
-    gradient = ReadOnlyAttribute(numpy.ndarray, none=False,
+    gradient = ReadOnlyAttribute(np.ndarray, none=False,
         check=check_gradient, npdim=2, npshape=(None, 3), npdtype=float)
-    hessian = ReadOnlyAttribute(numpy.ndarray, none=False,
+    hessian = ReadOnlyAttribute(np.ndarray, none=False,
         check=check_hessian, npdim=2, npdtype=float)
     multiplicity = ReadOnlyAttribute(int)
     symmetry_number = ReadOnlyAttribute(int)
@@ -132,14 +132,14 @@ class Molecule(BaseMolecule):
              angular moment below ``im_threshold`` are discarded.
         """
         if self.periodic:
-            result = numpy.zeros((3, 3*self.size), float)
+            result = np.zeros((3, 3*self.size), float)
         else:
-            ims, iaxs = numpy.linalg.eigh(self.inertia_tensor)
+            ims, iaxs = np.linalg.eigh(self.inertia_tensor)
             mask = ims > im_threshold
             ims = ims[mask]
             iaxs = iaxs[:,mask]
             ext_dof = len(ims) + 3
-            result = numpy.zeros((ext_dof, 3*self.size), float)
+            result = np.zeros((ext_dof, 3*self.size), float)
         # translation
         result[0, 0::3] = 1
         result[1, 1::3] = 1
@@ -176,7 +176,7 @@ class Molecule(BaseMolecule):
         """
         center = (self.coordinates*self.masses3.reshape((-1,3))).sum(0)/self.mass  # center of mass
         result = transrot_basis(self.coordinates - center, not self.periodic)
-        result *= numpy.sqrt(self.masses3) # transform basis to mass weighted coordinates
+        result *= np.sqrt(self.masses3) # transform basis to mass weighted coordinates
 
         return result
 
@@ -187,7 +187,7 @@ class Molecule(BaseMolecule):
            Each atom mass is repeated three times. The total length of the
            array is 3N.
         """
-        return numpy.array([self.masses, self.masses, self.masses]).transpose().ravel()
+        return np.array([self.masses, self.masses, self.masses]).transpose().ravel()
 
     def get_submolecule(self, selected, energy=None, multiplicity=None, symmetry_number=None, periodic=None, graph=None, title=None, symbols=None, unit_cell=None):
         """Create a submolecule with a selection of atoms
@@ -215,8 +215,8 @@ class Molecule(BaseMolecule):
            they are explicitly specified as optional arguments, then they are
            overwritten.
         """
-        selected = numpy.array(selected)
-        selected3 = numpy.array( sum( [[3*at, 3*at+1, 3*at+2] for at in selected] ,[]) )
+        selected = np.array(selected)
+        selected3 = np.array( sum( [[3*at, 3*at+1, 3*at+2] for at in selected] ,[]) )
 
         # if the following are none, then use the attributes of the original molecule
         if energy is None: energy = self.energy
@@ -259,7 +259,7 @@ class Molecule(BaseMolecule):
             if value is not None:
                 data[key] = value
         if self.graph is not None:
-            data["edges"] = numpy.array([tuple(edge) for edge in self.graph.edges])
+            data["edges"] = np.array([tuple(edge) for edge in self.graph.edges])
         if self.unit_cell is not None:
             data["cell_vectors"] = self.unit_cell.matrix
             data["cell_active"] = self.unit_cell.active
@@ -314,10 +314,10 @@ class Molecule(BaseMolecule):
         D = self.external_basis.transpose() # mass-weighted
         # make it orthonormal
         svd_threshold = 1e-5
-        U, W, Vt = numpy.linalg.svd(D, full_matrices=False)
+        U, W, Vt = np.linalg.svd(D, full_matrices=False)
         rank = (abs(W) > abs(W[0])*svd_threshold).sum()
         D = U[:,:rank]
-        proj = numpy.dot(D,D.transpose())
+        proj = np.dot(D,D.transpose())
 
         proj1 = proj * (self.masses3.reshape((1,-1)))**(0.5)
         proj2 = proj1* (self.masses3.reshape((-1,1)))**(0.5)
@@ -363,23 +363,23 @@ class Molecule(BaseMolecule):
         D = self.external_basis.transpose() # mass-weighted
         # make it orthonormal
         svd_threshold = 1e-5
-        U, W, Vt = numpy.linalg.svd(D, full_matrices=False)
+        U, W, Vt = np.linalg.svd(D, full_matrices=False)
         rank = (abs(W) > abs(W[0])*svd_threshold).sum()
         D = U[:,:rank]
-        proj = numpy.dot(D,D.transpose())
-        #print numpy.sum((proj-numpy.dot(proj,proj))**2)
+        proj = np.dot(D,D.transpose())
+        #print np.sum((proj-np.dot(proj,proj))**2)
 
         proj1 = proj * (self.masses3.reshape((1,-1)))**(0.5)
         proj2 = proj1* (self.masses3.reshape((-1,1)))**(-0.5)
-        projL = numpy.identity(len(D)) - proj2.transpose()
-        projR = numpy.identity(len(D)) - proj2
+        projL = np.identity(len(D)) - proj2.transpose()
+        projR = np.identity(len(D)) - proj2
         # test
-        #print numpy.sum((projR-numpy.dot(projR,projR))**2)
-        #print numpy.sum((projL-numpy.dot(projL,projL))**2)
+        #print np.sum((projR-np.dot(projR,projR))**2)
+        #print np.sum((projL-np.dot(projL,projL))**2)
 
         # Project hessian and gradient
-        hessian = numpy.dot(numpy.dot(projL,self.hessian),projR)
-        gradient = numpy.dot(projL, self.gradient.reshape((-1,1))).reshape((-1,3))
+        hessian = np.dot(np.dot(projL,self.hessian),projR)
+        gradient = np.dot(projL, self.gradient.reshape((-1,1))).reshape((-1,3))
 
         # Use the attributes of the original molecule if they exist
         if hasattr(self,"title"): # check if attribute exists
@@ -450,11 +450,11 @@ class RotScan(ReadOnly):
             raise TypeError("A rotational scan must have at least one atom "
                 "rotating")
 
-    dihedral = ReadOnlyAttribute(numpy.ndarray, none=False, npdim=1,
+    dihedral = ReadOnlyAttribute(np.ndarray, none=False, npdim=1,
         npshape=(4,), npdtype=int)
-    top_indexes = ReadOnlyAttribute(numpy.ndarray, none=False,
+    top_indexes = ReadOnlyAttribute(np.ndarray, none=False,
         check=check_top_indexes, npdim=1, npdtype=int)
-    potential = ReadOnlyAttribute(numpy.ndarray, npdim=2, npshape=(2, None),
+    potential = ReadOnlyAttribute(np.ndarray, npdim=2, npshape=(2, None),
         npdtype=float)
 
     def __init__(self, dihedral, molecule=None, top_indexes=None, potential=None):

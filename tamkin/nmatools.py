@@ -40,7 +40,7 @@ from tamkin.io.charmm import load_peptide_info_charmm
 
 from molmod import lightspeed, angstrom, amu, centimeter
 
-import numpy
+import numpy as np
 
 
 __all__ = [
@@ -80,15 +80,15 @@ def compute_overlap(nma1, nma2, filename=None, unit="au"):
         if isinstance(nma, NMA):
             # NMA object
             return nma.modes, nma.freqs
-        elif hasattr(nma, "__len__") and len(nma) == 2 and not isinstance(nma, numpy.ndarray):
+        elif hasattr(nma, "__len__") and len(nma) == 2 and not isinstance(nma, np.ndarray):
             # [modes,freqs] or (modes,freqs)
             return nma
-        elif isinstance(nma, numpy.ndarray) and len(nma.shape) == 2:
+        elif isinstance(nma, np.ndarray) and len(nma.shape) == 2:
             # modes only
-            return nma, numpy.zeros(nma.shape[1], float)
-        elif isinstance(nma, numpy.ndarray) and len(nma.shape) == 1:
+            return nma, np.zeros(nma.shape[1], float)
+        elif isinstance(nma, np.ndarray) and len(nma.shape) == 1:
             # one mode only
-            return nma.reshape(-1,1), numpy.zeros(1, float)
+            return nma.reshape(-1,1), np.zeros(1, float)
         else:
             raise TypeError("nma argument has wrong type")
 
@@ -99,7 +99,7 @@ def compute_overlap(nma1, nma2, filename=None, unit="au"):
     if modes1.shape[0] != modes2.shape[0] :
         raise ValueError("Length of columns in modes1 and modes2 should be equal, but found %i and %i." % (modes1.shape[0], modes2.shape[0]))
     # compute overlap
-    overlap = numpy.dot(numpy.transpose(modes1), modes2)
+    overlap = np.dot(np.transpose(modes1), modes2)
     if filename is not None:
         write_overlap(freqs1, freqs2, overlap, filename=filename, unit=unit)
     return overlap
@@ -178,14 +178,14 @@ def compute_delta(coor1, coor2, masses=None, normalize=False):
     if len(coor1) != len(coor2):
         raise ValueError("coordinates should have same length: found %i and %i" % (len(coor1), len(coor2)))
 
-    delta = numpy.ravel(coor1 - coor2)
+    delta = np.ravel(coor1 - coor2)
     if not masses is None:  #Mass-weighting delta vector
         for i,mass in enumerate(masses):
-            delta[3*i:3*(i+1)] *=  numpy.sqrt(mass)
+            delta[3*i:3*(i+1)] *=  np.sqrt(mass)
     if normalize:   #Normalizing delta vector
-        norm = numpy.sum(delta**2)
-        delta /= numpy.sqrt(norm)
-    return numpy.reshape(delta, (-1,1))
+        norm = np.sum(delta**2)
+        delta /= np.sqrt(norm)
+    return np.reshape(delta, (-1,1))
 
 
 def compute_sensitivity_freq(nma, index, symmetric=False, massweight=True):
@@ -203,10 +203,10 @@ def compute_sensitivity_freq(nma, index, symmetric=False, massweight=True):
     mode = nma.modes[:,index]
     if not massweight: # un-mass-weight the mode
         for at,mass in enumerate(nma.masses):
-            mode[3*at:3*(at+1)] /= numpy.sqrt(mass)
-        mode = mode / numpy.sqrt(numpy.sum(mode**2))  # renormalization necessary
+            mode[3*at:3*(at+1)] /= np.sqrt(mass)
+        mode = mode / np.sqrt(np.sum(mode**2))  # renormalization necessary
 
-    mat = numpy.dot( numpy.reshape(mode,(L,1)), numpy.reshape(mode,(1,L)) )
+    mat = np.dot( np.reshape(mode,(L,1)), np.reshape(mode,(1,L)) )
     if symmetric:
         mat *= 2
         for i in range(L):
@@ -494,13 +494,13 @@ def plot_spectrum_dos(filename, all_freqs, low=None, high=None, imax=None,
         if high is None:
             high=freqs[-1]+3*width
 
-        nu = numpy.arange(low, high, step)
-        intensity = numpy.zeros(nu.shape, float)
+        nu = np.arange(low, high, step)
+        intensity = np.zeros(nu.shape, float)
 
-        s2 = width**2 / ( 8*numpy.log(2) )  # standard deviation squared
+        s2 = width**2 / ( 8*np.log(2) )  # standard deviation squared
         for i in xrange(len(freqs)):
             if freqs[i] > low and freqs[i] < high:
-                tmp = numpy.exp(-(nu-freqs[i])**2/(2*s2))
+                tmp = np.exp(-(nu-freqs[i])**2/(2*s2))
                 if amps is not None:
                     if hasattr(amps, "__len__"):
                         tmp *= amps[i]
@@ -564,13 +564,13 @@ def create_enm_molecule(molecule, selected=None, numbers=None, masses=None,
         if periodic is None:
             periodic = molecule.periodic
     else:
-        coordinates = numpy.array(molecule, copy=False)
+        coordinates = np.array(molecule, copy=False)
         if numbers is None:
             # pretend being hydrogens
-            numbers = numpy.ones(len(coordinates))
+            numbers = np.ones(len(coordinates))
         if masses is None:
             # pretend being hydrogens
-            masses  = numpy.ones(len(coordinates),float)*amu
+            masses  = np.ones(len(coordinates),float)*amu
         if periodic is None:
             periodic = False
 
@@ -581,13 +581,13 @@ def create_enm_molecule(molecule, selected=None, numbers=None, masses=None,
 
     rcut2 = rcut**2
     N = len(coordinates)
-    hessian = numpy.zeros((3*N,3*N),float)
+    hessian = np.zeros((3*N,3*N),float)
     for i in range(N):
         for j in range(i+1,N):
-            x = numpy.reshape( (coordinates[i,:]-coordinates[j,:]), (3,1))
-            dist2 = numpy.sum(x**2)
+            x = np.reshape( (coordinates[i,:]-coordinates[j,:]), (3,1))
+            dist2 = np.sum(x**2)
             if dist2 < rcut2:
-                corr = K * numpy.dot( x, x.transpose() ) / dist2
+                corr = K * np.dot( x, x.transpose() ) / dist2
                 hessian[3*i:3*(i+1), 3*i:3*(i+1)] += corr
                 hessian[3*i:3*(i+1), 3*j:3*(j+1)] -= corr
                 hessian[3*j:3*(j+1), 3*i:3*(i+1)] -= corr
@@ -598,7 +598,7 @@ def create_enm_molecule(molecule, selected=None, numbers=None, masses=None,
         coordinates,
         masses,
         0.0, #energy
-        numpy.zeros((len(coordinates),3), float),  #gradient
+        np.zeros((len(coordinates),3), float),  #gradient
         hessian,
         1, # multiplicity
         1, # rotational symmetry number

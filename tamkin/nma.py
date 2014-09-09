@@ -83,7 +83,7 @@ from tamkin.data import Molecule
 from tamkin.geom import transrot_basis, rank_linearity
 from tamkin.io.internal import load_chk, dump_chk
 
-import numpy
+import numpy as np
 
 
 __all__ = [
@@ -161,18 +161,18 @@ class NMA(object):
         del treatment.hessian_small # save memory
 
         if hessian_small_mw.size == 0:
-            self.freqs = numpy.array([])
-            self.modes = numpy.array([])
+            self.freqs = np.array([])
+            self.modes = np.array([])
             self.zeros = []
         else:
             if do_modes:
-                evals, modes_small_mw = numpy.linalg.eigh(hessian_small_mw)
+                evals, modes_small_mw = np.linalg.eigh(hessian_small_mw)
             else:
-                evals = numpy.linalg.eigvalsh(hessian_small_mw)
+                evals = np.linalg.eigvalsh(hessian_small_mw)
                 modes_small_mw = None
 
             # frequencies
-            self.freqs = numpy.sqrt(abs(evals))/(2*numpy.pi)
+            self.freqs = np.sqrt(abs(evals))/(2*np.pi)
             # turn imaginary frequencies into negative frequencies
             self.freqs *= (evals > 0)*2-1
 
@@ -200,10 +200,10 @@ class NMA(object):
                     # external basis
                     num_try = 20
                     to_try = abs(self.freqs).argsort()[:num_try]   #indices of lowest 20 modes
-                    overlaps = numpy.zeros(num_try, float)
+                    overlaps = np.zeros(num_try, float)
                     for counter, i in enumerate(to_try):
-                        components = numpy.dot(treatment.external_basis, self.modes[:,i])
-                        overlaps[counter] = numpy.linalg.norm(components)
+                        components = np.dot(treatment.external_basis, self.modes[:,i])
+                        overlaps[counter] = np.linalg.norm(components)
                     self.zeros = to_try[overlaps.argsort()[-treatment.num_zeros:]]
                 else:
                     self.zeros = abs(self.freqs).argsort()[:treatment.num_zeros]
@@ -291,13 +291,13 @@ class AtomDivision(object):
             | ``fixed`` -- the atoms that are not used for the new coordinates,
                            i.e. their positions are constrained.
         """
-        self.transformed = numpy.array(transformed, int)
-        self.free = numpy.array(free, int)
-        self.fixed = numpy.array(fixed, int)
+        self.transformed = np.array(transformed, int)
+        self.free = np.array(free, int)
+        self.fixed = np.array(fixed, int)
 
         self.num_cartesian = 3*(len(self.transformed)+len(self.free)+len(self.fixed))
-        self.to_cartesian_order = numpy.zeros(self.num_cartesian, int)
-        self.to_reduced_order = numpy.zeros(self.num_cartesian, int)
+        self.to_cartesian_order = np.zeros(self.num_cartesian, int)
+        self.to_reduced_order = np.zeros(self.num_cartesian, int)
         counter = 0
         for l in self.transformed, self.free, self.fixed:
             for i in l:
@@ -344,7 +344,7 @@ class Transform(object):
                               used with mass-weighted transformations)
         """
         if matrix is None:
-            matrix = numpy.zeros((0,0), float)
+            matrix = np.zeros((0,0), float)
         if atom_division is None:
             # internal usage only:
             self._num_reduced = matrix.shape[1]
@@ -400,12 +400,12 @@ class Transform(object):
             )
         # Computation
         if self.atom_division is None:
-            return numpy.dot(self.matrix, modes)
+            return np.dot(self.matrix, modes)
         else:
-            result = numpy.zeros((self.atom_division.num_cartesian, modes.shape[1]), float)  # 3NxM
+            result = np.zeros((self.atom_division.num_cartesian, modes.shape[1]), float)  # 3NxM
             i1 = 3*len(self.atom_division.transformed)
             i2 = i1 + 3*len(self.atom_division.free)
-            result[:i1] = numpy.dot(self.matrix, modes[:self.matrix.shape[1]])
+            result[:i1] = np.dot(self.matrix, modes[:self.matrix.shape[1]])
             if self.weighted:
                 result[i1:i2] = modes[self.matrix.shape[1]:]*self.scalars
             else:
@@ -430,7 +430,7 @@ class Transform(object):
         # the transformation matrix always transforms to non-mass-weighted Cartesian coords
         if self.weighted:
             raise Exception("The transformation is already weighted.")
-        self.matrix = numpy.dot(self.matrix, mass_matrix.mass_block_inv_sqrt)
+        self.matrix = np.dot(self.matrix, mass_matrix.mass_block_inv_sqrt)
         self.scalars = mass_matrix.mass_diag_inv_sqrt.reshape((-1,1))
         self._weighted = True
 
@@ -461,9 +461,9 @@ class MassMatrix(object):
         if len(args) == 1:
             if len(args[0].shape) == 1:
                 self.mass_diag = args[0]
-                self.mass_block = numpy.zeros((0,0), float)
+                self.mass_block = np.zeros((0,0), float)
             elif len(args[0].shape) == 2:
-                self.mass_diag = numpy.zeros((0,), float)
+                self.mass_diag = np.zeros((0,), float)
                 self.mass_block = args[0]
             else:
                 raise TypeError("When MassMatrix.__init__ gets one argument, it must be a one- or two-dimensional array.")
@@ -475,18 +475,18 @@ class MassMatrix(object):
 
         # the square root of the inverse
         if len(self.mass_block) == 0:
-            self.mass_block_inv_sqrt = numpy.zeros((0,0), float)
+            self.mass_block_inv_sqrt = np.zeros((0,0), float)
         else:
-            evals, evecs = numpy.linalg.eigh(self.mass_block)
-            self.mass_block_inv_sqrt = numpy.dot(evecs/numpy.sqrt(evals), evecs.transpose())
-        self.mass_diag_inv_sqrt = 1/numpy.sqrt(self.mass_diag)
+            evals, evecs = np.linalg.eigh(self.mass_block)
+            self.mass_block_inv_sqrt = np.dot(evecs/np.sqrt(evals), evecs.transpose())
+        self.mass_diag_inv_sqrt = 1/np.sqrt(self.mass_diag)
 
     def get_weighted_hessian(self, hessian):
-        hessian_mw = numpy.zeros(hessian.shape,float)
+        hessian_mw = np.zeros(hessian.shape,float)
         n = len(self.mass_block)
         # transform block by block:
-        hessian_mw[:n,:n] = numpy.dot(numpy.dot(self.mass_block_inv_sqrt, hessian[:n,:n]), self.mass_block_inv_sqrt)
-        hessian_mw[:n,n:] = numpy.dot(self.mass_block_inv_sqrt, hessian[:n,n:])*self.mass_diag_inv_sqrt
+        hessian_mw[:n,:n] = np.dot(np.dot(self.mass_block_inv_sqrt, hessian[:n,:n]), self.mass_block_inv_sqrt)
+        hessian_mw[:n,n:] = np.dot(self.mass_block_inv_sqrt, hessian[:n,n:])*self.mass_diag_inv_sqrt
         hessian_mw[n:,:n] = hessian[:n,n:].transpose()
         hessian_mw[n:,n:] = (hessian[n:,n:]*self.mass_diag_inv_sqrt).transpose()*self.mass_diag_inv_sqrt
         return hessian_mw
@@ -598,7 +598,7 @@ class Full(Treatment):
             # Mass-weighted and orthonormal basis vectors for external degrees
             # of freedom. These are used to detect which vibrational modes match
             # the external degrees of freedom.
-            U, W, Vt = numpy.linalg.svd(molecule.get_external_basis_new(), full_matrices=False)
+            U, W, Vt = np.linalg.svd(molecule.get_external_basis_new(), full_matrices=False)
             self.external_basis = Vt
 
     def compute_hessian(self, molecule, do_modes):
@@ -612,7 +612,7 @@ class Full(Treatment):
         self.hessian_small = molecule.hessian
         self.mass_matrix_small = MassMatrix(molecule.masses3)
         if do_modes:
-            atom_division = AtomDivision([], numpy.arange(molecule.size), [])
+            atom_division = AtomDivision([], np.arange(molecule.size), [])
             self.transform = Transform(None, atom_division)
 
 
@@ -660,7 +660,7 @@ class ConstrainExt(Treatment):
         """
         # Compute the rmsd of the gradient per atom. The maximum of these rmsds
         # should be below the threshold. This is a rotationally invariant test.
-        atom_gradient_norms = numpy.sqrt((molecule.gradient**2).mean(axis=1))
+        atom_gradient_norms = np.sqrt((molecule.gradient**2).mean(axis=1))
         gradmax = (atom_gradient_norms).max()
         if gradmax > self.gradient_threshold:
             raise ValueError(
@@ -673,11 +673,11 @@ class ConstrainExt(Treatment):
         # project the hessian on the orthogonal complement of the basis of small
         # displacements in the external degrees of freedom.
         external_basis = molecule.get_external_basis_new(self.im_threshold)
-        U, W, Vt = numpy.linalg.svd(molecule.external_basis, full_matrices=True)
+        U, W, Vt = np.linalg.svd(molecule.external_basis, full_matrices=True)
         rank = external_basis.shape[0]
-        internal_basis_mw = (Vt[rank:]/numpy.sqrt(molecule.masses3)).transpose()
+        internal_basis_mw = (Vt[rank:]/np.sqrt(molecule.masses3)).transpose()
         # the following hessian is already mass-weighted;
-        self.hessian_small = numpy.dot(internal_basis_mw.transpose(), numpy.dot(molecule.hessian, internal_basis_mw))
+        self.hessian_small = np.dot(internal_basis_mw.transpose(), np.dot(molecule.hessian, internal_basis_mw))
         # we do not define mass_matrix_small since it is useless when the hessian
         # is already mass-weighted
         if do_modes:
@@ -713,7 +713,7 @@ class PHVA(Treatment):
         if len(fixed) == 0:
             raise ValueError("At least one fixed atom is required.")
         # Rest of init:
-        self.fixed = numpy.array(fixed)
+        self.fixed = np.array(fixed)
         self.fixed.sort()
         self.svd_threshold = svd_threshold
         Treatment.__init__(self)
@@ -732,7 +732,7 @@ class PHVA(Treatment):
         # TODO: this will fail if the molecule is displaced far from the origin
         # TODO: make it complicated and analyze the inertia tensor
         # TODO: make ext_dof a molecule property
-        U, W, Vt = numpy.linalg.svd(molecule.external_basis, full_matrices=False)
+        U, W, Vt = np.linalg.svd(molecule.external_basis, full_matrices=False)
         rank = (abs(W) > abs(W[0])*self.svd_threshold).sum()
         external_basis = Vt[:rank]
         # then project this basis on a subspace of the fixed atoms and try to
@@ -746,7 +746,7 @@ class PHVA(Treatment):
         # The homogenuous solutions of the system corresponds to remaining
         # degrees of freedom. The number of homogenuous solutions is equal to
         # the nullity of the system, i.e. the number of zero singular values.
-        U, W, Vt = numpy.linalg.svd(system, full_matrices=False)
+        U, W, Vt = np.linalg.svd(system, full_matrices=False)
         self.num_zeros = (abs(W) < abs(W[0])*self.svd_threshold).sum()
         if do_modes and self.num_zeros > 0:
             # TODO: fix this
@@ -764,8 +764,8 @@ class PHVA(Treatment):
         So it is a diagonal matrix with the masses of the non-fixed atoms on
         the diagonal.
         """
-        free = numpy.zeros(molecule.size - len(self.fixed), int)
-        free3 = numpy.zeros(len(free)*3, int)
+        free = np.zeros(molecule.size - len(self.fixed), int)
+        free3 = np.zeros(len(free)*3, int)
         counter_fixed = 0
         counter_free = 0
         for i in xrange(molecule.size):
@@ -815,7 +815,7 @@ class VSA(Treatment):
         if len(subs) == 0:
             raise ValueError("At least one subsystem atom is required.")
         # Rest of init:
-        self.subs = numpy.array(subs)
+        self.subs = np.array(subs)
         #self.subs.sort()
         self.svd_threshold = svd_threshold
         Treatment.__init__(self)
@@ -832,7 +832,7 @@ class VSA(Treatment):
         """
         # determine nb of zeros
         subs3 = sum([[3*at, 3*at+1, 3*at+2] for at in self.subs],[])
-        U, W, Vt = numpy.linalg.svd(numpy.take(molecule.external_basis,subs3,1), full_matrices=False)
+        U, W, Vt = np.linalg.svd(np.take(molecule.external_basis,subs3,1), full_matrices=False)
         rank = (abs(W) > abs(W[0])*self.svd_threshold).sum()
         self.num_zeros = rank
 
@@ -844,12 +844,12 @@ class VSA(Treatment):
 
         # return mass-weighted basis vectors for external degrees of freedom
         if do_modes:
-            foo = numpy.dot(U.transpose(), molecule.external_basis)
+            foo = np.dot(U.transpose(), molecule.external_basis)
             self.external_basis = foo[:rank]/W[:rank].reshape((-1,1))
 
         #---- other implementation ----
         #if not molecule.periodic:
-        #    self.num_zeros = rank_linearity(numpy.take(molecule.coordinates,self.subs,0), svd_threshold = self.svd_threshold)
+        #    self.num_zeros = rank_linearity(np.take(molecule.coordinates,self.subs,0), svd_threshold = self.svd_threshold)
         #else:
         #    self.num_zeros = 3
         #if do_modes and self.num_zeros > 0:
@@ -860,7 +860,7 @@ class VSA(Treatment):
         #        diff = molecule.coordinates[self.subs[0]] - molecule.coordinates[self.subs[1]]
         #        axis = 3+abs(diff).tolist().index(max(abs(diff)))   # axis to be skipped
         #        alphas = [i for i in range(6) if i is not axis]
-        #        self.external_basis = numpy.take(molecule.external_basis,alphas,0)
+        #        self.external_basis = np.take(molecule.external_basis,alphas,0)
         #    elif self.num_zeros == 6:
         #        self.external_basis = molecule.external_basis
         #    else:
@@ -883,25 +883,25 @@ class VSA(Treatment):
 
         # 1. Construct Hessian (small: 3Nsubs x 3Nsubs)
         # construct H_ss, H_ee, H_es
-        hessian_ss = numpy.take(numpy.take(molecule.hessian,subs3,0), subs3,1)
-        hessian_ee = numpy.take(numpy.take(molecule.hessian,envi3,0), envi3,1)
-        hessian_es = numpy.take(numpy.take(molecule.hessian,envi3,0), subs3,1)
+        hessian_ss = np.take(np.take(molecule.hessian,subs3,0), subs3,1)
+        hessian_ee = np.take(np.take(molecule.hessian,envi3,0), envi3,1)
+        hessian_es = np.take(np.take(molecule.hessian,envi3,0), subs3,1)
         # construct H_ee**-1 and H_ee**-1 . H_es
-        hessian_e1 = numpy.linalg.inv(hessian_ee)
-        hessian_e1_es = numpy.dot(hessian_e1,hessian_es)
+        hessian_e1 = np.linalg.inv(hessian_ee)
+        hessian_e1_es = np.dot(hessian_e1,hessian_es)
         # construct H_ss - H_se . H_ee**-1 . H_es
-        self.hessian_small = hessian_ss - numpy.dot( hessian_es.transpose(), hessian_e1_es)
+        self.hessian_small = hessian_ss - np.dot( hessian_es.transpose(), hessian_e1_es)
 
         # 2. Construct mass matrix (small: 3Nsubs x 3Nsubs)
         # with corrected mass matrix
         masses3_subs = molecule.masses3[subs3]               # masses subsystem
         masses3_envi = molecule.masses3[envi3]               # masses environment
-        tempmat = numpy.zeros((len(envi3),len(subs3)),float) # temporary matrix
+        tempmat = np.zeros((len(envi3),len(subs3)),float) # temporary matrix
 
         # construct   M_e . H_ee**-1 . H_es
         tempmat = masses3_envi.reshape((-1,1))*hessian_e1_es
         # construct   H_se . H_ee**-1 . M_e . H_ee**-1 . H_es
-        massmatrixsmall = numpy.dot(hessian_e1_es.transpose(), tempmat)
+        massmatrixsmall = np.dot(hessian_e1_es.transpose(), tempmat)
         # construct   M_s + H_se . H_ee**-1 . M_e . H_ee**-1 . H_es
         # by adding the diagonal contributions
         massmatrixsmall.ravel()[::len(massmatrixsmall)+1] += masses3_subs
@@ -909,7 +909,7 @@ class VSA(Treatment):
 
         if do_modes:
             atom_division = AtomDivision(envi+subs,[],[])
-            self.transform = Transform( numpy.concatenate( (- hessian_e1_es, numpy.identity(len(subs3))),0), atom_division)
+            self.transform = Transform( np.concatenate( (- hessian_e1_es, np.identity(len(subs3))),0), atom_division)
 
 
 class VSANoMass(Treatment):
@@ -946,7 +946,7 @@ class VSANoMass(Treatment):
         if len(subs) == 0:
             raise ValueError("At least one subsystem atom is required.")
         # Rest of init:
-        self.subs = numpy.array(subs)
+        self.subs = np.array(subs)
         #self.subs.sort()
         self.svd_threshold = svd_threshold
         Treatment.__init__(self)
@@ -964,7 +964,7 @@ class VSANoMass(Treatment):
         """
         # determine nb of zeros
         subs3 = sum([[3*at, 3*at+1, 3*at+2] for at in self.subs],[])
-        U, W, Vt = numpy.linalg.svd(numpy.take(molecule.external_basis,subs3,1), full_matrices=False)
+        U, W, Vt = np.linalg.svd(np.take(molecule.external_basis,subs3,1), full_matrices=False)
         rank = (abs(W) > abs(W[0])*self.svd_threshold).sum()
         self.num_zeros = rank
 
@@ -976,12 +976,12 @@ class VSANoMass(Treatment):
 
         # return mass-weighted basis vectors for external degrees of freedom
         if do_modes:
-            self.external_basis = numpy.zeros((rank, molecule.size*3), float)
+            self.external_basis = np.zeros((rank, molecule.size*3), float)
             self.external_basis[:,subs3] = Vt[:rank]
 
         #---- other implementation ----
         #if not molecule.periodic:
-        #    self.num_zeros = rank_linearity(numpy.take(molecule.coordinates,self.subs,0), svd_threshold = self.svd_threshold)
+        #    self.num_zeros = rank_linearity(np.take(molecule.coordinates,self.subs,0), svd_threshold = self.svd_threshold)
         #else:
         #    self.num_zeros = 3
         #if do_modes and self.num_zeros > 0:
@@ -992,7 +992,7 @@ class VSANoMass(Treatment):
         #        diff = molecule.coordinates[self.subs[0]] - molecule.coordinates[self.subs[1]]
         #        axis = 3+abs(diff).tolist().index(max(abs(diff)))   # axis to be skipped
         #        alphas = [i for i in range(6) if i is not axis]
-        #        self.external_basis = numpy.take(molecule.external_basis,alphas,0)
+        #        self.external_basis = np.take(molecule.external_basis,alphas,0)
         #    elif self.num_zeros == 6:
         #        self.external_basis = molecule.external_basis
         #    else:
@@ -1015,22 +1015,22 @@ class VSANoMass(Treatment):
 
         # 1. Construct Hessian (small: 3Nsubs x 3Nsubs)
         # construct H_ss, H_ee, H_es
-        hessian_ss = numpy.take(numpy.take(molecule.hessian,subs3,0), subs3,1)
-        hessian_ee = numpy.take(numpy.take(molecule.hessian,envi3,0), envi3,1)
-        hessian_es = numpy.take(numpy.take(molecule.hessian,envi3,0), subs3,1)
+        hessian_ss = np.take(np.take(molecule.hessian,subs3,0), subs3,1)
+        hessian_ee = np.take(np.take(molecule.hessian,envi3,0), envi3,1)
+        hessian_es = np.take(np.take(molecule.hessian,envi3,0), subs3,1)
         # construct H_ee**-1 and H_ee**-1 . H_es
-        hessian_e1 = numpy.linalg.inv(hessian_ee)
-        hessian_e1_es = numpy.dot(hessian_e1,hessian_es)
+        hessian_e1 = np.linalg.inv(hessian_ee)
+        hessian_e1_es = np.dot(hessian_e1,hessian_es)
         # construct H_ss - H_se . H_ee**-1 . H_es
-        self.hessian_small = hessian_ss - numpy.dot( hessian_es.transpose(), hessian_e1_es)
+        self.hessian_small = hessian_ss - np.dot( hessian_es.transpose(), hessian_e1_es)
 
         # 2. Construct mass matrix (small: 3Nsubs x 3Nsubs)
         # with plain submatrix M_s
-        self.mass_matrix_small = MassMatrix( numpy.diag(numpy.take(molecule.masses3,subs3)) )
+        self.mass_matrix_small = MassMatrix( np.diag(np.take(molecule.masses3,subs3)) )
 
         if do_modes:
             atom_division = AtomDivision(envi+subs,[],[])
-            self.transform = Transform( numpy.concatenate( (- hessian_e1_es, numpy.identity(len(subs3))),0), atom_division)
+            self.transform = Transform( np.concatenate( (- hessian_e1_es, np.identity(len(subs3))),0), atom_division)
 
 
 class MBH(Treatment):
@@ -1110,7 +1110,7 @@ class MBH(Treatment):
         - 3 in periodic calculations
         """
         # determine nb of zeros
-        U, W, Vt = numpy.linalg.svd(molecule.external_basis, full_matrices=False)
+        U, W, Vt = np.linalg.svd(molecule.external_basis, full_matrices=False)
         rank = (abs(W) > abs(W[0])*self.svd_threshold).sum()
         self.num_zeros = rank
 
@@ -1137,14 +1137,14 @@ class MBH(Treatment):
         #        diff = molecule.coordinates[0,:] - molecule.coordinates[1,:]
         #        axis = 3+abs(diff).tolist().index(max(abs(diff)))   # axis to be skipped
         #        alphas = [i for i in range(6) if i is not axis]
-        #        self.external_basis = numpy.take(molecule.external_basis,alphas,0)
+        #        self.external_basis = np.take(molecule.external_basis,alphas,0)
         #    elif self.num_zeros == 6:
         #        self.external_basis = molecule.external_basis
         #    else:
         #        raise ValueError("Number of zeros is expected to be 3, 5 or 6, but found %i." % self.num_zeros)
 
         #---- other implementation ----
-        #U, W, Vt = numpy.linalg.svd(molecule.external_basis, full_matrices=False)
+        #U, W, Vt = np.linalg.svd(molecule.external_basis, full_matrices=False)
         #rank = (abs(W) > abs(W[0])*self.svd_threshold).sum()
         #self.num_zeros = rank
         #if do_modes:
@@ -1183,16 +1183,16 @@ class MBH(Treatment):
         U = self._construct_U(molecule,mbhdim1,blkinfo)
 
         # Construct Hessian in block parameters: Hp = U**T . H . U + correction
-        Hp = numpy.dot(numpy.dot( U.transpose(), molecule.hessian) , U)
+        Hp = np.dot(np.dot( U.transpose(), molecule.hessian) , U)
 
         # gradient correction
         if self.do_gradient_correction:
          for b,block in enumerate(blkinfo.blocks_nlin_strict+blkinfo.blocks_lin_strict):   # Nonlinear AND linear blocks
-            GP = numpy.zeros((3,3),float)
-            G = numpy.take(molecule.gradient,block,0)
-            P = numpy.take(molecule.coordinates,block,0)
+            GP = np.zeros((3,3),float)
+            G = np.take(molecule.gradient,block,0)
+            P = np.take(molecule.coordinates,block,0)
             for i in range(len(block)):
-                GP += numpy.dot(G[i,:].reshape((3,1)),P[i,:].reshape((1,3)))
+                GP += np.dot(G[i,:].reshape((3,1)),P[i,:].reshape((1,3)))
             # note: GP is not symmetric
             p = GP[0,0] # Gx.x
             q = GP[1,1] # Gy.y
@@ -1201,8 +1201,8 @@ class MBH(Treatment):
             t = GP[2,0] # Gz.x
             u = GP[2,1] # Gz.y
 
-            corr    = numpy.zeros((6,6),float)
-            corr[3:,3:] = numpy.diag([-q-r, -p-r, -p-q])
+            corr    = np.zeros((6,6),float)
+            corr[3:,3:] = np.diag([-q-r, -p-r, -p-q])
             corr[3,4]   =  corr[4,3] = s
             corr[3,5]   =  corr[5,3] = t
             corr[4,5]   =  corr[5,4] = u
@@ -1219,18 +1219,18 @@ class MBH(Treatment):
                 dim = 5
 
                 alphas = [index for index in range(6) if index != blkinfo.skip_axis_lin[b]]
-                Hp[col:(col+dim),col:(col+dim)] += numpy.take(numpy.take(corr,alphas,0),alphas,1)
+                Hp[col:(col+dim),col:(col+dim)] += np.take(np.take(corr,alphas,0),alphas,1)
 
         # Construct mass matrix in block parameters: Mp = U**T . M . U
-        Mp = numpy.dot(U.transpose(),  U * molecule.masses3.reshape((-1,1)))
+        Mp = np.dot(U.transpose(),  U * molecule.masses3.reshape((-1,1)))
 
         if blkinfo.is_linked:
             # SECOND TRANSFORM: from BLOCK PARAMETERS to Y VARIABLES
             # Necessary if blocks are linked to each other.
             nullspace = self._construct_nullspace_K(molecule,mbhdim1,blkinfo)
 
-            My = numpy.dot(nullspace.transpose(), numpy.dot( Mp,nullspace) )
-            Hy = numpy.dot(nullspace.transpose(), numpy.dot( Hp,nullspace) )
+            My = np.dot(nullspace.transpose(), np.dot( Mp,nullspace) )
+            Hy = np.dot(nullspace.transpose(), np.dot( Hp,nullspace) )
 
             # TODO
             # gradient correction of the second transform...
@@ -1244,7 +1244,7 @@ class MBH(Treatment):
             else:
                 self.hessian_small = Hy
                 self.mass_matrix_small = MassMatrix(My)
-                self.transform = Transform(numpy.dot(U, nullspace))
+                self.transform = Transform(np.dot(U, nullspace))
         else:
             if not blkinfo.is_linked:
                 self.hessian_small = Hp
@@ -1257,7 +1257,7 @@ class MBH(Treatment):
         # Construct first transformation matrix
         D = transrot_basis(molecule.coordinates)   # is NOT mass-weighted
 
-        U = numpy.zeros((3*molecule.size, mbhdim1),float)
+        U = np.zeros((3*molecule.size, mbhdim1),float)
 
         for b,block in enumerate(blkinfo.blocks_nlin_strict):
             for at in block:
@@ -1281,8 +1281,8 @@ class MBH(Treatment):
         # Necessary if blocks are linked to each other.
         # Construct K matrix, with constraints
         D = transrot_basis(molecule.coordinates)   # is NOT mass-weighted
-        nbrows = (numpy.sum(blkinfo.sharenbs)-molecule.size)*3
-        K = numpy.zeros(( nbrows, mbhdim1-3*len(blkinfo.free)), float)
+        nbrows = (np.sum(blkinfo.sharenbs)-molecule.size)*3
+        K = np.zeros(( nbrows, mbhdim1-3*len(blkinfo.free)), float)
         row = 0
         for (at,apps) in blkinfo.appearances.iteritems():
             if len(apps) >= 2:
@@ -1300,7 +1300,7 @@ class MBH(Treatment):
                     sta0 = 6*blkinfo.nb_nlin + 5*b0       # offset
                     end0 = 6*blkinfo.nb_nlin + 5*(b0+1)
                     alphas = [index for index in range(6) if index != blkinfo.skip_axis_lin[b0]]
-                    D0 = numpy.take(D[:,3*at:3*(at+1)],alphas,0)
+                    D0 = np.take(D[:,3*at:3*(at+1)],alphas,0)
 
                 for b1 in apps[1:]:
                     # add 3 rows to K, for each block connected to b0
@@ -1316,21 +1316,21 @@ class MBH(Treatment):
                         sta1 = 6*blkinfo.nb_nlin + 5*b1       # offset
                         end1 = 6*blkinfo.nb_nlin + 5*(b1+1)
                         alphas = [index for index in range(6) if index != blkinfo.skip_axis_lin[b1]]
-                        D1 = numpy.take(D[:,3*at:3*(at+1)],alphas,0)
+                        D1 = np.take(D[:,3*at:3*(at+1)],alphas,0)
 
                     K[row:row+3,sta1:end1] = -D1.transpose()
                     row += 3
 
         # Do SVD of matrix K
-        u,s,vh = numpy.linalg.svd(K)
+        u,s,vh = np.linalg.svd(K)
 
         # construct nullspace of K
         rank = sum(s>max(s)*self.svd_threshold)
         nullspace = vh[rank:,:].transpose()
         [r_null,c_null] = nullspace.shape
-        n = numpy.zeros((mbhdim1,c_null+3*len(blkinfo.free)),float)
+        n = np.zeros((mbhdim1,c_null+3*len(blkinfo.free)),float)
         n[:r_null,:c_null] = nullspace
-        n[r_null:,c_null:] = numpy.identity(3*len(blkinfo.free),float)
+        n[r_null:,c_null:] = np.identity(3*len(blkinfo.free),float)
         return n
 
 
@@ -1353,10 +1353,10 @@ class MBHConstrainExt(MBH):
         # perform projection of Hessian and gradient
         D = transrot_basis(molecule.coordinates, rot=molecule.periodic).transpose()
         for i in range(D.shape[1]):
-            D[:,i] /= numpy.sqrt(numpy.sum(D[:,i]**2))
-        proj = numpy.identity(D.shape[0]) - numpy.dot(D,D.transpose())
-        hessian = numpy.dot(proj,molecule.hessian)
-        gradient = (numpy.dot(proj,molecule.gradient.reshape(3*molecule.size,-1))).reshape(molecule.size,3)
+            D[:,i] /= np.sqrt(np.sum(D[:,i]**2))
+        proj = np.identity(D.shape[0]) - np.dot(D,D.transpose())
+        hessian = np.dot(proj,molecule.hessian)
+        gradient = (np.dot(proj,molecule.gradient.reshape(3*molecule.size,-1))).reshape(molecule.size,3)
         # construct a new Molecule instance
         mol = Molecule(molecule.numbers, molecule.coordinates, molecule.masses,
                        molecule.energy, gradient, hessian, molecule.multiplicity,
@@ -1406,11 +1406,11 @@ class Blocks(object):
 
         # check for linearity and fill in dimensions
         #D = molecule.external_basis
-        #dim_block=numpy.zeros((len(blocks)),int)
+        #dim_block=np.zeros((len(blocks)),int)
         indices_blocks_nlin = []    # nonlinear blocks
         indices_blocks_lin  = []    # linear blocks
         for b,block in enumerate(blocks):
-            rank = rank_linearity(numpy.take(molecule.coordinates,block,0), svd_threshold=svd_threshold)[0]
+            rank = rank_linearity(np.take(molecule.coordinates,block,0), svd_threshold=svd_threshold)[0]
             if rank==6:    indices_blocks_nlin.append(b)
             elif rank==5:  indices_blocks_lin.append(b)
             else:          raise ValueError("In principle rank should have been 5 or 6, found "+str(rank))
@@ -1437,7 +1437,7 @@ class Blocks(object):
             appearances.setdefault(atom,[]).append( i+len(orderedblocks) )
 
         # make a strict partition of the atoms: each atom belongs to one block only
-        bA1 = numpy.zeros((molecule.size),int)
+        bA1 = np.zeros((molecule.size),int)
         for (at,apps) in appearances.iteritems():
             bA1[at] = apps[0]
 
@@ -1460,18 +1460,18 @@ class Blocks(object):
         # for linear blocks: axis?
         # Compute direction of the linear block (with two atoms) and check for highest
         # alignment with one of the axes.
-        skip_axis_lin = numpy.zeros((nb_lin),int)
+        skip_axis_lin = np.zeros((nb_lin),int)
         for b,block in enumerate(blocks_lin):       # do not use strict partition here
             diff = molecule.coordinates[block[0]] - molecule.coordinates[block[1]]
             skip_axis_lin[b] = 3+abs(diff).tolist().index(max(abs(diff)))   # axis to be skipped
 
 
         # Check if there are linked blocks
-        sharenbs = numpy.zeros((molecule.size),int)  # share number of each atom
+        sharenbs = np.zeros((molecule.size),int)  # share number of each atom
         for (at,apps) in appearances.iteritems():
             sharenbs[at] = len(apps)
         is_linked = False
-        for sharenb in numpy.ravel(sharenbs):
+        for sharenb in np.ravel(sharenbs):
             if sharenb > 1:
                 is_linked = True
                 break
@@ -1533,13 +1533,13 @@ class PHVA_MBH(MBH):
                 if at in fixed:
                     raise ValueError("Atoms in blocks can not be part of fixed atom region: atom "+str(at)+" is in both regions.")
         # Rest of init:
-        self.fixed = numpy.array(fixed)
+        self.fixed = np.array(fixed)
         MBH.__init__(self, blocks, do_gradient_correction=do_gradient_correction, svd_threshold=svd_threshold)
 
     def compute_zeros(self, molecule, do_modes):
         """See :meth:`Treatment.compute_zeros`"""
         # [ See explanation PHVA ]
-        U, W, Vt = numpy.linalg.svd(molecule.external_basis, full_matrices=False)
+        U, W, Vt = np.linalg.svd(molecule.external_basis, full_matrices=False)
         rank = (abs(W) > abs(W[0])*self.svd_threshold).sum()
         external_basis = Vt[:rank]
         fixed3 = []
@@ -1548,7 +1548,7 @@ class PHVA_MBH(MBH):
             fixed3.append(3*i+1)
             fixed3.append(3*i+2)
         system = external_basis[:,fixed3].transpose()
-        U, W, Vt = numpy.linalg.svd(system, full_matrices=False)
+        U, W, Vt = np.linalg.svd(system, full_matrices=False)
         self.num_zeros = (abs(W) < abs(W[0])*self.svd_threshold).sum()
         if do_modes and self.num_zeros > 0:
             # TODO: fix this
@@ -1570,19 +1570,19 @@ class PHVA_MBH(MBH):
 
         from tamkin.data import Molecule
         submolecule = Molecule(
-            numpy.take(molecule.numbers, selectedatoms),
-            numpy.take(molecule.coordinates, selectedatoms, 0),
-            numpy.take(molecule.masses, selectedatoms),
+            np.take(molecule.numbers, selectedatoms),
+            np.take(molecule.coordinates, selectedatoms, 0),
+            np.take(molecule.masses, selectedatoms),
             molecule.energy,
-            numpy.take(molecule.gradient,selectedatoms,0),
-            numpy.take(numpy.take(molecule.hessian,selectedcoords,0),selectedcoords,1),
+            np.take(molecule.gradient,selectedatoms,0),
+            np.take(np.take(molecule.hessian,selectedcoords,0),selectedcoords,1),
             molecule.multiplicity,
             0, # undefined molecule.symmetry_number
             molecule.periodic
         )
 
         # adapt numbering in blocks
-        shifts = numpy.zeros((molecule.size),int)
+        shifts = np.zeros((molecule.size),int)
         for fixat in self.fixed:
             shifts[fixat:] = shifts[fixat:]+1
         for bl,block in enumerate(self.blocks):
@@ -1592,7 +1592,7 @@ class PHVA_MBH(MBH):
         MBH.compute_hessian(self, submolecule, do_modes)
 
         if do_modes:   # adapt self.transform to include the fixed atom rows/cols
-            transf = numpy.zeros((3*molecule.size, self.transform.matrix.shape[1]),float)
+            transf = np.zeros((3*molecule.size, self.transform.matrix.shape[1]),float)
             transf[selectedcoords,:] = self.transform.matrix
             self.transform = Transform(transf)
 
@@ -1638,7 +1638,7 @@ class Constrain(Treatment):
         - 3 in periodic calculations
         """
         # determine nb of zeros
-        U, W, Vt = numpy.linalg.svd(molecule.external_basis, full_matrices=False)
+        U, W, Vt = np.linalg.svd(molecule.external_basis, full_matrices=False)
         rank = (abs(W) > abs(W[0])*self.svd_threshold).sum()
         self.num_zeros = rank
 
@@ -1657,31 +1657,31 @@ class Constrain(Treatment):
         """See :meth:`Treatment.compute_hessian`"""
 
         # make constraint matrix
-        constrmat = numpy.zeros((3*molecule.size,len(self.constraints)))
+        constrmat = np.zeros((3*molecule.size,len(self.constraints)))
         count = 0
         for i,constraint in enumerate(self.constraints):
             # constrain a distance
             if len(constraint) == 2:
                 at1 = constraint[0]
                 at2 = constraint[1]
-                dist = numpy.sqrt(numpy.sum((molecule.coordinates[at1] - molecule.coordinates[at2])**2))
+                dist = np.sqrt(np.sum((molecule.coordinates[at1] - molecule.coordinates[at2])**2))
                 dist = 1.0
                 constrmat[3*at1:3*at1+3, count] = (molecule.coordinates[at1] - molecule.coordinates[at2])/dist
                 constrmat[3*at2:3*at2+3, count] = (molecule.coordinates[at2] - molecule.coordinates[at1])/dist
                 count += 1
         # determine the orthogonal complement of the basis of small
         # displacements determined by the constraints.
-        U, W, Vt = numpy.linalg.svd(constrmat.transpose(), full_matrices=True)
+        U, W, Vt = np.linalg.svd(constrmat.transpose(), full_matrices=True)
         rank = (W/W[0] > self.svd_threshold).sum()
         nullspace = Vt[rank:].transpose()
 
         # mass matrix small = nullspace^T . M . nullspace
         # hessian     small = nullspace^T . H . nullspace + gradient correction
-        self.mass_matrix_small = MassMatrix(numpy.dot(nullspace.transpose(),nullspace * molecule.masses3.reshape((-1,1))) )
-        self.hessian_small     = numpy.dot(nullspace.transpose(), numpy.dot(molecule.hessian, nullspace))
+        self.mass_matrix_small = MassMatrix(np.dot(nullspace.transpose(),nullspace * molecule.masses3.reshape((-1,1))) )
+        self.hessian_small     = np.dot(nullspace.transpose(), np.dot(molecule.hessian, nullspace))
 
         # check if gradient is small enough in this complement: overlap with nullspace should be small enough
-        # print  numpy.sum(numpy.dot(nullspace.transpose(), numpy.ravel(molecule.gradient))**2)
+        # print  np.sum(np.dot(nullspace.transpose(), np.ravel(molecule.gradient))**2)
 
         if self.do_gradient_correction:
             self._do_the_gradient_correction(constrmat.transpose(), U,W,Vt, rank, nullspace, molecule.gradient)
@@ -1697,14 +1697,14 @@ class Constrain(Treatment):
         # zero rows for free atoms not included in L
 
         # construct generalized inverse
-        L = numpy.zeros((K.shape[1],K.shape[0]),float)
+        L = np.zeros((K.shape[1],K.shape[0]),float)
         for i,sigma in enumerate(s[:rank]):
            L[i,:] = 1/sigma*u[:,i]
-        L = numpy.dot(vh.transpose(),L)
+        L = np.dot(vh.transpose(),L)
 
         # construct right hand side of the equation
-        Y = numpy.zeros((K.shape[0],len(self.hessian_small)**2))
-        y = numpy.zeros((K.shape[0],1))
+        Y = np.zeros((K.shape[0],len(self.hessian_small)**2))
+        y = np.zeros((K.shape[0],1))
         count = 0
         for i in xrange(len(self.hessian_small)):
             for j in xrange(len(self.hessian_small)):
@@ -1724,12 +1724,12 @@ class Constrain(Treatment):
                 count += 1
 
         # solve equation
-        X = -numpy.dot(L, Y)
+        X = -np.dot(L, Y)
 
         # apply correction
         count = 0
         for i in xrange(len(self.hessian_small)):
             for j in xrange(len(self.hessian_small)):
 
-                self.hessian_small[i,j] += numpy.sum( numpy.ravel(gradient)*X[:,count] )
+                self.hessian_small[i,j] += np.sum( np.ravel(gradient)*X[:,count] )
                 count += 1

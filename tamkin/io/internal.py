@@ -34,7 +34,7 @@
 #--
 
 
-import numpy
+import numpy as np
 
 
 __all__ = [
@@ -88,7 +88,7 @@ def load_chk(filename):
             else:
                 raise IOError("Unsupported kind: %s" % kind)
             shape = tuple(int(i) for i in value.split(","))
-            array = numpy.zeros(shape, dtype)
+            array = np.zeros(shape, dtype)
             work = array.ravel()
             counter = 0
             while True:
@@ -142,10 +142,10 @@ def dump_chk(filename, data):
             print >> f, "%40s  kind=int   %i" % (key.ljust(40), value)
         elif isinstance(value, float):
             print >> f, "%40s  kind=flt   %22.15e" % (key.ljust(40), value)
-        elif isinstance(value, numpy.ndarray) or isinstance(value, list) or \
+        elif isinstance(value, np.ndarray) or isinstance(value, list) or \
              isinstance(value, tuple):
             if isinstance(value, list) or isinstance(value, tuple):
-                value = numpy.array(value)
+                value = np.array(value)
             if value.dtype.fields is not None:
                 raise TypeError("Arrays with fields are not supported.")
             shape_str = ",".join(str(i) for i in value.shape)
@@ -160,7 +160,7 @@ def dump_chk(filename, data):
             elif issubclass(value.dtype.type, int):
                 print >> f, "%40s  kind=intar %s" % (key.ljust(40), shape_str)
                 format_str = "%22i"
-            elif issubclass(value.dtype.type, numpy.bool_):
+            elif issubclass(value.dtype.type, np.bool_):
                 print >> f, "%40s  kind=blnar %s" % (key.ljust(40), shape_str)
                 format_str = "%22s"
             elif issubclass(value.dtype.type, float):

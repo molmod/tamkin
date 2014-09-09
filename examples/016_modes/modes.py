@@ -38,7 +38,7 @@
 # Import the tamkin libarary
 from tamkin import *
 # Import other libraries
-import numpy # numerical and array routines
+import numpy as np # numerical and array routines
 from molmod import * # for units
 
 # Load the gamess data
@@ -53,7 +53,7 @@ for i in xrange(len(nma.freqs)):
     print "Mode:", i
     print "Wavenumber:", nma.freqs[i]/invcm
     print "Is zero:", i in nma.zeros
-    print "Norm of eigenmode:", numpy.linalg.norm(nma.modes[:,i])
+    print "Norm of eigenmode:", np.linalg.norm(nma.modes[:,i])
     print "Components:"
     print nma.modes[:,i]
     print

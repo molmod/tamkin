@@ -38,7 +38,7 @@ from tamkin.data import Molecule
 from molmod import angstrom, amu, calorie, avogadro
 from molmod.periodic import periodic
 
-import numpy
+import numpy as np
 
 
 __all__ = ["load_molecule_qchem"]
@@ -85,13 +85,13 @@ def load_molecule_qchem(qchemfile, hessfile = None, multiplicity=1, is_periodic 
         symbols.append(words[1])
         coor = [float(words[2]),float(words[3]),float(words[4])]
         positions.append(coor)
-    positions = numpy.array(positions)*angstrom
+    positions = np.array(positions)*angstrom
     N = len(positions)    #nb of atoms
 
-    numbers = numpy.zeros(N,int)
+    numbers = np.zeros(N,int)
     for i, symbol in enumerate(symbols):
         numbers[i] = periodic[symbol].number
-    #masses = numpy.zeros(N,float)
+    #masses = np.zeros(N,float)
     #for i, symbol in enumerate(symbols):
     #    masses[i] = periodic[symbol].mass
 
@@ -106,23 +106,23 @@ def load_molecule_qchem(qchemfile, hessfile = None, multiplicity=1, is_periodic 
             break
 
     # get Hessian
-    hessian = numpy.zeros((3*N,3*N),float)
+    hessian = np.zeros((3*N,3*N),float)
     if hessfile is None:
       for line in f:
           if line.strip().startswith("Hessian of the SCF Energy") or line.strip().startswith("Final Hessian"):
               break
-      nb = int(numpy.ceil(N*3/6))
+      nb = int(np.ceil(N*3/6))
       for i in range(nb):
           f.next()
           row = 0
           for line in f:
               words = line.split()
-              hessian[row, 6*i:6*(i+1)] = numpy.array(sum([[float(word)] for word in words[1:]],[])) #/ angstrom**2
+              hessian[row, 6*i:6*(i+1)] = np.array(sum([[float(word)] for word in words[1:]],[])) #/ angstrom**2
               row += 1
               if row >= 3*N : break
 
     # get masses
-    masses = numpy.zeros(N,float)
+    masses = np.zeros(N,float)
     for line in f:
         if line.strip().startswith("Zero point vibrational"):
             break
@@ -157,7 +157,7 @@ def load_molecule_qchem(qchemfile, hessfile = None, multiplicity=1, is_periodic 
               hessian[i,j] = hessian[j,i]
 
     # get gradient   TODO
-    gradient = numpy.zeros((N,3), float)
+    gradient = np.zeros((N,3), float)
 
     return Molecule(
         numbers, positions, masses, energy, gradient, hessian, multiplicity,

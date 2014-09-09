@@ -42,7 +42,7 @@ from kin import *
 from molmod.units import kjmol
 from molmod.constants import boltzmann
 
-import numpy
+import numpy as np
 
 
 
@@ -64,7 +64,7 @@ def overview(template, title, fn_img, rows):
         try:
             ks = load_summary(template % lot_label)[0]
             for j in xrange(4):
-                ln10ratio = numpy.log10(ks[j]/experimental_k[j])
+                ln10ratio = np.log10(ks[j]/experimental_k[j])
                 color = get_error_color(ln10ratio)
                 rows[counter].append("<td style='background-color:%s'>%.1e</td>" % (color, ks[j]))
         except IOError, StopIteration:

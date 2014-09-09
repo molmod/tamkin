@@ -40,7 +40,7 @@ from molmod import angstrom, lightspeed, centimeter
 from molmod.io import XYZWriter
 from molmod.periodic import periodic
 
-import numpy
+import numpy as np
 
 
 __all__ = ["dump_modes_xyz", "dump_modes_molden", "dump_modes_gaussian"]
@@ -95,11 +95,11 @@ def dump_modes_xyz(nma, indexes=0, prefix="mode", amplitude=5.0*angstrom, frames
         filename = "%s.%i.xyz" % (prefix, index)
         mode = modes[:,index]
         if masses3 is not None:
-            mode /= numpy.sqrt(masses3)
-        mode /= numpy.linalg.norm(mode)
+            mode /= np.sqrt(masses3)
+        mode /= np.linalg.norm(mode)
         xyz_writer = XYZWriter(filename, symbols)
         for frame in xrange(frames):
-            factor = amplitude*numpy.sin(2*numpy.pi*float(frame)/frames)
+            factor = amplitude*np.sin(2*np.pi*float(frame)/frames)
             xyz_writer.dump("frame %i" % frame, coordinates + factor*mode.reshape((-1,3)))
         del xyz_writer
 
@@ -129,7 +129,7 @@ def dump_modes_gaussian(filename, nma, selected=None):
         # NMA object
         modes, freqs, masses, numbers, coordinates = \
             nma.modes, nma.freqs, nma.masses, nma.numbers, nma.coordinates
-    elif hasattr(nma, "__len__") and len(nma) == 5 and not isinstance(nma, numpy.ndarray):
+    elif hasattr(nma, "__len__") and len(nma) == 5 and not isinstance(nma, np.ndarray):
         # [modes, freqs, ...] or (modes, freqs, ...)
         modes, freqs, masses, numbers, coordinates = nma
     else:
@@ -137,19 +137,19 @@ def dump_modes_gaussian(filename, nma, selected=None):
 
     ### B) Select some modes
     if selected is not None:
-        modes = numpy.take(modes, selected, 1)  # modes in columns
+        modes = np.take(modes, selected, 1)  # modes in columns
         freqs = freqs[selected]
         masses = masses[selected]
         numbers = numbers[selected]
         coordinates = coordinates[selected]
 
     ### C) convert modes to the right convention
-    masses3_sqrt1 = numpy.array(sum([[1/m,1/m,1/m] for m in numpy.sqrt(masses)],[]))
+    masses3_sqrt1 = np.array(sum([[1/m,1/m,1/m] for m in np.sqrt(masses)],[]))
     nmode = modes.shape[1]
     modes = modes.copy() # avoid modifying the given modes
     for imode in xrange(nmode):
         modes[:,imode] *= masses3_sqrt1
-        modes[:,imode] /= numpy.linalg.norm(modes[:,imode])
+        modes[:,imode] /= np.linalg.norm(modes[:,imode])
 
     ### D) Define some multiline text blobs that are used below.
     header = """\

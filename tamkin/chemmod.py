@@ -35,7 +35,7 @@
 """Convenient interfaces to define thermodynamic and kinetic models"""
 
 
-import numpy, csv
+import numpy as np, csv
 
 from molmod import boltzmann, kjmol, second, meter, mol, planck
 
@@ -149,11 +149,11 @@ class BaseModel(object):
         """
         for pf in self.pfs_all:
             N = len(pf.vibrational.positive_freqs)
-            freq_shift = numpy.random.normal(0, freq_error, N)
+            freq_shift = np.random.normal(0, freq_error, N)
             pf.vibrational.positive_freqs = pf.vibrational.positive_freqs_orig + freq_shift
             pf.vibrational.positive_freqs[pf.vibrational.positive_freqs<=0] = 0.01
             N = len(pf.vibrational.negative_freqs)
-            freq_shift = numpy.random.normal(0, freq_error, N)
+            freq_shift = np.random.normal(0, freq_error, N)
             pf.vibrational.negative_freqs = pf.vibrational.negative_freqs_orig + freq_shift
             pf.vibrational.negative_freqs[pf.vibrational.negative_freqs>=0] = -0.01
             pf.electronic.energy = pf.electronic.energy_backup*scale_energy
@@ -211,7 +211,7 @@ class BaseModel(object):
         if do_log:
             return log_K
         else:
-            return numpy.exp(log_K)
+            return np.exp(log_K)
 
     def write_table(self, temp, filename):
         """Write a CSV file with the principal energies to a file.
@@ -392,9 +392,9 @@ class KineticModel(BaseKineticModel):
         """
         result = self.equilibrium_constant(temp, do_log)
         if do_log:
-            result = numpy.log(boltzmann*temp/planck) + result
+            result = np.log(boltzmann*temp/planck) + result
             if self.tunneling is not None:
-                result += numpy.log(self.tunneling(temp))
+                result += np.log(self.tunneling(temp))
         else:
             result = boltzmann*temp/planck*result
             if self.tunneling is not None:

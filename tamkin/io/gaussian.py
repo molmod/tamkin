@@ -39,7 +39,7 @@ from tamkin.data import Molecule, RotScan
 from molmod.io import FCHKFile
 from molmod import dihed_angle, amu, angstrom
 
-import numpy
+import numpy as np
 
 
 __all__ = [
@@ -134,15 +134,15 @@ def load_molecule_g03fchk(fn_freq, fn_ener=None, fn_vdw=None, energy=None, fn_pu
     natom = fchk_freq.molecule.size
     if fchk_freq.molecule.size == 1 and \
        "Cartesian Force Constants" not in fchk_freq.fields:
-        gradient = numpy.zeros((1,3), float)
-        hessian = numpy.zeros((3,3), float)
+        gradient = np.zeros((1,3), float)
+        hessian = np.zeros((3,3), float)
     elif fn_punch is None:
         gradient = fchk_freq.fields["Cartesian Gradient"].copy()
         gradient.shape = (natom, 3)
         hessian = fchk_freq.get_hessian()
     else:
-        gradient = numpy.zeros((natom, 3), float)
-        hessian = numpy.zeros((3*natom, 3*natom), float)
+        gradient = np.zeros((natom, 3), float)
+        hessian = np.zeros((3*natom, 3*natom), float)
         iterator = iter_floats_file(fn_punch)
         for i in xrange(natom):
             for j in xrange(3):
@@ -167,7 +167,7 @@ def load_molecule_g03fchk(fn_freq, fn_ener=None, fn_vdw=None, energy=None, fn_pu
     )
 
 
-g98_masses = numpy.array([
+g98_masses = np.array([
     1.0079, 4.0026, 6.94, 9.01218, 10.81, 12.011, 14.0067, 15.9994, 18.9984,
     20.179, 22.98977, 24.305, 26.98154, 28.0855, 30.97376, 32.06, 35.453,
     39.948, 39.0983, 40.08, 44.9559, 47.9, 50.9415, 51.996, 54.938, 55.847,
@@ -206,7 +206,7 @@ def load_molecule_g98fchk(fn_freq, fn_ener=None, energy=None):
         fchk_ener = FCHKFile(fn_ener, ignore_errors=True, field_labels=[
             "Total Energy"
         ])
-    masses = numpy.array([g98_masses[n-1] for n in fchk_freq.molecule.numbers])
+    masses = np.array([g98_masses[n-1] for n in fchk_freq.molecule.numbers])
     if energy is None:
         energy = fchk_ener.fields["Total Energy"]
 
@@ -215,7 +215,7 @@ def load_molecule_g98fchk(fn_freq, fn_ener=None, energy=None):
         fchk_freq.molecule.coordinates,
         masses,
         energy,
-        numpy.reshape(numpy.array(fchk_freq.fields["Cartesian Gradient"]), (len(fchk_freq.molecule.numbers),3)),
+        np.reshape(np.array(fchk_freq.fields["Cartesian Gradient"]), (len(fchk_freq.molecule.numbers),3)),
         fchk_freq.get_hessian(),
         fchk_freq.fields["Multiplicity"],
         None, # gaussian is very poor at computing the rotational symmetry number
@@ -289,7 +289,7 @@ def load_rotscan_g03log(fn_log, top_indexes=None):
             if line.startswith("    -- Stationary point found."):
                 # store last emergy and geometry in list
                 energies.append(last_energy)
-                last_coordinates = numpy.array(last_coordinates)*angstrom
+                last_coordinates = np.array(last_coordinates)*angstrom
                 geometries.append(last_coordinates)
                 angles.append(dihed_angle(last_coordinates[dihedral])[0])
 
@@ -305,7 +305,7 @@ def load_rotscan_g03log(fn_log, top_indexes=None):
             molecule = None
         result = RotScan(
             dihedral, molecule, top_indexes,
-            numpy.array([angles, energies])
+            np.array([angles, energies])
         )
-        result.geometries = numpy.array(geometries)
+        result.geometries = np.array(geometries)
         return result

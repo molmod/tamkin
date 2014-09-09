@@ -39,7 +39,7 @@ from tamkin.data import Molecule
 from molmod import angstrom, amu, calorie, avogadro, lightspeed, centimeter
 from molmod.periodic import periodic
 
-import numpy
+import numpy as np
 
 
 __all__ = [
@@ -69,14 +69,14 @@ def load_molecule_charmm(charmmfile_cor, charmmfile_hess, is_periodic=False):
 
     energy = float(f.readline().split()[-1]) * 1000*calorie/avogadro
 
-    gradient = numpy.zeros((N,3),float)
+    gradient = np.zeros((N,3),float)
     for i,line in enumerate(f):
         words = line.split()
         gradient[i,:] = [float(word) for word in words]
         if i == (N-1):
             break
     gradient *= 1000*calorie/avogadro/angstrom
-    hessian = numpy.zeros((3*N,3*N),float)
+    hessian = np.zeros((3*N,3*N),float)
     row = 0
     col = 0
     for line in f:
@@ -91,7 +91,7 @@ def load_molecule_charmm(charmmfile_cor, charmmfile_hess, is_periodic=False):
                break
     hessian = hessian * 1000*calorie/avogadro /angstrom**2
 
-    positions = numpy.zeros((N,3),float)
+    positions = np.zeros((N,3),float)
     for i,line in enumerate(f):
         words = line.split()
         positions[i,:] = [float(word)*angstrom for word in words]
@@ -104,7 +104,7 @@ def load_molecule_charmm(charmmfile_cor, charmmfile_hess, is_periodic=False):
     #          N lines with   - mass in last column
     #                         - atomic type in 4th column
     f = file(charmmfile_cor)
-    masses = numpy.zeros(N,float)
+    masses = np.zeros(N,float)
     symbols  = []
     for line in f:
         if not line.startswith("*"): # skip header lines
@@ -118,7 +118,7 @@ def load_molecule_charmm(charmmfile_cor, charmmfile_hess, is_periodic=False):
     f.close()
 
     # get corresponding atomic numbers
-    mass_table = numpy.zeros(len(periodic))
+    mass_table = np.zeros(len(periodic))
     for i in xrange(1, len(mass_table)):
         m1 = periodic[i].mass
         if m1 is None:
@@ -127,7 +127,7 @@ def load_molecule_charmm(charmmfile_cor, charmmfile_hess, is_periodic=False):
         if m2 is None:
             m2 = 200000.0
         mass_table[i] = 0.5*(m1+m2)
-    atomicnumbers = numpy.zeros(N, int)
+    atomicnumbers = np.zeros(N, int)
     for i,mass in enumerate(masses):
         atomicnumbers[i] = mass_table.searchsorted(mass)
 
@@ -160,13 +160,13 @@ def load_coordinates_charmm(filename):
 
     # store coordinates in Nbx3 matrix
     symbols = ['']*N
-    coordinates = numpy.zeros((N,3),float)
-    masses = numpy.zeros(N,float)
+    coordinates = np.zeros((N,3),float)
+    masses = np.zeros(N,float)
     count = 0
     for line in f:
         words = line.split()
         symbols[count]       = words[3]
-        coordinates[count,:] = numpy.array([float(word) for word in words[4:7]])*angstrom
+        coordinates[count,:] = np.array([float(word) for word in words[4:7]])*angstrom
         masses[count]        = float(words[9])*amu
         count += 1
         if count >= N: break
@@ -199,20 +199,20 @@ def load_modes_charmm(filename):
     N       = int(words[1])/3   # nb of atoms
 
     # lines with masses, 6 masses on each line
-    nblines = int(numpy.ceil(N/6.0))
-    masses = numpy.zeros(N,float)
+    nblines = int(np.ceil(N/6.0))
+    masses = np.zeros(N,float)
     count = 0
     for line in f:
         words = line.split()
         n = len(words)
-        masses[count:count+n] = numpy.array([float(word) for word in words])
+        masses[count:count+n] = np.array([float(word) for word in words])
         count += n
         if count >= N: break
 
     # read nbfreqs freqs
     CNVFRQ = 2045.5/(2.99793*6.28319)  # conversion factor, see c36a0/source/fcm/consta.fcm in charmm code
-    nblines = int(numpy.ceil(nbfreqs/6.0))
-    freqs = numpy.zeros(nbfreqs, float)
+    nblines = int(np.ceil(nbfreqs/6.0))
+    freqs = np.zeros(nbfreqs, float)
     countline = 0
     countfreq = 0
     for line in f:
@@ -220,8 +220,8 @@ def load_modes_charmm(filename):
         for word in words:
             # do conversion
             freq_sq = float(word) #squared value
-            if freq_sq > 0.0:  freq =  numpy.sqrt( freq_sq)
-            else:              freq = -numpy.sqrt(-freq_sq) #actually imaginary
+            if freq_sq > 0.0:  freq =  np.sqrt( freq_sq)
+            else:              freq = -np.sqrt(-freq_sq) #actually imaginary
             freqs[countfreq] = freq * CNVFRQ * lightspeed/centimeter # conversion factor CHARMM, put into Tamkin internal units
             countfreq += 1
         countline += 1
@@ -230,13 +230,13 @@ def load_modes_charmm(filename):
         raise ValueError("should have read "+str(nbfreqs)+" frequencies, but read "+str(countfreq))
 
     # read the nbfreqs modes
-    modes = numpy.zeros((3*N,nbfreqs),float)
+    modes = np.zeros((3*N,nbfreqs),float)
     row = 0
     col = 0
     for line in f:
         words = line.split()
         n = len(words)
-        modes[row:row+n,col] = numpy.array([float(word) for word in words])
+        modes[row:row+n,col] = np.array([float(word) for word in words])
         row += n
         if row == 3*N:
             col += 1

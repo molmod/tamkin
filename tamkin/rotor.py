@@ -50,7 +50,7 @@ from tamkin.geom import transrot_basis
 from molmod import deg, kjmol, angstrom, centimeter, amu, boltzmann, \
     lightspeed, cached
 
-import numpy
+import numpy as np
 
 
 __all__ = [
@@ -68,8 +68,8 @@ class HarmonicBasis(object):
 
        >>> a = 10.0                             # the size of the system
        >>> hb = HarmonicBasis(10, a)            # create basis object
-       >>> grid = numpy.arange(0.0, 10.01, 1.0) # define a grid
-       >>> v = -numpy.exp(-((grid-5)/2)**2)     # define a potential on the grid
+       >>> grid = np.arange(0.0, 10.01, 1.0)    # define a grid
+       >>> v = -np.exp(-((grid-5)/2)**2)        # define a potential on the grid
        >>> v_coeffs = hb.fit_fn(grid, v, 10)    # expand the potential in the basis
        >>> mass = 1.0
        >>> energies, wfns = hb.solve(mass, v_coeffs, evecs=True) # solve problem
@@ -102,7 +102,7 @@ class HarmonicBasis(object):
 
     def get_empty_op(self):
         """Returns an empty operator (zero)"""
-        return numpy.zeros((self.size, self.size), float)
+        return np.zeros((self.size, self.size), float)
 
     def get_hamiltonian_op(self, mass, potential):
         """Returns the Hamiltonian operator for the given mass and potential
@@ -118,27 +118,27 @@ class HarmonicBasis(object):
 
     def _add_kinetic_op(self, op, mass):
         """Add the kinetic energy to the given operator"""
-        factor = (0.5/mass*(2*numpy.pi/self.a)**2)
-        tmp = factor*numpy.arange(1, self.nmax+1)**2
+        factor = (0.5/mass*(2*np.pi/self.a)**2)
+        tmp = factor*np.arange(1, self.nmax+1)**2
         diag = op.ravel()[::self.size+1]
         diag[1::2] += tmp
         diag[2::2] += tmp
 
     def _add_potential_op(self, op, potential):
         """Add the potential energy to the given operator"""
-        c = numpy.zeros(self.nmax+1,float)
-        s = numpy.zeros(self.nmax+1,float)
-        c[0] = potential[0]/numpy.sqrt(self.a)
-        c[1:] = potential[1::2]/numpy.sqrt(self.a)
-        s[1:] = potential[2::2]/numpy.sqrt(self.a)
+        c = np.zeros(self.nmax+1,float)
+        s = np.zeros(self.nmax+1,float)
+        c[0] = potential[0]/np.sqrt(self.a)
+        c[1:] = potential[1::2]/np.sqrt(self.a)
+        s[1:] = potential[2::2]/np.sqrt(self.a)
         op[0,0] += c[0]
         for i0 in xrange(1,self.nmax+1):
             op[2*i0-1,0] += c[i0]
             op[2*i0-0,0] += s[i0]
             op[0,2*i0-1] += c[i0]
             op[0,2*i0-0] += s[i0]
-        c[1:] /= numpy.sqrt(2)
-        s[1:] /= numpy.sqrt(2)
+        c[1:] /= np.sqrt(2)
+        s[1:] /= np.sqrt(2)
         for i0 in xrange(1,self.nmax+1):
             for i1 in xrange(1,self.nmax+1):
                 k = i0+i1
@@ -168,9 +168,9 @@ class HarmonicBasis(object):
         """
         H = self.get_hamiltonian_op(mass, potential)
         if evecs:
-            return numpy.linalg.eigh(H)
+            return np.linalg.eigh(H)
         else:
-            return numpy.linalg.eigvalsh(H)
+            return np.linalg.eigvalsh(H)
 
     def eval_fn(self, grid, coeffs):
         """Evaluate the function represented by coeffs
@@ -179,11 +179,11 @@ class HarmonicBasis(object):
             | ``grid`` -- the values at which the function must be evaluated
             | ``coeffs`` -- the expansion coefficients
         """
-        result = numpy.zeros(grid.shape, float) + coeffs[0]/numpy.sqrt(self.a)
+        result = np.zeros(grid.shape, float) + coeffs[0]/np.sqrt(self.a)
         for i in xrange(self.nmax):
-            arg = ((i+1)*2*numpy.pi/self.a)*grid
-            result += (coeffs[2*i+1]/numpy.sqrt(self.a/2))*numpy.cos(arg)
-            result += (coeffs[2*i+2]/numpy.sqrt(self.a/2))*numpy.sin(arg)
+            arg = ((i+1)*2*np.pi/self.a)*grid
+            result += (coeffs[2*i+1]/np.sqrt(self.a/2))*np.cos(arg)
+            result += (coeffs[2*i+2]/np.sqrt(self.a/2))*np.sin(arg)
         return result
 
     def eval_deriv(self, grid, coeffs):
@@ -193,12 +193,12 @@ class HarmonicBasis(object):
             | ``grid`` -- the values at which the derivative must ben evaluated
             | ``coeffs`` -- the expansion coefficients
         """
-        result = numpy.zeros(grid.shape, float)
+        result = np.zeros(grid.shape, float)
         for i in xrange(self.nmax):
-            scale = ((i+1)*2*numpy.pi/self.a)
+            scale = ((i+1)*2*np.pi/self.a)
             arg = scale*grid
-            result -= (coeffs[2*i+1]*scale/numpy.sqrt(self.a/2))*numpy.sin(arg)
-            result += (coeffs[2*i+2]*scale/numpy.sqrt(self.a/2))*numpy.cos(arg)
+            result -= (coeffs[2*i+1]*scale/np.sqrt(self.a/2))*np.sin(arg)
+            result += (coeffs[2*i+2]*scale/np.sqrt(self.a/2))*np.cos(arg)
         return result
 
     def eval_deriv2(self, grid, coeffs):
@@ -209,12 +209,12 @@ class HarmonicBasis(object):
                           evaluated
             | ``coeffs`` -- the expansion coefficients
         """
-        result = numpy.zeros(grid.shape, float)
+        result = np.zeros(grid.shape, float)
         for i in xrange(self.nmax):
-            scale = ((i+1)*2*numpy.pi/self.a)
+            scale = ((i+1)*2*np.pi/self.a)
             arg = scale*grid
-            result -= (coeffs[2*i+1]*scale**2/numpy.sqrt(self.a/2))*numpy.cos(arg)
-            result -= (coeffs[2*i+2]*scale**2/numpy.sqrt(self.a/2))*numpy.sin(arg)
+            result -= (coeffs[2*i+1]*scale**2/np.sqrt(self.a/2))*np.cos(arg)
+            result -= (coeffs[2*i+2]*scale**2/np.sqrt(self.a/2))*np.sin(arg)
         return result
 
     def fit_fn(self, grid, v, dofmax, rotsym=1, even=False, rcond=0.0, v_threshold=0.01):
@@ -248,23 +248,23 @@ class HarmonicBasis(object):
         # construct the design matrix
         ncos = min(dofmax, self.nmax/rotsym)
         if even:
-            A = numpy.zeros((len(grid), ncos+1), float)
+            A = np.zeros((len(grid), ncos+1), float)
         else:
-            A = numpy.zeros((len(grid), 2*ncos+1), float)
-        A[:,0] = 1.0/numpy.sqrt(self.a)
+            A = np.zeros((len(grid), 2*ncos+1), float)
+        A[:,0] = 1.0/np.sqrt(self.a)
         counter = 1
         for i in xrange(ncos):
-            arg = ((i+1)*rotsym*2*numpy.pi/self.a)*grid
-            A[:,counter] = numpy.cos(arg)/numpy.sqrt(self.a/2)
+            arg = ((i+1)*rotsym*2*np.pi/self.a)*grid
+            A[:,counter] = np.cos(arg)/np.sqrt(self.a/2)
             counter += 1
             if not even:
-                A[:,counter] = numpy.sin(arg)/numpy.sqrt(self.a/2)
+                A[:,counter] = np.sin(arg)/np.sqrt(self.a/2)
                 counter += 1
 
-        coeffs, residuals, rank, S = numpy.linalg.lstsq(A, v, rcond)
+        coeffs, residuals, rank, S = np.linalg.lstsq(A, v, rcond)
 
         # check the error
-        residual = numpy.dot(A, coeffs) - v
+        residual = np.dot(A, coeffs) - v
         rmsd = (residual**2).mean()**0.5
         rms = (v**2).mean()**0.5
         abs_threshold = max(1*kjmol, rms*v_threshold)
@@ -272,7 +272,7 @@ class HarmonicBasis(object):
             raise ValueError("Residual is too large. (poor Fourier expansion.) rmsd [kJ/mol] = %f, rms [kJ/mol] = %f" % (rmsd/kjmol, rms/kjmol))
 
         # collect the parameters in a convenient array
-        result = numpy.zeros(self.size)
+        result = np.zeros(self.size)
         result[0] = coeffs[0]
         if even:
             tmp = result[2*rotsym-1::2*rotsym]
@@ -338,18 +338,18 @@ def compute_moments(coordinates, masses3, center, axis, indexes):
     """
     # the derivative of the cartesian coordinates towards the rotation
     # angle of the top:
-    rot_tangent = numpy.zeros((len(coordinates)*3), float)
+    rot_tangent = np.zeros((len(coordinates)*3), float)
     for i in indexes:
-        rot_tangent[3*i:3*i+3] = numpy.cross(coordinates[i]-center, axis)
+        rot_tangent[3*i:3*i+3] = np.cross(coordinates[i]-center, axis)
     # transform this to a derivative without global linear or angular
     # momentum. This is done by projecting on the basis of external degrees
     # of freedom in mass-weighted coordinates, and subsequently subtracting
     # that projection from the original tangent
     basis = transrot_basis(coordinates)
-    A = numpy.dot(basis*masses3, basis.transpose())
-    B = numpy.dot(basis*masses3, rot_tangent)
-    alphas = numpy.linalg.solve(A,B)
-    rot_tangent_relative = rot_tangent - numpy.dot(alphas, basis)
+    A = np.dot(basis*masses3, basis.transpose())
+    B = np.dot(basis*masses3, rot_tangent)
+    alphas = np.linalg.solve(A,B)
+    rot_tangent_relative = rot_tangent - np.dot(alphas, basis)
     return (
         (rot_tangent**2*masses3).sum(),
         (rot_tangent_relative**2*masses3).sum()
@@ -450,7 +450,7 @@ class Rotor(Info, StatFysTerms):
 
         self.center = nma.coordinates[self.rot_scan.dihedral[1]]
         self.axis = nma.coordinates[self.rot_scan.dihedral[2]] - self.center
-        self.axis /= numpy.linalg.norm(self.axis)
+        self.axis /= np.linalg.norm(self.axis)
         self.moment, self.reduced_moment = compute_moments(
             nma.coordinates, nma.masses3, self.center, self.axis, self.rot_scan.top_indexes
         )
@@ -463,7 +463,7 @@ class Rotor(Info, StatFysTerms):
         # the energy levels
         if self.rot_scan.potential is None:
             # free rotor
-            self.energy_levels = numpy.zeros(self.num_levels, float)
+            self.energy_levels = np.zeros(self.num_levels, float)
             for i in xrange(self.num_levels-1):
                 index = i/2+1
                 self.energy_levels[i+1] = index**2/(2*moment)
@@ -472,7 +472,7 @@ class Rotor(Info, StatFysTerms):
             self.v_ref = 0.0
         else:
             # hindered rotor
-            self.hb = HarmonicBasis(self.num_levels, 2*numpy.pi)
+            self.hb = HarmonicBasis(self.num_levels, 2*np.pi)
             angles, energies = self.potential
 
             self.v_coeffs = self.hb.fit_fn(angles, energies, self.dofmax,
@@ -482,8 +482,8 @@ class Rotor(Info, StatFysTerms):
 
         # the cancelation frequency based on the scan
         if self.cancel_freq == 'scan':
-            force_constant = self.hb.eval_deriv2(numpy.array([self.nma_angle]), self.v_coeffs)[0]
-            self.cancel_freq = numpy.sqrt(force_constant/moment)/(2*numpy.pi)
+            force_constant = self.hb.eval_deriv2(np.array([self.nma_angle]), self.v_coeffs)[0]
+            self.cancel_freq = np.sqrt(force_constant/moment)/(2*np.pi)
 
         # scaling factors
         self.freq_scaling = partf.vibrational.freq_scaling
@@ -501,10 +501,10 @@ class Rotor(Info, StatFysTerms):
         if self.rot_scan.potential is None:
             return None
         else:
-            a = 2*numpy.pi
+            a = 2*np.pi
             angles, energies = self.rot_scan.potential.copy()
             # apply periodic boundary conditions
-            angles -= numpy.floor(angles/a)*a
+            angles -= np.floor(angles/a)*a
             # set reference energy, which is take to be the energy of the geometry
             # with a dihedral angle closest to the dihedral angle of the reference
             # geometry in the nma object. We can not take the nma energy because
@@ -512,7 +512,7 @@ class Rotor(Info, StatFysTerms):
             # that the nma energy.
             deltas = angles - self.nma_angle
             # apply periodic boundary conditions
-            deltas -= numpy.floor(deltas/a)*a
+            deltas -= np.floor(deltas/a)*a
             # get the right energy
             energies -= energies[deltas.argmin()]
             return angles, energies
@@ -594,13 +594,13 @@ class Rotor(Info, StatFysTerms):
         # plot the fitted potential
         if self.hb is not None:
             step = 0.001
-            x = numpy.arange(0.0, 2*numpy.pi*(1+0.5*step), 2*numpy.pi*step)
+            x = np.arange(0.0, 2*np.pi*(1+0.5*step), 2*np.pi*step)
             v = self.hb.eval_fn(x, self.v_coeffs)
             pt.plot(x/deg, v/kjmol, "k-", linewidth=2)
         if do_levels:
             # plot the energy levels
             eks = self.energy_levels/(temp*boltzmann)
-            bfs = numpy.exp(-eks)
+            bfs = np.exp(-eks)
             bfs /= bfs.sum()
             for i in xrange(min(num, self.num_levels)):
                 e = (self.energy_levels[i])/kjmol
@@ -629,15 +629,15 @@ class Rotor(Info, StatFysTerms):
 
     def helper_terms(self, temp, n):
         """See :meth:`tamkin.partf.StatFysTerms.helper_terms`"""
-        return numpy.array([
+        return np.array([
             -helper_vibrations(temp, n, self.cancel_freq, self.classical,
                                  self.freq_scaling, self.zp_scaling),
-            helper_levels(temp, n, self.energy_levels, check=True) - temp**n*numpy.log(self.rotsym),
+            helper_levels(temp, n, self.energy_levels, check=True) - temp**n*np.log(self.rotsym),
         ])
 
     def helpert_terms(self, temp, n):
         """See :meth:`tamkin.partf.StatFysTerms.helpert_terms`"""
-        return numpy.array([
+        return np.array([
             -helpert_vibrations(temp, n, self.cancel_freq, self.classical,
                                   self.freq_scaling, self.zp_scaling),
             helpert_levels(temp, n, self.energy_levels, check=True),
@@ -645,7 +645,7 @@ class Rotor(Info, StatFysTerms):
 
     def helpertt_terms(self, temp, n):
         """See :meth:`tamkin.partf.StatFysTerms.helpertt_terms`"""
-        return numpy.array([
+        return np.array([
             -helpertt_vibrations(temp, n, self.cancel_freq, self.classical,
                                    self.freq_scaling, self.zp_scaling),
             helpertt_levels(temp, n, self.energy_levels, check=True),

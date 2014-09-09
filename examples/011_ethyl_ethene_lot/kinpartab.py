@@ -42,7 +42,7 @@ from kin import *
 from molmod.units import kjmol
 from molmod.constants import boltzmann
 
-import numpy
+import numpy as np
 
 
 def overview(template, title, fn_img, rows):
@@ -61,7 +61,7 @@ def overview(template, title, fn_img, rows):
             rows.append(["<th>%s</th>" % lot_label])
         try:
             A, Ea = load_summary(template % lot_label)[1]
-            color = get_error_color(abs(numpy.log10(A/experimental_A)))
+            color = get_error_color(abs(np.log10(A/experimental_A)))
             rows[counter].append("<td style='background-color:%s'>%.1e</td>" % (color, A))
             color = get_error_color(abs(Ea - experimental_Ea)/4)
             rows[counter].append("<td style='background-color:%s'>%.1f</td>" % (color, Ea))

@@ -1324,7 +1324,13 @@ class PartFun(Info, StatFys):
         self.terms.sort(key=(lambda t: t.name))
 
         for term in self.terms:
-            term.init_part_fun(nma, self)
+            try:
+                term.init_part_fun(nma, self)
+            except Exception as err:
+                if not err.args:
+                   err.args=('',)
+                err.args = ('%s: %s' % (term.name, err.message),)+err.args[1:]
+                raise
 
         self.title = nma.title
         self.chemical_formula = nma.chemical_formula

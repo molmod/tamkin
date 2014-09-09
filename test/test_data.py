@@ -40,7 +40,7 @@ from molmod.periodic import periodic
 from molmod import angstrom, amu, calorie, avogadro, electronvolt, lightspeed, \
     UnitCell
 
-import numpy
+import numpy as np
 
 
 def test_get_submolecule():
@@ -137,7 +137,7 @@ def test_molecule_checkpoint_basic():
 def test_molecule_checkpoint_full():
     mol1 = load_molecule_g03fchk("test/input/sterck/aa.fchk")
     mol1.set_default_graph()
-    mol1.unit_cell = UnitCell(numpy.identity(3, float)*25)
+    mol1.unit_cell = UnitCell(np.identity(3, float)*25)
     mol1.symbols = [periodic[n].symbol for n in mol1.numbers]
     mol1.write_to_file("test/output/molecule_checkpoint_full.chk")
     mol2 = Molecule.read_from_file("test/output/molecule_checkpoint_full.chk")
@@ -179,13 +179,13 @@ def test_get_external_basis_new1():
     # orthogonality test: the external basis should be orthogonal
     # to the basis of the four internal coordinates: stretch1, stertch2,
     # bend1 and bend2
-    ib = numpy.array([
+    ib = np.array([
         [0,0,1,0,0,-1,0,0,0],
         [0,0,1,0,0,0,0,0,-1],
         [0,-1,0,0,0.5,0,0,0.5,0],
         [-1,0,0,0.5,0,0,0.5,0,0],
     ])
-    error = abs(numpy.dot(ib, eb.transpose())).max()
+    error = abs(np.dot(ib, eb.transpose())).max()
     assert error < 1e-5
 
 
@@ -200,14 +200,14 @@ def test_get_external_basis_new2():
     ib = []
     for i in xrange(mol.size):
         for j in xrange(i):
-            b = numpy.zeros((mol.size, 3), float)
+            b = np.zeros((mol.size, 3), float)
             delta = mol.coordinates[j] - mol.coordinates[i]
-            delta /= numpy.linalg.norm(delta)
+            delta /= np.linalg.norm(delta)
             b[i] = delta
             b[j] = -delta
             ib.append(b.ravel())
-    ib = numpy.array(ib)
-    error = abs(numpy.dot(ib, eb.transpose())).max()
+    ib = np.array(ib)
+    error = abs(np.dot(ib, eb.transpose())).max()
     assert error < 1e-5
 
 
@@ -218,7 +218,7 @@ def test_rot_scan_ts():
     diheds = [[9, 6, 7, 10], [7, 10, 18, 11], [11, 18, 10, 7]]
     for dihed in diheds:
         try:
-            scan = RotScan(numpy.array(dihed)-1, mol)
+            scan = RotScan(np.array(dihed)-1, mol)
             assert False
         except ValueError, e:
             assert e.message == "The rotating top could not be assigned properly. Specify the top_indexes manually."

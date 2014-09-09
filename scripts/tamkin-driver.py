@@ -50,45 +50,24 @@ Assumed layout of the current directory
 
 This script assumes that the current directory has subdirectories as follows::
 
-    re_*/            # Reactant subdirectories (at least one).
-    ts_*/            # Transition state subdirectory (optional, at most one).
-    pr_*/            # Reaction product subdirectories (optional).
+    re_*/            # Reactant molecule subdirectories (at least one).
+    ts_*/            # Transition state molecule subdirectory (optional, at most one).
+    pr_*/            # Reaction product molecule subdirectories (optional).
     kinetics.cfg     # Contains parameters for reaction kinetics computation.
     equilibrium.cfg  # Contains parameters for chemical equilibrium computation.
 
-The layout of each 'molecule' subdirectory is documented below.
+The layout of each `molecule` subdirectory is documented below.
 
 Reaction products are mandatory. At least one transition state or product must
 be present. Depending on the available directories, the following two
 computations may take place:
 
 * When a transition state is present, the kinetic parameters are computed. In
-  this case, a config file ``kinetics.cfg`` must be present. It supports the
-  following keys:
-
-  ``temp_low`` and ``temp_high`` (mandatory)
-    These specifiy the minimum and maximum temperature for the Arrhenius
-    plot.
-
-  ``temp_step`` (optional)
-    The temperature interval for the datapoints for the Arrhenius plot.
-    [default=10]
-
-  ``tunneling`` (optional)
-    When set to True, the Eckart tunneling is applied to the computation
-    of reaction rates.
-
-  For example::
-
-    temp_low 300
-    temp_high 500
+  this case, a config file ``kinetics.cfg`` must be present. (Details given below.)
 
 * When reaction products are present, the equilibrium constant is computed. In
-  this case, one may add a file ``equilibrium.cfg`` which supports the following
-  key:
+  this case, one may add a file ``equilibrium.cfg``. (Details given below.)
 
-    ``temps`` (optional)
-        A list of temperatures at which the equilibrium constant is computed.
 
 
 Assumed layout of a molecule directory (re_*/, ts_*/ or pr_*/)
@@ -123,12 +102,59 @@ The following files may be present in the directory::
 
 All other files are simply ignored.
 
+
+Config and data files
+=====================
+
 All configuration files (``*.cfg``) have the following format. Every non-empty
 line consists of a key followed one or more values, all separated by whitespace.
 Comments can be added with a #, just as in Python source code. Each file has its
 specific keys that are processed. Unknown keys are ignored.
 
+For example, the following is a valid ``molecule.cfg`` file::
+
+    freq_scaling 0.95
+    symnum 3
+    # This line is ignored.
+    unkown_option is ignored as well
+
+The following config files are read by the ``tamkin-driver.py`` script:
+
+* **kinetics.cfg**: ``temp_low``, ``temp_high``, ``temp_step``, ``tunneling``
+
+    ``temp_low`` and ``temp_high`` (mandatory)
+        These specifiy the minimum and maximum temperature for the Arrhenius
+        plot.
+
+    ``temp_step`` (optional)
+        The temperature interval for the datapoints for the Arrhenius plot.
+        [default=10]
+
+    ``tunneling`` (optional)
+        When set to True, the Eckart tunneling is applied to the computation
+        of reaction rates.
+
+* **equilibrium.cfg**: ``temps``
+
+    ``temps`` (optional)
+        A list of temperatures at which the equilibrium constant is computed.
+
 * **molecule.cfg**: ``symnum``, ``freq_scaling``, ``zp_scaling``
+
+    ``freq_scaling`` (optional)
+        The frequency scaling factor to correct for systematic deviations of the
+        level theory used to compute the Hessian. [default=1.0]
+
+    ``symnum`` (optional)
+        This keyword can be used to assign the rotational symmetry number. For
+        molecules with less than 10 atoms, this number is estimated
+        automatically when not given. For larger molecules, the default value is
+        1.
+
+    ``zp_scaling`` (optional)
+        The zero-point scaling factor to correct for systematic deviations of the
+        level theory used to compute the Hessian. [default=1.0]
+
 * **rotor_g_*/rotor.cfg**: ``dofmax``, ``even``, ``fortran``, ``num_levels``,
   ``rotsym``, ``top``
 * **rotor_f_*/rotor.cfg**: ``dihed``, ``dofmax``, ``fortran``, ``num_levels``,
@@ -136,74 +162,57 @@ specific keys that are processed. Unknown keys are ignored.
 * **rotor_c_*/rotor.cfg**: ``even``, ``dihed``, ``dofmax``, ``fortran``,
   ``num_levels``, ``rotsym``, ``top``
 
-The keys (and values) are interpreted as follows:
+    ``even`` (optional)
+        A boolean (True or False) to indicate that the torsional potential is
+        even. [default=False]
 
-``even`` (optional)
-    A boolean (True or False) to indicate that the torsional potential is
-    even. [default=False]
+    ``dihed`` (mandatory)
+        A list of four atom indexes that define the dihedral angle, separated by
+        whitespace.
 
-``dihed`` (mandatory)
-    A list of four atom indexes that define the dihedral angle, separated by
-    whitespace.
+    ``dofmax`` (optional)
+        The maximum number of cosines used to represent the torsional potential.
+        if the potential is not even, the same number of sines is also used.
+        [default=5]
 
-``dofmax`` (optional)
-    The maximum number of cosines used to represent the torsional potential.
-    if the potential is not even, the same number of sines is also used.
-    [default=5]
+    ``fortran`` (optional)
+        A boolean (True or False) to indicate that the atom indexes are given in
+        Fortran convention. (Counting starts from one instead of zero). This is
+        option relevant for the keys ``dihed`` and ``top``. [default=False]
 
-``fortran`` (optional)
-    A boolean (True or False) to indicate that the atom indexes are given in
-    Fortran convention. (Counting starts from one instead of zero). This is
-    option relevant for the keys ``dihed`` and ``top``. [default=False]
+    ``num_levels`` (optional)
+        The number of energy levels considered in the QM treatment of the rotor.
+        [default=50]
 
-``freq_scaling``
-    The frequency scaling factor to correct for systematic deviations of the
-    level theory used to compute the Hessian. [default=1.0]
+    ``rotsym`` (optional)
+        The rotational symmetry of the internal rotor. [default=1]
 
-``num_levels`` (optional)
-    The number of energy levels considered in the QM treatment of the rotor.
-    [default=50]
+    ``top`` (optional)
+        The atoms in the rotating top. When not given, an attempt is made to
+        derive this top from the choice of the dihedral angle and the molecular
+        topology. (This attempt is often not successful for structures
+        containing multiple molecules. In that case, top_indexes must be
+        provided.
 
-``rotsym`` (optional)
-    The rotational symmetry of the internal rotor. [default=1]
+* **rotor_c_*/rotor.dat**
 
-``symnum`` (optional)
-    This keyword can be used to assign the rotational symmetry number. For
-    molecules with less than 10 atoms, this number is estimated
-    automatically when not given. For larger molecules, the default value is
-    1.
-
-``top`` (optional)
-    The atoms in the rotating top. When not given, an attempt is made to
-    derive this top from the choice of the dihedral angle and the molecular
-    topology. (This attempt is often not successful for structures
-    containing multiple molecules. In that case, top_indexes must be
-    provided.
-
-``zp_scaling`` (optional)
-    The zero-point scaling factor to correct for systematic deviations of the
-    level theory used to compute the Hessian. [default=1.0]
-
-
-**rotor_c_*/rotor.dat**
-
-This file ``rotor_c_*/rotor.dat`` just contains two columns of data, angles
-(radians) and energies (hartree), that specify the custom torsional potential.
-It does not follow the ``*.cfg`` format.
-
+    The file ``rotor_c_*/rotor.dat`` just contains two columns of data, angles
+    (radians) and energies (hartree), that specify the custom torsional potential.
+    It does not follow the ``*.cfg`` format.
 
 Notes
 =====
 
-* When hindered rotors are used, a truncated Fourier series is used to expand
+* The energy levels of a hindered rotor are found by solving the Schrödinger
+  equation in a plane wave basis. A truncated Fourier series is used to expand
   the potential energy. The truncation can be controlled with the ``dofmax``
   parameter. When the RMSD between the Fourier series and the data is larger
   than 1 kJ/mol or 1%, the driver will stop with an error message. The simplest
-  solution is to increase ``dofmax`` (above the default of 5). However, one has
-  to check if the potential from the relaxed scan is sensible. If it contains a
-  rotational symmetry, limit the scan to one period and add the appropriate
-  ``rotsym`` keyword in the ``rotor.cfg`` file. If the scan is even, one can
-  again halve the range of the scan and add ``even true`` to the file
+  solution is to increase ``dofmax`` (above the default of 5). However, one also
+  has to make sure that the potential from the relaxed scan is sensible. If it
+  contains a rotational symmetry, limit the scan to one period and add the
+  appropriate ``rotsym`` keyword in the ``rotor.cfg`` file. If the scan is even,
+  one can again halve the range of the scan and add ``even true`` to the file
   ``rotor.cfg``. For example, for a standard methyl top, the scan of the
   dihedral angle must be limited to the interval [0°, 60°] and the following
   lines must be added to the file ``rotor.cfg`` ::

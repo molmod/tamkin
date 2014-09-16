@@ -481,9 +481,29 @@ class Rotor(Info, StatFysTerms):
             self.energy_levels = self.energy_levels[:self.num_levels]
 
         # the cancelation frequency based on the scan
-        if self.cancel_freq == 'scan':
+        if self.hb is None:
+            if not isinstance(self.cancel_freq, float):
+                raise ValueError('No cancelation frequency was computed for rotor "%s"' % self.name)
+        else:
             force_constant = self.hb.eval_deriv2(np.array([self.nma_angle]), self.v_coeffs)[0]
-            self.cancel_freq = np.sqrt(force_constant/moment)/(2*np.pi)
+            scan_cancel_freq = np.sqrt(force_constant/moment)/(2*np.pi)
+            if self.cancel_freq == 'scan':
+                self.cancel_freq = scan_cancel_freq
+            elif abs(self.cancel_freq - scan_cancel_freq) > 0.3*abs(self.cancel_freq):
+                print 'WARNING: The cancelation frequency of rotor "%s" obtained with MBH (%.1f cm^-1) deviates a lot from the one derived from the scan (%.1f cm^-1).' % (
+                    self.name, self.cancel_freq/(lightspeed/centimeter), scan_cancel_freq/(lightspeed/centimeter)
+                )
+
+        # print a warning is the cancelation frequency is rather high.
+        if self.cancel_freq > 500*(lightspeed/centimeter):
+            print 'WARNING: the cancelation frequency of rotor "%s" is rather high: %.1f cm^-1.' % (
+                self.name, self.cancel_freq/(lightspeed/centimeter)
+            )
+        elif self.cancel_freq <= 0:
+            print 'WARNING: the cancelation frequency of rotor "%s" is negative: %.1f cm^-1.' % (
+                self.name, self.cancel_freq/(lightspeed/centimeter)
+            )
+
 
         # scaling factors
         self.freq_scaling = partf.vibrational.freq_scaling

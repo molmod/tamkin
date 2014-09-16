@@ -289,7 +289,7 @@ def get_pf(dn):
        dn
             A molecule directory name
     '''
-    print 'Loading partition function from', dn
+    print '  Loading partition function from', dn
 
     # A1) load the molecule
     molecule = load_molecule_g03fchk('%s/freq/gaussian.fchk' % dn)
@@ -313,7 +313,7 @@ def get_pf(dn):
 
     # B1) load all rotors computed with Gaussian
     for dn_rotor in glob('%s/rotor_g_*' % dn):
-        print '  Loading rotor', dn_rotor
+        print '    Loading rotor', dn_rotor
         dns_rotor.append(dn_rotor)
         fn_log = '%s/gaussian.log' % dn_rotor
         # Load the config file
@@ -332,7 +332,7 @@ def get_pf(dn):
 
     # B2) load all free rotors
     for dn_rotor in glob('%s/rotor_f_*' % dn):
-        print '  Loading rotor', dn_rotor
+        print '    Loading rotor', dn_rotor
         dns_rotor.append(dn_rotor)
         fn_cfg = '%s/rotor.cfg' % dn_rotor
         # Load the config file
@@ -351,7 +351,7 @@ def get_pf(dn):
 
     # B3) load all custom rotors
     for dn_rotor in glob('%s/rotor_c_*' % dn):
-        print '  Loading rotor', dn_rotor
+        print '    Loading rotor', dn_rotor
         dns_rotor.append(dn_rotor)
         fn_dat = '%s/rotor.dat' % dn_rotor
         # Load the potential data
@@ -456,7 +456,7 @@ def main():
         elif dn.startswith('pr_'):
             products.append(get_pf(dn))
         else:
-            print 'Warning: skipping directory %s' % dn
+            print 'WARNING: skipping directory %s' % dn
 
     if len(reactants) == 0:
         raise RuntimeError('At least one reactant must be present.')

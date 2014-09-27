@@ -584,7 +584,7 @@ class Rotor(Info, StatFysTerms):
             print >> f, "    Number of basis functions: %i" % (self.hb.size)
         print >> f, "    Zero-point contribution [kJ/mol]: %.7f" % (self.free_energy(0.0)/kjmol)
 
-    def plot_levels(self, prefix, temp, num=20, do_levels=True, do_data=True):
+    def plot_levels(self, prefix, temp, do_levels=True, do_data=True):
         """Plots the potential with the energy levels
 
            Arguments:
@@ -593,8 +593,6 @@ class Rotor(Info, StatFysTerms):
                           weight of each level in the plots
 
            Optional argument:
-            | ``num`` -- The number of energy levels and wavefunctions to be
-                         plotted. [default=10]
             | ``do_levels`` -- When True, the energy levels are plotted.
                                [default=True]
             | ``do_data`` -- When True, the data points are plotted.
@@ -622,7 +620,7 @@ class Rotor(Info, StatFysTerms):
             eks = self.energy_levels/(temp*boltzmann)
             bfs = np.exp(-eks)
             bfs /= bfs.sum()
-            for i in xrange(min(num, self.num_levels)):
+            for i in xrange(self.num_levels):
                 e = (self.energy_levels[i])/kjmol
                 pt.axhline(e, color="b", linewidth=0.5)
                 pt.axhline(e, xmax=bfs[i], color="b", linewidth=2)

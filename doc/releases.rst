@@ -3,6 +3,14 @@
 Release history
 ###############
 
+* **September 27, 2014. Version 1.0.6**
+
+    - More robust internal rotor code
+
+* **September 9, 2014. Version 1.0.5**
+
+    - Several bug fixes and cleanups
+
 * **August 8, 2014. Version 1.0.4**
 
     - Improved ``tamkin-driver.py`` with improved documentation.

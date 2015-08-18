@@ -46,139 +46,100 @@ import numpy as np
 __all__ = ["load_molecule_vasp", "load_fixed_vasp"]
 
 
-def load_molecule_vasp(vaspfile_xyz, vaspfile_out, energy = 0.0, multiplicity=1, is_periodic=True):
-    """Load a molecule from VASP output files
+def load_molecule_vasp(vaspfile_xyz, vaspfile_out, energy, multiplicity=1, is_periodic=True):
+    """Load a molecule from VASP 4.6.X and 5.3.X output files
 
        Arguments:
         | vaspfile_xyz  --  Filename of xyz-file containing the (partially)
-                            optimized structure.
+                            optimized structure. Generate this file with the
+                            con2xyz tool from VASP
         | vaspfile_out  --  Filename of VASP output file (OUTCAR) containing
-                            eg the Hessian.
+                            the Hessian.
+        | energy  --  The potential energy. (It is not printed in the OUTCAR
+                      file of a Hessian calculation.)
 
        Optional arguments:
-        | energy  --  The electronic energy. [default=0.0].
         | multiplicity  --  The spin multiplicity of the electronic system
                             [default=1]
         | is_periodic  --  True when the system is periodic in three dimensions.
                            False when the systen is nonperiodic. [default=True].
     """
-    # TODO: read energy from VASP file?
-    # Units: VASP gradient in eV/angstrom, TAMkin internally all in atomic units
+    # Units:
+    #   * VASP Atomic coordinates in angstrom, TAMkin internally in atomic units
+    #   * VASP Hessian in eV/angstrom**2, TAMkin internally all in atomic units
 
-    # Read atomtypes from xyz-VASP-file
+    # Read symbols of the atoms from xyz-VASP-file
     # format:  one atom per line
-    #          atomtype (Si, C, ...)   x-cor  y-cor  z-cor
-    f = open(vaspfile_xyz)
-    atomtypes = []
-    for line in f:
-        words = line.split()
-        if len(words) == 4:
-            atomtypes.append(words[0])
-    f.close()
-    atomtypes = np.array(atomtypes)
+    #          Symbol (Si, C, ...)   x-cor  y-cor  z-cor
+    symbols = []
+    coordinates = []
+    with open(vaspfile_xyz) as f:
+        # read number of atoms
+        natom = int(f.next())
+        # skip title
+        f.next()
+        # Read from each line that contains four words.
+        for line in f:
+            words = line.split()
+            if len(words) == 4:
+                symbols.append(words[0])
+                coordinates.append([
+                    float(words[1])*angstrom,
+                    float(words[2])*angstrom,
+                    float(words[3])*angstrom,
+                ])
+    if len(symbols) != natom:
+        raise IOError('Inconsistent number of atoms in XYZ file.')
+    coordinates = np.array(coordinates)
 
     # Read other data from out-VASP-file OUTCAR
-    f = open(vaspfile_out)
+    with open(vaspfile_out) as f:
+        # Read lattice vectors. VASP writes each vector as a column, TAMkin
+        # stores each vector as a row.
+        for line in f:
+            if line.startswith("      direct lattice vectors"):
+                break
+        rvecs = np.ones((3,3),float)
+        for axis in xrange(3):
+            words = f.next().split()
+            # Tranpose as we read.
+            rvecs[:,axis] = np.array([float(word)*angstrom for word in words[:3]])
+        unit_cell = UnitCell(rvecs)
 
-    # number of atoms (N)
-    for line in f:
-        if line.strip().startswith("Dimension of arrays:"):  break
-    f.next()
-    for line in f:
-        words = line.split()
-        N = int(words[-1])
-        break
+        # hessian, not symmetrized, useful to find indices of Hessian elements
+        hessian = np.zeros((3*natom, 3*natom), float)
+        for line in f:
+            if line.startswith(" SECOND DERIVATIVES (NOT SYMMETRIZED)"):  break
+        # skip one line
+        f.next()
+        # number of free atoms (not fixed in space)
+        keys = f.next().split()
+        nfree_dof = len(keys)
+        indices_free = [3*int(key[:-1])+{'X': 0, 'Y': 1, 'Z': 2}[key[-1]]-3 for key in keys]
+        assert nfree_dof % 3 == 0
+        for ifree0 in xrange(nfree_dof):
+            line = f.next()
+            irow = indices_free[ifree0]
+            # skip first col
+            words = line.split()[1:]
+            assert len(words) == nfree_dof
+            for ifree1 in xrange(nfree_dof):
+                icol = indices_free[ifree1]
+                hessian[irow, icol] = -float(words[ifree1])*electronvolt/angstrom**2
+        hessian = 0.5*(hessian + hessian.T)
 
-    # read lattice vectors: store in columns
-    vectors = np.ones((3,3),float)
-    for line in f:
-        if line.startswith("      direct lattice vectors"): break
-    axis = 0
-    for line in f:
-        words = line.split()
-        vectors[:,axis] = np.array([ float(word)*angstrom for word in words[:3]])
-        axis += 1
-        if axis >= 3: break
-    unit_cell = UnitCell(vectors)
+    # Masses
+    masses = np.array([periodic[symbol].mass for symbol in symbols])
 
-    # masses
-    # TODO: should be made more general?
-    masses = np.zeros((N),float)
-    for at,atomtype in enumerate(atomtypes):
-        table = { "H": 1.000,   "C": 12.011, "O": 16.000,
-                  "Al": 26.982, "Si": 28.085,
-                }
-        masses[at] = table[atomtype]*amu
+    # Get corresponding atomic numbers
+    numbers = np.array([periodic[symbol].number for symbol in symbols])
 
-    # get corresponding atomic numbers
-    atomicnumbers = np.zeros(N, int)
-    mass_table = np.zeros(len(periodic))
-    for i in xrange(1, len(mass_table)):
-        m1 = periodic[i].mass
-        if m1 is None:
-            m1 = 200000.0
-        m2 = periodic[i+1].mass
-        if m2 is None:
-            m2 = 200000.0
-        mass_table[i] = 0.5*(m1+m2)
-    for i,mass in enumerate(masses):
-        atomicnumbers[i] = mass_table.searchsorted(mass)
-
-    # positions, gradient
-    positions = np.zeros((N,3),float)
-    gradient = np.zeros((N,3),float)
-    for line in f:          # go to first time POSITION is printed (reference point)
-        if line.strip().startswith("POSITION"): break
-    f.next()
-    row = 0
-    for line in f:
-        words = line.split()
-        positions[row,:] = [ float(word)*angstrom for word in words[:3] ]
-        gradient[row,:]  = [-float(word)*electronvolt/angstrom for word in words[3:6] ]
-        row += 1
-        if row >= N: break
-
-    # hessian, not symmetrized, useful to find indices of Hessian elements
-    hessian = np.zeros((3*N,3*N),float)
-    for line in f:
-        if line.strip().startswith("SECOND DERIVATIVES (NOT SYMMETRIZED)"):  break
-    f.next()
-    for line in f:
-        Nfree = len(line.split())/3   # nb of non-fixed atoms
-        break
-    # find the (cartesian) indices of non-fixed atoms
-    indices_free = []
-    row = 0
-    mu = 0
-    for line in f:
-        if mu==0:
-            atom = int(line.split()[0][:-1])
-        indices_free.append(3*(atom-1) + mu)
-        mu+=1
-        row+=1
-        if mu >= 3: mu=0
-        if row >= 3*Nfree: break
-
-    # hessian, symmetrized, somehow with a negative sign
-    hessian = np.zeros((3*N,3*N),float)
-    for line in f:
-        if line.strip().startswith("SECOND DERIVATIVES (SYMMETRYZED)"):  break
-    f.next()
-    f.next()
-    row = 0
-    for line in f:   # put Hessian elements at appropriate place
-        index_row = indices_free[row]
-        words = line.split()
-        for col in xrange(3*Nfree):
-            index_col = indices_free[col]
-            hessian[index_row,index_col] = -float(words[col+1])*electronvolt/angstrom**2 # skip first col
-        row += 1
-        if row >= 3*Nfree: break
-    f.close()
+    # No decent gradient information available
+    gradient = np.zeros(coordinates.shape)
 
     return Molecule(
-        atomicnumbers, positions, masses, energy, gradient,
-        hessian, multiplicity, periodic=is_periodic, unit_cell=unit_cell )
+        numbers, coordinates, masses, energy, gradient, hessian,
+        multiplicity=multiplicity, periodic=is_periodic, unit_cell=unit_cell)
 
 
 def load_fixed_vasp(filename):

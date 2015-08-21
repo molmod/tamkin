@@ -180,20 +180,28 @@ class IOTestCase(unittest.TestCase):
 
     def test_load_molecule_vasp_53(self):
         molecule = load_molecule_vasp('test/input/vasp53/CONTCAR_opt', 'test/input/vasp53/OUTCAR', 'test/input/vasp53/OUTCAR_opt')
-        assert molecule.energy == -24.11835743*electronvolt
+        # contcar
         assert molecule.numbers[0] == 6
         assert (molecule.numbers[1:] == 1).all()
         assert molecule.size == 5
         assert molecule.unit_cell.matrix[0,0] == 15.0*angstrom
         assert molecule.unit_cell.matrix[1,2] == 0.0
-
         self.assertAlmostEqual(molecule.coordinates[0,0]/angstrom, 7.15840, 3)
         self.assertAlmostEqual(molecule.coordinates[1,2]/angstrom, 8.44640, 2) #?
         self.assertAlmostEqual(molecule.coordinates[-1,-1]/angstrom, 6.95131, 2) #?
+        # outcar_freq
+        assert molecule.masses[0] == 12.011*amu
+        assert (molecule.masses[1:] == 1.000*amu).all()
         hunit = electronvolt/angstrom**2
         assert molecule.hessian[0,0] == 53.624756*hunit
         assert molecule.hessian[-1,-1] == 31.299419*hunit
         self.assertAlmostEqual(molecule.hessian[2,5], 0.5*(-7.551817 + 3.319877)*hunit)
+        # outcar_ener
+        assert molecule.energy == -24.11835743*electronvolt
+        gunit = electronvolt/angstrom
+        assert molecule.gradient[0, 0] == 0.001622*gunit
+        assert molecule.gradient[2, 1] == -0.034149*gunit
+        assert molecule.gradient[-1, -1] == -0.001625*gunit
 
     def test_checkpoint(self):
         molecule = load_molecule_cp2k("test/input/cp2k/pentane/sp.out", "test/input/cp2k/pentane/freq.out")

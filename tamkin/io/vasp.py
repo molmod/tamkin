@@ -70,13 +70,6 @@ def load_molecule_vasp(contcar, outcar_freq, outcar_ener=None, energy=None,
         | is_periodic  --  True when the system is periodic in three dimensions.
                            False when the systen is nonperiodic. [default=True].
     """
-    # VASP Units:
-    #   * Atomic coordinates in angstrom
-    #   * Energy in eV
-    #   * VASP gradient in eV/angstrom
-    #   * VASP Hessian in eV/angstrom**2
-    # TAMkin internally in atomic units.
-
     # Read atomic symbols, coordinates and cell vectors from CONTCAR
     symbols = []
     coordinates = []
@@ -127,7 +120,7 @@ def load_molecule_vasp(contcar, outcar_freq, outcar_ener=None, energy=None,
                 symbol = line[11:line.find(':')].strip()
                 number = periodic[symbol].number
             elif line.startswith('   POMASS ='):
-                mass = float(line[11:line.find(';')])
+                mass = float(line[11:line.find(';')])*amu
                 masses[numbers==number] = mass
             elif number is not None and line.startswith('------------------------------'):
                 assert masses.min() > 0
@@ -147,6 +140,7 @@ def load_molecule_vasp(contcar, outcar_freq, outcar_ener=None, energy=None,
         assert nfree_dof % 3 == 0
 
         # Load the actual Hessian
+        hunit = electronvolt/angstrom**2
         hessian = np.zeros((3*natom, 3*natom), float)
         for ifree0 in xrange(nfree_dof):
             line = f.next()
@@ -156,7 +150,7 @@ def load_molecule_vasp(contcar, outcar_freq, outcar_ener=None, energy=None,
             assert len(words) == nfree_dof
             for ifree1 in xrange(nfree_dof):
                 icol = indices_free[ifree1]
-                hessian[irow, icol] = -float(words[ifree1])*electronvolt/angstrom**2
+                hessian[irow, icol] = -float(words[ifree1])*hunit
 
         # Symmetrize the Hessian
         hessian = 0.5*(hessian + hessian.T)
@@ -166,6 +160,7 @@ def load_molecule_vasp(contcar, outcar_freq, outcar_ener=None, energy=None,
         outcar_energy = 0.0
         gradient = np.zeros((natom, 3), float)
         igrad = None
+        gunit = electronvolt/angstrom
         for line in f:
             if line.startswith('  energy without entropy ='):
                 outcar_energy = float(line[27:45])*electronvolt
@@ -174,10 +169,9 @@ def load_molecule_vasp(contcar, outcar_freq, outcar_ener=None, energy=None,
                     igrad += 1
                 elif igrad >= 0:
                     words = line.split()
-                    print igrad, natom
-                    gradient[igrad, 0] = float(words[0])
-                    gradient[igrad, 1] = float(words[1])
-                    gradient[igrad, 2] = float(words[2])
+                    gradient[igrad, 0] = float(words[3])*gunit
+                    gradient[igrad, 1] = float(words[4])*gunit
+                    gradient[igrad, 2] = float(words[5])*gunit
                     igrad += 1
                     if igrad == natom:
                         igrad = None

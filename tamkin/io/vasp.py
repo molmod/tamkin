@@ -46,77 +46,108 @@ import numpy as np
 __all__ = ["load_molecule_vasp", "load_fixed_vasp"]
 
 
-def load_molecule_vasp(vaspfile_xyz, vaspfile_out, energy, multiplicity=1, is_periodic=True):
+def load_molecule_vasp(contcar, outcar_freq, outcar_ener=None, energy=None,
+                       multiplicity=1, is_periodic=True):
     """Load a molecule from VASP 4.6.X and 5.3.X output files
 
        Arguments:
-        | vaspfile_xyz  --  Filename of xyz-file containing the (partially)
-                            optimized structure. Generate this file with the
-                            con2xyz tool from VASP
-        | vaspfile_out  --  Filename of VASP output file (OUTCAR) containing
-                            the Hessian.
-        | energy  --  The potential energy. (It is not printed in the OUTCAR
-                      file of a Hessian calculation.)
+        | contcar  --  A CONTCAR file with the structure used for the Hessian/frequency
+                       calculation in VASP.
+        | outcar_freq  --  The OUTCAR file of the Hessian/frequency calculation
 
        Optional arguments:
+        | outcar_ener  --  The OUTCAR file of a single-point or energy optimization. The
+                           last energy found in this file will be used. The last forces,
+                           if any, will also be read. The energy without entropy (but not
+                           the extrapolation to sigma=0) is used. (This was decided after
+                           a discussion with K. Lejaeghere. If you disagree, please get in
+                           touch.) [default=None]
+        | energy -- The potential energy, which overrides the contents of outcar_ener (if
+                    that argument is present). If no energy can be determined, it is set
+                    to zero.
         | multiplicity  --  The spin multiplicity of the electronic system
                             [default=1]
         | is_periodic  --  True when the system is periodic in three dimensions.
                            False when the systen is nonperiodic. [default=True].
     """
-    # Units:
-    #   * VASP Atomic coordinates in angstrom, TAMkin internally in atomic units
-    #   * VASP Hessian in eV/angstrom**2, TAMkin internally all in atomic units
+    # VASP Units:
+    #   * Atomic coordinates in angstrom
+    #   * Energy in eV
+    #   * VASP gradient in eV/angstrom
+    #   * VASP Hessian in eV/angstrom**2
+    # TAMkin internally in atomic units.
 
-    # Read symbols of the atoms from xyz-VASP-file
-    # format:  one atom per line
-    #          Symbol (Si, C, ...)   x-cor  y-cor  z-cor
+    # Read atomic symbols, coordinates and cell vectors from CONTCAR
     symbols = []
     coordinates = []
-    with open(vaspfile_xyz) as f:
-        # read number of atoms
-        natom = int(f.next())
-        # skip title
-        f.next()
-        # Read from each line that contains four words.
-        for line in f:
-            words = line.split()
-            if len(words) == 4:
-                symbols.append(words[0])
-                coordinates.append([
-                    float(words[1])*angstrom,
-                    float(words[2])*angstrom,
-                    float(words[3])*angstrom,
-                ])
-    if len(symbols) != natom:
-        raise IOError('Inconsistent number of atoms in XYZ file.')
-    coordinates = np.array(coordinates)
+    with open(contcar) as f:
+        # Skip title.
+        f.next().strip()
 
-    # Read other data from out-VASP-file OUTCAR
-    with open(vaspfile_out) as f:
-        # Read lattice vectors. VASP writes each vector as a column, TAMkin
-        # stores each vector as a row.
-        for line in f:
-            if line.startswith("      direct lattice vectors"):
-                break
-        rvecs = np.ones((3,3),float)
-        for axis in xrange(3):
-            words = f.next().split()
-            # Tranpose as we read.
-            rvecs[:,axis] = np.array([float(word)*angstrom for word in words[:3]])
+        # Read scale for rvecs.
+        rvec_scale = float(f.next())
+        # Read rvecs. VASP uses one row per cell vector.
+        rvecs = np.fromstring(f.next()+f.next()+f.next(), sep=' ').reshape(3, 3)
+        rvecs *= rvec_scale*angstrom
         unit_cell = UnitCell(rvecs)
 
-        # hessian, not symmetrized, useful to find indices of Hessian elements
-        hessian = np.zeros((3*natom, 3*natom), float)
+        # Read symbols
+        unique_symbols = f.next().split()
+        # Read atom counts per symbol
+        symbol_counts = [int(w) for w in f.next().split()]
+        assert len(symbol_counts) == len(unique_symbols)
+        natom = sum(symbol_counts)
+        # Construct array with atomic numbers.
+        numbers = []
+        for iunique in xrange(len(unique_symbols)):
+            number = periodic[unique_symbols[iunique]].number
+            numbers.extend([number]*symbol_counts[iunique])
+        numbers = np.array(numbers)
+
+        # Check next line
+        assert f.next() == 'Direct\n'
+
+        # Load fractional coordinates
+        fractional = np.zeros((natom, 3), float)
+        for iatom in xrange(natom):
+            words = f.next().split()
+            fractional[iatom, 0] = float(words[0])
+            fractional[iatom, 1] = float(words[1])
+            fractional[iatom, 2] = float(words[2])
+        coordinates = unit_cell.to_cartesian(fractional)
+
+    # Read Hessian and masses from outcar_freq
+    with open(outcar_freq) as f:
+        # Loop over the POTCAR sections in the OUTCAR file
+        number = None
+        masses = np.zeros(natom, float)
+        while True:
+            line = f.next()
+            if line.startswith('   VRHFIN ='):
+                symbol = line[11:line.find(':')].strip()
+                number = periodic[symbol].number
+            elif line.startswith('   POMASS ='):
+                mass = float(line[11:line.find(';')])
+                masses[numbers==number] = mass
+            elif number is not None and line.startswith('------------------------------'):
+                assert masses.min() > 0
+                break
+
+        # Go the second derivatives
         for line in f:
             if line.startswith(" SECOND DERIVATIVES (NOT SYMMETRIZED)"):  break
-        # skip one line
+
+        # Skip one line.
         f.next()
-        # number of free atoms (not fixed in space)
+
+        # Load free atoms (not fixed in space).
         keys = f.next().split()
         nfree_dof = len(keys)
         indices_free = [3*int(key[:-1])+{'X': 0, 'Y': 1, 'Z': 2}[key[-1]]-3 for key in keys]
         assert nfree_dof % 3 == 0
+
+        # Load the actual Hessian
+        hessian = np.zeros((3*natom, 3*natom), float)
         for ifree0 in xrange(nfree_dof):
             line = f.next()
             irow = indices_free[ifree0]
@@ -126,16 +157,36 @@ def load_molecule_vasp(vaspfile_xyz, vaspfile_out, energy, multiplicity=1, is_pe
             for ifree1 in xrange(nfree_dof):
                 icol = indices_free[ifree1]
                 hessian[irow, icol] = -float(words[ifree1])*electronvolt/angstrom**2
+
+        # Symmetrize the Hessian
         hessian = 0.5*(hessian + hessian.T)
 
-    # Masses
-    masses = np.array([periodic[symbol].mass for symbol in symbols])
+    # Try to read energy and Gradient from outcar_ener file
+    with open(outcar_ener) as f:
+        outcar_energy = 0.0
+        gradient = np.zeros((natom, 3), float)
+        igrad = None
+        for line in f:
+            if line.startswith('  energy without entropy ='):
+                outcar_energy = float(line[27:45])*electronvolt
+            elif igrad is not None:
+                if igrad < 0:
+                    igrad += 1
+                elif igrad >= 0:
+                    words = line.split()
+                    print igrad, natom
+                    gradient[igrad, 0] = float(words[0])
+                    gradient[igrad, 1] = float(words[1])
+                    gradient[igrad, 2] = float(words[2])
+                    igrad += 1
+                    if igrad == natom:
+                        igrad = None
+            elif line.startswith(' POSITION'):
+                igrad = -1
 
-    # Get corresponding atomic numbers
-    numbers = np.array([periodic[symbol].number for symbol in symbols])
-
-    # No decent gradient information available
-    gradient = np.zeros(coordinates.shape)
+        # If no energy is specified, use that from the file.
+        if energy is None:
+            energy = outcar_energy
 
     return Molecule(
         numbers, coordinates, masses, energy, gradient, hessian,

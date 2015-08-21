@@ -179,15 +179,21 @@ class IOTestCase(unittest.TestCase):
         self.assertAlmostEqual(molecule.unit_cell.matrix[1,2]/angstrom, -0.017392342, 5)
 
     def test_load_molecule_vasp_53(self):
-        molecule = load_molecule_vasp("test/input/vasp53/CONTCAR.xyz", "test/input/vasp53/OUTCAR", 1.1)
-        assert molecule.energy == 1.1
-        self.assertEqual(molecule.numbers[0], 6)
-        assert molecule.size == 2
-        self.assertAlmostEqual(molecule.coordinates[1,2]/angstrom, 1.11680615409860)
-        self.assertAlmostEqual(-molecule.hessian[0,0]/(electronvolt/angstrom**2), 2.585360, 6)
-        self.assertAlmostEqual(-molecule.hessian[-1,-1]/(electronvolt/angstrom**2), -134.259172, 6)
-        self.assertAlmostEqual(molecule.unit_cell.matrix[0,0]/angstrom, 15.0, 5)
-        self.assertAlmostEqual(molecule.unit_cell.matrix[1,2]/angstrom, 0.0, 5)
+        molecule = load_molecule_vasp('test/input/vasp53/CONTCAR_opt', 'test/input/vasp53/OUTCAR', 'test/input/vasp53/OUTCAR_opt')
+        assert molecule.energy == -24.11835743*electronvolt
+        assert molecule.numbers[0] == 6
+        assert (molecule.numbers[1:] == 1).all()
+        assert molecule.size == 5
+        assert molecule.unit_cell.matrix[0,0] == 15.0*angstrom
+        assert molecule.unit_cell.matrix[1,2] == 0.0
+
+        self.assertAlmostEqual(molecule.coordinates[0,0]/angstrom, 7.15840, 3)
+        self.assertAlmostEqual(molecule.coordinates[1,2]/angstrom, 8.44640, 2) #?
+        self.assertAlmostEqual(molecule.coordinates[-1,-1]/angstrom, 6.95131, 2) #?
+        hunit = electronvolt/angstrom**2
+        assert molecule.hessian[0,0] == 53.624756*hunit
+        assert molecule.hessian[-1,-1] == 31.299419*hunit
+        self.assertAlmostEqual(molecule.hessian[2,5], 0.5*(-7.551817 + 3.319877)*hunit)
 
     def test_checkpoint(self):
         molecule = load_molecule_cp2k("test/input/cp2k/pentane/sp.out", "test/input/cp2k/pentane/freq.out")

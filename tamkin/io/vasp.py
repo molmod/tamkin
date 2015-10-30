@@ -146,8 +146,6 @@ def load_molecule_vasp(contcar, outcar_freq, energy=None, multiplicity=1, is_per
             f.next()
             f.next()
             energy = float(f.next().split()[3])*electronvolt
-        else:
-            energy = 0.0
 
         # Go to the second derivatives
         for line in f:

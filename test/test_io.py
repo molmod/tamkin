@@ -266,6 +266,12 @@ class IOTestCase(unittest.TestCase):
         assert molecule.hessian[-1,-1] == 31.561353*hunit
         self.assertAlmostEqual(molecule.hessian[6,9], 0.5*(-2.601060 + -2.794022)*hunit)
 
+    def test_load_molecule_vasp_5_3_5_gamma_part_energy(self):
+        molecule = load_molecule_vasp('test/input/julianna/vasp_5_3_5_gamma/CONTCAR_opt',
+                                      'test/input/julianna/vasp_5_3_5_gamma/OUTCAR_freq_part',
+                                      energy=1.476)
+        assert molecule.energy == 1.476
+
     def test_checkpoint(self):
         molecule = load_molecule_cp2k("test/input/cp2k/pentane/sp.out", "test/input/cp2k/pentane/freq.out")
         nma1 = NMA(molecule)

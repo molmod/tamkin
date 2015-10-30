@@ -3,6 +3,14 @@
 Release history
 ###############
 
+
+* **October 30, 2014. Version 1.0.7**
+
+    - Improved VASP IO (partial Hessians and compatibility with different VASP versions)
+    - Improved CP2K IO (partial Hessians and array with fixed atoms)
+    - More output is written by the script tamkin-driver.py
+    - Fixed mistakes in the installation instructions.
+
 * **September 27, 2014. Version 1.0.6**
 
     - More robust internal rotor code

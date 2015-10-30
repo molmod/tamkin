@@ -60,15 +60,15 @@ Stable release (recommended)
 
 The latest stable source code release can be downloaded here:
 
-    http://github.com/molmod/tamkin/releases/download/v1.0.6/TAMkin-1.0.6.tar.gz
+    http://github.com/molmod/tamkin/releases/download/v1.0.7/TAMkin-1.0.7.tar.gz
 
 Choose a suitable directory, e.g. ``~/build``, download and unpack the archive::
 
     mkdir -p ~/build
     cd ~/build
-    wget http://github.com/molmod/tamkin/releases/download/v1.0.6/TAMkin-1.0.6.tar.gz
-    tar -xvzf TAMkin-1.0.6.tar.gz
-    cd TAMkin-1.0.6
+    wget http://github.com/molmod/tamkin/releases/download/v1.0.7/TAMkin-1.0.7.tar.gz
+    tar -xvzf TAMkin-1.0.7.tar.gz
+    cd TAMkin-1.0.7
 
 
 Latest development code (experts only)

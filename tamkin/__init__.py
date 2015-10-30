@@ -34,7 +34,7 @@
 #--
 """TAMkin is a post-processing toolkit for normal mode, thermochemistry and kinetics."""
 
-__version__ = '1.0.6'
+__version__ = '1.0.7'
 
 from tamkin.chemmod import *
 from tamkin.data import *

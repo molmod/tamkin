@@ -9,3 +9,4 @@ apps
 doctrees
 doc/_build
 build
+test/output

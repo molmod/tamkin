@@ -10,6 +10,8 @@ rm -vr python-build-stamp-*
 
 rm -vr test/tmp
 rm -vr test/output/*
+mkdir test/output
+touch test/output/.keep
 
 rm -v MANIFEST
 rm -vr dist

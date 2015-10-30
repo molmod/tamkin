@@ -111,6 +111,28 @@ class IOTestCase(unittest.TestCase):
         self.assertAlmostEqual(molecule.unit_cell.matrix[0,0]/angstrom, 20.000,3)
         self.assertAlmostEqual(molecule.unit_cell.matrix[1,2]/angstrom, 0.000,3)
 
+    def test_load_molecule_cp2k_dan_phva(self):
+        molecule = load_molecule_cp2k("test/input/cp2k/dan/cp2k.out", "test/input/cp2k/dan/freq.out")
+        self.assertAlmostEqual(molecule.energy, -290.409097595743333)
+        self.assertEqual(molecule.multiplicity, 1)
+        self.assertEqual(molecule.numbers[0], 6)
+        self.assertEqual(molecule.numbers[4], 6)
+        self.assertEqual(molecule.numbers[-1], 1)
+        self.assertAlmostEqual(molecule.masses[0], periodic[6].mass, 0)
+        self.assertAlmostEqual(molecule.masses[-1], periodic[1].mass, 0)
+        self.assertAlmostEqual(molecule.coordinates[5,1], -2.458266*angstrom)
+        self.assertAlmostEqual(molecule.gradient[-1,0], 0.00000044, 9)
+        self.assertAlmostEqual(molecule.gradient[-3,2], 0.00000080, 9)
+        self.assertAlmostEqual(molecule.hessian[0,0], 0.0, 6)
+        self.assertAlmostEqual(molecule.hessian[0,-1], 0.0, 6)
+        self.assertAlmostEqual(molecule.hessian[-1,0], 0.0, 6)
+        self.assertAlmostEqual(molecule.hessian[-18,-1],
+            0.5*(-0.418336-0.418196)*1e-6*(molecule.masses[-1]*molecule.masses[-18])**0.5, 6)
+        self.assertAlmostEqual(molecule.hessian[-18,-18], 19.137757*1e-6*molecule.masses[-18], 6)
+        self.assertAlmostEqual(molecule.hessian[-1,-1], 51.483068*1e-6*molecule.masses[-1], 6)
+        self.assertAlmostEqual(molecule.unit_cell.matrix[0,0], 10.657*angstrom, 3)
+        self.assertAlmostEqual(molecule.unit_cell.matrix[1,0], -6.153*angstrom, 3)
+
     def test_load_molecule_cpmd(self):
         molecule = load_molecule_cpmd("test/input/cpmd/damp.out", "test/input/cpmd/GEOMETRY.xyz", "test/input/cpmd/MOLVIB")
         self.assertAlmostEqual(molecule.energy, -17.14142079)

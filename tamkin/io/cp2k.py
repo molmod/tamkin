@@ -116,60 +116,70 @@ def load_molecule_cp2k(fn_sp, fn_freq, multiplicity=1, is_periodic=True):
     # go through the single point file: energy and gradient
     energy = None
     gradient = None
-    f = file(fn_sp)
-    while True:
-        line = f.readline()
-        if line == "":
-            break
-        if line.startswith(" ENERGY|"):
-            energy = float(line[58:])
-        elif line.startswith(" MODULE") and "ATOMIC COORDINATES" in line:
-            numbers, coordinates, masses = atom_helper(f)
-        elif line.startswith(" FORCES|"):
-            gradient = force_helper(f, 0, 1)
-            break
-        elif line.startswith(' ATOMIC FORCES in [a.u.]'):
-            gradient = force_helper(f, 2, 3)
-            break
-    if energy is None or gradient is None:
-        raise IOError("Could not read energy and/or gradient (forces) from single point file.")
-    f.close()
+    with open(fn_sp) as f:
+        while True:
+            line = f.readline()
+            if line == "":
+                break
+            if line.startswith(" ENERGY|"):
+                energy = float(line[58:])
+            elif line.startswith(" MODULE") and "ATOMIC COORDINATES" in line:
+                numbers, coordinates, masses = atom_helper(f)
+            elif line.startswith(" FORCES|"):
+                gradient = force_helper(f, 0, 1)
+                break
+            elif line.startswith(' ATOMIC FORCES in [a.u.]'):
+                gradient = force_helper(f, 2, 3)
+                break
+        if energy is None or gradient is None:
+            raise IOError("Could not read energy and/or gradient (forces) from single point file.")
 
     # go through the freq file: lattic vectors and hessian
-    f = file(fn_freq)
-    vectors = np.zeros((3,3),float)
-    while True:
-        line = f.readline()
-        if line.startswith(" CELL"): break
-    for axis in range(3):
-        line = f.readline()
-        vectors[:,axis] = np.array( [float(line[29:39]), float(line[39:49]), float(line[49:59])] )
-    unit_cell = UnitCell(vectors*angstrom)
+    with open(fn_freq) as f:
+        vectors = np.zeros((3, 3), float)
+        for line in f:
+            if line.startswith(" CELL"):
+                break
+        for axis in range(3):
+            line = f.next()
+            vectors[:,axis] = np.array( [float(line[29:39]), float(line[39:49]), float(line[49:59])] )
+        unit_cell = UnitCell(vectors*angstrom)
 
-    hessian = None
-    while True:
-        line = f.readline()
-        if line.startswith(" VIB| Hessian in cartesian coordinates"):
-            block_len = coordinates.size
-            tmp = np.zeros((block_len,block_len), float)
+        free_indices = []
+        for line in f:
+            if line.startswith(" VIB| Vibrational Analysis Info"):
+                break
+        for line in f:
+            if line.startswith(" VIB| REPLICA Nr."):
+                words = line.split()
+                if words[-2] == '+':
+                    free_index = 3*(int(words[-5])-1)
+                    if words[-3] == 'Y':
+                        free_index += 1
+                    elif words[-3] == 'Z':
+                        free_index += 2
+                    free_indices.append(free_index)
+            if line.startswith(" VIB| Hessian in cartesian coordinates"):
+                break
+
+        if len(free_indices) > 0:
+            total_size = coordinates.size
+            free_size = len(free_indices)
+            hessian = np.zeros((total_size, total_size), float)
             i2 = 0
-            while i2 < block_len:
-                num_cols = min(5, block_len-i2)
-                f.readline() # skip two lines
-                f.readline()
-                for j in xrange(block_len):
-                    line = f.readline()
-                    if line == "":
-                        raise IOError("End of file while reading hessian.")
+            while i2 < free_size:
+                num_cols = min(5, free_size - i2)
+                f.next() # skip two lines
+                f.next()
+                for j in xrange(free_size):
+                    line = f.next()
                     words = line.split()
                     for i1 in xrange(num_cols):
-                        tmp[i2+i1,j] = float(words[i1+2])
+                        hessian[free_indices[i2 + i1], free_indices[j]] = \
+                            float(words[i1 + 2])
                 i2 += num_cols
-            hessian = tmp
-            break
-    f.close()
-    if hessian is None:
-        raise IOError("Could not read hessian from freq file.")
+        else:
+            raise IOError("Could not read hessian from freq file.")
 
     # symmetrize
     hessian = 0.5*(hessian+hessian.transpose())

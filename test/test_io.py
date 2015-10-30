@@ -133,6 +133,11 @@ class IOTestCase(unittest.TestCase):
         self.assertAlmostEqual(molecule.unit_cell.matrix[0,0], 10.657*angstrom, 3)
         self.assertAlmostEqual(molecule.unit_cell.matrix[1,0], -6.153*angstrom, 3)
 
+    def test_load_fixed_cp2k(self):
+        fixed = load_fixed_cp2k("test/input/cp2k/dan/freq.out")
+        assert (fixed[:-6] == True).all()
+        assert (fixed[-6:] == False).all()
+
     def test_load_molecule_cpmd(self):
         molecule = load_molecule_cpmd("test/input/cpmd/damp.out", "test/input/cpmd/GEOMETRY.xyz", "test/input/cpmd/MOLVIB")
         self.assertAlmostEqual(molecule.energy, -17.14142079)

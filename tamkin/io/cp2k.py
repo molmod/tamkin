@@ -43,7 +43,7 @@ from molmod.units import angstrom, amu
 import numpy as np
 
 
-__all__ = ["load_molecule_cp2k"]
+__all__ = ["load_molecule_cp2k", 'load_fixed_cp2k']
 
 
 def load_molecule_cp2k(fn_sp, fn_freq, multiplicity=1, is_periodic=True):
@@ -145,23 +145,7 @@ def load_molecule_cp2k(fn_sp, fn_freq, multiplicity=1, is_periodic=True):
             vectors[:,axis] = np.array( [float(line[29:39]), float(line[39:49]), float(line[49:59])] )
         unit_cell = UnitCell(vectors*angstrom)
 
-        free_indices = []
-        for line in f:
-            if line.startswith(" VIB| Vibrational Analysis Info"):
-                break
-        for line in f:
-            if line.startswith(" VIB| REPLICA Nr."):
-                words = line.split()
-                if words[-2] == '+':
-                    free_index = 3*(int(words[-5])-1)
-                    if words[-3] == 'Y':
-                        free_index += 1
-                    elif words[-3] == 'Z':
-                        free_index += 2
-                    free_indices.append(free_index)
-            if line.startswith(" VIB| Hessian in cartesian coordinates"):
-                break
-
+        free_indices = _load_free_low(f)
         if len(free_indices) > 0:
             total_size = coordinates.size
             free_size = len(free_indices)
@@ -193,3 +177,66 @@ def load_molecule_cp2k(fn_sp, fn_freq, multiplicity=1, is_periodic=True):
         numbers, coordinates, masses, energy, gradient,
         hessian, multiplicity, 0, is_periodic, unit_cell=unit_cell
     )
+
+
+def _load_free_low(f):
+    '''Helper function to load the indices of the free atoms from a CP2K freq file
+
+    Parameters
+    ----------
+    f: open file
+       An open file object with the CP2K freq output.
+
+    Returns
+    -------
+    free_indices: list of int
+                  A list of integer indexes of the free rows and columbs of the Hessian
+                  matrix.
+    '''
+    free_indices = []
+    for line in f:
+        if line.startswith(" VIB| Vibrational Analysis Info"):
+            break
+    for line in f:
+        if line.startswith(" VIB| REPLICA Nr."):
+            words = line.split()
+            if words[-2] == '+':
+                free_index = 3*(int(words[-5])-1)
+                if words[-3] == 'Y':
+                    free_index += 1
+                elif words[-3] == 'Z':
+                    free_index += 2
+                free_indices.append(free_index)
+        if line.startswith(" VIB| Hessian in cartesian coordinates"):
+            break
+    return free_indices
+
+
+def load_fixed_cp2k(fn_freq):
+    '''Load the fixed atoms from a CP2K freq output
+
+    Parameters
+    ----------
+    fn_freq: str
+             The filename of the CP2K freq output
+
+    Returns
+    -------
+    fixed: numpy bool array
+           The length of the vector corresponds to the number of atoms. For every fixed
+           atom, the vector element is True. False otherwise.
+    '''
+    with open(fn_freq) as f:
+        natom = -1
+        for line in f:
+            if line.startswith('                             - Atoms: '):
+                natom = int(line.split()[-1])
+                break
+        free_indices = _load_free_low(f)
+    if natom == -1:
+        raise IOError('Could not read number of atoms from CP2K output.')
+    if len(free_indices) == 0:
+        raise IOError('Could not find the free atoms.')
+    result = np.ones(natom, dtype=bool)
+    result[np.array(free_indices[::3])/3] = False
+    return result

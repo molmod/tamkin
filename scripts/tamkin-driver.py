@@ -58,7 +58,7 @@ This script assumes that the current directory has subdirectories as follows::
 
 The layout of each `molecule` subdirectory is documented below.
 
-Reaction products are mandatory. At least one transition state or product must
+Reactants are mandatory. One transition state or one or more products may
 be present. Depending on the available directories, the following two
 computations may take place:
 
@@ -68,6 +68,9 @@ computations may take place:
 * When reaction products are present, the equilibrium constant is computed. In
   this case, one may add a file ``equilibrium.cfg``. (Details given below.)
 
+Even when no transition state or reaction products are present, useful computation can be
+performed, e.g. by providing a file ``thermo.cfg`` telling at which temperatures all
+properties of the reactants must be computed. (Details given below.)
 
 
 Assumed layout of a molecule directory (re_*/, ts_*/ or pr_*/)
@@ -139,6 +142,12 @@ The following config files are read by the ``tamkin-driver.py`` script:
     ``temps`` (optional)
         A list of temperatures at which the equilibrium constant is computed.
 
+* **thermo.cfg**: ``temps``
+
+    ``temps`` (optional)
+        A list of temperatures at which all properties of the partition functions must be
+        computed.
+
 * **molecule.cfg**: ``symnum``, ``freq_scaling``, ``zp_scaling``
 
     ``freq_scaling`` (optional)
@@ -191,7 +200,7 @@ The following config files are read by the ``tamkin-driver.py`` script:
         The atoms in the rotating top. When not given, an attempt is made to
         derive this top from the choice of the dihedral angle and the molecular
         topology. (This attempt is often not successful for structures
-        containing multiple molecules. In that case, top_indexes must be
+        containing multiple molecules. In that case, top must be
         provided.
 
 * **rotor_c_*/rotor.dat**
@@ -281,13 +290,17 @@ def get_atom_indexes(cfg, key):
     return result
 
 
-def get_pf(dn):
+def get_pf(dn, temps):
     '''Construct a partition function from a molecule directory.
 
        **Arguments:**
 
        dn
             A molecule directory name
+
+       temps
+            A list of temperatures at which the properties of the molecule must be
+            evaluated.
     '''
     print '  Loading partition function from', dn
 
@@ -392,6 +405,11 @@ def get_pf(dn):
     # F) Write a partf.txt file
     pf.write_to_file('%s/partf.txt' % dn)
 
+    # G) Write a thermo analysis if temperatures are provided
+    if len(temps) > 0:
+        ta = ThermoAnalysis(pf, temps)
+        ta.write_to_file('%s/thermo.csv' % dn)
+
     return pf
 
 
@@ -443,6 +461,8 @@ def main():
     if len(sys.argv) > 1:
         raise ValueError('The TAMKin driver script takes no command line arguments.')
 
+    temps = load_cfg('thermo.cfg').get('temps', [])
+
     reactants = []
     tss = []
     products = []
@@ -450,11 +470,11 @@ def main():
         # chop trailing backslash
         dn = dn[:-1]
         if dn.startswith('re_'):
-            reactants.append(get_pf(dn))
+            reactants.append(get_pf(dn, temps))
         elif dn.startswith('ts_'):
-            tss.append(get_pf(dn))
+            tss.append(get_pf(dn, temps))
         elif dn.startswith('pr_'):
-            products.append(get_pf(dn))
+            products.append(get_pf(dn, temps))
         else:
             print 'WARNING: skipping directory %s' % dn
 
@@ -462,9 +482,6 @@ def main():
         raise RuntimeError('At least one reactant must be present.')
     if len(tss) > 1:
         raise RuntimeError('At most one transition state may be present.')
-    if len(tss) == 0 and len(products) == 0:
-        raise RuntimeError('At least a transition state or one product must be present.')
-
 
     if len(tss) == 1:
         check_mass_balance(reactants, tss, 'reactants', 'transition state')

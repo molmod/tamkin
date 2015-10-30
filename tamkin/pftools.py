@@ -85,9 +85,8 @@ class ThermoAnalysis(object):
            Argument:
             | ``filename`` -- the file to write the output.
         """
-        f = file(filename, "w")
-        self.dump(f)
-        f.close()
+        with open(filename, 'w') as f:
+            self.dump(f)
 
     def dump(self, f):
         """Write the entire thermochemistry analysis in csv format.

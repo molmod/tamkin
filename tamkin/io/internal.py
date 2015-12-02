@@ -211,7 +211,7 @@ def load_indices(filename, shift=-1, groups=False):
        * ``[N1,N2[``: the range does not include N2 (Pythonic).
 
        The atom indexes can be separated by one or more empty lines
-       to define groups of atoms that belong toghether in one block. (See the group
+       to define groups of atoms that belong toghether in one block. (See the groups
        argument.)
 
        Arguments:

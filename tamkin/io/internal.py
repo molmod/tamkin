@@ -184,12 +184,35 @@ def dump_chk(filename, data):
     f.close()
 
 
+def _convert_range(s, shift):
+    try:
+        return [int(s) + shift]
+    except ValueError:
+        pass
+    if not (s.count(',') == 1 and s.startswith('[') and
+            (s.endswith('[') or s.endswith(']'))):
+        raise ValueError('Cannot interpret "%s" as a range.' % s)
+    b, e = s[1:-1].split(',')
+    b = int(b) + shift
+    e = int(e) + shift
+    result = range(b, e)
+    if s.endswith(']'):
+        result.append(e)
+    return result
+
+
 def load_indices(filename, shift=-1, groups=False):
     """Load atom indexes from file
 
-       Individual indexes or separated by white space or by one new-line
-       character. The atom indexes can be separated by one or more empty lines
-       to define groups of atoms that belong toghether in one block.
+       Individual atom indices are separated by white space or by one new-line
+       character. Ranges of atoms can be specified in two ways:
+
+       * ``[N1,N2]``: the range includes N2 (Fortranish).
+       * ``[N1,N2[``: the range does not include N2 (Pythonic).
+
+       The atom indexes can be separated by one or more empty lines
+       to define groups of atoms that belong toghether in one block. (See the group
+       argument.)
 
        Arguments:
          | filename  --  The file to load the indexes from
@@ -215,7 +238,7 @@ def load_indices(filename, shift=-1, groups=False):
             block = []
         else:
             for word in words:
-                block.append(int(word)+shift)
+                block.extend(_convert_range(word, shift))
     if len(block) > 0:
         # add last block to blocks list
         blocks.append(block)

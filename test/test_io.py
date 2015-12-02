@@ -330,6 +330,12 @@ class IOTestCase(unittest.TestCase):
         blocks = load_indices("test/input/an/fixed.07.txt")
         self.assertEqual(blocks, [3,2,6])
 
+    def test_load_indices_ranges(self):
+        blocks = load_indices("test/input/an/fixed_ranges.txt", groups=True)
+        self.assertEqual(blocks, [[0, 2, 3, 4], [9, 10, 11, 12, 13, 19], [21]])
+        blocks = load_indices("test/input/an/fixed_ranges.txt", shift=0)
+        self.assertEqual(blocks, [1, 3, 4, 5, 10, 11, 12, 13, 14, 20, 22])
+
     def test_dump_modes_xyz(self):
         molecule = load_molecule_charmm("test/input/an/ethanol.cor","test/input/an/ethanol.hess.full")
         nma = NMA(molecule)

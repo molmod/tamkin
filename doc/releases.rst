@@ -4,7 +4,13 @@ Release history
 ###############
 
 
-* **October 30, 2014. Version 1.0.7**
+* **February 5, 2016. Version 1.0.8**
+
+    - The script tamkin-driver.py now reads the fixed atoms from the Gaussian fchk file
+      and carries out a PHVA analysis if fixed atoms are present.
+    - The ``load_indices`` now also handles ranges of atoms.
+
+* **October 30, 2015. Version 1.0.7**
 
     - Improved VASP IO (partial Hessians and compatibility with different VASP versions)
     - Improved CP2K IO (partial Hessians and array with fixed atoms)

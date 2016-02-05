@@ -38,7 +38,7 @@
 from distutils.core import setup
 
 setup(name='TAMkin',
-    version='1.0.7',
+    version='1.0.8',
     description='TAMkin is a post-processing toolkit for thermochemistry and kinetics analysis.',
     author='Toon Verstraelen, Matthias Vandichel, An Ghysels',
     author_email='Toon.Verstraelen@UGent.be, Matthias.Vandichel@UGent.be, An.Ghysels@UGent.be',

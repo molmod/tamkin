@@ -116,7 +116,7 @@ def load_molecule_g03fchk(fn_freq, fn_ener=None, fn_vdw=None, energy=None, fn_pu
 
     fchk_freq = FCHKFile(fn_freq, ignore_errors=True, field_labels=[
         "Cartesian Force Constants", "Real atomic weights", "Total Energy",
-        "Multiplicity", "Cartesian Gradient"
+        "Multiplicity", "Cartesian Gradient", "MicOpt",
     ])
     if fn_ener is None:
         fchk_ener = fchk_freq
@@ -153,6 +153,13 @@ def load_molecule_g03fchk(fn_freq, fn_ener=None, fn_vdw=None, energy=None, fn_pu
                 hessian[i,j] = v
                 hessian[j,i] = v
 
+    if "MicOpt" in fchk_freq.fields:
+        fixed = (fchk_freq.fields["MicOpt"] == -2).nonzero()[0]
+        if len(fixed) == 0:
+            fixed = None
+    else:
+        fixed = None
+
     return Molecule(
         fchk_freq.molecule.numbers,
         fchk_freq.molecule.coordinates,
@@ -163,7 +170,8 @@ def load_molecule_g03fchk(fn_freq, fn_ener=None, fn_vdw=None, energy=None, fn_pu
         fchk_freq.fields["Multiplicity"],
         None, # gaussian is very poor at computing the rotational symmetry number
         False,
-        title=fchk_freq.title
+        title=fchk_freq.title,
+        fixed=fixed,
     )
 
 

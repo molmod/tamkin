@@ -74,8 +74,9 @@ class Molecule(BaseMolecule):
     multiplicity = ReadOnlyAttribute(int)
     symmetry_number = ReadOnlyAttribute(int)
     periodic = ReadOnlyAttribute(bool)
+    fixed = ReadOnlyAttribute(np.ndarray, npdim=1, npdtype=int)
 
-    def __init__(self, numbers, coordinates, masses, energy, gradient, hessian, multiplicity=None, symmetry_number=None, periodic=False, title=None, graph=None, symbols=None, unit_cell=None):
+    def __init__(self, numbers, coordinates, masses, energy, gradient, hessian, multiplicity=None, symmetry_number=None, periodic=False, title=None, graph=None, symbols=None, unit_cell=None, fixed=None):
         """
            Arguments:
             | ``numbers`` -- The atom numbers (integer numpy array with shape N)
@@ -102,6 +103,7 @@ class Molecule(BaseMolecule):
             | ``graph`` -- The molecular graph of the system
             | ``symbols`` -- A list with atom symbols
             | ``unit_cell`` -- The unit cell vectors for periodic structures
+            | ``fixed`` -- An array with indices of fixed atoms
         """
         BaseMolecule.__init__(self, numbers, coordinates, title, masses, graph, symbols, unit_cell)
         self.energy = energy
@@ -110,6 +112,7 @@ class Molecule(BaseMolecule):
         self.multiplicity = multiplicity
         self.symmetry_number = symmetry_number
         self.periodic = periodic
+        self.fixed = fixed
 
     def get_external_basis_new(self, im_threshold=1.0):
         """Create a robust basis for small displacements in the external degrees of freedom.

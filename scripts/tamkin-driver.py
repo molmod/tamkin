@@ -317,6 +317,7 @@ def get_pf(dn, temps):
     # A3) if present add a grimme correction
     fn_dftd3 = '%s/dftd3/dftd3.out' % dn
     if os.path.isfile(fn_dftd3):
+        print '    Loading DFT-D3 corrections'
         disp_energy = load_dftd3(fn_dftd3)
         molecule = molecule.copy_with(energy=molecule.energy + disp_energy)
 

@@ -387,15 +387,23 @@ def get_pf(dn, temps):
         rotors.append(rotor)
 
     # C) Perform a normal mode analysis
-    nma = NMA(molecule, ConstrainExt(gradient_threshold=gradient_threshold))
+    if molecule.fixed is None:
+        print '    Performing NMA with fixed external degrees of freedom'
+        nma = NMA(molecule, ConstrainExt(gradient_threshold=gradient_threshold))
+    else:
+        print '    Performing NMA with fixed atoms: %s' % molecule.fixed
+        nma = NMA(molecule, PHVA(molecule.fixed))
 
     # D) Define the partition function
     mol_cfg = load_cfg('%s/molecule.cfg' % dn)
-    pf = PartFun(nma, [Vibrations(freq_scaling=mol_cfg.get('freq_scaling', 1.0),
-                                  zp_scaling=mol_cfg.get('zp_scaling', 1.0)),
-                       ExtTrans(),
-                       ExtRot(mol_cfg.get('symnum', None))] + rotors)
-    # store the atomic numbers as an attribute of the partition function (used
+    pf_contributions = [Vibrations(freq_scaling=mol_cfg.get('freq_scaling', 1.0),
+                                   zp_scaling=mol_cfg.get('zp_scaling', 1.0))]
+    if molecule.fixed is None:
+        pf_contributions.append(ExtTrans())
+        pf_contributions.append(ExtRot(mol_cfg.get('symnum', None)))
+    pf_contributions.extend(rotors)
+    pf = PartFun(nma, pf_contributions)
+    # Store the atomic numbers as an attribute of the partition function (used
     # to check that no atoms get lost in a reaction.
     pf.numbers = molecule.numbers
 

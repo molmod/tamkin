@@ -463,7 +463,7 @@ def main_equilibrium(res, prs):
     tm = ThermodynamicModel(res, prs)
     tm.write_to_file("equilibrium.txt")
     for temp in cfg.get('temps', []):
-        tm.write_table(temp, "thermo_%04i.csv" % temp)
+        tm.write_table(temp, "thermo_%07.2f.csv" % temp)
 
 
 def main():

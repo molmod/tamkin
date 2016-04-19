@@ -303,6 +303,12 @@ class IOTestCase(unittest.TestCase):
                                       energy=1.476)
         assert molecule.energy == 1.476
 
+    def test_load_molecule_vasp_5_3_5_gamma_part_outcar_energy(self):
+        molecule = load_molecule_vasp('test/input/julianna/vasp_5_3_5_gamma/CONTCAR_opt',
+                                      'test/input/julianna/vasp_5_3_5_gamma/OUTCAR_freq_part',
+                                      'test/input/lucas/vasp_5_3_5_complex/OUTCAR_freq')
+        assert molecule.energy == -24.11901936*electronvolt
+
     def test_checkpoint(self):
         molecule = load_molecule_cp2k("test/input/cp2k/pentane/sp.out", "test/input/cp2k/pentane/freq.out")
         nma1 = NMA(molecule)

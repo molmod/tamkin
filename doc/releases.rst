@@ -4,6 +4,12 @@ Release history
 ###############
 
 
+* **May 2, 2016. Version 1.0.9**
+
+    - Improved VASP IO routine, option to pass OUTCAR file of single point calculation
+      used for a refined energy calculation.
+    - Use two digits in temperature filename of ``tamkin-driver.py``.
+
 * **February 5, 2016. Version 1.0.8**
 
     - The script tamkin-driver.py now reads the fixed atoms from the Gaussian fchk file

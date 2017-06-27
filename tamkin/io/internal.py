@@ -231,8 +231,8 @@ def load_indices(filename, shift=-1, groups=False):
     block  = []
     f = file(filename)
     for line in f:
-        words = line.split()
-        if len(words) == 0 and len(block) > 0:
+        words = line[:line.find('#')].split()
+        if len(line.strip()) == 0 and len(block) > 0:
             blocks.append(block)
             # start new block
             block = []

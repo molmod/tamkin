@@ -53,7 +53,8 @@ import sys, os
 # Add any Sphinx extension module names here, as strings. They can be extensions
 # coming with Sphinx (named 'sphinx.ext.*') or your custom ones.
 extensions = ['sphinx.ext.autodoc', 'sphinx.ext.coverage',
-              'sphinx.ext.inheritance_diagram', 'sphinx.ext.pngmath']
+              'sphinx.ext.inheritance_diagram', 'sphinx.ext.imgmath',
+              'sphinx.ext.napoleon']
 
 # Add any paths that contain templates here, relative to this directory.
 templates_path = ['_templates']
@@ -160,7 +161,6 @@ html_static_path = ['_static']
 # If true, SmartyPants will be used to convert quotes and dashes to
 # typographically correct entities.
 #html_use_smartypants = True
-
 # Custom sidebar templates, maps document names to template names.
 #html_sidebars = {}
 
@@ -226,7 +226,9 @@ latex_documents = [
 
 # -- Configuration of extensions -----------------------------------------------
 
-pngmath_latex_preamble = r"\usepackage{color}"
+imgmath_latex_preamble = r"\usepackage{color,amsmath}"
+imgmath_use_preview = True
+imgmath_dvipng_args = ['-gamma 1.6', '-D 120']
 
 autoclass_content = "both"
 

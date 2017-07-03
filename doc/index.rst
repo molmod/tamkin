@@ -49,6 +49,8 @@ Library Reference
    reference/nma.rst
    reference/pf.rst
    reference/aux.rst
+   references.rst
+   releases.rst
 
 
 Indices, tables and refereces
@@ -57,4 +59,3 @@ Indices, tables and refereces
 * :ref:`genindex`
 * :ref:`modindex`
 * :ref:`search`
-* :ref:`references`

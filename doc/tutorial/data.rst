@@ -42,7 +42,7 @@ such that the atomic masses will be included in the coordinate file.
 CP2K
 ~~~~
 
-See http://cp2k.berlios.de/
+See https://www.cp2k.org/
 
 a. The optimization::
 

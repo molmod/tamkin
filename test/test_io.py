@@ -339,11 +339,17 @@ class IOTestCase(unittest.TestCase):
         self.assertEqual(blocks, [[3,2,6]])
         blocks = load_indices("test/input/an/fixed.07.txt")
         self.assertEqual(blocks, [3,2,6])
+        blocks = load_indices("test/input/an/fixed.08.txt")
+        self.assertEqual(blocks, [5,4,8])
 
     def test_load_indices_ranges(self):
         blocks = load_indices("test/input/an/fixed_ranges.txt", groups=True)
         self.assertEqual(blocks, [[0, 2, 3, 4], [9, 10, 11, 12, 13, 19], [21]])
         blocks = load_indices("test/input/an/fixed_ranges.txt", shift=0)
+        self.assertEqual(blocks, [1, 3, 4, 5, 10, 11, 12, 13, 14, 20, 22])
+        blocks = load_indices("test/input/an/fixed_ranges_shift.txt", groups=True)
+        self.assertEqual(blocks, [[1, 3, 4, 5], [10, 11, 12, 13, 14, 20], [22]])
+        blocks = load_indices("test/input/an/fixed_ranges_shift.txt", shift=0)
         self.assertEqual(blocks, [1, 3, 4, 5, 10, 11, 12, 13, 14, 20, 22])
 
     def test_dump_modes_xyz(self):

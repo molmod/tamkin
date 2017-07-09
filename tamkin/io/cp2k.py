@@ -190,8 +190,7 @@ def _load_free_low(f):
     Returns
     -------
     free_indices: list of int
-                  A list of integer indexes of the free rows and columbs of the Hessian
-                  matrix.
+       A list of integer indexes of the free rows and columbs of the Hessian matrix.
     '''
     free_indices = []
     for line in f:
@@ -227,16 +226,15 @@ def load_fixed_cp2k(fn_freq):
            atom, the vector element is True. False otherwise.
     '''
     with open(fn_freq) as f:
-        natom = -1
+        natom = None
         for line in f:
             if line.startswith('                             - Atoms: '):
                 natom = int(line.split()[-1])
                 break
         free_indices = _load_free_low(f)
-    if natom == -1:
+    if natom is None:
         raise IOError('Could not read number of atoms from CP2K output.')
     if len(free_indices) == 0:
         raise IOError('Could not find the free atoms.')
-    result = np.ones(natom, dtype=bool)
-    result[np.array(free_indices[::3])/3] = False
-    return result
+    free_atoms = np.array(free_indices[::3])/3
+    return np.array([i for i in xrange(natom) if i not in free_atoms])

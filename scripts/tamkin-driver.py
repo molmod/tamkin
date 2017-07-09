@@ -83,6 +83,9 @@ At most one of the following sets of files must be present in the directory::
     freq/POSCAR            # input geometry and frequency output of a VASP calculation
     freq/OUTCAR
 
+    sp/cp2k.out            # CP2K output files for frequency and single-point calculations.
+    freq/cp2k.out          # The single-point must contain energy and forces.
+
 The following files may be present in the directory::
 
     molecule.cfg           # specifies additional parameters of the molecule.
@@ -344,6 +347,19 @@ def get_pf(dn, temps):
         if len(fixed) > 0:
             molecule = molecule.copy_with(fixed=fixed)
 
+    fn_cp2k_freq = '%s/freq/cp2k.out' % dn
+    if os.path.isfile(fn_cp2k_freq):
+        if molecule is not None:
+            raise IOError('Cannot mix outputs from different codes.')
+        fn_cp2k_sp = '%s/sp/cp2k.out' % dn
+        if not os.path.isfile(fn_cp2k_sp):
+            raise IOError('Missing file %s/sp/cp2k.out' % dn)
+        molecule = load_molecule_cp2k(fn_cp2k_sp, fn_cp2k_freq,
+                                      is_periodic=mol_cfg.get('periodic', True))
+        fixed = load_fixed_cp2k(fn_cp2k_freq)
+        if len(fixed) > 0:
+            molecule = molecule.copy_with(fixed=fixed)
+
     # A2) if present add a grimme correction
     fn_dftd3 = '%s/dftd3/dftd3.out' % dn
     if os.path.isfile(fn_dftd3):
@@ -433,6 +449,7 @@ def get_pf(dn, temps):
             print '    Performing NMA with fixed external degrees of freedom'
             nma = NMA(molecule, ConstrainExt(gradient_threshold=gradient_threshold))
     else:
+        print molecule.fixed
         print '    Performing NMA with %i fixed atoms (out of %i)' % (
             len(molecule.fixed), molecule.size)
         nma = NMA(molecule, PHVA(molecule.fixed))

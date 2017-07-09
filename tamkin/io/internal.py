@@ -201,7 +201,7 @@ def _convert_range(s, shift):
     return result
 
 
-def load_indices(filename, shift=-1, groups=False):
+def load_indices(filename, shift=None, groups=False):
     """Load atom indexes from file
 
        Individual atom indices are separated by white space or by one new-line
@@ -220,29 +220,42 @@ def load_indices(filename, shift=-1, groups=False):
        Optional arguments:
          | shift  --  A constant shift applied to all atom indexes to convert
                       between numbers starting from zero and numbers starting from
-                      one.
+                      one. When not given, the file is searched from a line beginning
+                      with ``#shift=``, where the value after this prefix is used as
+                      translation to bring the indices back to C convention. Only the
+                      first occurence is parsed. If such line is not present, Fortran
+                      convention is assumed (shift=-1).
          | groups  --  When True, the function always returns a list of lists,
                        even when only one group of indexes is found in the file.
                        Otherwise only a single list of indexes is returned, even
                        when multiple groups of indexes are encountered.
 
     """
-    blocks = []
-    block  = []
-    f = file(filename)
-    for line in f:
+    # Read all lines
+    with open(filename) as f:
+        lines = f.readlines()
+    # Determine the shift
+    if shift is None:
+        for line in lines:
+            if line.startswith('#shift='):
+                shift = int(line[7:])
+                break
+    if shift is None:
+        shift = -1
+    # Read the blocks
+    blocks = [[]]
+    for line in lines:
         words = line[:line.find('#')].split()
-        if len(line.strip()) == 0 and len(block) > 0:
-            blocks.append(block)
+        if len(line.strip()) == 0 and len(blocks[-1]) > 0:
             # start new block
-            block = []
+            blocks.append([])
         else:
             for word in words:
-                block.extend(_convert_range(word, shift))
-    if len(block) > 0:
-        # add last block to blocks list
-        blocks.append(block)
-    f.close()
+                blocks[-1].extend(_convert_range(word, shift))
+    # Remove last block if empty, may happen when file ends with empty lines.
+    if len(blocks[-1]) == 0:
+        del blocks[-1]
+    # Groups or not?
     if groups:
         return blocks
     else:
@@ -272,9 +285,9 @@ def dump_indices(filename, indices, shift=1, compact=True):
 
     separator = {True: " ", False: "\n"}[compact]
 
-    f = file(filename, "w")
-    for l in indices:
-        group_str = separator.join(str(index+shift) for index in l)
-        print >> f, group_str
-        print >> f
-    f.close()
+    with open(filename, "w") as f:
+        print >> f, "#shift={}".format(-shift)
+        for l in indices:
+            group_str = separator.join(str(index+shift) for index in l)
+            print >> f, group_str
+            print >> f

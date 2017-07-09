@@ -34,6 +34,8 @@
 #--
 
 
+import numpy as np
+
 from tamkin import *
 
 from molmod.periodic import periodic
@@ -139,8 +141,7 @@ class IOTestCase(unittest.TestCase):
 
     def test_load_fixed_cp2k(self):
         fixed = load_fixed_cp2k("test/input/cp2k/dan/freq.out")
-        assert (fixed[:-6] == True).all()
-        assert (fixed[-6:] == False).all()
+        np.testing.assert_equal(fixed, np.arange(52 - 6))
 
     def test_load_molecule_cpmd(self):
         molecule = load_molecule_cpmd("test/input/cpmd/damp.out", "test/input/cpmd/GEOMETRY.xyz", "test/input/cpmd/MOLVIB")

@@ -227,6 +227,11 @@ The following config files are read by the ``tamkin-driver.py`` script:
     atoms are present, the PHVA method is used and external degrees of freedom are no
     longer projected out. The format of files with atomic indices is discussed below.
 
+* **blocks.txt**
+
+    A file with groups of atoms that should be treated as rigid blocks in the normal-mode
+    analysis. The format of files with atomic indices is discussed below.
+
 
 Notes
 =====
@@ -247,6 +252,21 @@ Notes
 
     rotsym 3
     even true
+
+* Format of files with atomic indices:
+
+  - Comments start with #. All text after this character is ignored (except for shift, see
+    below).
+  - Empty lines are ignored.
+  - A non-empty line contains a series of integers or ranges defined by two integers. A
+    range is defined as either [N1,N2] or [N1,N2[. In the former case, the N2 is included
+    in the range while in the latter case it is not.
+  - If a line is present of the form "#shift=N" (without spaces), N is used to shift all
+    indices upon reading. When it is not encountered, N is assumed to be -1. When N=0,
+    the indices are C-style (counting starts from zero). When N=-1, the indices are
+    Fortran-style (counting starts from 1).
+  - When defining multiple rigid blocks, the atom indices must be grouped in paragraphs
+    separated by an empty line.
 '''
 
 
@@ -432,32 +452,48 @@ def get_pf(dn, temps):
                       v_threshold=v_threshold)
         rotors.append(rotor)
 
-    # C) Load fixed atoms, which may override fixed atom settings in the output files
-    #    of the quantum chemistry codes
+    # C) Load fixed atoms and rigid blocks. The fixed atoms loaded here may override fixed
+    #    atom settings in the output files of the quantum chemistry codes.
     fn_fixed = '%s/fixed.txt' % dn
     if os.path.isfile(fn_fixed):
         print '    Loading fixed atoms from %s/fixed.txt' % dn
         fixed = load_indices(fn_fixed)
         molecule = molecule.copy_with(fixed=fixed)
 
+    blocks = None
+    fn_blocks = '%s/blocks.txt' % dn
+    if os.path.isfile(fn_blocks):
+        print '    Loading rigid blocks from %s/blocks.txt' % dn
+        blocks = load_indices(fn_blocks, groups=True)
+
     # D) Perform a normal mode analysis
+    ext_dof = False
     if molecule.fixed is None:
-        if molecule.periodic:
-            print '    Performing NMA on a periodic system, without fixed atoms'
-            nma = NMA(molecule)
+        if blocks is None:
+            if molecule.periodic:
+                print '    Performing NMA on a periodic system, without fixed atoms'
+                nma = NMA(molecule)
+            else:
+                print '    Performing NMA with fixed external degrees of freedom'
+                nma = NMA(molecule, ConstrainExt(gradient_threshold=gradient_threshold))
+                ext_dof = True
         else:
-            print '    Performing NMA with fixed external degrees of freedom'
-            nma = NMA(molecule, ConstrainExt(gradient_threshold=gradient_threshold))
+            print '    Performing NMA without %i mobile blocks' % len(blocks)
+            nma = NMA(molecule, MBH(blocks))
     else:
-        print molecule.fixed
-        print '    Performing NMA with %i fixed atoms (out of %i)' % (
-            len(molecule.fixed), molecule.size)
-        nma = NMA(molecule, PHVA(molecule.fixed))
+        if blocks is None:
+            print '    Performing NMA with %i fixed atoms (out of %i)' % (
+                len(molecule.fixed), molecule.size)
+            nma = NMA(molecule, PHVA(molecule.fixed))
+        else:
+            print '    Performing NMA with %i fixed atoms (out of %i) and %i mobile blocks' % (
+                len(molecule.fixed), molecule.size, len(blocks))
+            nma = NMA(molecule, PHVA_MBH(molecule.fixed, blocks))
 
     # E) Define the partition function
     pf_contributions = [Vibrations(freq_scaling=mol_cfg.get('freq_scaling', 1.0),
                                    zp_scaling=mol_cfg.get('zp_scaling', 1.0))]
-    if molecule.fixed is None and not molecule.periodic:
+    if ext_dof:
         pf_contributions.append(ExtTrans())
         pf_contributions.append(ExtRot(mol_cfg.get('symnum', None)))
     pf_contributions.extend(rotors)

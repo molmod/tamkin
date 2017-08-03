@@ -1,5 +1,5 @@
 include README
-include COPYING
+include LICENSE.txt
 include doc/Makefile
 include doc/*.*
 include doc/reference/*.*

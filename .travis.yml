@@ -9,7 +9,7 @@ branches:
 install:
  - pip install --upgrade pip
  - pip install subprocess32 functools32
- - "pip install --only-binary :all: scipy matplotlib"
+ - "pip install --only-binary :all: scipy matplotlib cython --upgrade"
  - pip install molmod
  - mkdir -p ~/.config/matplotlib/
  - echo backend:agg > ~/.config/matplotlib/matplotlibrc

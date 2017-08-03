@@ -13,5 +13,6 @@ install:
  - pip install molmod
  - mkdir -p ~/.config/matplotlib/
  - echo backend:agg > ~/.config/matplotlib/matplotlibrc
+ - ./setup.py sdist
 script:
  - nosetests -v test --processes=2 --process-timeout=100

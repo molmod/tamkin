@@ -654,13 +654,13 @@ def helper_levels(temp, n, energy_levels, check=False):
         degeneracy = 1
         while (degeneracy<len(energy_levels) and energy_levels[0]==energy_levels[degeneracy]):
             degeneracy += 1
-        return temp**n*np.log(degeneracy) - temp**(n-1)*energy
+        return float(temp)**n*np.log(degeneracy) - float(temp)**(n-1)*energy
     else:
         bfs = np.exp(-energy_levels/(boltzmann*temp))
         Z = bfs.sum()
         if check:
             _check_levels(temp, bfs, Z)
-        return temp**n*np.log(Z)
+        return float(temp)**n*np.log(Z)
 
 def helpert_levels(temp, n, energy_levels, check=False):
     """Helper 1 function for a system with the given energy levels.
@@ -685,7 +685,7 @@ def helpert_levels(temp, n, energy_levels, check=False):
         Z = bfs.sum()
         if check:
             _check_levels(temp, bfs, Z)
-        return temp**(n-2)*(bfs*energy_levels).sum()/Z/boltzmann
+        return float(temp)**(n-2)*(bfs*energy_levels).sum()/Z/boltzmann
 
 def helpertt_levels(temp, n, energy_levels, check=False):
     """Helper 2 function for a system with the given energy levels.
@@ -710,9 +710,9 @@ def helpertt_levels(temp, n, energy_levels, check=False):
         Z = bfs.sum()
         if check:
             _check_levels(temp, bfs, Z)
-        return temp**(n-4)/boltzmann**2*((bfs*energy_levels**2).sum()/Z) \
-               -2*temp**(n-3)/boltzmann*((bfs*energy_levels).sum()/Z) \
-               -temp**(n-4)/boltzmann**2*((bfs*energy_levels).sum()/Z)**2
+        return float(temp)**(n-4)/boltzmann**2*((bfs*energy_levels**2).sum()/Z) \
+               -2*float(temp)**(n-3)/boltzmann*((bfs*energy_levels).sum()/Z) \
+               -float(temp)**(n-4)/boltzmann**2*((bfs*energy_levels).sum()/Z)**2
 
 
 class Electronic(Info, StatFys):
@@ -747,14 +747,14 @@ class Electronic(Info, StatFys):
 
     def helper(self, temp, n):
         """See :meth:`StatFys.helper`."""
-        result = temp**n*np.log(self.multiplicity)
+        result = float(temp)**n*np.log(self.multiplicity)
         if temp == 0.0:
             if n < 1:
                 raise NotImplementedError
             else:
                 result -= self.energy/boltzmann
         else:
-            result -= temp**(n-1)*self.energy/boltzmann
+            result -= float(temp)**(n-1)*self.energy/boltzmann
         return result
 
     def helpert(self, temp, n):
@@ -765,7 +765,7 @@ class Electronic(Info, StatFys):
             else:
                 return self.energy/boltzmann
         else:
-            return temp**(n-2)*self.energy/boltzmann
+            return float(temp)**(n-2)*self.energy/boltzmann
 
     def helpertt(self, temp, n):
         """See :meth:`StatFys.helpertt`."""
@@ -775,7 +775,7 @@ class Electronic(Info, StatFys):
             else:
                 return -2.0*self.energy/boltzmann
         else:
-            return -2.0*temp**(n-3)*self.energy/boltzmann
+            return -2.0*float(temp)**(n-3)*self.energy/boltzmann
 
 
 class ExtTrans(Info, StatFys):
@@ -933,7 +933,7 @@ class ExtTrans(Info, StatFys):
                 result += np.log(boltzmann*temp/self._pressure)
             else:
                 result += 1.0 - np.log(self.density)
-            return result*temp**n
+            return result*float(temp)**n
 
     def helpert(self, temp, n):
         """See :meth:`StatFys.helpert`."""
@@ -943,7 +943,7 @@ class ExtTrans(Info, StatFys):
             result = 0.5*self.dim
             if self.cp:
                 result += 1
-            return result*temp**(n-1)
+            return result*float(temp)**(n-1)
 
     def helpertt(self, temp, n):
         """See :meth:`StatFys.helpertt`."""
@@ -953,7 +953,7 @@ class ExtTrans(Info, StatFys):
             result = -0.5*self.dim
             if self.cp:
                 result -= 1
-            return result*temp**(n-2)
+            return result*float(temp)**(n-2)
 
     def helpern(self, temp, n):
         """See :meth:`StatFys.helpern`."""
@@ -968,7 +968,7 @@ class ExtTrans(Info, StatFys):
                 result += np.log(boltzmann*temp/self._pressure)
             else:
                 result += -np.log(self._density)
-            return result*temp**n
+            return result*float(temp)**n
 
     def helperv(self, temp, n):
         r"""See :meth:`StatFys.helperv`."""
@@ -978,7 +978,7 @@ class ExtTrans(Info, StatFys):
             else:
                 raise NotImplementedError
         else:
-            return self._z1(temp)*temp**n
+            return self._z1(temp)*float(temp)**n
 
 
 class ExtRot(Info, StatFys):
@@ -1038,15 +1038,15 @@ class ExtRot(Info, StatFys):
             else:
                 raise NotImplementedError
         else:
-            return temp**n*(np.log(temp)*0.5*self.count + np.log(self.factor))
+            return float(temp)**n*(np.log(temp)*0.5*self.count + np.log(self.factor))
 
     def helpert(self, temp, n):
         """See :meth:`StatFys.helpert`."""
-        return temp**(n-1)*0.5*self.count
+        return float(temp)**(n-1)*0.5*self.count
 
     def helpertt(self, temp, n):
         """See :meth:`StatFys.helpertt`."""
-        return -temp**(n-2)*0.5*self.count
+        return -float(temp)**(n-2)*0.5*self.count
 
 
 class PCMCorrection(Info, StatFys):
@@ -1105,17 +1105,17 @@ class PCMCorrection(Info, StatFys):
     def helper(self, temp, n):
         """See :meth:`StatFys.helper`."""
         F, Fp, Fpp = self._eval_free(temp)
-        return -F*temp**(n-1)/boltzmann
+        return -F*float(temp)**(n-1)/boltzmann
 
     def helpert(self, temp, n):
         """See :meth:`StatFys.helpert`."""
         F, Fp, Fpp = self._eval_free(temp)
-        return (F*temp**(n-2) - Fp*temp**(n-1))/boltzmann
+        return (F*float(temp)**(n-2) - Fp*float(temp)**(n-1))/boltzmann
 
     def helpertt(self, temp, n):
         """See :meth:`StatFys.helpertt`."""
         F, Fp, Fpp = self._eval_free(temp)
-        return (-Fpp*temp**(n-1) + 2*(Fp*temp**(n-2) - F*temp**(n-3)))/boltzmann
+        return (-Fpp*float(temp)**(n-1) + 2*(Fp*float(temp)**(n-2) - F*float(temp)**(n-3)))/boltzmann
 
 
 def helper_vibrations(temp, n, freqs, classical=False, freq_scaling=1, zp_scaling=1):
@@ -1145,20 +1145,20 @@ def helper_vibrations(temp, n, freqs, classical=False, freq_scaling=1, zp_scalin
                 raise NotImplementedError
         else:
             Af = planck*freqs*freq_scaling/(boltzmann*temp)
-            return -temp**n*np.log(Af)
+            return -float(temp)**n*np.log(Af)
     else:
         # The zero point correction is included in the vibrational partition
         # function.
         if temp == 0:
             Abis = freqs*(0.5*planck*zp_scaling/boltzmann)
             if n >= 1:
-                return -Abis*temp**(n-1)
+                return -Abis*float(temp)**(n-1)
             else:
                 raise NotImplementedError
         else:
             A = freqs*(planck/(boltzmann*temp))
             B = np.exp(-freq_scaling*A)
-            return -((0.5*zp_scaling)*A + np.log(1 - B))*temp**n
+            return -((0.5*zp_scaling)*A + np.log(1 - B))*float(temp)**n
 
 def helpert_vibrations(temp, n, freqs, classical=False, freq_scaling=1, zp_scaling=1):
     """Helper 1 function for a set of harmonic oscillators.
@@ -1183,7 +1183,7 @@ def helpert_vibrations(temp, n, freqs, classical=False, freq_scaling=1, zp_scali
         if temp == 0:
             raise NotImplementedError
         else:
-            result = temp**(n-1)
+            result = float(temp)**(n-1)
             if hasattr(freqs, "__len__"):
                 result *= np.ones(len(freqs))
             return result
@@ -1194,7 +1194,7 @@ def helpert_vibrations(temp, n, freqs, classical=False, freq_scaling=1, zp_scali
             A = freqs*(planck/(boltzmann*temp))
             B = np.exp(-freq_scaling*A)
             C = B/(1 - B)
-            return A*temp**(n-1)*(0.5*zp_scaling + freq_scaling*C)
+            return A*float(temp)**(n-1)*(0.5*zp_scaling + freq_scaling*C)
 
 def helpertt_vibrations(temp, n, freqs, classical=False, freq_scaling=1, zp_scaling=1):
     """Helper 2 function for a set of harmonic oscillators.
@@ -1219,7 +1219,7 @@ def helpertt_vibrations(temp, n, freqs, classical=False, freq_scaling=1, zp_scal
         if temp == 0:
             raise NotImplementedError
         else:
-            result = -temp**(n-2)
+            result = -float(temp)**(n-2)
             if hasattr(freqs, "__len__"):
                 result *= np.ones(len(freqs))
             return result
@@ -1231,7 +1231,7 @@ def helpertt_vibrations(temp, n, freqs, classical=False, freq_scaling=1, zp_scal
             Af = freq_scaling*A
             B = np.exp(-Af)
             C = B/(1.0 - B)
-            return -A*temp**(n-2)*(zp_scaling + freq_scaling*C*(2 - Af/(1-B)))
+            return -A*float(temp)**(n-2)*(zp_scaling + freq_scaling*C*(2 - Af/(1-B)))
 
 
 class Vibrations(Info, StatFysTerms):

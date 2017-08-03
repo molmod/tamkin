@@ -35,7 +35,7 @@
 #--
 
 
-from distutils.core import setup
+from setuptools import setup
 
 setup(name='TAMkin',
     version='1.1.0',

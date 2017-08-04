@@ -24,12 +24,14 @@ TAMkin can be installed with pip (system wide or in a virtual environment):
 
 .. code:: bash
 
+    pip install numpy Cython
     pip install tamkin
 
 Alternatively, you can install TAMkin in your home directory:
 
 .. code:: bash
 
+    pip install numpy Cython --user
     pip install tamkin --user
 
 Lastly, you can also install TAMkin with conda. (See

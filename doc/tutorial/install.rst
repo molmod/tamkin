@@ -50,6 +50,7 @@ Execute the following command to install TAMkin in your home directory.
 
 .. code:: bash
 
+    pip install numpy Cython
     pip install tamkin
 
 

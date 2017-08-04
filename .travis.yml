@@ -6,7 +6,7 @@ env:
   - MYCONDAPY=2.7
   global:
     # ANACONDA_TOKEN encrypted
-    secure: "f0JmEc3ggz8y02ZfhWJnaD9YkfQl854xXkEAqobtEJHN9Ism5UqwDBeUCBYLKJ1bdy/sUrWjRb70dRdKb8t/sS943L6Kzr1gA+ZMdGQu/Mmzvstnkvo5Dg98ECUMXoTSyy3v9Xse/cmjFnpkchJus1TPXllWsIVnEfJAP4+56sA="
+    secure: "bhn15ajzQcCI3r/XtHmlmNFVTnALgRmE3DkrdIvQKwwJtYCxUlUfKla518HyQeph34YMQS/IolJaW4EbVLsxFA28hBEZXp1AW98/CFWvFCs0SvrIe/C2h3voY4AW2asbA7809MxB9UKMsS3D0zf770SSqfOBA4hiJcyHBdH4CX8="
 install:
 # Get miniconda. Take the right version, so re-installing python is only needed for 3.5.
 - if [[ "$MYCONDAPY" == "2.7" ]]; then

@@ -39,7 +39,7 @@ u'''\
 The TAMkin driver script
 ########################
 
-The TAMkin driver script (``tamkin-driver.py``) runs a standardized TAMkin
+The TAMkin driver script (``tamkin-driver``) runs a standardized TAMkin
 computation based on the files and directories present in the current directory.
 This script needs no command line arguments. (When command line arguments are
 present, this documentation is printed on screen.)
@@ -129,7 +129,7 @@ For example, the following is a valid ``molecule.cfg`` file::
     # This line is ignored.
     unkown_option is ignored as well
 
-The following config files are read by the ``tamkin-driver.py`` script:
+The following config files are read by the ``tamkin-driver`` script:
 
 * **kinetics.cfg**: ``temp_low``, ``temp_high``, ``temp_step``, ``tunneling``
 
@@ -604,6 +604,6 @@ if __name__ == '__main__':
         try:
             main()
         except:
-            print 'An Error Occured! For detailed documentation, run ``tamkin-driver.py -h``.'
+            print 'An Error Occured! For detailed documentation, run ``tamkin-driver -h``.'
             print
             raise

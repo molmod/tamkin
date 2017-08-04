@@ -11,4 +11,5 @@ doc/_build
 build
 tamkin/version.py
 dist
-TAMkin.egg-info
+tamkin.egg-info
+scripts/tamkin-driverc

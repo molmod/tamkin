@@ -68,7 +68,7 @@ class IOTestCase(unittest.TestCase):
             energy=-123.0)
         self.assertAlmostEqual(molecule.energy, -123.0, 7)
         molecule = load_molecule_g03fchk(
-            pkg_resources.resource_filename(__name__, "../data/test/mat/Zp_p_react.28aug.fchk"), 
+            pkg_resources.resource_filename(__name__, "../data/test/mat/Zp_p_react.28aug.fchk"),
             pkg_resources.resource_filename(__name__, "../data/test/mat/Zp_p_react.14mei.fchk"))
         self.assertAlmostEqual(molecule.energy, -18613.135744186180, 7)
 

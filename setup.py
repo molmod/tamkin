@@ -73,8 +73,8 @@ else:
     # Store the git version tag in version.py
     with open(fn_version, 'w') as fh:
         fh.write(version_template.format(__version__))
-        
-        
+
+
 setup(name='TAMkin',
     version=__version__,
     description='TAMkin is a post-processing toolkit for thermochemistry and kinetics analysis.',

@@ -172,7 +172,7 @@ class NMAToolsTestCase(unittest.TestCase):
                 os.path.join(dn, "spectrum-dos.1.png"),
                 [nma.freqs], title="standard settings")
             plot_spectrum_dos(
-                os.path.join(dn, "spectrum-dos.2.png"), 
+                os.path.join(dn, "spectrum-dos.2.png"),
                 [nma.freqs], low=-10.0*invcm, high=1500.0*invcm, title="zoom")
             plot_spectrum_dos(
                 os.path.join(dn, "spectrum-dos.3.png"),

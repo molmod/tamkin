@@ -84,6 +84,7 @@ setup(name='TAMkin',
     package_dir = {'tamkin': 'tamkin'},
     packages = ['tamkin', 'tamkin.io'],
     scripts=["scripts/tamkin-driver.py"],
+    include_package_data=True,
     install_requires=['numpy>=1.0', 'nose>=0.11', 'matplotlib>1.1',
                       'molmod>=1.3.2', 'scipy>=0.17.1'],
     classifiers=[

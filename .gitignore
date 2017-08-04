@@ -9,4 +9,6 @@ apps
 doctrees
 doc/_build
 build
-test/output
+tamkin/version.py
+dist
+TAMkin.egg-info

@@ -39,7 +39,7 @@
 from tamkin import *
 
 # Load the gaussian data.
-molecule = load_molecule_g03fchk("../001_ethane/gaussian.fchk")
+molecule = load_molecule_g03fchk("freq/gaussian.fchk")
 # Perform the normal mode analysis
 nma = NMA(molecule)
 # Treat the hindered rotor

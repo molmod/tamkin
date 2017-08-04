@@ -34,17 +34,23 @@
 #--
 
 
-from tamkin import *
+import os
+
+import numpy as np
+import pkg_resources
 
 from molmod.periodic import periodic
 from molmod import angstrom, amu, calorie, avogadro, electronvolt, lightspeed, \
     UnitCell
+from molmod.test.common import tmpdir
 
-import numpy as np
+from tamkin import *
 
 
 def test_get_submolecule():
-    molecule = load_molecule_charmm("test/input/an/ethanol.cor","test/input/an/ethanol.hess.full")
+    molecule = load_molecule_charmm(
+        pkg_resources.resource_filename(__name__, "../data/test/an/ethanol.cor"),
+        pkg_resources.resource_filename(__name__, "../data/test/an/ethanol.hess.full"))
     select = [3,4,2]
     molecule2 = molecule.get_submolecule(select)
     for i,at in enumerate(select):
@@ -64,7 +70,9 @@ def test_get_submolecule():
 
 
 def test_get_submolecule_cp2k():
-    molecule = load_molecule_cp2k("test/input/cp2k/pentane/sp.out", "test/input/cp2k/pentane/freq.out")
+    molecule = load_molecule_cp2k(
+        pkg_resources.resource_filename(__name__, "../data/test/cp2k/pentane/sp.out"),
+        pkg_resources.resource_filename(__name__, "../data/test/cp2k/pentane/freq.out"))
     select = range(5)+[9,11,14]
     molecule2 = molecule.get_submolecule(select, title="this is submol", energy=5., periodic=False, symmetry_number=6)  # just trying out something
     for i,at in enumerate(select):
@@ -83,7 +91,9 @@ def test_get_submolecule_cp2k():
 
 
 def test_translate_pbc():
-    molecule = load_molecule_cp2k("test/input/cp2k/pentane/sp.out", "test/input/cp2k/pentane/freq.out")
+    molecule = load_molecule_cp2k(
+        pkg_resources.resource_filename(__name__, "../data/test/cp2k/pentane/sp.out"),
+        pkg_resources.resource_filename(__name__, "../data/test/cp2k/pentane/freq.out"))
     assert abs(molecule.unit_cell.matrix[1,1]/angstrom - 30.000) < 1e-3
     assert abs(molecule.unit_cell.matrix[0,1]/angstrom - 0.000) < 1e-3
     assert abs(molecule.coordinates[5,1]/angstrom - 13.928520) < 1e-5
@@ -114,9 +124,12 @@ def test_translate_pbc():
 
 
 def test_molecule_checkpoint_basic():
-    mol1 = load_molecule_g03fchk("test/input/sterck/aa.fchk")
-    mol1.write_to_file("test/output/molecule_checkpoint_basic.chk")
-    mol2 = Molecule.read_from_file("test/output/molecule_checkpoint_basic.chk")
+    mol1 = load_molecule_g03fchk(
+        pkg_resources.resource_filename(__name__, "../data/test/sterck/aa.fchk"))
+    with tmpdir(__name__, 'test_molecule_checkpoint_basic') as dn:
+        fn_out = os.path.join(dn, "molecule_checkpoint_basic.chk")
+        mol1.write_to_file(fn_out)
+        mol2 = Molecule.read_from_file(fn_out)
 
     assert mol1.numbers.shape == mol2.numbers.shape
     assert abs(mol1.numbers - mol2.numbers).max() == 0
@@ -135,12 +148,15 @@ def test_molecule_checkpoint_basic():
 
 
 def test_molecule_checkpoint_full():
-    mol1 = load_molecule_g03fchk("test/input/sterck/aa.fchk")
+    mol1 = load_molecule_g03fchk(
+        pkg_resources.resource_filename(__name__, "../data/test/sterck/aa.fchk"))
     mol1.set_default_graph()
     mol1.unit_cell = UnitCell(np.identity(3, float)*25)
     mol1.symbols = [periodic[n].symbol for n in mol1.numbers]
-    mol1.write_to_file("test/output/molecule_checkpoint_full.chk")
-    mol2 = Molecule.read_from_file("test/output/molecule_checkpoint_full.chk")
+    with tmpdir(__name__, 'test_molecule_checkpoint_full') as dn:
+        fn_out = os.path.join(dn, "molecule_checkpoint_full.chk")
+        mol1.write_to_file(fn_out)
+        mol2 = Molecule.read_from_file(fn_out)
 
     assert mol1.numbers.shape == mol2.numbers.shape
     assert abs(mol1.numbers - mol2.numbers).max() == 0
@@ -167,13 +183,15 @@ def test_molecule_checkpoint_full():
 
 
 def test_copy_with():
-    mol1 = load_molecule_g03fchk("test/input/sterck/aa.fchk")
+    mol1 = load_molecule_g03fchk(
+        pkg_resources.resource_filename(__name__, "../data/test/sterck/aa.fchk"))
     mol2 = mol1.copy_with(title="foo")
     assert mol2.title == "foo"
 
 
 def test_get_external_basis_new1():
-    mol = load_molecule_g03fchk("test/input/linear/gaussian.fchk")
+    mol = load_molecule_g03fchk(
+        pkg_resources.resource_filename(__name__, "../data/test/linear/gaussian.fchk"))
     eb = mol.get_external_basis_new()
     assert eb.shape[0] == 5
     # orthogonality test: the external basis should be orthogonal
@@ -190,7 +208,8 @@ def test_get_external_basis_new1():
 
 
 def test_get_external_basis_new2():
-    mol = load_molecule_g03fchk("test/input/ethane/gaussian.fchk")
+    mol = load_molecule_g03fchk(
+        pkg_resources.resource_filename(__name__, "../data/test/ethane/gaussian.fchk"))
     eb = mol.get_external_basis_new()
     assert eb.shape[0] == 6
     # orthogonality test: the external basis should be orthogonal
@@ -214,7 +233,8 @@ def test_get_external_basis_new2():
 def test_rot_scan_ts():
     # The select dihedral angles do not allow an automatic assignment of the top
     # indexes.
-    mol = load_molecule_g03fchk("test/input/sterck/paats_1h2o_b_aa.fchk")
+    mol = load_molecule_g03fchk(
+        pkg_resources.resource_filename(__name__, "../data/test/sterck/paats_1h2o_b_aa.fchk"))
     diheds = [[9, 6, 7, 10], [7, 10, 18, 11], [11, 18, 10, 7]]
     for dihed in diheds:
         try:

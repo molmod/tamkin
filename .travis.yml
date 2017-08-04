@@ -14,5 +14,6 @@ install:
  - mkdir -p ~/.config/matplotlib/
  - echo backend:agg > ~/.config/matplotlib/matplotlibrc
  - ./setup.py sdist
+ - ./setup.py install --single-version-externally-managed --record=record.txt
 script:
- - nosetests -v test --processes=2 --process-timeout=100
+ - cd; nosetests -v tamkin --processes=2 --process-timeout=100

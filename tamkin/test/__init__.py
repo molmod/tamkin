@@ -32,24 +32,3 @@
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
 #--
-
-
-from tamkin import *
-
-import unittest
-
-
-__all__ = ["TimerTestCase"]
-
-
-class TimerTestCase(unittest.TestCase):
-    def test_timer(self):
-        timer = Timer()
-        timer.sample("start")
-        for i in range(100000):
-            j = i**2
-        timer.sample("done")
-        self.assertEqual(timer.labels[0], "start")
-        self.assertEqual(timer.labels[1], "done")
-        #timer.dump()  # to write logfile to screen
-        timer.write_to_file("test/output/logfile-timings.txt")  # just testing whether writing to file works

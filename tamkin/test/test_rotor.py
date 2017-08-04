@@ -34,13 +34,17 @@
 #--
 
 
-from tamkin import *
+import os
+import pkg_resources
+import numpy as np
+import unittest
 
 from molmod import centimeter, amu, kjmol, joule, mol, kelvin, lightspeed, boltzmann
 from molmod.periodic import periodic
 from molmod.io import XYZFile
+from molmod.test.common import tmpdir
 
-import unittest, os, numpy
+from tamkin import *
 
 
 __all__ = ["RotorTestCase"]
@@ -48,7 +52,7 @@ __all__ = ["RotorTestCase"]
 
 class RotorTestCase(unittest.TestCase):
     def assertArraysAlmostEqual(self, a, b, eps=1e-5, relative=False):
-        self.assert_(isinstance(b, numpy.ndarray))
+        self.assert_(isinstance(b, np.ndarray))
         self.assertEqual(a.shape, b.shape)
         if relative:
             self.assert_(abs(2*(a-b)/(a+b)).max() <= eps)
@@ -58,29 +62,29 @@ class RotorTestCase(unittest.TestCase):
     def test_potential_op(self):
         a = 10.0
         hb = HarmonicBasis(3, a)
-        coeffs = numpy.arange(6, dtype=float)*2
+        coeffs = np.arange(6, dtype=float)*2
         op = hb.get_empty_op()
         hb._add_potential_op(op, coeffs)
-        self.assertAlmostEqual(op[0,0], coeffs[2]/numpy.sqrt(2*a))
-        self.assertAlmostEqual(op[0,1], coeffs[3]/numpy.sqrt(2*a))
-        self.assertAlmostEqual(op[1,0], coeffs[3]/numpy.sqrt(2*a))
-        self.assertAlmostEqual(op[1,1], -coeffs[2]/numpy.sqrt(2*a))
+        self.assertAlmostEqual(op[0,0], coeffs[2]/np.sqrt(2*a))
+        self.assertAlmostEqual(op[0,1], coeffs[3]/np.sqrt(2*a))
+        self.assertAlmostEqual(op[1,0], coeffs[3]/np.sqrt(2*a))
+        self.assertAlmostEqual(op[1,1], -coeffs[2]/np.sqrt(2*a))
 
     def test_eval_fn(self):
         a = 10.0
         hb = HarmonicBasis(3, a)
-        grid = numpy.arange(0.0, 10.01, 0.1)
+        grid = np.arange(0.0, 10.01, 0.1)
         fn = hb.eval_fn(grid, [0,0,0,0,0,3,0])
-        expected = 3*numpy.cos(grid*6.0*numpy.pi/a)/numpy.sqrt(a/2)
+        expected = 3*np.cos(grid*6.0*np.pi/a)/np.sqrt(a/2)
         self.assertArraysAlmostEqual(fn, expected)
         fn = hb.eval_fn(grid, [0,0,0,0,2,0,0])
-        expected = 2*numpy.sin(grid*4.0*numpy.pi/a)/numpy.sqrt(a/2)
+        expected = 2*np.sin(grid*4.0*np.pi/a)/np.sqrt(a/2)
         self.assertArraysAlmostEqual(fn, expected)
 
     def test_eval_deriv(self):
         a = 10.0
         hb = HarmonicBasis(3, a)
-        grid = numpy.arange(0.0, 10.01, 1.0)
+        grid = np.arange(0.0, 10.01, 1.0)
         coeffs = [-0.5,1.2,2.3,-0.7,0.1,0.3,-1.0]
         eps = 1e-6
         aderiv = hb.eval_deriv(grid, coeffs)
@@ -90,7 +94,7 @@ class RotorTestCase(unittest.TestCase):
     def test_eval_deriv2(self):
         a = 10.0
         hb = HarmonicBasis(3, a)
-        grid = numpy.arange(0.0, 10.01, 1.0)
+        grid = np.arange(0.0, 10.01, 1.0)
         coeffs = [-0.5,1.2,2.3,-0.7,0.1,0.3,-1.0]
         eps = 1e-6
         aderiv2 = hb.eval_deriv2(grid, coeffs)
@@ -100,8 +104,8 @@ class RotorTestCase(unittest.TestCase):
     def test_fit_fn(self):
         a = 10.0
         hb = HarmonicBasis(10, a)
-        grid = numpy.arange(0.0, 10.01, 1.0)
-        f = numpy.exp(-((grid-5)/2)**2)
+        grid = np.arange(0.0, 10.01, 1.0)
+        f = np.exp(-((grid-5)/2)**2)
         coeffs = hb.fit_fn(grid, f, 10)
         g = hb.eval_fn(grid, coeffs)
         self.assertArraysAlmostEqual(f, g)
@@ -109,13 +113,13 @@ class RotorTestCase(unittest.TestCase):
     def test_fit_fn_sym(self):
         a = 9.0
         hb = HarmonicBasis(90, a)
-        grid = numpy.arange(0.0, 1.501, 0.1)
-        f = numpy.exp(-(grid/2)**2)
+        grid = np.arange(0.0, 1.501, 0.1)
+        f = np.exp(-(grid/2)**2)
         f -= f.mean()
         coeffs = hb.fit_fn(grid, f, 30, rotsym=3, even=True)
         g = hb.eval_fn(grid, coeffs)
         self.assertArraysAlmostEqual(f, g)
-        grid = numpy.arange(0.0, 9.001, 0.1)
+        grid = np.arange(0.0, 9.001, 0.1)
         g = hb.eval_fn(grid, coeffs)
         self.assertArraysAlmostEqual(f, g[0:16])
         self.assertArraysAlmostEqual(f, g[30:46])
@@ -128,16 +132,17 @@ class RotorTestCase(unittest.TestCase):
         pt.clf()
         pt.plot(grid, g, "k-", lw=2)
         pt.plot(grid[:16], f, "rx", mew=2)
-        pt.savefig("test/output/test_fit_fn_sym.png")
+        with tmpdir(__name__, 'test_fit_fn_sym') as dn:
+            pt.savefig(os.path.join(dn, "test_fit_fn_sym.png"))
 
     def test_potential_op(self):
         a = 10.0
         mass = 1.0
         nmax = 10
-        v_exp = numpy.zeros(nmax+1, complex)
-        v_exp[0] = numpy.random.normal(0,1)
-        v_exp[1:] += numpy.random.normal(0,1,nmax)
-        v_exp[1:] += 1j*numpy.random.normal(0,1,nmax)
+        v_exp = np.zeros(nmax+1, complex)
+        v_exp[0] = np.random.normal(0,1)
+        v_exp[1:] += np.random.normal(0,1,nmax)
+        v_exp[1:] += 1j*np.random.normal(0,1,nmax)
         #v_exp[3] = 1.0
         def get_v(index):
             if index>nmax or -index>nmax:
@@ -145,33 +150,33 @@ class RotorTestCase(unittest.TestCase):
             elif index>=0:
                 return v_exp[index]
             else:
-                return numpy.conjugate(v_exp[-index])
-        v_op_exp = numpy.zeros((2*nmax+1,2*nmax+1), complex)
+                return np.conjugate(v_exp[-index])
+        v_op_exp = np.zeros((2*nmax+1,2*nmax+1), complex)
         for i0 in xrange(2*nmax+1):
             k0 = ((i0-1)/2+1)*(2*(i0%2)-1)
             for i1 in xrange(2*nmax+1):
                 k1 = ((i1-1)/2+1)*(2*(i1%2)-1)
                 #print (i0,i1), (k0,k1), k0-k1
-                v_op_exp[i0,i1] = get_v(k0-k1)/numpy.sqrt(a)
+                v_op_exp[i0,i1] = get_v(k0-k1)/np.sqrt(a)
         #for row in v_op_exp:
         #    print "".join({True: " ", False: "X"}[v==0] for v in row)
         hb = HarmonicBasis(nmax, a)
-        v_cs = numpy.zeros(2*nmax+1, float)
+        v_cs = np.zeros(2*nmax+1, float)
         v_cs[0] = v_exp.real[0]
-        v_cs[1::2] = numpy.sqrt(2.0)*v_exp.real[1:]
-        v_cs[2::2] = -numpy.sqrt(2.0)*v_exp.imag[1:]
+        v_cs[1::2] = np.sqrt(2.0)*v_exp.real[1:]
+        v_cs[2::2] = -np.sqrt(2.0)*v_exp.imag[1:]
         v_op_cs = hb.get_empty_op()
         hb._add_potential_op(v_op_cs, v_cs)
 
-        lc = numpy.array([
+        lc = np.array([
             [1.0, -1.0j],
             [1.0, 1.0j],
-        ])/numpy.sqrt(2)
+        ])/np.sqrt(2)
 
         lc_dagger = lc.transpose().conjugate()
         for i0 in xrange(nmax):
             for i1 in xrange(nmax):
-                check = numpy.dot(lc_dagger, numpy.dot(v_op_exp[2*i0+1:2*i0+3,2*i1+1:2*i1+3], lc))
+                check = np.dot(lc_dagger, np.dot(v_op_exp[2*i0+1:2*i0+3,2*i1+1:2*i1+3], lc))
                 self.assert_(abs(check.imag).max() < 1e-3)
                 check = check.real
                 self.assertArraysAlmostEqual(
@@ -184,24 +189,27 @@ class RotorTestCase(unittest.TestCase):
         a = 10.0
         mass = 1.0
         hb = HarmonicBasis(10, a)
-        energies, orbitals = hb.solve(mass, numpy.zeros(hb.size), evecs=True)
+        energies, orbitals = hb.solve(mass, np.zeros(hb.size), evecs=True)
 
         import matplotlib.pyplot as pt
-        x = numpy.arange(0.0, a, 0.001)
+        x = np.arange(0.0, a, 0.001)
         pt.clf()
         for i in xrange(10):
             f = hb.eval_fn(x, orbitals[:,i])
             pt.plot(x, f+i)
-        pt.savefig("test/output/flat_wavefunctions.png")
+        with tmpdir(__name__, 'test_flat') as dn:
+            pt.savefig(os.path.join(dn, "flat_wavefunctions.png"))
 
-        indexes = numpy.array([0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10])
-        expected = 0.5/mass*(2*indexes*numpy.pi/a)**2
+        indexes = np.array([0,1,1,2,2,3,3,4,4,5,5,6,6,7,7,8,8,9,9,10,10])
+        expected = 0.5/mass*(2*indexes*np.pi/a)**2
         self.assertArraysAlmostEqual(energies, expected, 1e-4)
 
     def test_flat2(self):
-        molecule = load_molecule_g03fchk("test/input/ethane/gaussian.fchk")
+        molecule = load_molecule_g03fchk(
+            pkg_resources.resource_filename(__name__, "../data/test/ethane/gaussian.fchk"))
         nma = NMA(molecule)
-        rotscan1 = load_rotscan_g03log("test/input/rotor/gaussian.log")
+        rotscan1 = load_rotscan_g03log(
+            pkg_resources.resource_filename(__name__, "../data/test/rotor/gaussian.log"))
         my_potential = rotscan1.potential.copy()
         my_potential[1][:] = nma.energy
         rotscan1 = rotscan1.copy_with(potential=my_potential)
@@ -216,12 +224,12 @@ class RotorTestCase(unittest.TestCase):
     def test_harmonic(self):
         a = 20.0
         hb = HarmonicBasis(20, a)
-        x = numpy.arange(0.0, a, 0.1)
+        x = np.arange(0.0, a, 0.1)
         v = 0.5*(x-a/2)**2
-        #v = 5*(1+numpy.cos(2*numpy.pi*x/a))**2
+        #v = 5*(1+np.cos(2*np.pi*x/a))**2
         v_coeffs = hb.fit_fn(x, v, 20, even=True, v_threshold=0.1)
         energies, orbitals = hb.solve(1, v_coeffs, evecs=True)
-        expected = numpy.arange(10) + 0.5
+        expected = np.arange(10) + 0.5
         self.assertAlmostEqual(energies[0], 0.5, 1)
         self.assertAlmostEqual(energies[1], 1.5, 1)
         self.assertAlmostEqual(energies[2], 2.5, 1)
@@ -231,24 +239,28 @@ class RotorTestCase(unittest.TestCase):
         self.assertAlmostEqual(energies[6], 6.5, 1)
 
         import matplotlib.pyplot as pt
-        x = numpy.arange(0.0, a, 0.001)
+        x = np.arange(0.0, a, 0.001)
         pt.clf()
         for i in xrange(10):
             f = hb.eval_fn(x, orbitals[:,i])
             pt.plot(x, f)
-        pt.savefig("test/output/harmonic_wavefunctions.png")
+        with tmpdir(__name__, 'test_harmonic1') as dn:
+            pt.savefig(os.path.join(dn, "harmonic_wavefunctions.png"))
         pt.clf()
         v = hb.eval_fn(x, v_coeffs)
         pt.plot(x, v)
         for energy in energies[:10]:
             pt.axhline(energy)
         pt.xlim(0,a)
-        pt.savefig("test/output/harmonic_levels.png")
+        with tmpdir(__name__, 'test_harmonic2') as dn:
+            pt.savefig(os.path.join(dn, "harmonic_levels.png"))
 
     def test_ethane_hindered(self):
-        molecule = load_molecule_g03fchk("test/input/ethane/gaussian.fchk")
+        molecule = load_molecule_g03fchk(
+            pkg_resources.resource_filename(__name__, "../data/test/ethane/gaussian.fchk"))
         nma = NMA(molecule)
-        rot_scan = load_rotscan_g03log("test/input/rotor/gaussian.log")
+        rot_scan = load_rotscan_g03log(
+            pkg_resources.resource_filename(__name__, "../data/test/rotor/gaussian.log"))
         rotor = Rotor(rot_scan, molecule, rotsym=3, even=True, cancel_freq='scan')
         pf = PartFun(nma, [ExtTrans(), ExtRot(6), rotor])
         self.assertAlmostEqual(rotor.cancel_freq/lightspeed*centimeter, 298, 0)
@@ -262,20 +274,22 @@ class RotorTestCase(unittest.TestCase):
         # reference data from legacy code (Veronique & co)
         self.assertAlmostEqual(rotor.moment/amu, 11.092362911176032, 2)
         self.assertAlmostEqual(rotor.reduced_moment/amu, 5.5461814555880098, 2)
-        self.assertAlmostEqual(numpy.exp(rotor.log_terms(100.0)[1]), 0.12208E+00, 1)
+        self.assertAlmostEqual(np.exp(rotor.log_terms(100.0)[1]), 0.12208E+00, 1)
         self.assertAlmostEqual(rotor.heat_capacity_terms(100.0)[1]/(joule/mol/kelvin), 2.567, 0)
         self.assertAlmostEqual(rotor.entropy_terms(100.0)[1]/(joule/mol), 0.766, 0)
-        self.assertAlmostEqual(numpy.exp(rotor.log_terms(800.0)[1]), 0.21108E+01, 1)
+        self.assertAlmostEqual(np.exp(rotor.log_terms(800.0)[1]), 0.21108E+01, 1)
         self.assertAlmostEqual(rotor.heat_capacity_terms(800.0)[1]/(joule/mol/kelvin), 6.346, 1)
         self.assertAlmostEqual(rotor.entropy_terms(800.0)[1]/(joule/mol), 14.824, 1)
 
-        rotor.plot_levels("test/output/ethane_hindered_levels.png", 300)
-        pf.write_to_file("test/output/ethane_hindered.txt")
-        ta = ThermoAnalysis(pf, [200,300,400,500,600,700,800,900])
-        ta.write_to_file("test/output/ethane_hindered_thermo.csv")
+        with tmpdir(__name__, 'test_ethane_hindered') as dn:
+            rotor.plot_levels(os.path.join(dn, "ethane_hindered_levels.png"), 300)
+            pf.write_to_file(os.path.join(dn, "ethane_hindered.txt"))
+            ta = ThermoAnalysis(pf, [200,300,400,500,600,700,800,900])
+            ta.write_to_file(os.path.join(dn, "ethane_hindered_thermo.csv"))
 
     def test_ethyl_free(self):
-        molecule = load_molecule_g03fchk("test/input/ethyl/gaussian.fchk")
+        molecule = load_molecule_g03fchk(
+            pkg_resources.resource_filename(__name__, "../data/test/ethyl/gaussian.fchk"))
         nma = NMA(molecule)
         dihedral = [5, 1, 0, 2]
         rot_scan = RotScan(dihedral, molecule)
@@ -284,15 +298,16 @@ class RotorTestCase(unittest.TestCase):
         pf = PartFun(nma, [ExtTrans(), ExtRot(1), rotor])
         # reference data from legacy code (Veronique & co)
         self.assertAlmostEqual(rotor.reduced_moment/amu, 4.007, 1)
-        self.assertAlmostEqual(numpy.exp(rotor.log_terms(100.0)[1]), 0.6386, 1)
-        self.assertAlmostEqual(numpy.exp(-rotor.log_terms(100.0)[0]), 0.4168, 1)
-        self.assertAlmostEqual(numpy.exp(rotor.log_terms(800.0)[1]), 1.8062, 1)
-        self.assertAlmostEqual(numpy.exp(-rotor.log_terms(800.0)[0]), 3.9273, 1)
+        self.assertAlmostEqual(np.exp(rotor.log_terms(100.0)[1]), 0.6386, 1)
+        self.assertAlmostEqual(np.exp(-rotor.log_terms(100.0)[0]), 0.4168, 1)
+        self.assertAlmostEqual(np.exp(rotor.log_terms(800.0)[1]), 1.8062, 1)
+        self.assertAlmostEqual(np.exp(-rotor.log_terms(800.0)[0]), 3.9273, 1)
 
-        rotor.plot_levels("test/output/ethyl_free_levels.png", 300)
-        pf.write_to_file("test/output/ethyl_free.txt")
-        ta = ThermoAnalysis(pf, [200,300,400,500,600,700,800,900])
-        ta.write_to_file("test/output/ethyl_free_thermo.csv")
+        with tmpdir(__name__, 'test_ethyl_free') as dn:
+            rotor.plot_levels(os.path.join(dn, "ethyl_free_levels.png"), 300)
+            pf.write_to_file(os.path.join(dn, "ethyl_free.txt"))
+            ta = ThermoAnalysis(pf, [200,300,400,500,600,700,800,900])
+            ta.write_to_file(os.path.join(dn, "ethyl_free_thermo.csv"))
 
     def test_imoms(self):
         cases = [
@@ -324,18 +339,19 @@ class RotorTestCase(unittest.TestCase):
         from molmod.io.xyz import XYZFile
         for fn_xyz, i0, i1, top, expected in cases:
             # preparation
-            mol = XYZFile(os.path.join("test/input/imom", fn_xyz)).get_molecule()
-            masses = numpy.array([periodic[n].mass for n in mol.numbers])
-            masses3 = numpy.array([masses, masses, masses]).transpose().ravel()
+            mol = XYZFile(pkg_resources.resource_filename(
+                __name__, os.path.join("../data/test/imom", fn_xyz))).get_molecule()
+            masses = np.array([periodic[n].mass for n in mol.numbers])
+            masses3 = np.array([masses, masses, masses]).transpose().ravel()
             center = mol.coordinates[i0]
             axis = mol.coordinates[i1] - mol.coordinates[i0]
-            axis /= numpy.linalg.norm(axis)
+            axis /= np.linalg.norm(axis)
             # trivial computation of absolute moment
             mom = 0.0
             for i in top:
                 delta = mol.coordinates[i] - center
-                delta -= axis*numpy.dot(axis, delta)
-                mom += masses[i]*numpy.linalg.norm(delta)**2
+                delta -= axis*np.dot(axis, delta)
+                mom += masses[i]*np.linalg.norm(delta)**2
             self.assertAlmostEqual(mom/amu, expected[0], 2)
             # check tamkin routine
             mom, redmom = compute_moments(mol.coordinates, masses3, center, axis, top)
@@ -343,28 +359,29 @@ class RotorTestCase(unittest.TestCase):
             self.assertAlmostEqual(redmom/amu, expected[1], 2)
 
     def test_legacy1(self):
-        a = 2*numpy.pi
+        a = 2*np.pi
         mass = 5.5*amu
         hb = HarmonicBasis(100, a)
-        v_coeffs = numpy.zeros(hb.size, float)
-        v_coeffs[0] = 0.5*11.5*kjmol*numpy.sqrt(a)
-        v_coeffs[5] = 0.5*11.5*kjmol*numpy.sqrt(a/2)
+        v_coeffs = np.zeros(hb.size, float)
+        v_coeffs[0] = 0.5*11.5*kjmol*np.sqrt(a)
+        v_coeffs[5] = 0.5*11.5*kjmol*np.sqrt(a/2)
         self.assertArraysAlmostEqual(
-            hb.eval_fn(numpy.array([0, a/6]), v_coeffs),
-            numpy.array([11.5*kjmol, 0.0]),
+            hb.eval_fn(np.array([0, a/6]), v_coeffs),
+            np.array([11.5*kjmol, 0.0]),
         )
         energies, orbitals = hb.solve(mass, v_coeffs, evecs=True)
 
         import matplotlib.pyplot as pt
-        x = numpy.arange(0.0, a, 0.001)
+        x = np.arange(0.0, a, 0.001)
         pt.clf()
         for i in xrange(10):
             f = hb.eval_fn(x, orbitals[:,i])
             pt.plot(x, f+i)
-        pt.savefig("test/output/legacy_wavefunctions.png")
+        with tmpdir(__name__, 'test_legacy1') as dn:
+            pt.savefig(os.path.join(dn, "legacy_wavefunctions.png"))
 
         # check energy levels
-        expected = numpy.array([
+        expected = np.array([
             1.7635118, 1.76361979, 5.11795465, 8.04553104, 8.1095722,
             10.3876796, 11.8999683, 12.9078395, 14.6739639, 16.7836847,
             19.1722507,
@@ -373,9 +390,10 @@ class RotorTestCase(unittest.TestCase):
         ])
         expected.sort()
         self.assertArraysAlmostEqual(energies[:10]/kjmol, expected[:10], 1e-3)
-        self.assertAlmostEqual(numpy.exp(-energies/(100*boltzmann)).sum()/3.0, 0.12208E+00, 5)
+        self.assertAlmostEqual(np.exp(-energies/(100*boltzmann)).sum()/3.0, 0.12208E+00, 5)
 
     def test_load_rotor_margot(self):
-        rot_scan = load_rotscan_g03log("test/input/rotor/margot.log")
+        rot_scan = load_rotscan_g03log(
+            pkg_resources.resource_filename(__name__, "../data/test/rotor/margot.log"))
         assert rot_scan.potential.shape == (2, 1)
         assert (rot_scan.dihedral == [2, 3, 4, 5]).all()

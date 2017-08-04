@@ -75,7 +75,7 @@ else:
         fh.write(version_template.format(__version__))
 
 
-setup(name='TAMkin',
+setup(name='tamkin',
     version=__version__,
     description='TAMkin is a post-processing toolkit for thermochemistry and kinetics analysis.',
     author='Toon Verstraelen, Matthias Vandichel, An Ghysels',

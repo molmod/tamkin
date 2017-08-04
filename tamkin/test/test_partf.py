@@ -34,12 +34,16 @@
 #--
 
 
-from tamkin import *
+import os
+import pkg_resources
+import numpy as np
+import unittest
 
 from molmod import lightspeed, boltzmann, second, atm, amu, meter, mol, \
     kcalmol, calorie, kelvin, kjmol, planck
+from molmod.test.common import tmpdir
 
-import unittest, numpy
+from tamkin import *
 
 
 __all__ = ["PartFunTestCase"]
@@ -47,42 +51,51 @@ __all__ = ["PartFunTestCase"]
 
 class PartFunTestCase(unittest.TestCase):
     def test_phva_react_mat(self):
-        fixed_atoms = load_fixed_g03com("test/input/mat/Zp_p_react.14mei.com")
-        molecule = load_molecule_g03fchk("test/input/mat/Zp_p_react.28aug.fchk", "test/input/mat/Zp_p_react.14mei.fchk")
+        fixed_atoms = load_fixed_g03com(
+            pkg_resources.resource_filename(__name__, "../data/test/mat/Zp_p_react.14mei.com"))
+        molecule = load_molecule_g03fchk(
+            pkg_resources.resource_filename(__name__, "../data/test/mat/Zp_p_react.28aug.fchk"),
+            pkg_resources.resource_filename(__name__, "../data/test/mat/Zp_p_react.14mei.fchk"))
         nma = NMA(molecule, PHVA(fixed_atoms))
         pf = PartFun(nma)
 
         # values obtained with frektsjek.exe
-        self.assertAlmostEqual(pf.log(650)-(-pf.electronic.energy/(boltzmann*650)), numpy.log(1.69428264E-45),3)
-        self.assertAlmostEqual(pf.log(700)-(-pf.electronic.energy/(boltzmann*700)), numpy.log(3.26776842E-29),3)
-        self.assertAlmostEqual(pf.log(750)-(-pf.electronic.energy/(boltzmann*750)), numpy.log(2.00896366E-14),3)
+        self.assertAlmostEqual(pf.log(650)-(-pf.electronic.energy/(boltzmann*650)), np.log(1.69428264E-45),3)
+        self.assertAlmostEqual(pf.log(700)-(-pf.electronic.energy/(boltzmann*700)), np.log(3.26776842E-29),3)
+        self.assertAlmostEqual(pf.log(750)-(-pf.electronic.energy/(boltzmann*750)), np.log(2.00896366E-14),3)
 
     def test_phva_rate_const_mat(self):
-        fixed_atoms = load_fixed_g03com("test/input/mat/Zp_p_react.14mei.com")
-        mol_react = load_molecule_g03fchk("test/input/mat/Zp_p_react.28aug.fchk", "test/input/mat/Zp_p_react.14mei.fchk")
-        mol_trans = load_molecule_g03fchk("test/input/mat/Zp_p_TS.28aug.fchk", "test/input/mat/5Tp_p_TS.oniom21apr_HF.fchk")
+        fixed_atoms = load_fixed_g03com(
+            pkg_resources.resource_filename(__name__, "../data/test/mat/Zp_p_react.14mei.com"))
+        mol_react = load_molecule_g03fchk(
+            pkg_resources.resource_filename(__name__, "../data/test/mat/Zp_p_react.28aug.fchk"),
+            pkg_resources.resource_filename(__name__, "../data/test/mat/Zp_p_react.14mei.fchk"))
+        mol_trans = load_molecule_g03fchk(
+            pkg_resources.resource_filename(__name__, "../data/test/mat/Zp_p_TS.28aug.fchk"),
+            pkg_resources.resource_filename(__name__, "../data/test/mat/5Tp_p_TS.oniom21apr_HF.fchk"))
         pf_react = PartFun(NMA(mol_react, PHVA(fixed_atoms)))
         pf_trans = PartFun(NMA(mol_trans, PHVA(fixed_atoms)))
         km = KineticModel([pf_react], pf_trans)
 
         # values taken from the fancy excel file...
-        temps = numpy.array([670,680,690,700,710,720,730,740,750,760,770])
-        expected_ks = numpy.array([
+        temps = np.array([670,680,690,700,710,720,730,740,750,760,770])
+        expected_ks = np.array([
             7.9473102E+05, 9.8300444E+05, 1.2085262E+06, 1.4771808E+06,
             1.7955340E+06, 2.1708793E+06, 2.6112829E+06, 3.1256298E+06,
             3.7236678E+06, 4.4160510E+06, 5.2143822E+06
         ])
         for i in xrange(len(temps)):
             k = km.rate_constant(temps[i])
-            self.assertAlmostEqual(numpy.log(k/(1/second)), numpy.log(expected_ks[i]),5)
+            self.assertAlmostEqual(np.log(k/(1/second)), np.log(expected_ks[i]),5)
             log_k = km.rate_constant(temps[i], do_log=True)
-            self.assertAlmostEqual(numpy.log(k), log_k)
+            self.assertAlmostEqual(np.log(k), log_k)
 
     def test_gas_react_sterck(self):
         # Test both Full and ConstrainExt:
         for treatment, precision_wn, shift in (Full(), 0, 6), (ConstrainExt(), 3, 0):
             ## aa.fchk
-            molecule = load_molecule_g03fchk("test/input/sterck/aa.fchk")
+            molecule = load_molecule_g03fchk(
+                pkg_resources.resource_filename(__name__, "../data/test/sterck/aa.fchk"))
             nma = NMA(molecule, treatment)
             pf = PartFun(nma, [ExtTrans(), ExtRot(1)])
             temp = 298.150
@@ -92,7 +105,7 @@ class PartFunTestCase(unittest.TestCase):
             self.assertEqual(pf.rotational.count, 3)
             self.assertAlmostEqual(11.225093, pf.rotational.log(temp), 6)
             vib_contribs = pf.vibrational.log_terms(temp)
-            expected_vib_contribs = numpy.array([
+            expected_vib_contribs = np.array([
                 0.674278, 0.292167, -0.357617, -1.017249, -1.018740, -1.427556,
                 -1.428865
             ])
@@ -109,7 +122,7 @@ class PartFunTestCase(unittest.TestCase):
             self.assertEqual(pf.rotational.count, 3)
             self.assertAlmostEqual(11.225093, pf.rotational.log(temp), 6)
             vib_contribs = pf.vibrational.log_terms(temp)
-            expected_vib_contribs = numpy.array([
+            expected_vib_contribs = np.array([
                 0.674278, 0.292167, -0.357617, -1.017249, -1.018740, -1.427556,
                 -1.428865
             ])
@@ -118,7 +131,8 @@ class PartFunTestCase(unittest.TestCase):
             self.assertAlmostEqual(-53.068692, pf.log(temp)-(-pf.electronic.energy/(boltzmann*temp)), 2)
 
             ## aarad.fchk
-            molecule = load_molecule_g03fchk("test/input/sterck/aarad.fchk")
+            molecule = load_molecule_g03fchk(
+                pkg_resources.resource_filename(__name__, "../data/test/sterck/aarad.fchk"))
             nma = NMA(molecule, treatment)
             pf = PartFun(nma, [ExtTrans(), ExtRot(1)])
 
@@ -127,7 +141,7 @@ class PartFunTestCase(unittest.TestCase):
             self.assertEqual(pf.rotational.count, 3)
             self.assertAlmostEqual(11.319073, pf.rotational.log(temp), 6)
             vib_contribs = pf.vibrational.log_terms(temp)
-            expected_vib_contribs = numpy.array([
+            expected_vib_contribs = np.array([
                 0.959168, 0.413328, -0.287477, -0.371573, -0.983851, -1.040910,
                 -1.311721, -1.428436,
             ])
@@ -139,7 +153,8 @@ class PartFunTestCase(unittest.TestCase):
         # Test both Full and ConstrainExt:
         for treatment, precision_wn, shift in (Full(), 0, 6), (ConstrainExt(), 3, 0):
             ## paats.fchk
-            molecule = load_molecule_g03fchk("test/input/sterck/paats.fchk")
+            molecule = load_molecule_g03fchk(
+                pkg_resources.resource_filename(__name__, "../data/test/sterck/paats.fchk"))
             nma = NMA(molecule, treatment)
             pf = PartFun(nma, [ExtTrans(), ExtRot(1)])
             temp = 298.150
@@ -150,7 +165,7 @@ class PartFunTestCase(unittest.TestCase):
             self.assertEqual(pf.rotational.count, 3)
             self.assertAlmostEqual(13.615243, pf.rotational.log(temp), 6)
             vib_contribs = pf.vibrational.log_terms(temp)
-            expected_vib_contribs = numpy.array([
+            expected_vib_contribs = np.array([
                 1.749142, 1.335079, 0.789626, 0.704324, 0.365201, 0.061403,
                 -0.060710, -0.281250, -0.309673, -0.423131, -0.447578, -0.983086,
                 -1.017063, -1.107892, -1.192276, -1.318341, -1.352385, -1.427939,
@@ -160,17 +175,20 @@ class PartFunTestCase(unittest.TestCase):
             self.assertAlmostEqual(-139.302816, pf.log(temp)-(-pf.electronic.energy/(boltzmann*temp)), 1+precision_wn)
 
     def test_gas_rate_const_sterck(self):
-        mol_react1 = load_molecule_g03fchk("test/input/sterck/aa.fchk")
-        mol_react2 = load_molecule_g03fchk("test/input/sterck/aarad.fchk")
-        mol_trans = load_molecule_g03fchk("test/input/sterck/paats.fchk")
+        mol_react1 = load_molecule_g03fchk(
+            pkg_resources.resource_filename(__name__, "../data/test/sterck/aa.fchk"))
+        mol_react2 = load_molecule_g03fchk(
+            pkg_resources.resource_filename(__name__, "../data/test/sterck/aarad.fchk"))
+        mol_trans = load_molecule_g03fchk(
+            pkg_resources.resource_filename(__name__, "../data/test/sterck/paats.fchk"))
         pf_react1 = PartFun(NMA(mol_react1, ConstrainExt()), [ExtTrans(cp=False), ExtRot(1)])
         pf_react2 = PartFun(NMA(mol_react2, ConstrainExt()), [ExtTrans(cp=False), ExtRot(1)])
         pf_trans = PartFun(NMA(mol_trans, ConstrainExt()), [ExtTrans(cp=False), ExtRot(1)])
         km = KineticModel([pf_react1, pf_react2], pf_trans)
 
         # values taken from the fancy excel file...
-        temps = numpy.array([298.15,300,400,500,600,700,800,900,1000,1100])
-        expected_ks = numpy.array([
+        temps = np.array([298.15,300,400,500,600,700,800,900,1000,1100])
+        expected_ks = np.array([
             6.44881E-03,
             6.87398E-03, 9.74722E-02, 5.36970E-01, 1.82272E+00, 4.65134E+00,
             9.86811E+00, 1.84247E+01, 3.13480E+01, 4.97189E+01,
@@ -180,12 +198,14 @@ class PartFunTestCase(unittest.TestCase):
             k = km.rate_constant(temps[i])
             # Sometimes, the fancy excel files use slightly different constants.
             # Therefore, only expect numbers to be equal up to 2 decimals.
-            self.assertAlmostEqual(numpy.log(k/unit), numpy.log(expected_ks[i]), 2)
+            self.assertAlmostEqual(np.log(k/unit), np.log(expected_ks[i]), 2)
 
     def test_derivatives(self):
-        molecule = load_molecule_g03fchk("test/input/ethane/gaussian.fchk")
+        molecule = load_molecule_g03fchk(
+            pkg_resources.resource_filename(__name__, "../data/test/ethane/gaussian.fchk"))
         nma = NMA(molecule)
-        rotscan = load_rotscan_g03log("test/input/rotor/gaussian.log")
+        rotscan = load_rotscan_g03log(
+            pkg_resources.resource_filename(__name__, "../data/test/rotor/gaussian.log"))
         rotor = Rotor(rotscan, molecule, rotsym=3, even=True)
         for classical in True, False:
             for cp in True, False:
@@ -196,7 +216,7 @@ class PartFunTestCase(unittest.TestCase):
                 self.assertEqual(pf.rotational.symmetry_number, 6)
 
                 eps = 0.0001
-                temps = numpy.array([300.0,400.0,500.0,600.0,700.0])
+                temps = np.array([300.0,400.0,500.0,600.0,700.0])
                 sfs = [
                     pf.electronic, pf.translational, pf.rotational, pf.vibrational,
                     pf.hindered_rotor_3_4_5, pf
@@ -229,7 +249,8 @@ class PartFunTestCase(unittest.TestCase):
                         self.assertAlmostEqual(stat_fys.helpertt(temp,1), stat_fys.helpertt(temp,0)*temp)
 
     def test_chemical_potential_cp(self):
-        molecule = load_molecule_g03fchk("test/input/ethane/gaussian.fchk")
+        molecule = load_molecule_g03fchk(
+            pkg_resources.resource_filename(__name__, "../data/test/ethane/gaussian.fchk"))
         nma = NMA(molecule)
         pf = PartFun(nma, [ExtTrans(cp=True), ExtRot()])
         N0 = 1.0
@@ -237,7 +258,7 @@ class PartFunTestCase(unittest.TestCase):
         N1 = 1.001
         p1 = p0*N1/N0
         self.assertEqual(pf.rotational.symmetry_number, 6)
-        temps = numpy.array([300.0,400.0,500.0,600.0,700.0])
+        temps = np.array([300.0,400.0,500.0,600.0,700.0])
         for temp in temps:
             # compare the derivative of the free energy at N=1 with its
             # finit difference approximation.
@@ -259,7 +280,8 @@ class PartFunTestCase(unittest.TestCase):
             self.assertAlmostEqual(pf.chemical_potential(temp), pf.free_energy(temp))
 
     def test_chemical_potential_cv(self):
-        molecule = load_molecule_g03fchk("test/input/ethane/gaussian.fchk")
+        molecule = load_molecule_g03fchk(
+            pkg_resources.resource_filename(__name__, "../data/test/ethane/gaussian.fchk"))
         nma = NMA(molecule)
         pf = PartFun(nma, [ExtTrans(cp=False), ExtRot()])
         N0 = 1.0
@@ -267,7 +289,7 @@ class PartFunTestCase(unittest.TestCase):
         N1 = 1.001
         r1 = r0*N1/N0
         self.assertEqual(pf.rotational.symmetry_number, 6)
-        temps = numpy.array([300.0,400.0,500.0,600.0,700.0])
+        temps = np.array([300.0,400.0,500.0,600.0,700.0])
         for temp in temps:
             # compare the derivative of the free energy at N=1 with its
             # finit difference approximation.
@@ -289,23 +311,25 @@ class PartFunTestCase(unittest.TestCase):
 
     def test_logn(self):
         for cp in False, True:
-            molecule = load_molecule_g03fchk("test/input/ethane/gaussian.fchk")
+            molecule = load_molecule_g03fchk(
+                pkg_resources.resource_filename(__name__, "../data/test/ethane/gaussian.fchk"))
             nma = NMA(molecule)
             pf = PartFun(nma, [ExtTrans(cp=cp), ExtRot()])
-            temps = numpy.array([300.0,400.0,500.0,600.0,700.0])
+            temps = np.array([300.0,400.0,500.0,600.0,700.0])
             for temp in temps:
                 if cp:
                     density = pf.translational.pressure/(boltzmann*temp)
                 else:
                     density = pf.translational.density
-                self.assertAlmostEqual(pf.translational.logn(temp) - pf.translational.logv(temp), -numpy.log(density))
+                self.assertAlmostEqual(pf.translational.logn(temp) - pf.translational.logv(temp), -np.log(density))
 
     def test_logv(self):
         for cp in False, True:
-            molecule = load_molecule_g03fchk("test/input/ethane/gaussian.fchk")
+            molecule = load_molecule_g03fchk(
+                pkg_resources.resource_filename(__name__, "../data/test/ethane/gaussian.fchk"))
             nma = NMA(molecule)
             pf = PartFun(nma, [ExtTrans(cp=cp), ExtRot()])
-            temps = numpy.array([300.0,400.0,500.0,600.0,700.0])
+            temps = np.array([300.0,400.0,500.0,600.0,700.0])
             for temp in temps:
                 self.assertAlmostEqual(pf.translational.logv(temp), pf.translational._z1(temp))
                 self.assertAlmostEqual(pf.electronic.logv(temp) - pf.electronic.log(temp), 0.0)
@@ -314,7 +338,8 @@ class PartFunTestCase(unittest.TestCase):
 
     def test_derived_quantities(self):
         # internal energy, heat capacity and entropy
-        molecule = load_molecule_g03fchk("test/input/sterck/aa.fchk")
+        molecule = load_molecule_g03fchk(
+            pkg_resources.resource_filename(__name__, "../data/test/sterck/aa.fchk"))
         nma = NMA(molecule, ConstrainExt())
         pf = PartFun(nma, [ExtTrans(cp=True), ExtRot(1)])
 
@@ -359,22 +384,25 @@ class PartFunTestCase(unittest.TestCase):
 
     def test_classical1(self):
         pf = PartFun(
-            NMA(load_molecule_g03fchk("test/input/sterck/aa.fchk")),
+            NMA(load_molecule_g03fchk(
+                pkg_resources.resource_filename(__name__, "../data/test/sterck/aa.fchk"))),
             [Vibrations(classical=True), ExtTrans(), ExtRot(1)],
         )
 
         for i in xrange(10):
-            tmp = pf.vibrational.heat_capacity_terms(numpy.random.uniform(100,500))
+            tmp = pf.vibrational.heat_capacity_terms(np.random.uniform(100,500))
             for value in tmp:
                 self.assertAlmostEqual(value, boltzmann, 10)
 
     def test_classical2(self):
         pfc = PartFun(
-            NMA(load_molecule_g03fchk("test/input/sterck/aa.fchk")),
+            NMA(load_molecule_g03fchk(
+                pkg_resources.resource_filename(__name__, "../data/test/sterck/aa.fchk"))),
             [Vibrations(True), ExtTrans(), ExtRot(1)],
         )
         pfq = PartFun(
-            NMA(load_molecule_g03fchk("test/input/sterck/aa.fchk")),
+            NMA(load_molecule_g03fchk(
+                pkg_resources.resource_filename(__name__, "../data/test/sterck/aa.fchk"))),
             [Vibrations(False), ExtTrans(), ExtRot(1)],
         )
 
@@ -400,7 +428,8 @@ class PartFunTestCase(unittest.TestCase):
         RT = R*temp*0.001 # RT in kcal/(mol*K)
 
         # values taken from aa.log
-        molecule = load_molecule_g03fchk("test/input/sterck/aa.fchk")
+        molecule = load_molecule_g03fchk(
+            pkg_resources.resource_filename(__name__, "../data/test/sterck/aa.fchk"))
         pf = PartFun(NMA(molecule, ConstrainExt()), [ExtTrans(cp=True)])
         # translational
         # WARNING: internal_heat returns enthalpy, turn it into internal energy
@@ -410,7 +439,8 @@ class PartFunTestCase(unittest.TestCase):
         self.assertAlmostEqual(pf.translational.heat_capacity(temp)/(calmolK)-R, 2.981, 2)
         self.assertAlmostEqual(pf.translational.entropy(temp)/(calmolK), 38.699, 2)
 
-        molecule = load_molecule_g03fchk("test/input/sterck/aa.fchk")
+        molecule = load_molecule_g03fchk(
+            pkg_resources.resource_filename(__name__, "../data/test/sterck/aa.fchk"))
         pf = PartFun(NMA(molecule, ConstrainExt()), [ExtRot(1)])
         # rotational
         self.assertAlmostEqual(pf.rotational.internal_heat(temp)/(kcalmol), 0.889, 2)
@@ -418,13 +448,14 @@ class PartFunTestCase(unittest.TestCase):
         self.assertAlmostEqual(pf.rotational.entropy(temp)/(calmolK), 25.287, 2)
 
     def test_linear(self):
-        molecule = load_molecule_g03fchk("test/input/linear/gaussian.fchk")
+        molecule = load_molecule_g03fchk(
+            pkg_resources.resource_filename(__name__, "../data/test/linear/gaussian.fchk"))
         pf = PartFun(NMA(molecule, ConstrainExt()), [ExtTrans(),ExtRot(2)])
 
         # check the inertia moments (eigenvalues only)
         iner_tens = pf.rotational.inertia_tensor
-        evals, evecs = numpy.linalg.eigh(iner_tens)
-        expected_evals = numpy.array([0.00000, 158.27937, 158.27937]) # from paats.log
+        evals, evecs = np.linalg.eigh(iner_tens)
+        expected_evals = np.array([0.00000, 158.27937, 158.27937]) # from paats.log
         for i in 0,1,2:
             self.assertAlmostEqual(
                 evals[i]/amu, expected_evals[i], 5,
@@ -444,10 +475,14 @@ class PartFunTestCase(unittest.TestCase):
         self.assertAlmostEqual(pf.rotational.entropy(298.15)/(calmolK), 13.130, 2)
 
     def test_equilibrium(self):
-        mol_react1 = load_molecule_g03fchk("test/input/sterck/aa_1h2o_a.fchk")
-        mol_react2 = load_molecule_g03fchk("test/input/sterck/aarad.fchk")
-        mol_complex = load_molecule_g03fchk("test/input/sterck/paaprc_1h2o_b_aa.fchk")
-        mol_trans = load_molecule_g03fchk("test/input/sterck/paats_1h2o_b_aa.fchk")
+        mol_react1 = load_molecule_g03fchk(
+            pkg_resources.resource_filename(__name__, "../data/test/sterck/aa_1h2o_a.fchk"))
+        mol_react2 = load_molecule_g03fchk(
+            pkg_resources.resource_filename(__name__, "../data/test/sterck/aarad.fchk"))
+        mol_complex = load_molecule_g03fchk(
+            pkg_resources.resource_filename(__name__, "../data/test/sterck/paaprc_1h2o_b_aa.fchk"))
+        mol_trans = load_molecule_g03fchk(
+            pkg_resources.resource_filename(__name__, "../data/test/sterck/paats_1h2o_b_aa.fchk"))
         pf_react1 = PartFun(NMA(mol_react1), [ExtTrans(), ExtRot(1)])
         pf_react2 = PartFun(NMA(mol_react2), [ExtTrans(), ExtRot(1)])
         pf_complex = PartFun(NMA(mol_complex), [ExtTrans(), ExtRot(1)])
@@ -460,16 +495,16 @@ class PartFunTestCase(unittest.TestCase):
         self.assertEqual(km1.unit_name, "m^3 mol^-1 s^-1")
         self.assertEqual(km2.unit_name, "s^-1")
 
-        for temp in numpy.arange(100,1000,10.0):
+        for temp in np.arange(100,1000,10.0):
             K = tm.equilibrium_constant(temp)
             log_K = tm.equilibrium_constant(temp, do_log=True)
-            self.assertAlmostEqual(numpy.log(K), log_K)
+            self.assertAlmostEqual(np.log(K), log_K)
             k1 = km1.rate_constant(temp)
             log_k1 = km1.rate_constant(temp, do_log=True)
-            self.assertAlmostEqual(numpy.log(k1), log_k1)
+            self.assertAlmostEqual(np.log(k1), log_k1)
             k2 = km2.rate_constant(temp)
             log_k2 = km2.rate_constant(temp, do_log=True)
-            self.assertAlmostEqual(numpy.log(k2), log_k2)
+            self.assertAlmostEqual(np.log(k2), log_k2)
             self.assertAlmostEqual(log_K + log_k2, log_k1)
 
     def test_proton_cp(self):
@@ -481,8 +516,8 @@ class PartFunTestCase(unittest.TestCase):
         self.assertAlmostEqual(pf.translational.helpert(temp, 1), 2.5)
         self.assertAlmostEqual(
             pf.translational.log(temp),
-            1.5*numpy.log(proton.masses[0]*boltzmann*temp/(2*numpy.pi)) +
-            numpy.log(boltzmann*temp/(1*atm))
+            1.5*np.log(proton.masses[0]*boltzmann*temp/(2*np.pi)) +
+            np.log(boltzmann*temp/(1*atm))
         )
 
     def test_proton_cv(self):
@@ -494,12 +529,13 @@ class PartFunTestCase(unittest.TestCase):
         self.assertAlmostEqual(pf.translational.helpert(temp, 1), 1.5)
         self.assertAlmostEqual(
             pf.translational.log(temp),
-            1.0 + 1.5*numpy.log(proton.masses[0]*boltzmann*temp/(2*numpy.pi)) +
-            numpy.log(meter**3/mol)
+            1.0 + 1.5*np.log(proton.masses[0]*boltzmann*temp/(2*np.pi)) +
+            np.log(meter**3/mol)
         )
 
     def test_pcm_correction(self):
-        mol = load_molecule_g03fchk("test/input/sterck/aa_1h2o_a.fchk")
+        mol = load_molecule_g03fchk(
+            pkg_resources.resource_filename(__name__, "../data/test/sterck/aa_1h2o_a.fchk"))
         pf0 = PartFun(NMA(mol), [])
         pf1 = PartFun(NMA(mol), [PCMCorrection((-5*kjmol,300))])
         pf2 = PartFun(NMA(mol), [PCMCorrection((-5*kjmol,300), (-10*kjmol,600))])
@@ -510,13 +546,16 @@ class PartFunTestCase(unittest.TestCase):
         self.assertAlmostEqual(pf0.free_energy(600)-10*kjmol, pf2.free_energy(600))
         # blind tests
         pf2.heat_capacity(300)
-        pf1.write_to_file("test/output/pcm_partf1.txt")
-        pf2.write_to_file("test/output/pcm_partf2.txt")
+        with tmpdir(__name__, 'test_pcm_correction') as dn:
+            pf1.write_to_file(os.path.join(dn, "pcm_partf1.txt"))
+            pf2.write_to_file(os.path.join(dn, "pcm_partf2.txt"))
 
     def test_zero_point_energy(self):
-        molecule = load_molecule_g03fchk("test/input/ethane/gaussian.fchk")
+        molecule = load_molecule_g03fchk(
+            pkg_resources.resource_filename(__name__, "../data/test/ethane/gaussian.fchk"))
         nma = NMA(molecule)
-        rotscan = load_rotscan_g03log("test/input/rotor/gaussian.log")
+        rotscan = load_rotscan_g03log(
+            pkg_resources.resource_filename(__name__, "../data/test/rotor/gaussian.log"))
         rotor = Rotor(rotscan, molecule, rotsym=3, even=True)
         pf = PartFun(nma, [ExtTrans(), ExtRot(), rotor, Vibrations()])
         # check the vibrational part
@@ -537,7 +576,8 @@ class PartFunTestCase(unittest.TestCase):
         self.assertAlmostEqual(zpe_sum, pf.zero_point_energy())
 
     def test_freq_threshold(self):
-        molecule = load_molecule_g03fchk("test/input/ethane/gaussian.fchk")
+        molecule = load_molecule_g03fchk(
+            pkg_resources.resource_filename(__name__, "../data/test/ethane/gaussian.fchk"))
         nma = NMA(molecule)
         pf = PartFun(nma, [ExtTrans(), ExtRot(), Vibrations()])
         assert len(pf.vibrational.zero_freqs) == 6

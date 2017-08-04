@@ -34,13 +34,16 @@
 #--
 
 
-from tamkin import *
+import os
+import pkg_resources
+import numpy as np
+import unittest
 
 from molmod.units import kjmol, atm, meter, mol, second
 from molmod.constants import boltzmann
+from molmod.test.common import tmpdir
 
-import unittest
-import numpy as np
+from tamkin import *
 
 
 __all__ = ["PFToolsTestCase"]
@@ -48,9 +51,15 @@ __all__ = ["PFToolsTestCase"]
 
 class PFToolsTestCase(unittest.TestCase):
     def test_reaction_analysis_sterck(self):
-        pf_react1 = PartFun(NMA(load_molecule_g03fchk("test/input/sterck/aa.fchk")), [ExtTrans(cp=False), ExtRot(1)])
-        pf_react2 = PartFun(NMA(load_molecule_g03fchk("test/input/sterck/aarad.fchk")), [ExtTrans(cp=False), ExtRot(1)])
-        pf_ts = PartFun(NMA(load_molecule_g03fchk("test/input/sterck/paats.fchk")), [ExtTrans(cp=False), ExtRot(1)])
+        pf_react1 = PartFun(NMA(load_molecule_g03fchk(
+            pkg_resources.resource_filename(__name__, "../data/test/sterck/aa.fchk"))),
+            [ExtTrans(cp=False), ExtRot(1)])
+        pf_react2 = PartFun(NMA(load_molecule_g03fchk(
+            pkg_resources.resource_filename(__name__, "../data/test/sterck/aarad.fchk"))),
+            [ExtTrans(cp=False), ExtRot(1)])
+        pf_ts = PartFun(NMA(load_molecule_g03fchk(
+            pkg_resources.resource_filename(__name__, "../data/test/sterck/paats.fchk"))),
+            [ExtTrans(cp=False), ExtRot(1)])
 
         km = KineticModel([pf_react1, pf_react2], pf_ts)
         ra = ReactionAnalysis(km, 280, 360)
@@ -61,14 +70,17 @@ class PFToolsTestCase(unittest.TestCase):
         self.assertEqual(km.unit_name, "m^3 mol^-1 s^-1")
         self.assertAlmostEqual(np.log(ra.A/km.unit), np.log(2.29E+02), 1)
 
-        ra.plot_arrhenius("test/output/arrhenius_aa.png")
-        ra.monte_carlo()
-        ra.write_to_file("test/output/reaction_aa.txt")
-        ra.plot_parameters("test/output/parameters_aa.png")
+        with tmpdir(__name__, 'test_reaction_analysis_sterck') as dn:
+            ra.plot_arrhenius(os.path.join(dn, "arrhenius_aa.png"))
+            ra.monte_carlo()
+            ra.write_to_file(os.path.join(dn, "reaction_aa.txt"))
+            ra.plot_parameters(os.path.join(dn, "parameters_aa.png"))
 
     def test_reaction_analysis_mat(self):
-        pf_react = PartFun(NMA(load_molecule_g03fchk("test/input/mat5T/react.fchk")), [])
-        pf_ts = PartFun(NMA(load_molecule_g03fchk("test/input/mat5T/ts.fchk")), [])
+        pf_react = PartFun(NMA(load_molecule_g03fchk(
+            pkg_resources.resource_filename(__name__, "../data/test/mat5T/react.fchk"))), [])
+        pf_ts = PartFun(NMA(load_molecule_g03fchk(
+            pkg_resources.resource_filename(__name__, "../data/test/mat5T/ts.fchk"))), [])
 
         km = KineticModel([pf_react], pf_ts)
         ra = ReactionAnalysis(km, 100, 1200, temp_step=50)
@@ -78,19 +90,21 @@ class PFToolsTestCase(unittest.TestCase):
         self.assertAlmostEqual(km.unit, 1.0/second)
         self.assertEqual(km.unit_name, "s^-1")
         self.assertAlmostEqual(np.log(ra.A/km.unit), np.log(3.33e10), 0)
-        ra.plot_arrhenius("test/output/arrhenius_mat1.png")
-        ra.monte_carlo()
-        ra.write_to_file("test/output/reaction_mat1.txt")
-        ra.plot_parameters("test/output/parameters_mat1.png")
+        with tmpdir(__name__, 'test_reaction_analysis_mat1') as dn:
+            ra.plot_arrhenius(os.path.join(dn, "arrhenius_mat1.png"))
+            ra.monte_carlo()
+            ra.write_to_file(os.path.join(dn, "reaction_mat1.txt"))
+            ra.plot_parameters(os.path.join(dn, "parameters_mat1.png"))
 
         wigner = Wigner(pf_ts) # Blind test of the wigner correction and
         # the corrected reaction analysis.
         km = KineticModel([pf_react], pf_ts, tunneling=wigner)
         ra = ReactionAnalysis(km, 100, 1200, temp_step=50)
-        ra.plot_arrhenius("test/output/arrhenius_mat1w.png")
-        ra.monte_carlo()
-        ra.write_to_file("test/output/reaction_mat1w.txt")
-        ra.plot_parameters("test/output/parameters_mat1w.png")
+        with tmpdir(__name__, 'test_reaction_analysis_mat2') as dn:
+            ra.plot_arrhenius(os.path.join(dn, "arrhenius_mat1w.png"))
+            ra.monte_carlo()
+            ra.write_to_file(os.path.join(dn, "reaction_mat1w.txt"))
+            ra.plot_parameters(os.path.join(dn, "parameters_mat1w.png"))
 
         km = KineticModel([pf_react], pf_ts)
         ra = ReactionAnalysis(km, 670, 770)
@@ -98,13 +112,17 @@ class PFToolsTestCase(unittest.TestCase):
         # in the fancy excel file where these numbers come from.
         self.assertAlmostEqual(ra.Ea/kjmol, 161.9, 1)
         self.assertAlmostEqual(np.log(ra.A/km.unit), np.log(4.08e10), 0)
-        ra.plot_arrhenius("test/output/arrhenius_mat2.png")
-        ra.monte_carlo()
-        ra.write_to_file("test/output/reaction_mat2.txt")
-        ra.plot_parameters("test/output/parameters_mat2.png")
+        with tmpdir(__name__, 'test_reaction_analysis_mat3') as dn:
+            ra.plot_arrhenius(os.path.join(dn, "arrhenius_mat2.png"))
+            ra.monte_carlo()
+            ra.write_to_file(os.path.join(dn, "reaction_mat2.txt"))
+            ra.plot_parameters(os.path.join(dn, "parameters_mat2.png"))
 
     def test_thermo_analysis_mat(self):
         # just a blind test to see test whether the code does not crash.
-        pf = PartFun(NMA(load_molecule_g03fchk("test/input/mat5T/react.fchk")), [ExtTrans(), ExtRot(1)])
+        pf = PartFun(NMA(load_molecule_g03fchk(
+            pkg_resources.resource_filename(__name__, "../data/test/mat5T/react.fchk"))),
+            [ExtTrans(), ExtRot(1)])
         ta = ThermoAnalysis(pf, [200,300,400,500,600,700,800,900])
-        ta.write_to_file("test/output/thermo_mat2.csv")
+        with tmpdir(__name__, 'test_thermo_analysis_mat') as dn:
+            ta.write_to_file(os.path.join(dn, "thermo_mat2.csv"))

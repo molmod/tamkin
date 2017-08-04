@@ -1,3 +1,4 @@
+#!/usr/bin/env python
 # -*- coding: utf-8 -*-
 # TAMkin is a post-processing toolkit for normal mode analysis, thermochemistry
 # and reaction kinetics.
@@ -34,22 +35,26 @@
 #--
 
 
+# Import the tamkin libarary.
 from tamkin import *
 
-import unittest
+# Load the gaussian data.
+molecule = load_molecule_g03fchk("freq/gaussian.fchk")
+# Perform the normal mode analysis
+nma = NMA(molecule)
+# Treat the hindered rotor
+rot_scan = load_rotscan_g03log("scan/gaussian.log")
+rotor = Rotor(rot_scan, molecule, rotsym=3, even=True)
+# Construct a partition function object with the typical gas phase contributions.
+pf = PartFun(nma, [ExtTrans(), ExtRot(), rotor])
 
-
-__all__ = ["TimerTestCase"]
-
-
-class TimerTestCase(unittest.TestCase):
-    def test_timer(self):
-        timer = Timer()
-        timer.sample("start")
-        for i in range(100000):
-            j = i**2
-        timer.sample("done")
-        self.assertEqual(timer.labels[0], "start")
-        self.assertEqual(timer.labels[1], "done")
-        #timer.dump()  # to write logfile to screen
-        timer.write_to_file("test/output/logfile-timings.txt")  # just testing whether writing to file works
+# Write some general information about the molecule and the partition function
+# to a file.
+pf.write_to_file("partfun.txt")
+# Write an extensive overview of the thermodynamic properties to a file:
+ta = ThermoAnalysis(pf, [300,400,500,600])
+ta.write_to_file("thermo.csv")
+# Plot the energy levels and the potential of the hindered rotor. The
+# temperature argument is used to indicate the population of each level in the
+# plot.
+rotor.plot_levels("energy_levels.png", 300)

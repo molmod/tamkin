@@ -34,12 +34,14 @@
 #--
 
 
-from tamkin import *
+import numpy as np
+import pkg_resources
+import unittest
 
 from molmod.units import kjmol, centimeter
 from molmod.constants import lightspeed
 
-import unittest, numpy
+from tamkin import *
 
 
 __all__ = ["TunnelingTestCase"]
@@ -51,10 +53,10 @@ class TunnelingTestCase(unittest.TestCase):
         #   Molecular Physics, May 2003, Vol 1.1, No 9, p1329-1338
         #   M.L. Coote, M.A. Collins, L. Radom
         temp = 298
-        forward = numpy.array([71.7, 49.7, 62.0, 44.5,  6.8], float)*kjmol
-        reverse = numpy.array([71.7, 86.8, 76.0, 78.2, 26.4], float)*kjmol
+        forward = np.array([71.7, 49.7, 62.0, 44.5,  6.8], float)*kjmol
+        reverse = np.array([71.7, 86.8, 76.0, 78.2, 26.4], float)*kjmol
 
-        frequencies = numpy.array([
+        frequencies = np.array([
             [3489, 3376, 3592, 3338, 3418],
             [3411, 3315, 3529, 3274, 3376],
             [3398, 3309, 3528, 3257, 3389],
@@ -76,7 +78,7 @@ class TunnelingTestCase(unittest.TestCase):
             [1866, 1859, 1924, 1574, 1046],
         ], float).transpose()*lightspeed/centimeter
 
-        eckart_corrections = numpy.array([
+        eckart_corrections = np.array([
             [7.8E+5, 3.2E+4, 4.0E+5, 1.1E+4, 7.2E+0],
             [5.9E+5, 2.8E+4, 3.3E+5, 1.0E+4, 7.1E+0],
             [5.6E+5, 2.7E+4, 3.3E+5, 9.8E+3, 7.1E+0],
@@ -107,9 +109,12 @@ class TunnelingTestCase(unittest.TestCase):
                 #    print "%.1e" % our, "%.1e" % c
 
     def test_eckart_init(self):
-        fixed_atoms = load_fixed_g03com("test/input/mat/Zp_p_react.14mei.com")
-        mol_react = load_molecule_g03fchk("test/input/mat/Zp_p_react.28aug.fchk")
-        mol_trans = load_molecule_g03fchk("test/input/mat/Zp_p_TS.28aug.fchk")
+        fixed_atoms = load_fixed_g03com(
+            pkg_resources.resource_filename(__name__, "../data/test/mat/Zp_p_react.14mei.com"))
+        mol_react = load_molecule_g03fchk(
+            pkg_resources.resource_filename(__name__, "../data/test/mat/Zp_p_react.28aug.fchk"))
+        mol_trans = load_molecule_g03fchk(
+            pkg_resources.resource_filename(__name__, "../data/test/mat/Zp_p_TS.28aug.fchk"))
 
         pf_react = PartFun(NMA(mol_react, PHVA(fixed_atoms)))
         pf_trans = PartFun(NMA(mol_trans, PHVA(fixed_atoms)))
@@ -117,10 +122,14 @@ class TunnelingTestCase(unittest.TestCase):
         Eckart([pf_react], pf_trans, [pf_react])
 
     def test_eckart_tugba(self):
-        mol_react1 = load_molecule_g03fchk("test/input/tugba/monomer.fchk")
-        mol_react2 = load_molecule_g03fchk("test/input/tugba/radical.fchk")
-        mol_trans = load_molecule_g03fchk("test/input/tugba/ts.fchk")
-        mol_prod = load_molecule_g03fchk("test/input/tugba/prod.fchk")
+        mol_react1 = load_molecule_g03fchk(
+            pkg_resources.resource_filename(__name__, "../data/test/tugba/monomer.fchk"))
+        mol_react2 = load_molecule_g03fchk(
+            pkg_resources.resource_filename(__name__, "../data/test/tugba/radical.fchk"))
+        mol_trans = load_molecule_g03fchk(
+            pkg_resources.resource_filename(__name__, "../data/test/tugba/ts.fchk"))
+        mol_prod = load_molecule_g03fchk(
+            pkg_resources.resource_filename(__name__, "../data/test/tugba/prod.fchk"))
 
         pf_react1 = PartFun(NMA(mol_react1))
         pf_react2 = PartFun(NMA(mol_react2))
@@ -128,10 +137,11 @@ class TunnelingTestCase(unittest.TestCase):
         pf_prod = PartFun(NMA(mol_prod))
 
         eckart = Eckart([pf_react1, pf_react2], pf_trans, [pf_prod])
-        eckart(numpy.array([620,770]))
+        eckart(np.array([620,770]))
 
     def test_miller_tugba(self):
-        mol_trans = load_molecule_g03fchk("test/input/tugba/ts.fchk")
+        mol_trans = load_molecule_g03fchk(
+            pkg_resources.resource_filename(__name__, "../data/test/tugba/ts.fchk"))
         pf_trans = PartFun(NMA(mol_trans))
         miller = Miller(pf_trans)
-        miller(numpy.array([620,770]))
+        miller(np.array([620,770]))

@@ -35,14 +35,16 @@
 
 
 import numpy as np
-
-from tamkin import *
+import os
+import pkg_resources
+import unittest
 
 from molmod.periodic import periodic
 from molmod.units import angstrom, amu, calorie, avogadro, electronvolt
 from molmod.constants import lightspeed
+from molmod.test.common import tmpdir
 
-import unittest, numpy
+from tamkin import *
 
 
 __all__ = ["IOTestCase"]
@@ -50,43 +52,58 @@ __all__ = ["IOTestCase"]
 
 class IOTestCase(unittest.TestCase):
     def test_load_fixed_g03com(self):
-        fixed_atoms = load_fixed_g03com("test/input/mat/Zp_p_prod.18aug.com")
+        fixed_atoms = load_fixed_g03com(
+            pkg_resources.resource_filename(__name__, "../data/test/mat/Zp_p_prod.18aug.com"))
         self.assertEqual(len(fixed_atoms), 48)
         self.assertEqual(fixed_atoms, range(114,114+48))
 
     def test_load_molecule_g03fchk(self):
         atoms = 181
-        molecule = load_molecule_g03fchk("test/input/mat/Zp_p_react.28aug.fchk")
+        molecule = load_molecule_g03fchk(
+            pkg_resources.resource_filename(__name__, "../data/test/mat/Zp_p_react.28aug.fchk"))
         self.assertEqual(molecule.hessian.shape,(atoms*3,atoms*3))
         self.assertAlmostEqual(molecule.energy, -3053.805846445570, 7)
-        molecule = load_molecule_g03fchk("test/input/mat/Zp_p_react.28aug.fchk", energy=-123.0)
+        molecule = load_molecule_g03fchk(
+            pkg_resources.resource_filename(__name__, "../data/test/mat/Zp_p_react.28aug.fchk"),
+            energy=-123.0)
         self.assertAlmostEqual(molecule.energy, -123.0, 7)
-        molecule = load_molecule_g03fchk("test/input/mat/Zp_p_react.28aug.fchk", "test/input/mat/Zp_p_react.14mei.fchk")
+        molecule = load_molecule_g03fchk(
+            pkg_resources.resource_filename(__name__, "../data/test/mat/Zp_p_react.28aug.fchk"), 
+            pkg_resources.resource_filename(__name__, "../data/test/mat/Zp_p_react.14mei.fchk"))
         self.assertAlmostEqual(molecule.energy, -18613.135744186180, 7)
 
     def test_load_molecule_g98fchk(self):
         atoms = 6
-        molecule = load_molecule_g98fchk("test/input/g98/freqs.fchk")
+        molecule = load_molecule_g98fchk(
+            pkg_resources.resource_filename(__name__, "../data/test/g98/freqs.fchk"))
         self.assertEqual(molecule.hessian.shape,(atoms*3,atoms*3))
         self.assertAlmostEqual(molecule.masses[0]/amu, 12.011)
         self.assertAlmostEqual(molecule.masses[2]/amu, 1.0079)
         self.assertAlmostEqual(molecule.energy, -78.58745828877478, 7)
-        molecule = load_molecule_g98fchk("test/input/g98/freqs.fchk", energy=-123.0)
+        molecule = load_molecule_g98fchk(
+            pkg_resources.resource_filename(__name__, "../data/test/g98/freqs.fchk"),
+            energy=-123.0)
         self.assertAlmostEqual(molecule.energy, -123.0, 7)
 
     def test_load_molecule_g03fchkvdw(self):
         atoms = 179
-        molecule = load_molecule_g03fchk("test/input/matvdw/R.fchk","test/input/matvdw/R_SCF.fchk","test/input/matvdw/R_b3lyp-d.out")
+        molecule = load_molecule_g03fchk(
+            pkg_resources.resource_filename(__name__, "../data/test/matvdw/R.fchk"),
+            pkg_resources.resource_filename(__name__, "../data/test/matvdw/R_SCF.fchk"),
+            pkg_resources.resource_filename(__name__, "../data/test/matvdw/R_b3lyp-d.out"))
 
         self.assertEqual(molecule.hessian.shape,(atoms*3,atoms*3))
         self.assertAlmostEqual(molecule.energy,-18612.352569964281 , 7)
 
     def test_load_fixed_fchk(self):
-        molecule = load_molecule_g03fchk("test/input/ethane/gaussian.fchk")
+        molecule = load_molecule_g03fchk(
+            pkg_resources.resource_filename(__name__, "../data/test/ethane/gaussian.fchk"))
         assert (molecule.fixed == [0, 6, 7]).all()
 
     def test_load_molecule_cp2k(self):
-        molecule = load_molecule_cp2k("test/input/cp2k/pentane/sp.out", "test/input/cp2k/pentane/freq.out")
+        molecule = load_molecule_cp2k(
+            pkg_resources.resource_filename(__name__, "../data/test/cp2k/pentane/sp.out"),
+            pkg_resources.resource_filename(__name__, "../data/test/cp2k/pentane/freq.out"))
         self.assertAlmostEqual(molecule.energy, 0.012255059530862)
         self.assertEqual(molecule.multiplicity, 1)
         self.assertEqual(molecule.numbers[0], 6)
@@ -102,7 +119,9 @@ class IOTestCase(unittest.TestCase):
         self.assertAlmostEqual(molecule.unit_cell.matrix[1,2]/angstrom, 0.000,3)
 
     def test_load_molecule_cp2k_23(self):
-        molecule = load_molecule_cp2k("test/input/cp2k/john/scf.out", "test/input/cp2k/john/quickie.out")
+        molecule = load_molecule_cp2k(
+            pkg_resources.resource_filename(__name__, "../data/test/cp2k/john/scf.out"),
+            pkg_resources.resource_filename(__name__, "../data/test/cp2k/john/quickie.out"))
         self.assertAlmostEqual(molecule.energy, -141.189006820072791)
         self.assertEqual(molecule.multiplicity, 1)
         self.assertEqual(molecule.numbers[0], 14)
@@ -118,7 +137,9 @@ class IOTestCase(unittest.TestCase):
         self.assertAlmostEqual(molecule.unit_cell.matrix[1,2]/angstrom, 0.000,3)
 
     def test_load_molecule_cp2k_dan_phva(self):
-        molecule = load_molecule_cp2k("test/input/cp2k/dan/cp2k.out", "test/input/cp2k/dan/freq.out")
+        molecule = load_molecule_cp2k(
+            pkg_resources.resource_filename(__name__, "../data/test/cp2k/dan/cp2k.out"),
+            pkg_resources.resource_filename(__name__, "../data/test/cp2k/dan/freq.out"))
         self.assertAlmostEqual(molecule.energy, -290.409097595743333)
         self.assertEqual(molecule.multiplicity, 1)
         self.assertEqual(molecule.numbers[0], 6)
@@ -140,11 +161,15 @@ class IOTestCase(unittest.TestCase):
         self.assertAlmostEqual(molecule.unit_cell.matrix[1,0], -6.153*angstrom, 3)
 
     def test_load_fixed_cp2k(self):
-        fixed = load_fixed_cp2k("test/input/cp2k/dan/freq.out")
+        fixed = load_fixed_cp2k(
+            pkg_resources.resource_filename(__name__, "../data/test/cp2k/dan/freq.out"))
         np.testing.assert_equal(fixed, np.arange(52 - 6))
 
     def test_load_molecule_cpmd(self):
-        molecule = load_molecule_cpmd("test/input/cpmd/damp.out", "test/input/cpmd/GEOMETRY.xyz", "test/input/cpmd/MOLVIB")
+        molecule = load_molecule_cpmd(
+            pkg_resources.resource_filename(__name__, "../data/test/cpmd/damp.out"),
+            pkg_resources.resource_filename(__name__, "../data/test/cpmd/GEOMETRY.xyz"),
+            pkg_resources.resource_filename(__name__, "../data/test/cpmd/MOLVIB"))
         self.assertAlmostEqual(molecule.energy, -17.14142079)
         self.assertEqual(molecule.multiplicity, 1)
         self.assertEqual(molecule.numbers[0], 8)
@@ -158,7 +183,9 @@ class IOTestCase(unittest.TestCase):
         self.assertAlmostEqual(molecule.hessian[-1,-1], 0.921045226686428159E-01, 6)
 
     def test_load_molecule_charmm(self):
-        molecule = load_molecule_charmm("test/input/an/ethanol.cor","test/input/an/ethanol.hess.full")
+        molecule = load_molecule_charmm(
+            pkg_resources.resource_filename(__name__, "../data/test/an/ethanol.cor"),
+            pkg_resources.resource_filename(__name__, "../data/test/an/ethanol.hess.full"))
         self.assertAlmostEqual(molecule.energy/(1000*calorie/avogadro), -2.1303308955)
         self.assertEqual(molecule.multiplicity, 1)
         self.assertEqual(molecule.numbers[0], 6)
@@ -172,7 +199,9 @@ class IOTestCase(unittest.TestCase):
         self.assertAlmostEqual(molecule.hessian[-1,-1]/(1000*calorie/avogadro /angstrom**2), 474.7950312957, 6)
 
     def test_load_molecule_qchem(self):
-        molecule = load_molecule_qchem("test/input/qchem/h2o2.hf.sto-3g.freq.out", hessfile="test/input/qchem/hessian.dat")
+        molecule = load_molecule_qchem(
+            pkg_resources.resource_filename(__name__, "../data/test/qchem/h2o2.hf.sto-3g.freq.out"),
+            hessfile=pkg_resources.resource_filename(__name__, "../data/test/qchem/hessian.dat"))
         self.assertAlmostEqual(molecule.energy, -148.7649966058)
         self.assertEqual(molecule.multiplicity, 1)
         self.assertEqual(molecule.numbers[0], 1)
@@ -186,8 +215,9 @@ class IOTestCase(unittest.TestCase):
         self.assertAlmostEqual(molecule.hessian[-1,-1]/(1000*calorie/avogadro/angstrom**2), 338.870127396983150447, 6)
 
     def test_load_molecule_vasp_53(self):
-        molecule = load_molecule_vasp('test/input/lucas/vasp_5_3_5_complex/CONTCAR_opt',
-                                      'test/input/lucas/vasp_5_3_5_complex/OUTCAR_freq')
+        molecule = load_molecule_vasp(
+            pkg_resources.resource_filename(__name__, "../data/test/lucas/vasp_5_3_5_complex/CONTCAR_opt"),
+            pkg_resources.resource_filename(__name__, "../data/test/lucas/vasp_5_3_5_complex/OUTCAR_freq"))
         # contcar
         assert molecule.numbers[0] == 6
         assert (molecule.numbers[1:] == 1).all()
@@ -211,8 +241,9 @@ class IOTestCase(unittest.TestCase):
         assert molecule.gradient[-1, -1] == -0.212810*gunit
 
     def test_load_molecule_vasp_5_3_5_gamma(self):
-        molecule = load_molecule_vasp('test/input/julianna/vasp_5_3_5_gamma/CONTCAR_opt',
-                                      'test/input/julianna/vasp_5_3_5_gamma/OUTCAR_freq')
+        molecule = load_molecule_vasp(
+            pkg_resources.resource_filename(__name__, "../data/test/julianna/vasp_5_3_5_gamma/CONTCAR_opt"),
+            pkg_resources.resource_filename(__name__, "../data/test/julianna/vasp_5_3_5_gamma/OUTCAR_freq"))
         # contcar
         assert molecule.numbers[0] == 6
         assert (molecule.numbers[1:] == 1).all()
@@ -236,8 +267,9 @@ class IOTestCase(unittest.TestCase):
         assert molecule.gradient[-1, -1] == 0.003424*gunit
 
     def test_load_molecule_vasp_5_3_5_gamma_part(self):
-        molecule = load_molecule_vasp('test/input/julianna/vasp_5_3_5_gamma/CONTCAR_opt',
-                                      'test/input/julianna/vasp_5_3_5_gamma/OUTCAR_freq_part')
+        molecule = load_molecule_vasp(
+            pkg_resources.resource_filename(__name__, "../data/test/julianna/vasp_5_3_5_gamma/CONTCAR_opt"),
+            pkg_resources.resource_filename(__name__, "../data/test/julianna/vasp_5_3_5_gamma/OUTCAR_freq_part"))
         # outcar_freq
         hunit = electronvolt/angstrom**2
         assert molecule.hessian[0,0] == 0.0
@@ -246,8 +278,9 @@ class IOTestCase(unittest.TestCase):
         self.assertAlmostEqual(molecule.hessian[6,9], 0.5*(-2.601094 + -2.794160)*hunit)
 
     def test_load_molecule_vasp_5_2_11_complex(self):
-        molecule = load_molecule_vasp('test/input/julianna/vasp_5_2_11_complex/CONTCAR_opt',
-                                      'test/input/julianna/vasp_5_2_11_complex/OUTCAR_freq')
+        molecule = load_molecule_vasp(
+            pkg_resources.resource_filename(__name__, "../data/test/julianna/vasp_5_2_11_complex/CONTCAR_opt"),
+            pkg_resources.resource_filename(__name__, "../data/test/julianna/vasp_5_2_11_complex/OUTCAR_freq"))
         # outcar_freq
         assert molecule.masses[0] == 12.011*amu
         assert (molecule.masses[1:] == 1.000*amu).all()
@@ -262,8 +295,9 @@ class IOTestCase(unittest.TestCase):
         assert molecule.gradient[-1, -1] == 0.003425*gunit
 
     def test_load_molecule_vasp_5_2_11_complex_part(self):
-        molecule = load_molecule_vasp('test/input/julianna/vasp_5_2_11_complex/CONTCAR_opt',
-                                      'test/input/julianna/vasp_5_2_11_complex/OUTCAR_freq_part')
+        molecule = load_molecule_vasp(
+            pkg_resources.resource_filename(__name__, "../data/test/julianna/vasp_5_2_11_complex/CONTCAR_opt"),
+            pkg_resources.resource_filename(__name__, "../data/test/julianna/vasp_5_2_11_complex/OUTCAR_freq_part"))
         # outcar_freq
         hunit = electronvolt/angstrom**2
         assert molecule.hessian[0,0] == 0.0
@@ -273,8 +307,9 @@ class IOTestCase(unittest.TestCase):
         assert molecule.energy == -24.123642*electronvolt
 
     def test_load_molecule_vasp_5_3_3_complex(self):
-        molecule = load_molecule_vasp('test/input/julianna/vasp_5_3_3_complex/CONTCAR_opt',
-                                      'test/input/julianna/vasp_5_3_3_complex/OUTCAR_freq')
+        molecule = load_molecule_vasp(
+            pkg_resources.resource_filename(__name__, "../data/test/julianna/vasp_5_3_3_complex/CONTCAR_opt"),
+            pkg_resources.resource_filename(__name__, "../data/test/julianna/vasp_5_3_3_complex/OUTCAR_freq"))
         # outcar_freq
         assert molecule.masses[0] == 12.011*amu
         assert (molecule.masses[1:] == 1.000*amu).all()
@@ -289,8 +324,9 @@ class IOTestCase(unittest.TestCase):
         assert molecule.gradient[-1, -1] == 0.003335*gunit
 
     def test_load_molecule_vasp_5_3_3_complex_part(self):
-        molecule = load_molecule_vasp('test/input/julianna/vasp_5_3_3_complex/CONTCAR_opt',
-                                      'test/input/julianna/vasp_5_3_3_complex/OUTCAR_freq_part')
+        molecule = load_molecule_vasp(
+            pkg_resources.resource_filename(__name__, "../data/test/julianna/vasp_5_3_3_complex/CONTCAR_opt"),
+            pkg_resources.resource_filename(__name__, "../data/test/julianna/vasp_5_3_3_complex/OUTCAR_freq_part"))
         # outcar_freq
         hunit = electronvolt/angstrom**2
         assert molecule.hessian[0,0] == 0.0
@@ -299,22 +335,28 @@ class IOTestCase(unittest.TestCase):
         self.assertAlmostEqual(molecule.hessian[6,9], 0.5*(-2.601060 + -2.794022)*hunit)
 
     def test_load_molecule_vasp_5_3_5_gamma_part_energy(self):
-        molecule = load_molecule_vasp('test/input/julianna/vasp_5_3_5_gamma/CONTCAR_opt',
-                                      'test/input/julianna/vasp_5_3_5_gamma/OUTCAR_freq_part',
-                                      energy=1.476)
+        molecule = load_molecule_vasp(
+            pkg_resources.resource_filename(__name__, "../data/test/julianna/vasp_5_3_5_gamma/CONTCAR_opt"),
+            pkg_resources.resource_filename(__name__, "../data/test/julianna/vasp_5_3_5_gamma/OUTCAR_freq_part"),
+            energy=1.476)
         assert molecule.energy == 1.476
 
     def test_load_molecule_vasp_5_3_5_gamma_part_outcar_energy(self):
-        molecule = load_molecule_vasp('test/input/julianna/vasp_5_3_5_gamma/CONTCAR_opt',
-                                      'test/input/julianna/vasp_5_3_5_gamma/OUTCAR_freq_part',
-                                      'test/input/lucas/vasp_5_3_5_complex/OUTCAR_freq')
+        molecule = load_molecule_vasp(
+            pkg_resources.resource_filename(__name__, "../data/test/julianna/vasp_5_3_5_gamma/CONTCAR_opt"),
+            pkg_resources.resource_filename(__name__, "../data/test/julianna/vasp_5_3_5_gamma/OUTCAR_freq_part"),
+            pkg_resources.resource_filename(__name__, "../data/test/lucas/vasp_5_3_5_complex/OUTCAR_freq"))
         assert molecule.energy == -24.11901936*electronvolt
 
     def test_checkpoint(self):
-        molecule = load_molecule_cp2k("test/input/cp2k/pentane/sp.out", "test/input/cp2k/pentane/freq.out")
+        molecule = load_molecule_cp2k(
+            pkg_resources.resource_filename(__name__, "../data/test/cp2k/pentane/sp.out"),
+            pkg_resources.resource_filename(__name__, "../data/test/cp2k/pentane/freq.out"))
         nma1 = NMA(molecule)
-        nma1.write_to_file("test/output/test.chk")
-        nma2 = NMA.read_from_file("test/output/test.chk")
+        with tmpdir(__name__, 'test_checkpoint') as dn:
+            fn_out = os.path.join(dn, 'test.chk')
+            nma1.write_to_file(fn_out)
+            nma2 = NMA.read_from_file(fn_out)
 
         self.assertEqual(nma1.freqs.shape, nma2.freqs.shape)
         self.assertEqual(nma1.modes.shape, nma2.modes.shape)
@@ -336,102 +378,112 @@ class IOTestCase(unittest.TestCase):
         self.assertEqual(nma1.symmetry_number, nma2.symmetry_number)
 
     def test_load_indices(self):
-        blocks = load_indices("test/input/an/fixed.07.txt", groups=True)
+        blocks = load_indices(pkg_resources.resource_filename(__name__, "../data/test/an/fixed.07.txt"), groups=True)
         self.assertEqual(blocks, [[3,2,6]])
-        blocks = load_indices("test/input/an/fixed.07.txt")
+        blocks = load_indices(pkg_resources.resource_filename(__name__, "../data/test/an/fixed.07.txt"))
         self.assertEqual(blocks, [3,2,6])
-        blocks = load_indices("test/input/an/fixed.08.txt")
+        blocks = load_indices(pkg_resources.resource_filename(__name__, "../data/test/an/fixed.08.txt"))
         self.assertEqual(blocks, [5,4,8])
 
     def test_load_indices_ranges(self):
-        blocks = load_indices("test/input/an/fixed_ranges.txt", groups=True)
+        blocks = load_indices(pkg_resources.resource_filename(__name__, "../data/test/an/fixed_ranges.txt"), groups=True)
         self.assertEqual(blocks, [[0, 2, 3, 4], [9, 10, 11, 12, 13, 19], [21]])
-        blocks = load_indices("test/input/an/fixed_ranges.txt", shift=0)
+        blocks = load_indices(pkg_resources.resource_filename(__name__, "../data/test/an/fixed_ranges.txt"), shift=0)
         self.assertEqual(blocks, [1, 3, 4, 5, 10, 11, 12, 13, 14, 20, 22])
-        blocks = load_indices("test/input/an/fixed_ranges_shift.txt", groups=True)
+        blocks = load_indices(pkg_resources.resource_filename(__name__, "../data/test/an/fixed_ranges_shift.txt"), groups=True)
         self.assertEqual(blocks, [[1, 3, 4, 5], [10, 11, 12, 13, 14, 20], [22]])
-        blocks = load_indices("test/input/an/fixed_ranges_shift.txt", shift=0)
+        blocks = load_indices(pkg_resources.resource_filename(__name__, "../data/test/an/fixed_ranges_shift.txt"), shift=0)
         self.assertEqual(blocks, [1, 3, 4, 5, 10, 11, 12, 13, 14, 20, 22])
 
     def test_dump_modes_xyz(self):
-        molecule = load_molecule_charmm("test/input/an/ethanol.cor","test/input/an/ethanol.hess.full")
+        molecule = load_molecule_charmm(
+            pkg_resources.resource_filename(__name__, "../data/test/an/ethanol.cor"),
+            pkg_resources.resource_filename(__name__, "../data/test/an/ethanol.hess.full"))
         nma = NMA(molecule)
-        dump_modes_xyz(nma, 6, prefix="test/output/mode", amplitude=50.0)
-        f = file("test/output/mode.6.xyz")
-        # 1st line
-        line = f.readline().strip()
-        self.assertEqual(line,"9")
-        # 2nd line
-        line = f.readline().strip()
-        self.assertEqual(line,"frame 0")
-        # 3rd line
-        line = f.readline()
-        words = line.split()
-        self.assertEqual(len(words),4)
-        self.assertEqual(words[0],"C")
-        self.assertEqual(words[2],"0.081608346")
-        for i in range(9):
-            line = f.readline().strip()
-        self.assertEqual(line,"9")
-        f.close()
+        with tmpdir(__name__, 'test_dump_modes_xyz') as dn:
+            prefix = os.path.join(dn, 'mode')
+            dump_modes_xyz(nma, 6, prefix=prefix, amplitude=50.0)
+            with open(prefix + ".6.xyz") as f:
+                # 1st line
+                line = f.readline().strip()
+                self.assertEqual(line,"9")
+                # 2nd line
+                line = f.readline().strip()
+                self.assertEqual(line,"frame 0")
+                # 3rd line
+                line = f.readline()
+                words = line.split()
+                self.assertEqual(len(words),4)
+                self.assertEqual(words[0],"C")
+                self.assertEqual(words[2],"0.081608346")
+                for i in range(9):
+                    line = f.readline().strip()
+                self.assertEqual(line,"9")
 
     def test_dump_modes_gaussian(self):
-        molecule = load_molecule_charmm("test/input/an/ethanol.cor","test/input/an/ethanol.hess.full")
+        molecule = load_molecule_charmm(
+            pkg_resources.resource_filename(__name__, "../data/test/an/ethanol.cor"),
+            pkg_resources.resource_filename(__name__, "../data/test/an/ethanol.hess.full"))
         nma = NMA(molecule)
-        dump_modes_gaussian("test/output/modes_gaussian.log", nma)
-        # blind test, no double checking of the output file
+        with tmpdir(__name__, 'test_dump_modes_gaussian') as dn:
+            # blind test, no double checking of the output file
+            fn_log = os.path.join(dn, 'modes_gaussian.log')
+            dump_modes_gaussian(fn_log, nma)
 
     def test_load_dump_indices1(self):
         subs = range(10)
-        dump_indices("test/output/subs-atoms.1.txt", subs, shift=0)
-        dump_indices("test/output/subs-atoms.2.txt", subs, shift=1)
-        dump_indices("test/output/subs-atoms.3.txt", subs)
+        with tmpdir(__name__, 'test_load_dump_indices1') as dn:
+            dump_indices(os.path.join(dn, "subs-atoms.1.txt"), subs, shift=0)
+            dump_indices(os.path.join(dn, "subs-atoms.2.txt"), subs, shift=1)
+            dump_indices(os.path.join(dn, "subs-atoms.3.txt"), subs)
 
-        subs1 = load_indices("test/output/subs-atoms.1.txt", shift=0)
+            subs1 = load_indices(os.path.join(dn, "subs-atoms.1.txt"), shift=0)
+            subs2 = load_indices(os.path.join(dn, "subs-atoms.2.txt"), shift=-1)
+            subs22 = load_indices(os.path.join(dn, "subs-atoms.2.txt"))  # should not matter
+            subs3 = load_indices(os.path.join(dn, "subs-atoms.3.txt"))
+
+            blocks = [range(10), range(10,20)]
+            dump_indices(os.path.join(dn, "blocks.1.txt"), blocks, shift=0)
+            dump_indices(os.path.join(dn, "blocks.2.txt"), blocks, shift=1)
+            dump_indices(os.path.join(dn, "blocks.3.txt"), blocks)
+
+            blocks1 = load_indices(os.path.join(dn, "blocks.1.txt"), shift=0, groups=True)
+            blocks2 = load_indices(os.path.join(dn, "blocks.2.txt"), shift=-1, groups=True)
+            blocks22 = load_indices(os.path.join(dn, "blocks.2.txt"), groups=True)  # should not matter
+            blocks3 = load_indices(os.path.join(dn, "blocks.3.txt"), groups=True)
+
         self.assertEqual(len(subs),len(subs1))
         for (i,j) in zip(subs,subs1):
             self.assertEqual(i,j)
-        subs2 = load_indices("test/output/subs-atoms.2.txt", shift=-1)
         self.assertEqual(len(subs),len(subs2))
         for i,j in zip(subs,subs2):
             self.assertEqual(i,j)
-        subs22 = load_indices("test/output/subs-atoms.2.txt")  # should not matter
         self.assertEqual(len(subs),len(subs22))
         for i,j in zip(subs,subs22):
             self.assertEqual(i,j)
-        subs3 = load_indices("test/output/subs-atoms.3.txt")
         self.assertEqual(len(subs),len(subs3))
         for i,j in zip(subs,subs3):
             self.assertEqual(i,j)
 
-        blocks = [range(10), range(10,20)]
-        dump_indices("test/output/blocks.1.txt", blocks, shift=0)
-        dump_indices("test/output/blocks.2.txt", blocks, shift=1)
-        dump_indices("test/output/blocks.3.txt", blocks)
-
-        blocks1 = load_indices("test/output/blocks.1.txt", shift=0, groups=True)
         self.assertEqual(len(blocks),len(blocks1))
         for bl,bl1 in zip(blocks,blocks1):
             for i,j in zip(bl,bl1):
                 self.assertEqual(i,j)
-        blocks2 = load_indices("test/output/blocks.2.txt", shift=-1, groups=True)
         self.assertEqual(len(blocks),len(blocks2))
         for bl,bl1 in zip(blocks,blocks2):
             for i,j in zip(bl,bl1):
                 self.assertEqual(i,j)
-        blocks22 = load_indices("test/output/blocks.2.txt", groups=True)  # should not matter
-        self.assertEqual(len(blocks),len(blocks2))
-        for bl,bl1 in zip(blocks,blocks2):
+        self.assertEqual(len(blocks),len(blocks22))
+        for bl,bl1 in zip(blocks,blocks22):
             for i,j in zip(bl,bl1):
                 self.assertEqual(i,j)
-        blocks3 = load_indices("test/output/blocks.3.txt", groups=True)
         self.assertEqual(len(blocks),len(blocks3))
         for bl,bl1 in zip(blocks,blocks3):
             for i,j in zip(bl,bl1):
                 self.assertEqual(i,j)
 
     def test_load_dump_indices2(self):
-        randint = numpy.random.randint
+        randint = np.random.randint
         for counter in xrange(20):
             for compact in True, False:
                 shift = randint(-5,5)
@@ -442,26 +494,32 @@ class IOTestCase(unittest.TestCase):
                         indices.append(l)
                 indices_flat = sum(indices, [])
 
-                dump_indices("test/output/indices_blocks.txt", indices, compact=compact, shift=shift)
-                dump_indices("test/output/indices_flat.txt", indices_flat, compact=compact, shift=shift)
+                with tmpdir(__name__, '{}_{}'.format('test_load_dump_indices2', counter)) as dn:
+                    dump_indices(os.path.join(dn, "indices_blocks.txt"), indices, compact=compact, shift=shift)
+                    dump_indices(os.path.join(dn, "indices_flat.txt"), indices_flat, compact=compact, shift=shift)
 
-                check = load_indices("test/output/indices_blocks.txt", shift=-shift, groups=True)
-                self.assertEqual(indices, check)
-                check = load_indices("test/output/indices_blocks.txt", shift=-shift)
-                self.assertEqual(indices_flat, check)
-                check = load_indices("test/output/indices_flat.txt", shift=-shift, groups=True)
-                self.assertEqual([indices_flat], check)
-                check = load_indices("test/output/indices_flat.txt", shift=-shift)
-                self.assertEqual(indices_flat, check)
+                    check = load_indices(os.path.join(dn, "indices_blocks.txt"), shift=-shift, groups=True)
+                    self.assertEqual(indices, check)
+                    check = load_indices(os.path.join(dn, "indices_blocks.txt"), shift=-shift)
+                    self.assertEqual(indices_flat, check)
+                    check = load_indices(os.path.join(dn, "indices_flat.txt"), shift=-shift, groups=True)
+                    self.assertEqual([indices_flat], check)
+                    check = load_indices(os.path.join(dn, "indices_flat.txt"), shift=-shift)
+                    self.assertEqual(indices_flat, check)
 
     def test_punch(self):
-        mol0 = load_molecule_g03fchk('test/input/punch/gaussian.fchk')
-        mol1 = load_molecule_g03fchk('test/input/punch/gaussian.fchk', fn_punch='test/input/punch/fort.7')
+        mol0 = load_molecule_g03fchk(
+            pkg_resources.resource_filename(__name__, "../data/test/punch/gaussian.fchk"))
+        mol1 = load_molecule_g03fchk(
+            pkg_resources.resource_filename(__name__, "../data/test/punch/gaussian.fchk"),
+            fn_punch=pkg_resources.resource_filename(__name__, "../data/test/punch/fort.7"))
         assert abs(mol0.gradient - mol1.gradient).max() < 1e-8
         assert abs(mol0.hessian - mol1.hessian).max() < 1e-8
 
     def test_dftd3(self):
-        assert load_dftd3('test/input/dftd3/dftd3.out') == -0.00330057
+        assert load_dftd3(
+            pkg_resources.resource_filename(__name__, "../data/test/dftd3/dftd3.out")) == -0.00330057
 
     def test_dftd_orca(self):
-        assert load_dftd_orca('test/input/matvdw/R_b3lyp-d.out') == -0.404083275
+        assert load_dftd_orca(
+            pkg_resources.resource_filename(__name__, "../data/test/matvdw/R_b3lyp-d.out")) == -0.404083275

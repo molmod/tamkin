@@ -15,4 +15,4 @@ install:
  - echo backend:agg > ~/.config/matplotlib/matplotlibrc
  - ./setup.py sdist
 script:
- - nosetests -v test --processes=2 --process-timeout=100
+ - nosetests -v tamkin --processes=2 --process-timeout=100

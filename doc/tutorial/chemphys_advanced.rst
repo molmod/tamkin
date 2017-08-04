@@ -30,11 +30,10 @@ The two checkpoint files in the example are derived from frequency computations
 with Gaussian03 using the B3LYP/6-31G(d) level of theory at the reactant and
 transition state.
 
-File: ``examples/006_5T_ethyl_ethene_addition/reaction.py``
-
-.. literalinclude:: ../../examples/006_5T_ethyl_ethene_addition/reaction.py
+.. literalinclude:: ../../tamkin/examples/006_5T_ethyl_ethene_addition/reaction.py
    :lines: 37-
    :linenos:
+   :caption: tamkin/examples/006_5T_ethyl_ethene_addition/reaction.py
 
 Take note of the following (subtle) choices in the input file:
 

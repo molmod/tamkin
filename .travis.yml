@@ -39,7 +39,7 @@ install:
 - python setup.py sdist
 
 # Install Conda package
-- conda install --use-local yaff
+- conda install --use-local tamkin
 
 # No visual backend for matplotlib
 - mkdir -p ~/.config/matplotlib/
@@ -49,7 +49,7 @@ install:
 - (cd doc; make html)
 script:
 # Run tests out of source tree, to make sure that installed version is tested.
-- "(cd; nosetests yaff -v --processes=2 --detailed-errors --process-timeout=600)"
+- "(cd; nosetests tamkin -v --processes=2 --detailed-errors --process-timeout=600)"
 
 # Basic code checks
 - ./checkwhitespace.py $(find . -type f | egrep '(\.py$)|(\.c$)|(\.pyx$)|(\.pxd$)|(\.h$)|(\.rst$)|(\.in$)|(\.yml$)|(\.yaml$)')
@@ -60,10 +60,10 @@ deploy:
   skip_cleanup: true
   api_key:
     # Encrypted github token
-    secure: "NVbUZkYqTIxaYHn3a2wEuVLZf6nvSYKgWK83XsrPI6i+rL9j85bHKhJo7Ad9sPrwI8buuIyp2Kb5XFnTKay4M/KMdPdnN+0Ai87jNesWqyl8RzbAN9so3vyz+h5hvdIvtry7Q9U5+4OQvIaQjnJsLodKWKRCbGhPpv5J93ptiCw="
-  file: dist/yaff-${TRAVIS_TAG}.tar.gz
+    secure: "PpfBEYmfeqmBSwT0qRao3zomXmR50YNbEK7q+VTjk6EJ8hYpt+zxL2IzX12Clsklv7UnPlI/o5OIcwsyFu98B0ptm3SaornShj+4U7Wo5MXaoHSeWrs4IY2XUyV5AkbSCe/d6e25SkiRalZT9jBVtSTTSTGPbN/pzDxeLE9TkCw="
+  file: dist/tamkin-${TRAVIS_TAG}.tar.gz
   on:
-    repo: molmod/yaff
+    repo: molmod/tamkin
     tags: true
     condition: "$TRAVIS_TAG != *[ab]* && $MYCONDAPY == 2.7"
   prerelease: false
@@ -71,32 +71,32 @@ deploy:
   skip_cleanup: true
   api_key:
     # Encrypted github token
-    secure: "NVbUZkYqTIxaYHn3a2wEuVLZf6nvSYKgWK83XsrPI6i+rL9j85bHKhJo7Ad9sPrwI8buuIyp2Kb5XFnTKay4M/KMdPdnN+0Ai87jNesWqyl8RzbAN9so3vyz+h5hvdIvtry7Q9U5+4OQvIaQjnJsLodKWKRCbGhPpv5J93ptiCw="
-  file: dist/yaff-${TRAVIS_TAG}.tar.gz
+    secure: "PpfBEYmfeqmBSwT0qRao3zomXmR50YNbEK7q+VTjk6EJ8hYpt+zxL2IzX12Clsklv7UnPlI/o5OIcwsyFu98B0ptm3SaornShj+4U7Wo5MXaoHSeWrs4IY2XUyV5AkbSCe/d6e25SkiRalZT9jBVtSTTSTGPbN/pzDxeLE9TkCw="
+  file: dist/tamkin-${TRAVIS_TAG}.tar.gz
   on:
-    repo: molmod/yaff
+    repo: molmod/tamkin
     tags: true
     condition: "$TRAVIS_TAG == *[ab]* && $MYCONDAPY == 2.7"
   prerelease: true
 - provider: script
   skip_cleanup: true
-  script: anaconda -t $ANACONDA_TOKEN upload -l alpha ${HOME}/miniconda/conda-bld/linux-64/yaff-*.tar.bz2
+  script: anaconda -t $ANACONDA_TOKEN upload -l alpha ${HOME}/miniconda/conda-bld/linux-64/tamkin-*.tar.bz2
   on:
-    repo: molmod/yaff
+    repo: molmod/tamkin
     tags: true
     condition: "$TRAVIS_TAG == *a*"
 - provider: script
   skip_cleanup: true
-  script: anaconda -t $ANACONDA_TOKEN upload -l beta ${HOME}/miniconda/conda-bld/linux-64/yaff-*.tar.bz2
+  script: anaconda -t $ANACONDA_TOKEN upload -l beta ${HOME}/miniconda/conda-bld/linux-64/tamkin-*.tar.bz2
   on:
-    repo: molmod/yaff
+    repo: molmod/tamkin
     tags: true
     condition: "$TRAVIS_TAG == *b*"
 - provider: script
   skip_cleanup: true
-  script: anaconda -t $ANACONDA_TOKEN upload -l main ${HOME}/miniconda/conda-bld/linux-64/yaff-*.tar.bz2
+  script: anaconda -t $ANACONDA_TOKEN upload -l main ${HOME}/miniconda/conda-bld/linux-64/tamkin-*.tar.bz2
   on:
-    repo: molmod/yaff
+    repo: molmod/tamkin
     tags: true
     condition: "$TRAVIS_TAG != *[ab]*"
 - provider: pypi
@@ -104,19 +104,19 @@ deploy:
   user: tovrstra
   password:
     # Encrypted PyPI password
-    secure: "CURxkjsCeqMT/mhe+ApL74wHVehEYZgtvs5Q9HLhukhonslB7KNegN3uXJX0ejdEH7gaFtB6JQYD7poQmMrB0+FWoMbQbwj6S/RLL9P5W9yK5R+8Hw/IiQFrI4LG9RjXM3Rpf391eHY58hOZM4BqyjdL8hoPkJHwASDGofqiUp8="
+    secure: "am4ZKdZzzNbwKd3E9YmVV9H0OFzbmIxVAD4mJL+xqwQrImJyRAlUynoDHXFvMdupJUt4Wdx6IBk9wGume4rqlVMzyd21yQzBVN5ZH2g8MA7sZpEnuLnUQsHv1wT+J0KjwZ+wP/F2B3lvUQNOUbEvRmBfWhum3gH1b9F+0/yTdlY="
   on:
-    repo: molmod/yaff
+    repo: molmod/tamkin
     tags: true
     condition: "$TRAVIS_TAG != *[ab]* && $MYCONDAPY == 2.7"
 - provider: pages
   skip_cleanup: true
   github_token:
     # Encrypted github token
-    secure: "NVbUZkYqTIxaYHn3a2wEuVLZf6nvSYKgWK83XsrPI6i+rL9j85bHKhJo7Ad9sPrwI8buuIyp2Kb5XFnTKay4M/KMdPdnN+0Ai87jNesWqyl8RzbAN9so3vyz+h5hvdIvtry7Q9U5+4OQvIaQjnJsLodKWKRCbGhPpv5J93ptiCw="
-  project_name: yaff
+    secure: "PpfBEYmfeqmBSwT0qRao3zomXmR50YNbEK7q+VTjk6EJ8hYpt+zxL2IzX12Clsklv7UnPlI/o5OIcwsyFu98B0ptm3SaornShj+4U7Wo5MXaoHSeWrs4IY2XUyV5AkbSCe/d6e25SkiRalZT9jBVtSTTSTGPbN/pzDxeLE9TkCw="
+  project_name: tamkin
   local_dir: doc/_build/html
   on:
-    repo: molmod/yaff
+    repo: molmod/tamkin
     condition: "$TRAVIS_TAG != *[ab]* && $MYCONDAPY == 2.7"
     tags: true

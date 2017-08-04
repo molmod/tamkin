@@ -236,7 +236,7 @@ The following config files are read by the ``tamkin-driver.py`` script:
 Notes
 =====
 
-* The energy levels of a hindered rotor are found by solving the Schrödinger
+* The energy levels of a hindered rotor are found by solving the Schroedinger
   equation in a plane wave basis. A truncated Fourier series is used to expand
   the potential energy. The truncation can be controlled with the ``dofmax``
   parameter. When the RMSD between the Fourier series and the data is larger
@@ -247,7 +247,7 @@ Notes
   appropriate ``rotsym`` keyword in the ``rotor.cfg`` file. If the scan is even,
   one can again halve the range of the scan and add ``even true`` to the file
   ``rotor.cfg``. For example, for a standard methyl top, the scan of the
-  dihedral angle must be limited to the interval [0°, 60°] and the following
+  dihedral angle must be limited to the interval [0 deg, 60 deg] and the following
   lines must be added to the file ``rotor.cfg`` ::
 
     rotsym 3

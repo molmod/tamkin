@@ -1,0 +1,33 @@
+package:
+  version: "{{ load_setup_py_data().version }}"
+  name: 'tamkin'
+
+source:
+  path: ../
+
+build:
+  number: 0
+  script: python setup.py install --single-version-externally-managed --record=record.txt
+
+requirements:
+  run:
+    - python
+    - numpy
+    - nose
+    - future
+  build:
+    - python
+    - setuptools
+
+about:
+  dev_url: https://github.com/molmod/tamkin
+  description: TAMkin is a post-processing toolkit for normal mode analysis, thermochemistry and reaction kinetics.
+  license: GNU General Public License v3 or later (GPLv3+)
+  license_family: GPL3
+  summary: TAMkin is a post-processing toolkit for normal mode analysis, thermochemistry and reaction kinetics.
+  home: http://molmod.github.io/tamkin
+  license_file: LICENSE.txt
+  doc_url: http://molmod.github.io/tamkin
+
+extra:
+  recipe-maintainers: Toon Verstraelen <toon.verstraelen@gmail.com>

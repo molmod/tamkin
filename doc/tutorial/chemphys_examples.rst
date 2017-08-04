@@ -3,12 +3,12 @@ Chemical Physics -- Basic TAMkin recipes
 
 In this chapter, we discuss a few example scripts for TAMkin in detail. They
 can be used as a template for writing new scripts, which is much easier than
-starting from scratch. There are more examples in the ``examples/`` directory
-than those discussed here. Assuming TAMkin is downloaded in a directory
-``~/code/``, then one will find the examples on the following location::
+starting from scratch. There are more examples in the ``tamkin/examples/`` directory
+than those discussed here. Assuming the TAMkin source is downloaded in a directory
+``~/code/``, you can find the examples on the following location::
 
-    toon@poony ~> cd ~/code/tamkin/examples
-    toon@poony ~/code/tamkin/examples> ls
+    toon@poony ~> cd ~/code/tamkin/tamkin/examples
+    toon@poony ~/code/tamkin/tamkin/examples> ls
     001_ethane
     002_linear_co2
     003_pentane
@@ -22,7 +22,7 @@ than those discussed here. Assuming TAMkin is downloaded in a directory
 Thermodynamic properties of a molecule
 ~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
 
-**TODO**: see ``examples/001_ethane`` for now.
+**TODO**: see ``tamkin/examples/001_ethane`` for now.
 
 
 Conformational Equilibrium
@@ -48,10 +48,10 @@ equilibrium constant at different temperatures: 300K, 400K, 500K and 600K. The
 multiplicity option of the electronic contribution is (ab)used to take into
 account the geometrical gauche multiplicity.
 
-File: ``examples/020_butane_conformers/equilibrium.py``
-
-.. literalinclude:: ../../examples/020_butane_conformers/equilibrium.py
+.. literalinclude:: ../../tamkin/examples/020_butane_conformers/equilibrium.py
    :lines: 37-
+   :linenos:
+   :caption: tamkin/examples/020_butane_conformers/equilibrium.py
 
 The scripts writes several output files discussed in the subsections below.
 
@@ -216,10 +216,10 @@ formatted checkpoint files of the frequency jobs are ``oxygen.fchk``,
 
 The following script computes the heat of formation at 298.15K.
 
-File: ``examples/021_water_formation/formation.py``
-
-.. literalinclude:: ../../examples/021_water_formation/formation.py
+.. literalinclude:: ../../tamkin/examples/021_water_formation/formation.py
    :lines: 37-
+   :linenos:
+   :caption: tamkin/examples/021_water_formation/formation.py
 
 Pay special attention to the way the stoichiometry of the balance is passed to
 the ``ThermodynamicModel`` constructor. One can always replace a partition
@@ -416,11 +416,10 @@ is B3LYP/6-31G(d). The following script computes the kinetic parameters (A and
 E\ :sub:`a`) through a linear fit of :math:`\ln(k)` versus :math:`T` in the
 temperature range 300K-600K.
 
-File: ``examples/019_ethyl_ethene_simple/kinetic.py``
-
-.. literalinclude:: ../../examples/019_ethyl_ethene_simple/kinetic.py
+.. literalinclude:: ../../tamkin/examples/019_ethyl_ethene_simple/kinetic.py
    :lines: 37-
    :linenos:
+   :caption: tamkin/examples/019_ethyl_ethene_simple/kinetic.py
 
 The scripts writes several output files discussed in the subsections below.
 

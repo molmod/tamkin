@@ -15,8 +15,9 @@ requirements:
     - numpy
     - nose
     - scipy
-    - molmod
+    - matplotlib
     - future
+    - molmod
   build:
     - python
     - setuptools

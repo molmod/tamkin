@@ -14,4 +14,3 @@ bin/analyse_md.sh alkane_2
 
 It is instructive to modify the scripts, to plot the output and to compare the
 output with experimental data. Have fun.
-

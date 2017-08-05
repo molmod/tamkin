@@ -31,7 +31,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
-#--
+# --
 """Tunneling models to approximate QM behavior in reaction coordinate.
 
    Instances of the classes :class:`Eckart` or :class:`Wigner` act as functions

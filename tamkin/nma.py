@@ -31,7 +31,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
-#--
+# --
 """Normal mode analysis with default and extended schemes.
 
 A normal mode analysis is carried out by constructing an NMA object. The first

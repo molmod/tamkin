@@ -31,7 +31,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
-#--
+# --
 """Data containers for input from QM or MM simulation codes
 
    Most IO routines in :mod:`tamkin.io` return instances of the classes

@@ -83,6 +83,3 @@ cd output/
 ./script.gibbs  --  to construct the partition functions based on chk-files
 
 ./script.grep  --  to gather the information in a file thermo.all.csv
-
-
-

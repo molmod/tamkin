@@ -31,7 +31,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
-#--
+# --
 """Partition functions based on the harmonic oscillator approximation.
 
    The workhorse of this module is the **PartFun** class. A PartFun object

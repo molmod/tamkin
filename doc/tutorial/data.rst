@@ -79,25 +79,44 @@ CP2K
 
 See https://www.cp2k.org/
 
-a. The optimization::
+a. The optimization:
 
-        &GLOBAL
-          RUN_TYPE GEO_OPT
-          PRINT_LEVEL LOW
-        &END GLOBAL
+   .. code::
 
-b. The calculation of the energy (one SCF optimization)::
+    &GLOBAL
+      RUN_TYPE GEO_OPT
+      PRINT_LEVEL LOW
+    &END GLOBAL
 
-        &GLOBAL
-          RUN_TYPE  ENERGY_FORCE
-          PRINT_LEVEL HIGH
-        &END GLOBAL
+b. The calculation of the energy (one SCF optimization):
 
-c. The frequency calculation::
+   .. code::
+
+    &GLOBAL
+      RUN_TYPE  ENERGY_FORCE
+      PRINT_LEVEL HIGH
+    &END GLOBAL
+
+c. The frequency calculation:
+
+   .. code::
 
         &VIBRATIONAL_ANALYSIS
           FULLY_PERIODIC T
         &END VIBRATIONAL_ANALYSIS
+        ...
+        &MOTION
+           # Optionally constrain some atoms, such that only a partial Hessian is
+           # computed. The same constraints can be used in the optimization.
+           # You should not use _more_ constraints in the optimization. Less is OK but
+           # sometimes not needed.
+           &CONSTRAINT
+              &FIXED_ATOMS
+                  COMPONENTS_TO_FIX  XYZ
+                  LIST {integer}  or a range {integer}..{integer}
+              &END FIXED_ATOMS
+           &END CONSTRAINT
+        &END MOTION
         ...
         &GLOBAL
           RUN_TYPE  vibrational_analysis

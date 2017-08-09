@@ -38,6 +38,10 @@
 Release history
 ###############
 
+* **Version 1.2.1** August 09, 2017
+
+    - Git is no longer needed when installing from pip.
+
 * **Version 1.2.0** August 04, 2017
 
     - Restructured package, such that it can be installed with setuptools

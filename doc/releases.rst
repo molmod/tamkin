@@ -38,6 +38,10 @@
 Release history
 ###############
 
+* **Version 1.2.2** August 10, 2017
+
+    - Fix typos in the docs.
+
 * **Version 1.2.1** August 09, 2017
 
     - Git is no longer needed when installing from pip.

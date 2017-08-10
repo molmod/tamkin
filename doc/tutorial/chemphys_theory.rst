@@ -750,7 +750,7 @@ General form
 
 Consider again the same chemical balance,
 
-.. math:: \nu_A A + \nu_b B \rightleftharpoons \nu_C C + \nu_D D,
+.. math:: \nu_A A + \nu_B B \rightleftharpoons \nu_C C + \nu_D D,
 
 where we dropped the labels :math:`(g)` as we do no longer consider the
 only conventional gas phase systems. An extension with more reactions and
@@ -761,7 +761,7 @@ system are known once we assume a reference state
 
 .. math:: (N^0_A, N^0_B, N^0_C, N^0_D, \ldots).
 
-where :math:`N^0_X` is the reference number of particles of species `X`. The
+where :math:`N^0_X` is the reference number of particles of species :math:`X`. The
 dots stand for all other natural variables of the closed system, .e.g. total
 volume or external pressure, which remain constant during the course of the
 reaction.
@@ -773,48 +773,53 @@ reachable through the chemical reaction can be written as
 
 The grand partition function for all states of the mixture is written as:
 
-.. math:: \mathcal{Z} = \sum_{\xi = \xi_{\text{min}}}^{\xi_{\text{max}}}
-                Z(N^0_A - \xi\nu_A, N^0_B - \xi\nu_B, N^0_C + \xi\nu_C, N^0_D + \xi\nu_D, \ldots)
+.. math:: \mathcal{Z} = \int
+                Z(N^0_A - \xi\nu_A, N^0_B - \xi\nu_B, N^0_C + \xi\nu_C, N^0_D + \xi\nu_D, \ldots) d\xi
 
 where :math:`Z` is the partition function of the mixture at a fixed extent of
 the reaction. Assuming that the interactions between particles of different
 species can be neglected, the grand partition function becomes:
 
-.. math:: \mathcal{Z} = \sum_{\xi = \xi_{\text{min}}}^{\xi_{\text{max}}}
+.. math:: \mathcal{Z} = \int
                 Z_A(N^0_A - \xi\nu_A, \ldots)
                 Z_B(N^0_B - \xi\nu_B, \ldots)
                 Z_C(N^0_C + \xi\nu_C, \ldots)
                 Z_D(N^0_D + \xi\nu_D, \ldots)
+                d\xi
 
 where :math:`Z_X(N_X, \ldots)` is the partition function of a system with
-:math:`N_X` reactants of species `X`. We do not need to know in detail
+:math:`N_X` reactants of species :math:`X`. We do not need to know in detail
 what kind of partition function :math:`Z_X` represents. It may be an NVT, NpT or
 any other ensemble with a fixed number of particles.
 
 The probability of a mixture of reactants and products is proportional to the
 product of fixed particle partition functions:
 
-.. math:: p(N_A, N_B, N_C, N_D) \propto Z_A(N_A, \ldots) Z_B(N_B, \ldots) Z_C(N_C, \ldots) Z_D(N_D, \ldots)
+.. math:: p(N_A, N_B, N_C, N_D, \ldots) \propto Z_A(N_A, \ldots) Z_B(N_B, \ldots) Z_C(N_C, \ldots) Z_D(N_D, \ldots)
 
-where :math:`N_X` is a shorthand for :math:`N^0_{X} + \xi\nu_X`. To find the
+To find the
 most probable state of the system, the chemical equilibrium, we must find `the
 equilibrium extent of reqction`, :math:`\xi_{\text{eq}}` that maximizes the
 probability :math:`p(N_A, N_B, N_C, N_D)`. Mathematically, this means that we
-want to find a non-trivial solution to the equation
+want to find a non-trivial solution of the equation
 
-.. math:: \frac{\partial p(N_A, N_B, N_C, N_D + \xi_{\text{eq}}\nu_D)}
-               {\partial \xi_{\text{eq}}} = 0.
+.. math:: \left.
+    \frac{\partial p(N^0_A - \xi\nu_A,
+                     N^0_B - \xi\nu_A
+                     N^0_C + \xi\nu_C,
+                     N^0_D + \xi\nu_S, \ldots)}
+         {\partial \xi}\right|_{\xi=\xi_{\text{eq}}} = 0.
 
 To solve this problem, we rephrase it in terms of free energies, i.e. using
-:math:`F_X = -k_Bt\ln(Z_X)` and the fact that the logarithmic function is
+:math:`F_X = -k_BT\ln(Z_X)` and the fact that the logarithmic function is
 monotonous. The most probable state is therefore the state that minimizes the
 total free energy.
 
-.. math:: \frac{\partial [F_A(N^0_A - \xi_{\text{eq}}\nu_A, \ldots)
-                         +F_B(N^0_B - \xi_{\text{eq}}\nu_B, \ldots)
-                         +F_C(N^0_C + \xi_{\text{eq}}\nu_C, \ldots)
-                         +F_D(N^0_D + \xi_{\text{eq}}\nu_D, \ldots)]}
-               {\partial \xi_{\text{eq}}} = 0
+.. math:: \left.\frac{\partial [F_A(N^0_A - \xi\nu_A, \ldots)
+                         +F_B(N^0_B - \xi\nu_B, \ldots)
+                         +F_C(N^0_C + \xi\nu_C, \ldots)
+                         +F_D(N^0_D + \xi\nu_D, \ldots)]}
+               {\partial \xi}\right|_{\xi=\xi_{\text{eq}}} = 0
 
 Using the the definition of the chemical potential, :math:`\mu_X(N_X, \ldots) =
 \frac{\partial F_X(N_X, \ldots)}{\partial N_X}`, we end up with a very familiar
@@ -832,14 +837,15 @@ partition function:
     :nowrap:
 
     \begin{align*}
-      \mu_X & = -k_BT \left(\frac{\partial \ln(Z_X(N_X, \ldots)}{\partial N_X}\right) \\
+      \mu_X & = -k_BT \left(\frac{\partial \ln(Z_X(N_X, \ldots))}{\partial N_X}\right) \\
             & = -k_BT \left(\frac{\partial \ln\left(\frac{Z^{N_X}_X(1, \ldots)}{N_X!}\right)}{\partial N_X}\right) \\
             & = -k_BT \left(\frac{\partial [N_X\ln(Z_X(1, \ldots)) - N_X\ln(N_X) + N_X]}{\partial N_X}\right) \\
             & = -k_BT \ln\left(\frac{Z_X(1, \ldots)}{N_X}\right)
     \end{align*}
 
 The last step is only valid when :math:`Z_X(1, \ldots)` does not
-explicitly depend on the :math:`N_X`, which is only true for ideal gases.
+explicitly depend on the :math:`N_X`, which is true for ideal gases, or more
+generally independent subsystems.
 
 This expression for the chemical potential can be plugged back into the
 equilibrium condition to get
@@ -849,17 +855,17 @@ equilibrium condition to get
           \frac{Z^{\nu_C}_C(1, \ldots)\,Z^{\nu_D}_D(1, \ldots)}
                {Z^{\nu_A}_A(1, \ldots)\,Z^{\nu_B}_B(1, \ldots)},
 
-which is a standard text-book equation, but now derived in a much more general
-context. Now comes the hard part, where we have to keep the derivation general
-enough to cover 3D gases, 2D gases, and systems without translational freedom.
-In each case we must introduce a definition of a density, which is required for
-a general expression of :math:`K_c`:
+which is formally similar to the standard text-book equation, but now derived in a much
+more general context. Now comes the hard part, where we have to keep the derivation
+general enough to cover 3D gases, 2D gases, and systems without translational freedom
+(like solids). In each case we must introduce a definition of a density, which is required
+for a general expression of :math:`K_c`:
 
 * **3D gas**: :math:`\rho_X = N_X/V_X`, where :math:`V_X` is the volume of the
-  system containing particles of species X.
+  system containing particles of species :math:`X`.
 
 * **2D gas**: :math:`\rho_X = N_X/A_X`, where :math:`A_X` is the area of the
-  system containing particles of species X.
+  system containing particles of species :math:`X`.
 
 * **Non-translational**: :math:`\rho_X = N_X`, which is simply the occupation
   number of the site X, or the probability that it is occupied. In the classical

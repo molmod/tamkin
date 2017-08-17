@@ -1,18 +1,34 @@
-sudo: false
-# Do not use Travis Python to save some time.
-language: generic
 env:
   matrix:
   - MYCONDAPY=2.7
   global:
     # ANACONDA_TOKEN encrypted
     secure: "bhn15ajzQcCI3r/XtHmlmNFVTnALgRmE3DkrdIvQKwwJtYCxUlUfKla518HyQeph34YMQS/IolJaW4EbVLsxFA28hBEZXp1AW98/CFWvFCs0SvrIe/C2h3voY4AW2asbA7809MxB9UKMsS3D0zf770SSqfOBA4hiJcyHBdH4CX8="
+
+# Do not use Travis Python to save some time.
+language: generic
+os:
+  - linux
+  - osx
+osx_image: xcode6.4
+dist: trusty
+sudo: false
+
+
 install:
 # Get miniconda. Take the right version, so re-installing python is only needed for 3.5.
 - if [[ "$MYCONDAPY" == "2.7" ]]; then
-     wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
+    if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+      wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
+    else
+      wget https://repo.continuum.io/miniconda/Miniconda2-latest-MacOSX-x86_64.sh -O miniconda.sh;
+    fi;
   else
-     wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
+    if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+      wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
+    else
+      wget https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O miniconda.sh;
+    fi;
   fi
 - bash miniconda.sh -b -p $HOME/miniconda
 - export PATH="$HOME/miniconda/bin:$PATH"
@@ -21,15 +37,16 @@ install:
 # Configure conda and get a few essentials
 - conda config --set always_yes yes --set changeps1 no
 - conda update -q conda
-# Get the right python version for building. This only does something for 3.5
-- conda install python=${MYCONDAPY}
+# Get the right python version for building. This only does something for 3.5.
 # Install extra package needed to make things work. Most things can be listed as
 # dependencies on metal.yaml and setup.py, unless setup.py already imports them.
-- conda install sphinx
 # Install conda tools for packaging and uploading
-- conda install conda-build anaconda-client
+- conda install python=${MYCONDAPY} sphinx conda-build anaconda-client
 # Add the tovrstra channel to get access to the molmod dependency
 - conda config --add channels tovrstra
+# Install more recent stuff with pip
+- pip install codecov coverage
+# Show conda info for debugging
 - conda info -a
 
 # No visual backend for matplotlib
@@ -55,7 +72,11 @@ script:
 - (cd doc; make html)
 
 # Run tests out of source tree, to make sure that installed version is tested.
-- "(cd; nosetests tamkin -v --processes=2 --detailed-errors --process-timeout=600)"
+- (cd; nosetests $PYPKG -v --detailed-errors --with-coverage --cover-package=$PYPKG --cover-tests --cover-erase --cover-inclusive --cover-branches --cover-xml)
+
+after_success:
+# Upload the coverage analysis
+- codecov -f ~/coverage.xml
 
 # In deployment, the env var TRAVIS_TAG contains the name of the current tag, if any.
 deploy:
@@ -68,7 +89,7 @@ deploy:
   on:
     repo: molmod/tamkin
     tags: true
-    condition: "$TRAVIS_TAG != *[ab]* && $MYCONDAPY == 2.7"
+    condition: "$TRAVIS_TAG != *[ab]* && $MYCONDAPY == 2.7 && $TRAVIS_OS_NAME == linux"
   prerelease: false
 - provider: releases
   skip_cleanup: true
@@ -79,7 +100,7 @@ deploy:
   on:
     repo: molmod/tamkin
     tags: true
-    condition: "$TRAVIS_TAG == *[ab]* && $MYCONDAPY == 2.7"
+    condition: "$TRAVIS_TAG == *[ab]* && $MYCONDAPY == 2.7 && $TRAVIS_OS_NAME == linux"
   prerelease: true
 - provider: script
   skip_cleanup: true
@@ -111,7 +132,7 @@ deploy:
   on:
     repo: molmod/tamkin
     tags: true
-    condition: "$TRAVIS_TAG != *[ab]* && $MYCONDAPY == 2.7"
+    condition: "$TRAVIS_TAG != *[ab]* && $MYCONDAPY == 2.7 && $TRAVIS_OS_NAME == linux"
 - provider: pages
   skip_cleanup: true
   github_token:
@@ -121,5 +142,5 @@ deploy:
   local_dir: doc/_build/html
   on:
     repo: molmod/tamkin
-    condition: "$TRAVIS_TAG != *[ab]* && $MYCONDAPY == 2.7"
+    condition: "$TRAVIS_TAG != *[ab]* && $MYCONDAPY == 2.7 && $TRAVIS_OS_NAME == linux"
     tags: true

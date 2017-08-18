@@ -1,5 +1,9 @@
 .. image:: https://travis-ci.org/molmod/tamkin.svg?branch=master
     :target: https://travis-ci.org/molmod/tamkin
+.. image:: https://anaconda.org/tovrstra/tamkin/badges/version.svg
+    :target: https://anaconda.org/tovrstra/tamkin
+.. image:: https://codecov.io/gh/molmod/tamkin/branch/master/graph/badge.svg
+    :target: https://codecov.io/gh/molmod/tamkin
 
 TAMkin is a post-processing toolkit for normal mode analysis, thermochemistry
 and reaction kinetics. It uses a Hessian computation from a standard

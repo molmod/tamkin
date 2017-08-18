@@ -1,18 +1,43 @@
-sudo: false
-# Do not use Travis Python to save some time.
-language: generic
 env:
   matrix:
   - MYCONDAPY=2.7
   global:
-    # ANACONDA_TOKEN encrypted
-    secure: "bhn15ajzQcCI3r/XtHmlmNFVTnALgRmE3DkrdIvQKwwJtYCxUlUfKla518HyQeph34YMQS/IolJaW4EbVLsxFA28hBEZXp1AW98/CFWvFCs0SvrIe/C2h3voY4AW2asbA7809MxB9UKMsS3D0zf770SSqfOBA4hiJcyHBdH4CX8="
+    # ANACONDA_TOKEN
+    - secure: "bhn15ajzQcCI3r/XtHmlmNFVTnALgRmE3DkrdIvQKwwJtYCxUlUfKla518HyQeph34YMQS/IolJaW4EbVLsxFA28hBEZXp1AW98/CFWvFCs0SvrIe/C2h3voY4AW2asbA7809MxB9UKMsS3D0zf770SSqfOBA4hiJcyHBdH4CX8="
+    # GITHUB_TOKEN
+    - secure: "lZ88KSHhQzgO9D3svOyJFZZGTa2QUHsgIGee+OPUotEDBi9wxz24Kfhmy32JyRgN8r5OjzNs7DDgU1L2FggAhYQ6Uac6/iusM7q5DbyuX7VJqaixVsk7fpkwf4QgNqkpvQ+TZl2/A6Qg7PT97ok4rm4eDrsVnLihgYcq2jtJFHw="
+    # PYPI_PASSWD
+    - secure: "G6jjWBLXTAnFeD6PR0feX4dExJccBTsgaDhy9XlQR0UMg/Xe0J1pfvTRw/Cwq6ubUXvwQNWXHuGn5IoHol4jeon7aRrbPve2h9Gz12DV6MG6NRlvhbAyh+QkquBSXTXYZG2OsW3VymD/6nqlU5gBL8QjYsiidLH73BZ3bi5s8KU="
+    - PYPKG=tamkin
+    - GITHUB_REPO_NAME=molmod/tamkin
+
+# Do not use Travis Python to save some time.
+language: generic
+os:
+  - linux
+  - osx
+osx_image: xcode6.4
+dist: trusty
+sudo: false
+
+branches:
+  only:
+    - master
+
 install:
 # Get miniconda. Take the right version, so re-installing python is only needed for 3.5.
 - if [[ "$MYCONDAPY" == "2.7" ]]; then
-     wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
+    if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+      wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
+    else
+      wget https://repo.continuum.io/miniconda/Miniconda2-latest-MacOSX-x86_64.sh -O miniconda.sh;
+    fi;
   else
-     wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
+    if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+      wget https://repo.continuum.io/miniconda/Miniconda3-latest-Linux-x86_64.sh -O miniconda.sh;
+    else
+      wget https://repo.continuum.io/miniconda/Miniconda3-latest-MacOSX-x86_64.sh -O miniconda.sh;
+    fi;
   fi
 - bash miniconda.sh -b -p $HOME/miniconda
 - export PATH="$HOME/miniconda/bin:$PATH"
@@ -21,15 +46,16 @@ install:
 # Configure conda and get a few essentials
 - conda config --set always_yes yes --set changeps1 no
 - conda update -q conda
-# Get the right python version for building. This only does something for 3.5
-- conda install python=${MYCONDAPY}
+# Get the right python version for building. This only does something for 3.5.
 # Install extra package needed to make things work. Most things can be listed as
 # dependencies on metal.yaml and setup.py, unless setup.py already imports them.
-- conda install sphinx
 # Install conda tools for packaging and uploading
-- conda install conda-build anaconda-client
+- conda install python=${MYCONDAPY} sphinx conda-build anaconda-client
 # Add the tovrstra channel to get access to the molmod dependency
 - conda config --add channels tovrstra
+# Install more recent stuff with pip
+- pip install codecov coverage
+# Show conda info for debugging
 - conda info -a
 
 # No visual backend for matplotlib
@@ -43,83 +69,80 @@ script:
   ./ds-normalize-code;
 
 # Build the conda package
+- git fetch origin --tags
 - conda build -q conda.recipe
 
 # Build source package, should work too and needed for deployment.
 - python setup.py sdist
 
 # Install Conda package
-- conda install --use-local tamkin
+- conda install --use-local $PYPKG
 
 # Compile documentation
 - (cd doc; make html)
 
 # Run tests out of source tree, to make sure that installed version is tested.
-- "(cd; nosetests tamkin -v --processes=2 --detailed-errors --process-timeout=600)"
+- (cd; nosetests $PYPKG -v --detailed-errors --with-coverage --cover-package=$PYPKG --cover-tests --cover-erase --cover-inclusive --cover-branches --cover-xml)
+
+after_success:
+# Upload the coverage analysis
+- codecov -f ~/coverage.xml
 
 # In deployment, the env var TRAVIS_TAG contains the name of the current tag, if any.
 deploy:
 - provider: releases
   skip_cleanup: true
-  api_key:
-    # Encrypted github token
-    secure: "PpfBEYmfeqmBSwT0qRao3zomXmR50YNbEK7q+VTjk6EJ8hYpt+zxL2IzX12Clsklv7UnPlI/o5OIcwsyFu98B0ptm3SaornShj+4U7Wo5MXaoHSeWrs4IY2XUyV5AkbSCe/d6e25SkiRalZT9jBVtSTTSTGPbN/pzDxeLE9TkCw="
-  file: dist/tamkin-${TRAVIS_TAG}.tar.gz
+  api_key: ${GITHUB_TOKEN}
+  file: dist/${PYPKG}-${TRAVIS_TAG}.tar.gz
   on:
-    repo: molmod/tamkin
+    repo: ${GITHUB_REPO_NAME}
     tags: true
-    condition: "$TRAVIS_TAG != *[ab]* && $MYCONDAPY == 2.7"
+    condition: "$TRAVIS_TAG != *[ab]* && $MYCONDAPY == 2.7 && $TRAVIS_OS_NAME == linux"
   prerelease: false
 - provider: releases
   skip_cleanup: true
-  api_key:
-    # Encrypted github token
-    secure: "PpfBEYmfeqmBSwT0qRao3zomXmR50YNbEK7q+VTjk6EJ8hYpt+zxL2IzX12Clsklv7UnPlI/o5OIcwsyFu98B0ptm3SaornShj+4U7Wo5MXaoHSeWrs4IY2XUyV5AkbSCe/d6e25SkiRalZT9jBVtSTTSTGPbN/pzDxeLE9TkCw="
-  file: dist/tamkin-${TRAVIS_TAG}.tar.gz
+  api_key: ${GITHUB_TOKEN}
+  file: dist/${PYPKG}-${TRAVIS_TAG}.tar.gz
   on:
-    repo: molmod/tamkin
+    repo: ${GITHUB_REPO_NAME}
     tags: true
-    condition: "$TRAVIS_TAG == *[ab]* && $MYCONDAPY == 2.7"
+    condition: "$TRAVIS_TAG == *[ab]* && $MYCONDAPY == 2.7 && $TRAVIS_OS_NAME == linux"
   prerelease: true
 - provider: script
   skip_cleanup: true
-  script: anaconda -t $ANACONDA_TOKEN upload -l alpha ${HOME}/miniconda/conda-bld/linux-64/tamkin-*.tar.bz2
+  script: anaconda -t $ANACONDA_TOKEN upload -l alpha ${HOME}/miniconda/conda-bld/*/${PYPKG}-*.tar.bz2
   on:
-    repo: molmod/tamkin
+    repo: ${GITHUB_REPO_NAME}
     tags: true
     condition: "$TRAVIS_TAG == *a*"
 - provider: script
   skip_cleanup: true
-  script: anaconda -t $ANACONDA_TOKEN upload -l beta ${HOME}/miniconda/conda-bld/linux-64/tamkin-*.tar.bz2
+  script: anaconda -t $ANACONDA_TOKEN upload -l beta ${HOME}/miniconda/conda-bld/*/${PYPKG}-*.tar.bz2
   on:
-    repo: molmod/tamkin
+    repo: ${GITHUB_REPO_NAME}
     tags: true
     condition: "$TRAVIS_TAG == *b*"
 - provider: script
   skip_cleanup: true
-  script: anaconda -t $ANACONDA_TOKEN upload -l main ${HOME}/miniconda/conda-bld/linux-64/tamkin-*.tar.bz2
+  script: anaconda -t $ANACONDA_TOKEN upload -l main ${HOME}/miniconda/conda-bld/*/${PYPKG}-*.tar.bz2
   on:
-    repo: molmod/tamkin
+    repo: ${GITHUB_REPO_NAME}
     tags: true
     condition: "$TRAVIS_TAG != *[ab]*"
 - provider: pypi
   skip_cleanup: true
   user: tovrstra
-  password:
-    # Encrypted PyPI password
-    secure: "am4ZKdZzzNbwKd3E9YmVV9H0OFzbmIxVAD4mJL+xqwQrImJyRAlUynoDHXFvMdupJUt4Wdx6IBk9wGume4rqlVMzyd21yQzBVN5ZH2g8MA7sZpEnuLnUQsHv1wT+J0KjwZ+wP/F2B3lvUQNOUbEvRmBfWhum3gH1b9F+0/yTdlY="
+  password: ${PYPI_PASSWD}
   on:
-    repo: molmod/tamkin
+    repo: ${GITHUB_REPO_NAME}
     tags: true
-    condition: "$TRAVIS_TAG != *[ab]* && $MYCONDAPY == 2.7"
+    condition: "$TRAVIS_TAG != *[ab]* && $MYCONDAPY == 2.7 && $TRAVIS_OS_NAME == linux"
 - provider: pages
   skip_cleanup: true
-  github_token:
-    # Encrypted github token
-    secure: "PpfBEYmfeqmBSwT0qRao3zomXmR50YNbEK7q+VTjk6EJ8hYpt+zxL2IzX12Clsklv7UnPlI/o5OIcwsyFu98B0ptm3SaornShj+4U7Wo5MXaoHSeWrs4IY2XUyV5AkbSCe/d6e25SkiRalZT9jBVtSTTSTGPbN/pzDxeLE9TkCw="
-  project_name: tamkin
+  github_token: ${GITHUB_TOKEN}
+  project_name: ${PYPKG}
   local_dir: doc/_build/html
   on:
-    repo: molmod/tamkin
-    condition: "$TRAVIS_TAG != *[ab]* && $MYCONDAPY == 2.7"
+    repo: ${GITHUB_REPO_NAME}
+    condition: "$TRAVIS_TAG != *[ab]* && $MYCONDAPY == 2.7 && $TRAVIS_OS_NAME == linux"
     tags: true

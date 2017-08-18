@@ -8,7 +8,7 @@ env:
     - secure: "lZ88KSHhQzgO9D3svOyJFZZGTa2QUHsgIGee+OPUotEDBi9wxz24Kfhmy32JyRgN8r5OjzNs7DDgU1L2FggAhYQ6Uac6/iusM7q5DbyuX7VJqaixVsk7fpkwf4QgNqkpvQ+TZl2/A6Qg7PT97ok4rm4eDrsVnLihgYcq2jtJFHw="
     # PYPI_PASSWD
     - secure: "G6jjWBLXTAnFeD6PR0feX4dExJccBTsgaDhy9XlQR0UMg/Xe0J1pfvTRw/Cwq6ubUXvwQNWXHuGn5IoHol4jeon7aRrbPve2h9Gz12DV6MG6NRlvhbAyh+QkquBSXTXYZG2OsW3VymD/6nqlU5gBL8QjYsiidLH73BZ3bi5s8KU="
-    - PYPKG=molmod
+    - PYPKG=tamkin
     - GITHUB_REPO_NAME=molmod/tamkin
 
 # Do not use Travis Python to save some time.
@@ -20,6 +20,9 @@ osx_image: xcode6.4
 dist: trusty
 sudo: false
 
+branches:
+  only:
+    - master
 
 install:
 # Get miniconda. Take the right version, so re-installing python is only needed for 3.5.

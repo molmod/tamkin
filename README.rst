@@ -1,7 +1,7 @@
 .. image:: https://travis-ci.org/molmod/tamkin.svg?branch=master
     :target: https://travis-ci.org/molmod/tamkin
-.. image:: https://anaconda.org/tovrstra/tamkin/badges/version.svg
-    :target: https://anaconda.org/tovrstra/tamkin
+.. image:: https://anaconda.org/molmod/tamkin/badges/version.svg
+    :target: https://anaconda.org/molmod/tamkin
 .. image:: https://codecov.io/gh/molmod/tamkin/branch/master/graph/badge.svg
     :target: https://codecov.io/gh/molmod/tamkin
 
@@ -43,7 +43,7 @@ https://www.continuum.io/downloads)
 
 .. code:: bash
 
-    conda install -c tovrstra tamkin
+    conda install -c molmod tamkin
 
 
 Testing

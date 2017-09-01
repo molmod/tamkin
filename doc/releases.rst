@@ -38,6 +38,10 @@
 Release history
 ###############
 
+* **Version 1.2.3** September 1, 2017
+
+    - First release in molmod channel on Anaconda.
+
 * **Version 1.2.2** August 10, 2017
 
     - Fix typos in the docs.

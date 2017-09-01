@@ -3,10 +3,11 @@ package:
   name: 'tamkin'
 
 source:
-  path: ../
+  path: ../../
 
 build:
   number: 0
+  string: '0'
   script: python setup.py install --single-version-externally-managed --record=record.txt
 
 requirements:

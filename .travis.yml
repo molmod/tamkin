@@ -76,7 +76,7 @@ script:
 
 # Build the conda package
 - git fetch origin --tags
-- conda build -q conda.recipe
+- conda build -q tools/conda.recipe
 
 # Build source package, should work too and needed for deployment.
 - python setup.py sdist

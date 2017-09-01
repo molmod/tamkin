@@ -29,7 +29,7 @@ about:
   license_family: GPL3
   summary: TAMkin is a post-processing toolkit for normal mode analysis, thermochemistry and reaction kinetics.
   home: http://molmod.github.io/tamkin
-  license_file: LICENSE.txt
+  license_file: COPYING
   doc_url: http://molmod.github.io/tamkin
 
 extra:

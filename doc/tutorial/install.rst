@@ -60,7 +60,8 @@ The following software must be installed for TAMkin:
 * MolMod >=1.3.1: https://github.com/molmod/molmod
 * Nosetests >=0.11: http://somethingaboutorange.com/mrl/projects/nose/0.11.2/
 
-Most Linux distributions can install most required software with a single command.
+Most Linux distributions can install most required software with a single command. Except
+for Python, missing dependencies will get automatically installed by pip. (See below.)
 
 * **Ubuntu**
 
@@ -81,12 +82,26 @@ Most Linux distributions can install most required software with a single comman
 Installation
 ============
 
-Execute the following command to install TAMkin in your home directory.
+TAMkin can be installed with pip (system wide or in a virtual environment):
 
 .. code:: bash
 
-    pip install numpy Cython
+    pip install numpy
     pip install tamkin
+
+Alternatively, you can install TAMkin in your home directory:
+
+.. code:: bash
+
+    pip install numpy --user
+    pip install tamkin --user
+
+Lastly, you can also install MolMod with conda. (See
+https://www.continuum.io/downloads)
+
+.. code:: bash
+
+    conda install -c molmod tamkin
 
 
 Testing your installation

@@ -1,13 +1,19 @@
 env:
   matrix:
-  - MYCONDAPY=2.7
+    - MYCONDAPY=2.7
   global:
     # ANACONDA_TOKEN
-    - secure: "bhn15ajzQcCI3r/XtHmlmNFVTnALgRmE3DkrdIvQKwwJtYCxUlUfKla518HyQeph34YMQS/IolJaW4EbVLsxFA28hBEZXp1AW98/CFWvFCs0SvrIe/C2h3voY4AW2asbA7809MxB9UKMsS3D0zf770SSqfOBA4hiJcyHBdH4CX8="
+    - secure: "JCX7xPCgInrZVvt78cZeU+M4dx0CWC7MmVawSR4GqoAxrscG5yEkTjbG0uL6jVc1OxV2wiEzzY\
+rtYYUnRY4W0UCs2hHSew99REUKm4UE52mKI+pcN0KDEVdub2pcNamfL1t00mjfOG6fzOZ02dN+ugDSmJJXLGOzYRB\
+mAZNgWC4="
     # GITHUB_TOKEN
-    - secure: "lZ88KSHhQzgO9D3svOyJFZZGTa2QUHsgIGee+OPUotEDBi9wxz24Kfhmy32JyRgN8r5OjzNs7DDgU1L2FggAhYQ6Uac6/iusM7q5DbyuX7VJqaixVsk7fpkwf4QgNqkpvQ+TZl2/A6Qg7PT97ok4rm4eDrsVnLihgYcq2jtJFHw="
+    - secure: "JjZdWGS8ZxYw5GBChepbu4jEJpT5Hemgj4DITkmridUdyjRB+hpxxR3z08pDz3SXkmuEsXyLsx\
+7RJAg2a+IpCnK8sG4wrOyb3Jf0tXhE1vKa1t80CVXDd0somQe6Mna+7X5SrOsP5pLs1IsaP/j6pnrDCPB2wUP3g/j\
+/iAQ1SP8="
     # PYPI_PASSWD
-    - secure: "G6jjWBLXTAnFeD6PR0feX4dExJccBTsgaDhy9XlQR0UMg/Xe0J1pfvTRw/Cwq6ubUXvwQNWXHuGn5IoHol4jeon7aRrbPve2h9Gz12DV6MG6NRlvhbAyh+QkquBSXTXYZG2OsW3VymD/6nqlU5gBL8QjYsiidLH73BZ3bi5s8KU="
+    - secure: "CVw8wOQNRR7E7McAsy52Rq3f1eAvn4ukfWhW6Nn5H7GwQzha+qykm1MOnj3U1qsg7qvPvg0k2L\
+wVYkPU6nImdqHqQt8R8ekiNQNP9z97pGlJDC8T3hc/5VpvaRQA3E2wI5jzvHhNLafum/ss5h1+CsOs2AkdKgwRzM6\
+HlxbmLCE="
     - PYPKG=tamkin
     - GITHUB_REPO_NAME=molmod/tamkin
 
@@ -51,8 +57,8 @@ install:
 # dependencies on metal.yaml and setup.py, unless setup.py already imports them.
 # Install conda tools for packaging and uploading
 - conda install python=${MYCONDAPY} sphinx conda-build anaconda-client
-# Add the tovrstra channel to get access to the molmod dependency
-- conda config --add channels tovrstra
+# Add the molmod channel to get access to the molmod dependency
+- conda config --add channels molmod
 # Install more recent stuff with pip
 - pip install codecov coverage
 # Show conda info for debugging
@@ -70,7 +76,7 @@ script:
 
 # Build the conda package
 - git fetch origin --tags
-- conda build -q conda.recipe
+- conda build -q tools/conda.recipe
 
 # Build source package, should work too and needed for deployment.
 - python setup.py sdist
@@ -110,28 +116,28 @@ deploy:
   prerelease: true
 - provider: script
   skip_cleanup: true
-  script: anaconda -t $ANACONDA_TOKEN upload -l alpha ${HOME}/miniconda/conda-bld/*/${PYPKG}-*.tar.bz2
+  script: anaconda -t $ANACONDA_TOKEN upload -l --force alpha ${HOME}/miniconda/conda-bld/*/${PYPKG}-*.tar.bz2
   on:
     repo: ${GITHUB_REPO_NAME}
     tags: true
     condition: "$TRAVIS_TAG == *a*"
 - provider: script
   skip_cleanup: true
-  script: anaconda -t $ANACONDA_TOKEN upload -l beta ${HOME}/miniconda/conda-bld/*/${PYPKG}-*.tar.bz2
+  script: anaconda -t $ANACONDA_TOKEN upload -l --force beta ${HOME}/miniconda/conda-bld/*/${PYPKG}-*.tar.bz2
   on:
     repo: ${GITHUB_REPO_NAME}
     tags: true
     condition: "$TRAVIS_TAG == *b*"
 - provider: script
   skip_cleanup: true
-  script: anaconda -t $ANACONDA_TOKEN upload -l main ${HOME}/miniconda/conda-bld/*/${PYPKG}-*.tar.bz2
+  script: anaconda -t $ANACONDA_TOKEN upload -l --force main ${HOME}/miniconda/conda-bld/*/${PYPKG}-*.tar.bz2
   on:
     repo: ${GITHUB_REPO_NAME}
     tags: true
     condition: "$TRAVIS_TAG != *[ab]*"
 - provider: pypi
   skip_cleanup: true
-  user: tovrstra
+  user: molmod
   password: ${PYPI_PASSWD}
   on:
     repo: ${GITHUB_REPO_NAME}

@@ -38,6 +38,10 @@
 Release history
 ###############
 
+* **Version 1.2.4** September 13, 2017
+
+    - Fix broken link to nosetests in docs.
+
 * **Version 1.2.3** September 1, 2017
 
     - First release in molmod channel on Anaconda.

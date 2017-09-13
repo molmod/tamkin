@@ -57,8 +57,8 @@ The following software must be installed for TAMkin:
 * Numpy >=1.0: http://numpy.scipy.org/
 * Scipy >=0.17.1: http://www.scipy.org/
 * MatPlotLib >=1.1: http://matplotlib.org/
-* MolMod >=1.3.1: https://github.com/molmod/molmod
-* Nosetests >=0.11: http://somethingaboutorange.com/mrl/projects/nose/0.11.2/
+* MolMod >=1.3.1: https://github.com/molmod/molmod/
+* Nosetests >=0.11: http://nose.readthedocs.io/en/latest/
 
 Most Linux distributions can install most required software with a single command. Except
 for Python, missing dependencies will get automatically installed by pip. (See below.)

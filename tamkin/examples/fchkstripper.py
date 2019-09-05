@@ -79,7 +79,7 @@ def strip(fn):
                     keep = False
     f.close()
     # print stuff back into the same file
-    f = oepn(fn, "w")
+    f = open(fn, "w")
     for line in lines:
         print >> f, line
     f.close()
@@ -90,7 +90,7 @@ if __name__ == "__main__":
     fns_fchk = sys.argv[1:]
     for fn in fns_fchk:
         if fn.endswith(".fchk"):
-            print "Stripping", fn
+            print("Stripping", fn)
             strip(fn)
         else:
-            print "Skipping", fn, "(wrong extension)"
+            print("Skipping", fn, "(wrong extension)")

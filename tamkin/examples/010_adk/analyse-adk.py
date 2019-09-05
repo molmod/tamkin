@@ -232,57 +232,57 @@ if __name__ == '__main__':
 
     if options.job == "nma":
         if None in [options.filecor, options.filehess, options.filechk]:
-            print "at least one of the variables filecor, filehess or filechk is empty"
-            print "Doing nothing..."
+            print("at least one of the variables filecor, filehess or filechk is empty")
+            print("Doing nothing...")
         else:
             do_NMA(options.filecor, options.filehess, options.filechk, jobtimer)
 
     if options.job == "mbh":
         if None in [options.filecor, options.filehess, options.filefixed, options.filechk]:
-            print "at least one of the variables filecor, filehess, filefixed or filechk is empty"
-            print "Doing nothing..."
+            print("at least one of the variables filecor, filehess, filefixed or filechk is empty")
+            print("Doing nothing...")
         else:
             do_MBH(options.filecor, options.filehess, options.filefixed, options.filechk, jobtimer)
 
     if options.job == "vsa":
         if None in [options.filecor, options.filehess, options.filefixed, options.filechk]:
-            print "at least one of the variables filecor, filehess, filefixed or filechk is empty"
-            print "Doing nothing..."
+            print("at least one of the variables filecor, filehess, filefixed or filechk is empty")
+            print("Doing nothing...")
         else:
             do_VSA(options.filecor, options.filehess, options.filefixed, options.filechk, jobtimer)
 
     elif options.job == "cut":
         if options.filechk is None:
-            print "variable filechk is empty"
-            print "Doing nothing..."
+            print("variable filechk is empty")
+            print("Doing nothing...")
         else:
             take_cut(options.filechk, jobtimer)
 
     elif options.job == "delta":
         if None in [options.filecor, options.filecor2, options.filedelta]:
-            print "at least one of the variables filecor, filecor2 or filedelta is empty"
-            print "Doing nothing..."
+            print("at least one of the variables filecor, filecor2 or filedelta is empty")
+            print("Doing nothing...")
         else:
             get_delta(options.filecor, options.filecor2, options.filedelta)
 
 
     elif options.job == "overlap":
         if None in [options.filecor, options.filecor2, options.filechk, options.fileoverlap]:
-            print "at least one of the variables filecor, filecor2, filechk or fileoverlap is empty"
-            print "Doing nothing..."
+            print("at least one of the variables filecor, filecor2, filechk or fileoverlap is empty")
+            print("Doing nothing...")
         else:
             overlap(options.filecor, options.filecor2,
                     options.filechk, options.fileoverlap, jobtimer)
 
     elif options.job == "gibbs":
         if None in [options.filechk, options.filethermo]:
-            print "at least one of the variables filechk or filethermo is empty"
-            print "Doing nothing..."
+            print("at least one of the variables filechk or filethermo is empty")
+            print("Doing nothing...")
         else:
             do_gibbs(options.filechk, options.filethermo, jobtimer)
 
     elif options.job is None:
-        print "no job specified"
-        print "Doing nothing..."
+        print("no job specified")
+        print("Doing nothing...")
     else:
-        print "The job "+options.job+" is not defined/implemented. Doing nothing..."
+        print("The job "+options.job+" is not defined/implemented. Doing nothing...")

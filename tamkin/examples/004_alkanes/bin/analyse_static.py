@@ -42,13 +42,13 @@ from tamkin import *
 from molmod.units import *
 from molmod.constants import *
 
-import sys, os, numpy # standard libraries
+import sys, os, numpy  # standard libraries
 
 
 # Parse the command line arguments
 args = sys.argv[1:]
 if len(args) != 1:
-    print "One arguments are required: alkane_n"
+    print("One arguments are required: alkane_n")
     sys.exit()
 
 # Hardcoded parameters
@@ -71,11 +71,11 @@ pf = PartFun(
 
 # Write the frequencies to a csv file
 f = open(os.path.join(args[0], "freqs.csv"), "w")
-print >> f, '"Frequency","Wavenumber","Vibrational temperature"'
-print >> f, '"Atomic units","1/cm","K"'
+print('"Frequency","Wavenumber","Vibrational temperature"', end="", file=f)
+print('"Atomic units","1/cm","K"', end="", file=f)
 for i in range(len(pf.vibrational.freqs)):
     freq = pf.vibrational.freqs[i]
-    print >> f, '%e,%f,%f' % (freq, freq/lightspeed*centimeter, 2*numpy.pi*freq/boltzmann)
+    print('%e,%f,%f' % (freq, freq/lightspeed*centimeter, 2*numpy.pi*freq/boltzmann), end="", file=f)
 f.close()
 
 

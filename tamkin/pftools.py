@@ -160,7 +160,7 @@ class ThermoTable(object):
             method = getattr(term, "%s_terms" % method_name, None)
             if isinstance(method, types.MethodType):
                 columns = []
-                for i in xrange(term.num_terms):
+                for i in range(term.num_terms):
                     self.keys.append("%s (%i)" % (term.name, i))
                 for temp in temps:
                     columns.append(method(temp))
@@ -278,7 +278,7 @@ class ReactionAnalysis(object):
             self.kinetic_model.tunneling.dump(f)
         print >> f, "Reaction rate constants"
         print >> f, "    T [K]    Delta_r F [kJ/mol]      k(T) [%s]" % (self.kinetic_model.unit_name)
-        for i in xrange(len(self.temps)):
+        for i in range(len(self.temps)):
             temp = self.temps[i]
             delta_free = self.kinetic_model.free_energy_change(temp)
             print >> f, "% 10.2f      %8.1f             % 10.5e" % (
@@ -385,7 +385,7 @@ class ReactionAnalysis(object):
         self.kinetic_model.backup_freqs()
 
         solutions = numpy.zeros((num_iter, 2), float)
-        for i in xrange(num_iter):
+        for i in range(num_iter):
             scale_energy = 1.0 + numpy.random.normal(0.0, 1.0)*energy_error
             self.kinetic_model.alter_freqs(freq_error, scale_energy)
             altered_ra = ReactionAnalysis(

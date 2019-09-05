@@ -117,7 +117,7 @@ def load_molecule_cpmd(fn_out, fn_geometry, fn_hessian, multiplicity=1, is_perio
     if not line.startswith(" &CART"):
         raise IOError("File %s does not start with &CART." % fn_hessian)
     masses = np.zeros(num_atoms, float)
-    for i in xrange(num_atoms):
+    for i in range(num_atoms):
         line = f.readline()
         words = line.split()
         masses[i] = float(words[4])*amu
@@ -128,10 +128,10 @@ def load_molecule_cpmd(fn_out, fn_geometry, fn_hessian, multiplicity=1, is_perio
         raise IOError("File %s does not contain section &FCON." % fn_hessian)
     num_cart = num_atoms*3
     hessian = np.zeros((num_cart, num_cart), float)
-    for i in xrange(num_cart):
+    for i in range(num_cart):
         line = f.readline()
         words = line.split()
-        for j in xrange(num_cart):
+        for j in range(num_cart):
             hessian[i,j] = float(words[j])
 
     f.close()

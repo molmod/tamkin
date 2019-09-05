@@ -119,7 +119,7 @@ def load_molecule_charmm(charmmfile_cor, charmmfile_hess, is_periodic=False):
 
     # get corresponding atomic numbers
     mass_table = np.zeros(len(periodic))
-    for i in xrange(1, len(mass_table)):
+    for i in range(1, len(mass_table)):
         m1 = periodic[i].mass
         if m1 is None:
             m1 = 200000.0

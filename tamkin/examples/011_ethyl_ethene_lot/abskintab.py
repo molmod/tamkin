@@ -63,7 +63,7 @@ def overview(template, title, fn_img, rows):
             rows.append(["<th>%s</th>" % lot_label])
         try:
             ks = load_summary(template % lot_label)[0]
-            for j in xrange(4):
+            for j in range(4):
                 ln10ratio = np.log10(ks[j]/experimental_k[j])
                 color = get_error_color(ln10ratio)
                 rows[counter].append("<td style='background-color:%s'>%.1e</td>" % (color, ks[j]))

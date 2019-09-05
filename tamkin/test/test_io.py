@@ -484,11 +484,11 @@ class IOTestCase(unittest.TestCase):
 
     def test_load_dump_indices2(self):
         randint = np.random.randint
-        for counter in xrange(20):
+        for counter in range(20):
             for compact in True, False:
                 shift = randint(-5,5)
                 indices = []
-                for i in xrange(randint(10,20)):
+                for i in range(randint(10,20)):
                     l = list(set(randint(0,10,randint(20))))
                     if len(l) > 0:
                         indices.append(l)

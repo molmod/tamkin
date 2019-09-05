@@ -132,15 +132,15 @@ class HarmonicBasis(object):
         c[1:] = potential[1::2]/np.sqrt(self.a)
         s[1:] = potential[2::2]/np.sqrt(self.a)
         op[0,0] += c[0]
-        for i0 in xrange(1,self.nmax+1):
+        for i0 in range(1,self.nmax+1):
             op[2*i0-1,0] += c[i0]
             op[2*i0-0,0] += s[i0]
             op[0,2*i0-1] += c[i0]
             op[0,2*i0-0] += s[i0]
         c[1:] /= np.sqrt(2)
         s[1:] /= np.sqrt(2)
-        for i0 in xrange(1,self.nmax+1):
-            for i1 in xrange(1,self.nmax+1):
+        for i0 in range(1,self.nmax+1):
+            for i1 in range(1,self.nmax+1):
                 k = i0+i1
                 if k <= self.nmax:
                     op[2*i0-1,2*i1-1] += c[k] # cc
@@ -180,7 +180,7 @@ class HarmonicBasis(object):
             | ``coeffs`` -- the expansion coefficients
         """
         result = np.zeros(grid.shape, float) + coeffs[0]/np.sqrt(self.a)
-        for i in xrange(self.nmax):
+        for i in range(self.nmax):
             arg = ((i+1)*2*np.pi/self.a)*grid
             result += (coeffs[2*i+1]/np.sqrt(self.a/2))*np.cos(arg)
             result += (coeffs[2*i+2]/np.sqrt(self.a/2))*np.sin(arg)
@@ -194,7 +194,7 @@ class HarmonicBasis(object):
             | ``coeffs`` -- the expansion coefficients
         """
         result = np.zeros(grid.shape, float)
-        for i in xrange(self.nmax):
+        for i in range(self.nmax):
             scale = ((i+1)*2*np.pi/self.a)
             arg = scale*grid
             result -= (coeffs[2*i+1]*scale/np.sqrt(self.a/2))*np.sin(arg)
@@ -210,7 +210,7 @@ class HarmonicBasis(object):
             | ``coeffs`` -- the expansion coefficients
         """
         result = np.zeros(grid.shape, float)
-        for i in xrange(self.nmax):
+        for i in range(self.nmax):
             scale = ((i+1)*2*np.pi/self.a)
             arg = scale*grid
             result -= (coeffs[2*i+1]*scale**2/np.sqrt(self.a/2))*np.cos(arg)
@@ -253,7 +253,7 @@ class HarmonicBasis(object):
             A = np.zeros((len(grid), 2*ncos+1), float)
         A[:,0] = 1.0/np.sqrt(self.a)
         counter = 1
-        for i in xrange(ncos):
+        for i in range(ncos):
             arg = ((i+1)*rotsym*2*np.pi/self.a)*grid
             A[:,counter] = np.cos(arg)/np.sqrt(self.a/2)
             counter += 1
@@ -304,7 +304,7 @@ def compute_cancel_frequency_mbh(molecule, dihedral, top_indexes):
         | ``top_indexes`` -- The indexes of the rotor atoms.
     """
     axis = tuple(dihedral[1:3])
-    other_top_indexes = tuple(set(xrange(molecule.size)) - set(top_indexes) - set(axis))
+    other_top_indexes = tuple(set(range(molecule.size)) - set(top_indexes) - set(axis))
     blocks = [
         axis + tuple(top_indexes),
         axis + tuple(other_top_indexes),
@@ -312,7 +312,7 @@ def compute_cancel_frequency_mbh(molecule, dihedral, top_indexes):
     nma = NMA(molecule, MBH(blocks))
     if len(nma.freqs) != 7:
         raise RotorError("Expecting 7 frequencies, got %i" % len(nma.freqs))
-    non_zero = [i for i in xrange(7) if i not in nma.zeros][0]
+    non_zero = [i for i in range(7) if i not in nma.zeros][0]
     return nma.freqs[non_zero]
 
 
@@ -464,7 +464,7 @@ class Rotor(Info, StatFysTerms):
         if self.rot_scan.potential is None:
             # free rotor
             self.energy_levels = np.zeros(self.num_levels, float)
-            for i in xrange(self.num_levels-1):
+            for i in range(self.num_levels-1):
                 index = i/2+1
                 self.energy_levels[i+1] = index**2/(2*moment)
             self.hb = None
@@ -569,7 +569,7 @@ class Rotor(Info, StatFysTerms):
             print >> f, "    Pearson R^2 of the fit [%%]: %.3f" % ((1-rrmsd**2)*100)
 
             print >> f, "    Potential: Angle [deg]    Energy [kJ/mol]"
-            for i in xrange(len(angles)):
+            for i in range(len(angles)):
                 print >> f, "              % 7.2f         %6.1f" % (angles[i]/deg, energies[i]/kjmol)
         print >> f, "    Number of QM energy levels: %i" % self.num_levels
         # derived quantities
@@ -620,7 +620,7 @@ class Rotor(Info, StatFysTerms):
             eks = self.energy_levels/(temp*boltzmann)
             bfs = np.exp(-eks)
             bfs /= bfs.sum()
-            for i in xrange(self.num_levels):
+            for i in range(self.num_levels):
                 e = (self.energy_levels[i])/kjmol
                 pt.axhline(e, color="b", linewidth=0.5)
                 pt.axhline(e, xmax=bfs[i], color="b", linewidth=2)

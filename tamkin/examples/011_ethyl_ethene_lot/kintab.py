@@ -78,7 +78,7 @@ def overview(template, title, fn_img, rows):
             line = pt.plot(invtemps, ks, color=lot.color, linestyle=lot.linestyle, lw=2)
             lines.append(line)
             labels.append(lot_label)
-            for j in xrange(4):
+            for j in range(4):
                 ln10ratio = numpy.log10(ks[j]/experimental_k[j])
                 color = get_error_color(ln10ratio)
                 rows[counter].append("<td style='background-color:%s'>%.0f</td>" % (color, ln10ratio*10))

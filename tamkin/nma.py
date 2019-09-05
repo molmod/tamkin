@@ -768,7 +768,7 @@ class PHVA(Treatment):
         free3 = np.zeros(len(free)*3, int)
         counter_fixed = 0
         counter_free = 0
-        for i in xrange(molecule.size):
+        for i in range(molecule.size):
             if counter_fixed < len(self.fixed) and self.fixed[counter_fixed] == i:
                 counter_fixed += 1
             else:
@@ -877,9 +877,9 @@ class VSA(Treatment):
         """
         # fill lists with subsystem/environment atoms/coordinates
         subs = self.subs.tolist()
-        envi = sum([[at] for at in xrange(molecule.size) if at not in subs],[])
+        envi = sum([[at] for at in range(molecule.size) if at not in subs],[])
         subs3 = sum([[3*at, 3*at+1, 3*at+2] for at in subs],[])
-        envi3 = sum([[3*at, 3*at+1, 3*at+2] for at in xrange(molecule.size) if at not in subs],[])
+        envi3 = sum([[3*at, 3*at+1, 3*at+2] for at in range(molecule.size) if at not in subs],[])
 
         # 1. Construct Hessian (small: 3Nsubs x 3Nsubs)
         # construct H_ss, H_ee, H_es
@@ -1009,9 +1009,9 @@ class VSANoMass(Treatment):
         """
         # fill lists with subsystem/environment atoms/coordinates
         subs = self.subs.tolist()
-        envi = sum([[at] for at in xrange(molecule.size) if at not in subs],[])
+        envi = sum([[at] for at in range(molecule.size) if at not in subs],[])
         subs3 = sum([[3*at, 3*at+1, 3*at+2] for at in subs],[])
-        envi3 = sum([[3*at, 3*at+1, 3*at+2] for at in xrange(molecule.size) if at not in subs],[])
+        envi3 = sum([[3*at, 3*at+1, 3*at+2] for at in range(molecule.size) if at not in subs],[])
 
         # 1. Construct Hessian (small: 3Nsubs x 3Nsubs)
         # construct H_ss, H_ee, H_es
@@ -1565,7 +1565,7 @@ class PHVA_MBH(MBH):
         """
 
         # Make submolecule
-        selectedatoms = [at for at in xrange(molecule.size) if at not in self.fixed]
+        selectedatoms = [at for at in range(molecule.size) if at not in self.fixed]
         selectedcoords = sum([[3*at,3*at+1,3*at+2] for at in selectedatoms],[])
 
         from tamkin.data import Molecule
@@ -1706,8 +1706,8 @@ class Constrain(Treatment):
         Y = np.zeros((K.shape[0],len(self.hessian_small)**2))
         y = np.zeros((K.shape[0],1))
         count = 0
-        for i in xrange(len(self.hessian_small)):
-            for j in xrange(len(self.hessian_small)):
+        for i in range(len(self.hessian_small)):
+            for j in range(len(self.hessian_small)):
                 for k,constraint in enumerate(self.constraints):
                     if len(constraint) == 2:
                         at1 = constraint[0]
@@ -1728,8 +1728,8 @@ class Constrain(Treatment):
 
         # apply correction
         count = 0
-        for i in xrange(len(self.hessian_small)):
-            for j in xrange(len(self.hessian_small)):
+        for i in range(len(self.hessian_small)):
+            for j in range(len(self.hessian_small)):
 
                 self.hessian_small[i,j] += np.sum( np.ravel(gradient)*X[:,count] )
                 count += 1

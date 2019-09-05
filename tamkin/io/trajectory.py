@@ -98,7 +98,7 @@ def dump_modes_xyz(nma, indexes=0, prefix="mode", amplitude=5.0*angstrom, frames
             mode /= np.sqrt(masses3)
         mode /= np.linalg.norm(mode)
         xyz_writer = XYZWriter(filename, symbols)
-        for frame in xrange(frames):
+        for frame in range(frames):
             factor = amplitude*np.sin(2*np.pi*float(frame)/frames)
             xyz_writer.dump("frame %i" % frame, coordinates + factor*mode.reshape((-1,3)))
         del xyz_writer
@@ -147,7 +147,7 @@ def dump_modes_gaussian(filename, nma, selected=None):
     masses3_sqrt1 = np.array(sum([[1/m,1/m,1/m] for m in np.sqrt(masses)],[]))
     nmode = modes.shape[1]
     modes = modes.copy() # avoid modifying the given modes
-    for imode in xrange(nmode):
+    for imode in range(nmode):
         modes[:,imode] *= masses3_sqrt1
         modes[:,imode] /= np.linalg.norm(modes[:,imode])
 
@@ -230,14 +230,14 @@ def dump_modes_gaussian(filename, nma, selected=None):
             ncol = iend - istart # number of columns in section
             # print stuff to file
             #  - mode indexes
-            for imode in xrange(istart, iend):
+            for imode in range(istart, iend):
                 print >> f, '%22d' % (imode + 1),
             print >> f
             #  - (fake) symmetry info
             print >> f, ' '.join(["                    ?A"]*ncol)
             #  - frequencies converted to inverse centimeters
             print >> f, ' Frequencies --',
-            for imode in xrange(istart, iend):
+            for imode in range(istart, iend):
                 print >> f, '%10.4f' % (freqs[imode]/lightspeed*centimeter),
                 if imode != iend-1:
                     print >> f, '           ',
@@ -247,7 +247,7 @@ def dump_modes_gaussian(filename, nma, selected=None):
             #  - the modes
             for iatom in range(natom):
                 print >> f, '%6d %3d' % (iatom + 1, numbers[iatom]),
-                for imode in xrange(istart, iend):
+                for imode in range(istart, iend):
                     print >> f, '%8.2f %6.2f %6.2f' % (
                        modes[3*iatom, imode], modes[3*iatom+1, imode],
                        modes[3*iatom+2, imode]),

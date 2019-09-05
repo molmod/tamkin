@@ -143,7 +143,7 @@ class G03Job(object):
             print >> f, " ".join(mol.charge_mult[2*i:2*i+2])
         else:
             print >> f, " ".join(mol.charge_mult[:2])
-        for i in xrange(mol.size):
+        for i in range(mol.size):
             if random and self.name == "opt":
                 x, y, z = mol.coordinates[i]/angstrom + numpy.random.uniform(-0.1,0.1,3)
             else:

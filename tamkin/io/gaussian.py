@@ -144,11 +144,11 @@ def load_molecule_g03fchk(fn_freq, fn_ener=None, fn_vdw=None, energy=None, fn_pu
         gradient = np.zeros((natom, 3), float)
         hessian = np.zeros((3*natom, 3*natom), float)
         iterator = iter_floats_file(fn_punch)
-        for i in xrange(natom):
-            for j in xrange(3):
+        for i in range(natom):
+            for j in range(3):
                 gradient[i,j] = iterator.next()
-        for i in xrange(3*natom):
-            for j in xrange(i+1):
+        for i in range(3*natom):
+            for j in range(i+1):
                 v = iterator.next()
                 hessian[i,j] = v
                 hessian[j,i] = v
@@ -282,7 +282,7 @@ def load_rotscan_g03log(fn_log, top_indexes=None):
                 numbers = []
                 last_coordinates = []
                 ## skip four lines
-                for i in xrange(4):
+                for i in range(4):
                     f.next()
                 # read atoms
                 for line in f:

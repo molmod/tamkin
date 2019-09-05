@@ -69,7 +69,7 @@ args = sys.argv[1:]
 
 molecule = XYZFile(args[0]).get_molecule()
 graph = MolecularGraph.from_geometry(molecule)
-atom_types = [get_atom_type(index, graph) for index in xrange(molecule.size)]
+atom_types = [get_atom_type(index, graph) for index in range(molecule.size)]
 
 psf = PSFFile()
 psf.add_molecular_graph(graph, atom_types=atom_types)

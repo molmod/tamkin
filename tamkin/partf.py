@@ -1016,7 +1016,7 @@ class ExtRot(Info, StatFys):
                 self.symmetry_number = tmp_mol.compute_rotsym()
             else:
                 self.symmetry_number = 1
-                print 'WARNING: molecule is too large (%i atoms > 10) to quickly estimate the rotational symmetry number.' % natom
+                print('WARNING: molecule is too large (%i atoms > 10) to quickly estimate the rotational symmetry number.' % natom)
         self.factor = np.sqrt(np.product([
             2*np.pi*m*boltzmann for m in self.moments if m > self.im_threshold
         ]))/self.symmetry_number/np.pi

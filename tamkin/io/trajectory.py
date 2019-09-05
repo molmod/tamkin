@@ -235,7 +235,7 @@ def dump_modes_gaussian(filename, nma, selected=None):
                 print('%22d' % (imode + 1), end="", file=f)
             print(end="", file=f)
             #  - (fake) symmetry info
-            print(' '.join(["                    ?A"]*ncol)
+            print(' '.join(["                    ?A"]*ncol))
             #  - frequencies converted to inverse centimeters
             print(' Frequencies --', end="", file=f)
             for imode in range(istart, iend):

@@ -43,6 +43,8 @@
 """
 
 
+from __future__ import print_function
+
 from molmod import boltzmann, planck, kjmol, lightspeed, centimeter
 
 import numpy as np

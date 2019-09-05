@@ -270,6 +270,7 @@ Notes
 '''
 
 
+from __future__ import print_function
 import sys, os, numpy as np
 from glob import glob
 from tamkin import *
@@ -341,7 +342,7 @@ def get_pf(dn, temps):
             A list of temperatures at which the properties of the molecule must be
             evaluated.
     '''
-    print '  Loading partition function from', dn
+    print('  Loading partition function from', dn)
 
     # A1) load the molecule
     mol_cfg = load_cfg('%s/molecule.cfg' % dn)
@@ -383,7 +384,7 @@ def get_pf(dn, temps):
     # A2) if present add a grimme correction
     fn_dftd3 = '%s/dftd3/dftd3.out' % dn
     if os.path.isfile(fn_dftd3):
-        print '    Loading DFT-D3 corrections'
+        print('    Loading DFT-D3 corrections')
         disp_energy = load_dftd3(fn_dftd3)
         molecule = molecule.copy_with(energy=molecule.energy + disp_energy)
 
@@ -393,7 +394,7 @@ def get_pf(dn, temps):
 
     # B1) load all rotors computed with Gaussian
     for dn_rotor in glob('%s/rotor_g_*' % dn):
-        print '    Loading rotor', dn_rotor
+        print('    Loading rotor', dn_rotor)
         dns_rotor.append(dn_rotor)
         fn_log = '%s/gaussian.log' % dn_rotor
         # Load the config file
@@ -412,7 +413,7 @@ def get_pf(dn, temps):
 
     # B2) load all free rotors
     for dn_rotor in glob('%s/rotor_f_*' % dn):
-        print '    Loading rotor', dn_rotor
+        print('    Loading rotor', dn_rotor)
         dns_rotor.append(dn_rotor)
         fn_cfg = '%s/rotor.cfg' % dn_rotor
         # Load the config file
@@ -431,7 +432,7 @@ def get_pf(dn, temps):
 
     # B3) load all custom rotors
     for dn_rotor in glob('%s/rotor_c_*' % dn):
-        print '    Loading rotor', dn_rotor
+        print('    Loading rotor', dn_rotor)
         dns_rotor.append(dn_rotor)
         fn_dat = '%s/rotor.dat' % dn_rotor
         # Load the potential data
@@ -456,14 +457,14 @@ def get_pf(dn, temps):
     #    atom settings in the output files of the quantum chemistry codes.
     fn_fixed = '%s/fixed.txt' % dn
     if os.path.isfile(fn_fixed):
-        print '    Loading fixed atoms from %s/fixed.txt' % dn
+        print('    Loading fixed atoms from %s/fixed.txt' % dn)
         fixed = load_indices(fn_fixed)
         molecule = molecule.copy_with(fixed=fixed)
 
     blocks = None
     fn_blocks = '%s/blocks.txt' % dn
     if os.path.isfile(fn_blocks):
-        print '    Loading rigid blocks from %s/blocks.txt' % dn
+        print('    Loading rigid blocks from %s/blocks.txt' % dn)
         blocks = load_indices(fn_blocks, groups=True)
 
     # D) Perform a normal mode analysis
@@ -471,23 +472,23 @@ def get_pf(dn, temps):
     if molecule.fixed is None:
         if blocks is None:
             if molecule.periodic:
-                print '    Performing NMA on a periodic system, without fixed atoms'
+                print('    Performing NMA on a periodic system, without fixed atoms')
                 nma = NMA(molecule)
             else:
-                print '    Performing NMA with fixed external degrees of freedom'
+                print('    Performing NMA with fixed external degrees of freedom')
                 nma = NMA(molecule, ConstrainExt(gradient_threshold=gradient_threshold))
                 ext_dof = True
         else:
-            print '    Performing NMA without %i mobile blocks' % len(blocks)
+            print('    Performing NMA without %i mobile blocks' % len(blocks))
             nma = NMA(molecule, MBH(blocks))
     else:
         if blocks is None:
-            print '    Performing NMA with %i fixed atoms (out of %i)' % (
-                len(molecule.fixed), molecule.size)
+            print('    Performing NMA with %i fixed atoms (out of %i)' % (
+                len(molecule.fixed), molecule.size))
             nma = NMA(molecule, PHVA(molecule.fixed))
         else:
-            print '    Performing NMA with %i fixed atoms (out of %i) and %i mobile blocks' % (
-                len(molecule.fixed), molecule.size, len(blocks))
+            print('    Performing NMA with %i fixed atoms (out of %i) and %i mobile blocks' % (
+                len(molecule.fixed), molecule.size, len(blocks)))
             nma = NMA(molecule, PHVA_MBH(molecule.fixed, blocks))
 
     # E) Define the partition function
@@ -526,14 +527,14 @@ def check_mass_balance(pfs1, pfs2, name1, name2):
     cf1 = get_chemical_formula(np.concatenate([pf.numbers for pf in pfs1]))
     cf2 = get_chemical_formula(np.concatenate([pf.numbers for pf in pfs2]))
     if cf1 != cf2:
-        print 'Error: mass balance mismatch!'
-        print 'Chemical formula of the %s: %s' % (name1, cf1)
+        print('Error: mass balance mismatch!')
+        print('Chemical formula of the %s: %s' % (name1, cf1))
         for pf in pfs1:
-            print '%30s:    %s' % (pf.title, get_chemical_formula(pf.numbers))
-        print 'Chemical formula of the %s: %s' % (name1, cf2)
+            print('%30s:    %s' % (pf.title, get_chemical_formula(pf.numbers)))
+        print('Chemical formula of the %s: %s' % (name1, cf2))
         for pf in pfs2:
-            print '%30s:    %s' % (pf.title, get_chemical_formula(pf.numbers))
-        print
+            print('%30s:    %s' % (pf.title, get_chemical_formula(pf.numbers)))
+        print()
         raise RuntimeError('Mass balance mismatch')
 
 
@@ -580,7 +581,7 @@ def main():
         elif dn.startswith('pr_'):
             products.append(get_pf(dn, temps))
         else:
-            print 'WARNING: skipping directory %s' % dn
+            print('WARNING: skipping directory %s' % dn)
 
     if len(reactants) == 0:
         raise RuntimeError('At least one reactant must be present.')
@@ -599,11 +600,11 @@ def main():
 
 if __name__ == '__main__':
     if len(sys.argv) > 1:
-        print __doc__
+        print(__doc__)
     else:
         try:
             main()
         except:
-            print 'An Error Occured! For detailed documentation, run ``tamkin-driver -h``.'
-            print
+            print('An Error Occured! For detailed documentation, run ``tamkin-driver -h``.')
+            print()
             raise

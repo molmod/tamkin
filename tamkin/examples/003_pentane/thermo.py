@@ -35,6 +35,7 @@
 #--
 
 
+from __future__ import print_function
 # Import the tamkin libarary.
 from tamkin import *
 # Import unit conversin factors
@@ -45,15 +46,15 @@ from numpy import *
 
 # Load the gaussian data.
 molecule = load_molecule_g03fchk("gaussian.fchk")
-print "Energy [kJ/mol]:", molecule.energy/kjmol
+print("Energy [kJ/mol]:", molecule.energy/kjmol)
 
 
 # A) Perform a standard normal mode analysis
 nma1 = NMA(molecule)
-print "The zero eigenmodes: %s" % nma1.zeros
+print("The zero eigenmodes: %s" % nma1.zeros)
 # Construct a partition function with the typical gas phase contributions.
 pf1 = PartFun(nma1, [ExtTrans(), ExtRot()])
-print "Heat capacity at 300K, constant pressure [J/(mol*K)]:", pf1.heat_capacity(300*kelvin)/(joule/mol/kelvin)
+print("Heat capacity at 300K, constant pressure [J/(mol*K)]:", pf1.heat_capacity(300*kelvin)/(joule/mol/kelvin))
 # Write some general information about the molecule and the partition function
 # to a file.
 pf1.write_to_file("partfun1.txt")
@@ -65,10 +66,10 @@ ta1.write_to_file("thermo1.csv")
 # B) Perform a normal mode analysis with constrained external degrees of freedom.
 # This implies that the vibrational analysis is performed in 3N-6 dof.
 nma2 = NMA(molecule, ConstrainExt())
-print "The zero eigenmodes: %s" % nma2.zeros
+print("The zero eigenmodes: %s" % nma2.zeros)
 # Construct a partition function with the typical gas phase contributions.
 pf2 = PartFun(nma2, [ExtTrans(), ExtRot()])
-print "Heat capacity at 300K, constant pressure [J/(mol*K)]:", pf2.heat_capacity(300*kelvin)/(joule/mol/kelvin)
+print("Heat capacity at 300K, constant pressure [J/(mol*K)]:", pf2.heat_capacity(300*kelvin)/(joule/mol/kelvin))
 # Write some general information about the molecule and the partition function
 # to a file.
 pf2.write_to_file("partfun2.txt")

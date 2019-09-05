@@ -34,6 +34,7 @@
 # --
 
 
+from __future__ import print_function
 from tamkin.nma import NMA
 
 from molmod import angstrom, lightspeed, centimeter

@@ -36,6 +36,7 @@
 
 
 # Import the tamkin libarary
+from __future__ import print_function
 from tamkin import *
 # Import other libraries
 import numpy as np # numerical and array routines
@@ -50,10 +51,10 @@ nma = NMA(molecule, ConstrainExt(), do_modes=True)
 # Print modes and wavenumbers on screen
 invcm = lightspeed/centimeter
 for i in range(len(nma.freqs)):
-    print "Mode:", i
-    print "Wavenumber:", nma.freqs[i]/invcm
-    print "Is zero:", i in nma.zeros
-    print "Norm of eigenmode:", np.linalg.norm(nma.modes[:,i])
-    print "Components:"
-    print nma.modes[:,i]
-    print
+    print("Mode:", i)
+    print("Wavenumber:", nma.freqs[i]/invcm)
+    print("Is zero:", i in nma.zeros)
+    print("Norm of eigenmode:", np.linalg.norm(nma.modes[:,i]))
+    print("Components:")
+    print(nma.modes[:,i])
+    print()

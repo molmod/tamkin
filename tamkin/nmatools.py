@@ -34,6 +34,7 @@
 # --
 """Tools for further investigation of a normal mode analysis"""
 
+from __future__ import print_function
 from tamkin.data import Molecule
 from tamkin.nma import NMA
 from tamkin.io.charmm import load_peptide_info_charmm

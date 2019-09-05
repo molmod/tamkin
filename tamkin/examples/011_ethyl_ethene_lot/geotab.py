@@ -34,6 +34,7 @@
 #
 #--
 
+from __future__ import print_function
 from lot_basis import lots_list
 import html
 

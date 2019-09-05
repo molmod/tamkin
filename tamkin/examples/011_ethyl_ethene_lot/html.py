@@ -34,6 +34,8 @@
 #--
 
 
+from __future__ import print_function
+
 header = """<?xml version='1.0' encoding='UTF-8'?>
 <html><head><title>%s</title>
 <style type='text/css'>

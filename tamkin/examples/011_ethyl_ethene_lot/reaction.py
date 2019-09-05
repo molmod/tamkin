@@ -36,6 +36,7 @@
 
 
 # Import the tamkin library.
+from __future__ import print_function
 from tamkin import *
 # Import units
 from molmod.units import kjmol

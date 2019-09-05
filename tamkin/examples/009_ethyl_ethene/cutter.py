@@ -38,6 +38,7 @@
 # a torsional scan computation. All torsional scan files in TAMkin are reduced
 # in size with this program.
 
+from __future__ import print_function
 import sys
 
 active = 3
@@ -46,6 +47,6 @@ for line in sys.stdin:
     if line == "                          Input orientation:                          ":
         active = 3
     if active > 0 or line.startswith(" SCF Done:") or line.startswith("    -- Stationary point found."):
-        print line
+        print(line)
     if line == " ---------------------------------------------------------------------":
         active -= 1

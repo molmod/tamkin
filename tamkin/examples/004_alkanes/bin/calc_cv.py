@@ -39,6 +39,7 @@
 # the variance of the kinetic energy from an NVE simulation.
 
 # import conversion factors and physical constants
+from __future__ import print_function
 from molmod.units import *
 from molmod.constants import *
 

@@ -41,6 +41,7 @@
    [1] Chemical Physics, Vol. 328 (1-3) 251 - 258, 2006
 """
 
+from __future__ import print_function
 from tamkin.partf import Info, StatFysTerms, helper_vibrations, \
     helpert_vibrations, helpertt_vibrations, helper_levels, helpert_levels, \
     helpertt_levels

@@ -83,6 +83,7 @@
 """
 
 
+from __future__ import print_function
 from molmod import boltzmann, lightspeed, atm, bar, amu, centimeter, kjmol, \
     planck, mol, meter, newton
 

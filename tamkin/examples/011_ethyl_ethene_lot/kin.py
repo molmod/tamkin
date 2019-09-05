@@ -33,6 +33,7 @@
 #
 #--
 
+from __future__ import print_function
 import numpy as np, sys
 
 from molmod.units import bar, liter, meter, mol, second, kjmol
@@ -86,11 +87,11 @@ experimental_k = 7.19e-15 * (temps/298)**2.44*np.exp(-22.45*kjmol/(boltzmann*tem
 experimental_k *= (centimeter**3/second)
 experimental_k /= (meter**3/mol/second)
 experimental_lnk = np.log(experimental_k)
-print "unit conversion: %e" % (7.19e-15*(centimeter**3/second)/(meter**3/mol/second))
-print "experimental_k:"
-print experimental_k
-print "experimental_lnk:"
-print experimental_lnk
+print("unit conversion: %e" % (7.19e-15*(centimeter**3/second)/(meter**3/mol/second)))
+print("experimental_k:")
+print(experimental_k)
+print("experimental_lnk:")
+print(experimental_lnk)
 
 # fit experimental A and Ea and also sensitivity to errors
 
@@ -108,7 +109,7 @@ covariance_lnk = np.ones((N,N),float)*np.log(10)**2 + np.identity(N,float)*np.lo
 sensitivity = np.linalg.solve(A, design_matrix.transpose())
 covariance_parameters = np.dot(np.dot(sensitivity, covariance_lnk), sensitivity.transpose())
 
-print "experimental_A: %e" % experimental_A
-print "experimental_Ea", experimental_Ea
+print("experimental_A: %e" % experimental_A)
+print("experimental_Ea", experimental_Ea)
 #sys.exit()
 # done fitting

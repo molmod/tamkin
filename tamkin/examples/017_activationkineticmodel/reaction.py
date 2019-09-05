@@ -35,6 +35,7 @@
 #--
 
 
+from __future__ import print_function
 # Import the tamkin libarary.
 from tamkin import *
 # Import unit conversin factors
@@ -67,16 +68,16 @@ pf_cyclohexene = PartFun(nma_cyclohexene, [ExtTrans(), ExtRot(1),Vibrations(freq
 
 # Thermodynamic model
 tm = ThermodynamicModel([pf_VO_AA_OH_H2O,pf_TBHP],[pf_VO_AA_OOtBu,pf_H2O,pf_H2O])
-print "Thermodynamic model:"
-print "equilibrium constant and gibbs free energy difference"
-print tm.equilibrium_constant(323.0,do_log=False)/tm.unit, tm.unit_name,"    " ,tm.free_energy_change(323.0)/kjmol, "kJ/mol"
-print
+print("Thermodynamic model:")
+print("equilibrium constant and gibbs free energy difference")
+print(tm.equilibrium_constant(323.0,do_log=False)/tm.unit, tm.unit_name,"    " ,tm.free_energy_change(323.0)/kjmol, "kJ/mol")
+print()
 # Kinetic model
 km = KineticModel([pf_VO_AA_OOtBu,pf_cyclohexene],pf_TS,tunneling=None)
-print "Kinetic model:"
-print "rate constant and gibbs free energy difference"
-print km.rate_constant(323.0,do_log=False)/km.unit, "%s" % km.unit_name,"   " , km.free_energy_change(323.0)/kjmol, "kJ/mol"
-print
+print("Kinetic model:")
+print("rate constant and gibbs free energy difference")
+print(km.rate_constant(323.0,do_log=False)/km.unit, "%s" % km.unit_name,"   " , km.free_energy_change(323.0)/kjmol, "kJ/mol")
+print()
 ra = ReactionAnalysis(km, 273, 373.1, temp_step=10)
 ra.plot_arrhenius("arrhenius.png") # make the Arrhenius plot
 
@@ -99,7 +100,7 @@ rakm = ReactionAnalysis(akm,273,373.1,temp_step=10)
 rakm.plot_arrhenius("arrhenius_akm.png")
 rakm.monte_carlo()
 rakm.plot_parameters("parameters_akm.png")
-print "Activation kinetic model:"
-print "global rate constant and global gibbs free energy difference"
-print akm.rate_constant(323.0)/akm.unit, "%s" % akm.unit_name,"    ", akm.free_energy_change(323.0)/kjmol, "kJ/mol"
+print("Activation kinetic model:")
+print("global rate constant and global gibbs free energy difference")
+print(akm.rate_constant(323.0)/akm.unit, "%s" % akm.unit_name,"    ", akm.free_energy_change(323.0)/kjmol, "kJ/mol")
 akm.write_to_file("activation_model.txt")

@@ -134,11 +134,11 @@ class Eckart(TunnelingCorrection):
 
     def dump(self, f):
         '''Write descriptive info about the tunneling correction to a text file'''
-        print('Eckart Tunneling Correction', end="", file=f)
-        print('Forward Barrier [kJ/mol] = %.2f' % (self.Ef/kjmol), end="", file=f)
-        print('Reverse Barrier [kJ/mol] = %.2f' % (self.Er/kjmol), end="", file=f)
-        print('Imaginary frequeny [cm^-1] = %.1f' % (self.nu/(lightspeed/centimeter)), end="", file=f)
-        print(end="", file=f)
+        print('Eckart Tunneling Correction', file=f)
+        print('Forward Barrier [kJ/mol] = %.2f' % (self.Ef/kjmol), file=f)
+        print('Reverse Barrier [kJ/mol] = %.2f' % (self.Er/kjmol), file=f)
+        print('Imaginary frequeny [cm^-1] = %.1f' % (self.nu/(lightspeed/centimeter)), file=f)
+        print(file=f)
 
     def _compute_one_temp(self, temp):
         """Computes the correction for one temperature
@@ -235,9 +235,9 @@ class Wigner(TunnelingCorrection):
 
     def dump(self, f):
         '''Write descriptive info about the tunneling correction to a text file'''
-        print('Wigner Tunneling Correction', end="", file=f)
-        print('Imaginary frequeny [cm^-1] = %.1f' % (self.nu/(lightspeed/centimeter)), end="", file=f)
-        print(end="", file=f)
+        print('Wigner Tunneling Correction', file=f)
+        print('Imaginary frequeny [cm^-1] = %.1f' % (self.nu/(lightspeed/centimeter)), file=f)
+        print(file=f)
 
     def __call__(self, temps):
         """See :meth:`TunnelingCorrection.__call__`."""
@@ -280,9 +280,9 @@ class Miller(TunnelingCorrection):
 
     def dump(self, f):
         '''Write descriptive info about the tunneling correction to a text file'''
-        print('Miller Tunneling Correction', end="", file=f)
-        print('Imaginary frequeny [cm^-1] = %.1f' % (self.nu/(lightspeed/centimeter)), end="", file=f)
-        print(end="", file=f)
+        print('Miller Tunneling Correction', file=f)
+        print('Imaginary frequeny [cm^-1] = %.1f' % (self.nu/(lightspeed/centimeter)), file=f)
+        print(file=f)
 
     def __call__(self, temps):
         """See :meth:`TunnelingCorrection.__call__`."""

@@ -222,7 +222,7 @@ def run(do_rotor, do_counterpoise, load_sp):
             ra.Ea/kjmol,
             ra.compute_delta_G(0.0)/kjmol,
             ra.compute_delta_E()/kjmol,
-        ), end="", file=f)
+        ), file=f)
         f.close()
 
     write_ra_summary("%s_summary_gauche.txt" % prefix, ra_gauche)

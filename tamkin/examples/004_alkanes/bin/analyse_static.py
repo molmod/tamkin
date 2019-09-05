@@ -71,11 +71,11 @@ pf = PartFun(
 
 # Write the frequencies to a csv file
 f = open(os.path.join(args[0], "freqs.csv"), "w")
-print('"Frequency","Wavenumber","Vibrational temperature"', end="", file=f)
-print('"Atomic units","1/cm","K"', end="", file=f)
+print('"Frequency","Wavenumber","Vibrational temperature"', file=f)
+print('"Atomic units","1/cm","K"', file=f)
 for i in range(len(pf.vibrational.freqs)):
     freq = pf.vibrational.freqs[i]
-    print('%e,%f,%f' % (freq, freq/lightspeed*centimeter, 2*numpy.pi*freq/boltzmann), end="", file=f)
+    print('%e,%f,%f' % (freq, freq/lightspeed*centimeter, 2*numpy.pi*freq/boltzmann), file=f)
 f.close()
 
 

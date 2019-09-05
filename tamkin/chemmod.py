@@ -282,16 +282,16 @@ class BaseModel(object):
 
     def dump(self, f):
         """Write all info about the model to a file."""
-        print("The chemical balance:", end="", file=f)
+        print("The chemical balance:", file=f)
         print("  ", " + ".join("%s*(\"%s\")" % (-st, pf.title) for pf, st in self._iter_pfs() if st < 0), end="", file=f)
         print(" <--> ", end="", file=f)
-        print(" + ".join("%s*(\"%s\")" % (st, pf.title) for pf, st in self._iter_pfs() if st > 0), end="", file=f)
-        print(end="", file=f)
+        print(" + ".join("%s*(\"%s\")" % (st, pf.title) for pf, st in self._iter_pfs() if st > 0), file=f)
+        print(file=f)
         for counter, (pf, st) in enumerate(self._iter_pfs()):
-            print("Partition function %i" % counter, end="", file=f)
-            print("Signed stoichiometry: %i" % st, end="", file=f)
+            print("Partition function %i" % counter, file=f)
+            print("Signed stoichiometry: %i" % st, file=f)
             pf.dump(f)
-            print(end="", file=f)
+            print(file=f)
 
 
 class ThermodynamicModel(BaseModel):
@@ -332,10 +332,10 @@ class ThermodynamicModel(BaseModel):
     def dump(self, f):
         """Write all info about the thermodynamic model to a file."""
         delta_E = self.energy_difference()
-        print("Electronic energy difference [kJ/mol] = %.1f" % (delta_E/kjmol), end="", file=f)
+        print("Electronic energy difference [kJ/mol] = %.1f" % (delta_E/kjmol), file=f)
         delta_ZPE = self.zero_point_energy_difference()
-        print("Zero-point energy difference [kJ/mol] = %.1f" % (delta_ZPE/kjmol), end="", file=f)
-        print(end="", file=f)
+        print("Zero-point energy difference [kJ/mol] = %.1f" % (delta_ZPE/kjmol), file=f)
+        print(file=f)
         BaseModel.dump(self, f)
 
 
@@ -417,10 +417,10 @@ class KineticModel(BaseKineticModel):
     def dump(self, f):
         """Write all info about the kinetic model to a file."""
         delta_E = self.energy_difference()
-        print("Electronic energy barrier [kJ/mol] = %.1f" % (delta_E/kjmol), end="", file=f)
+        print("Electronic energy barrier [kJ/mol] = %.1f" % (delta_E/kjmol), file=f)
         delta_ZPE = self.zero_point_energy_difference()
-        print("Zero-point energy barrier [kJ/mol] = %.1f" % (delta_ZPE/kjmol), end="", file=f)
-        print(end="", file=f)
+        print("Zero-point energy barrier [kJ/mol] = %.1f" % (delta_ZPE/kjmol), file=f)
+        print(file=f)
         BaseKineticModel.dump(self, f)
 
 
@@ -451,12 +451,12 @@ class ActivationKineticModel(BaseKineticModel):
     def dump(self, f):
         """Write all info about the kinetic model to a file."""
         delta_E = self.energy_difference()
-        print("Electronic energy barrier [kJ/mol] = %.1f" % (delta_E/kjmol), end="", file=f)
+        print("Electronic energy barrier [kJ/mol] = %.1f" % (delta_E/kjmol), file=f)
         delta_ZPE = self.zero_point_energy_difference()
-        print("Zero-point energy barrier [kJ/mol] = %.1f" % (delta_ZPE/kjmol), end="", file=f)
-        print(end="", file=f)
-        print("Thermodynamic submodel", end="", file=f)
+        print("Zero-point energy barrier [kJ/mol] = %.1f" % (delta_ZPE/kjmol), file=f)
+        print(file=f)
+        print("Thermodynamic submodel", file=f)
         self.tm.dump(f)
-        print(end="", file=f)
-        print("Kinetic submodel", end="", file=f)
+        print(file=f)
+        print("Kinetic submodel", file=f)
         self.km.dump(f)

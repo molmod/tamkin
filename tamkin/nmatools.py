@@ -139,19 +139,19 @@ def write_overlap(freqs1, freqs2, overlap, filename="overlap.csv", unit="au"):
 
     if unit is "au":
         # 1. row of freqs2
-        print(";"+";".join(str(g) for g in freqs2), end="", file=f)  # this is the same
+        print(";"+";".join(str(g) for g in freqs2), file=f)  # this is the same
 
         # 2. start each row with freq of freqs1 and continue with overlaps
         for r in range(rows):
-            print(str(freqs1[r])+";"+";".join(str(g) for g in overlap[r,:].tolist()), end="", file=f)
+            print(str(freqs1[r])+";"+";".join(str(g) for g in overlap[r,:].tolist()), file=f)
 
     elif unit is "cm1":
         # 1. row of freqs2
-        print(";"+";".join(str(g*centimeter/lightspeed) for g in freqs2), end="", file=f)  # this is the same
+        print(";"+";".join(str(g*centimeter/lightspeed) for g in freqs2), file=f)  # this is the same
 
         # 2. start each row with freq of freqs1 and continue with overlaps
         for r in range(rows):
-            print(str(freqs1[r]*centimeter/lightspeed)+";"+";".join(str(g) for g in overlap[r,:].tolist()), end="", file=f)
+            print(str(freqs1[r]*centimeter/lightspeed)+";"+";".join(str(g) for g in overlap[r,:].tolist()), file=f)
 
     else:
         raise NotImplementedError("this unit is not implemented/recognized")

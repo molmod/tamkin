@@ -120,9 +120,9 @@ class G03Job(object):
 
         # write the input file
         f = open(fn_com, "w")
-        print("%chk=gaussian.chk", end="", file=f)
-        print("%nproc=1", end="", file=f)
-        print("%mem=1000MB", end="", file=f)
+        print("%chk=gaussian.chk", file=f)
+        print("%nproc=1", file=f)
+        print("%mem=1000MB", file=f)
         print("#p %s/%s %s %s maxdisk=5GB" % (lot.name, basis.name, self.cmd, lot.iop), end="", file=f)
         if basis.diffuse:
             print("scf=tight", end="", file=f)
@@ -130,20 +130,20 @@ class G03Job(object):
             print("guess=read", end="", file=f)
         if len(lot.extra_overlay) > 0:
             print("extraoverlay", end="", file=f)
-        print(end="", file=f)
-        print(end="", file=f)
+        print(file=f)
+        print(file=f)
         if len(lot.extra_overlay) > 0:
-            print(lot.extra_overlay, end="", file=f)
-            print(end="", file=f)
-        print(dirname, end="", file=f)
-        print(end="", file=f)
+            print(lot.extra_overlay, file=f)
+            print( file=f)
+        print(dirname, file=f)
+        print(file=f)
         if self.name == "bsse":
-            print(" ".join(mol.charge_mult), end="", file=f)
+            print(" ".join(mol.charge_mult), file=f)
         elif self.name.startswith("cps"):
             i = int(self.name[-1])
-            print(" ".join(mol.charge_mult[2*i:2*i+2]), end="", file=f)
+            print(" ".join(mol.charge_mult[2*i:2*i+2]), file=f)
         else:
-            print(" ".join(mol.charge_mult[:2]), end="", file=f)
+            print(" ".join(mol.charge_mult[:2]), file=f)
         for i in range(mol.size):
             if random and self.name == "opt":
                 x, y, z = mol.coordinates[i]/angstrom + numpy.random.uniform(-0.1,0.1,3)
@@ -163,11 +163,11 @@ class G03Job(object):
                         continue
             print(" %2s   % 10.5f   % 10.5f   % 10.5f  %s" % (
                 symbol, x, y, z, tag
-            ), end="", file=f)
-        print(end="", file=f)
-        print(self.post, end="", file=f)
-        print(end="", file=f)
-        print(end="", file=f)
+            ), file=f)
+        print(file=f)
+        print(self.post, file=f)
+        print(file=f)
+        print(file=f)
         f.close()
 
         print(dirname)

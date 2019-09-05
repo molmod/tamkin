@@ -76,7 +76,7 @@ def overview(template, title, fn_img, rows):
 
 
 f = open("abskintab.html", "w")
-print(html.header % "KIN Overview", end="", file=f)
+print(html.header % "KIN Overview", file=f)
 
 for do_rotor in False, True:
     ir_str = {True: "ir", False: "ho"}[do_rotor]
@@ -115,7 +115,7 @@ for do_rotor in False, True:
                 rows,
             )
 
-        print("<p>Theoretical rate constants (%s, %s)</p>" % (ir_info, cp_info), end="", file=f)
+        print("<p>Theoretical rate constants (%s, %s)</p>" % (ir_info, cp_info), file=f)
         html.print_table(f, rows)
 
-print(html.footer, end="", file=f)
+print(html.footer, file=f)

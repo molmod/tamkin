@@ -72,19 +72,19 @@ class Timer(object):
            Optional argument:
             | f  --  the stream to write to. [default=sys.stdout]
         """
-        print("-------------------", end="", file=f)
-        print("Printing LOG jobtimer", end="", file=f)
-        print('%12s %12s %21s %16s %30s' %("cpu times [s]", "diff [s]", "wall times [s]", "diff [s]", "labels" ), end="", file=f)
+        print("-------------------", file=f)
+        print("Printing LOG jobtimer", file=f)
+        print('%12s %12s %21s %16s %30s' %("cpu times [s]", "diff [s]", "wall times [s]", "diff [s]", "labels" ), file=f)
         for i,label in enumerate(self.labels[:-1]):
             print('%12.3f %12.3f %21.3f %16.3f %30s' %(self.cpu_times[i],
                                          self.cpu_times[i+1]-self.cpu_times[i],
                                          self.wall_times[i],
                                          self.wall_times[i+1]-self.wall_times[i],
-                                         label), end="", file=f)
+                                         label), file=f)
         print('%12.3f %12s %21.3f %16s %30s' %(self.cpu_times[-1], "",
                                          self.wall_times[-1], "",
-                                         self.labels[-1]), end="", file=f)
-        print("-------------------", end="", file=f)
+                                         self.labels[-1]), file=f)
+        print("-------------------", file=f)
 
     def write_to_file(self, filename):
         """Write the logfile with timing information to filename.

@@ -50,7 +50,7 @@ footer = "</body></html>"
 
 
 def print_table(f, rows):
-    print("<table style='border-color:black'>", end="", file=f)
+    print("<table style='border-color:black'>", file=f)
     for row in rows:
-        print("<tr>%s</tr>" % ("".join(row).encode('UTF-8')), end="", file=f)
-    print("</table>", end="", file=f)
+        print("<tr>%s</tr>" % ("".join(row).encode('UTF-8')), file=f)
+    print("</table>", file=f)

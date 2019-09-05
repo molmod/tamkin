@@ -550,40 +550,40 @@ class Rotor(Info, StatFysTerms):
         """
         Info.dump(self, f)
         # parameters
-        print("    Dihedral indexes: %s" % " ".join(str(i) for i in self.rot_scan.dihedral), end="", file=f)
-        print("    Top indexes: %s" % " ".join(str(i) for i in self.rot_scan.top_indexes), end="", file=f)
-        print("    Rotational symmetry: %i" % self.rotsym, end="", file=f)
-        print("    Even potential: %s" % self.even, end="", file=f)
+        print("    Dihedral indexes: %s" % " ".join(str(i) for i in self.rot_scan.dihedral), file=f)
+        print("    Top indexes: %s" % " ".join(str(i) for i in self.rot_scan.top_indexes), file=f)
+        print("    Rotational symmetry: %i" % self.rotsym, file=f)
+        print("    Even potential: %s" % self.even, file=f)
         if self.rot_scan.potential is None:
-            print("    This is a free rotor", end="", file=f)
+            print("    This is a free rotor", file=f)
         else:
             angles, energies = self.rot_scan.potential
-            print("    This is a hindered rotor", end="", file=f)
-            print("    Maximum number of cosines in the fit: %i" % self.dofmax, end="", file=f)
+            print("    This is a hindered rotor", file=f)
+            print("    Maximum number of cosines in the fit: %i" % self.dofmax, file=f)
             angles, energies = self.potential
             fit_energies = self.hb.eval_fn(angles, self.v_coeffs)
             rmsd = ((fit_energies - energies)**2).mean()**0.5
             rms = (energies**2).mean()**0.5
             rrmsd = rmsd/rms
-            print("    RMSD of the fit [kJ/mol]: %.2f" % (rmsd/kjmol), end="", file=f)
-            print("    Relative RMSD of the fit the fit [%%]: %.1f" % (rrmsd*100), end="", file=f)
-            print("    Pearson R^2 of the fit [%%]: %.3f" % ((1-rrmsd**2)*100), end="", file=f)
+            print("    RMSD of the fit [kJ/mol]: %.2f" % (rmsd/kjmol), file=f)
+            print("    Relative RMSD of the fit the fit [%%]: %.1f" % (rrmsd*100), file=f)
+            print("    Pearson R^2 of the fit [%%]: %.3f" % ((1-rrmsd**2)*100), file=f)
 
-            print("    Potential: Angle [deg]    Energy [kJ/mol]", end="", file=f)
+            print("    Potential: Angle [deg]    Energy [kJ/mol]", file=f)
             for i in range(len(angles)):
-                print("              % 7.2f         %6.1f" % (angles[i]/deg, energies[i]/kjmol), end="", file=f)
-        print("    Number of QM energy levels: %i" % self.num_levels, end="", file=f)
+                print("              % 7.2f         %6.1f" % (angles[i]/deg, energies[i]/kjmol), file=f)
+        print("    Number of QM energy levels: %i" % self.num_levels, file=f)
         # derived quantities
-        print(f, "    Center [A]: % 8.2f % 8.2f % 8.2f" % tuple(self.center/angstrom), end="", file=f)
-        print("    Axis [1]: % 8.2f % 8.2f % 8.2f" % tuple(self.axis), end="", file=f)
-        print("    Moment [amu*bohr**2]: %f" % (self.moment/amu), end="", file=f)
-        print("    Reduced moment [amu*bohr**2]: %f" % (self.reduced_moment/amu), end="", file=f)
-        print("    Cancel wavenumber [1/cm]: %.1f" % (self.cancel_freq/(lightspeed/centimeter)), end="", file=f)
-        print("    The cancelation wavenumber is %s." % self.cancel_method, end="", file=f)
+        print(f, "    Center [A]: % 8.2f % 8.2f % 8.2f" % tuple(self.center/angstrom), file=f)
+        print("    Axis [1]: % 8.2f % 8.2f % 8.2f" % tuple(self.axis), file=f)
+        print("    Moment [amu*bohr**2]: %f" % (self.moment/amu), file=f)
+        print("    Reduced moment [amu*bohr**2]: %f" % (self.reduced_moment/amu), file=f)
+        print("    Cancel wavenumber [1/cm]: %.1f" % (self.cancel_freq/(lightspeed/centimeter)), file=f)
+        print("    The cancelation wavenumber is %s." % self.cancel_method, file=f)
         self.dump_values(f, "Energy levels [kJ/mol]", self.energy_levels/kjmol, "% 8.2f", 8)
         if self.hb is not None:
-            print("    Number of basis functions: %i" % (self.hb.size), end="", file=f)
-        print("    Zero-point contribution [kJ/mol]: %.7f" % (self.free_energy(0.0)/kjmol), end="", file=f)
+            print("    Number of basis functions: %i" % (self.hb.size), file=f)
+        print("    Zero-point contribution [kJ/mol]: %.7f" % (self.free_energy(0.0)/kjmol), file=f)
 
     def plot_levels(self, prefix, temp, do_levels=True, do_data=True):
         """Plots the potential with the energy levels

@@ -97,7 +97,7 @@ def ra_geom(mol_name, basis_label, rows):
 
 
 f = open("geotab.html", "w")
-print(html.header % "GEO Overview", end="", file=f)
+print(html.header % "GEO Overview", file=f)
 
 rows = []
 ts_geom("Gauche", "6-31gd", rows)
@@ -105,7 +105,7 @@ ts_geom("Trans", "6-31gd", rows)
 ts_geom("Gauche", "6-311+g3df2p", rows)
 ts_geom("Trans", "6-311+g3df2p", rows)
 
-print("<p>Geometrical parameters related to the transition state.</p>", end="", file=f)
+print("<p>Geometrical parameters related to the transition state.</p>", file=f)
 html.print_table(f, rows)
 
 rows = []
@@ -114,7 +114,7 @@ ra_geom("Ethyl", "6-31gd", rows)
 ra_geom("Ethene", "6-311+g3df2p", rows)
 ra_geom("Ethyl", "6-311+g3df2p", rows)
 
-print("<p>Geometrical parameters related to the reactants.</p>", end="", file=f)
+print("<p>Geometrical parameters related to the reactants.</p>", file=f)
 html.print_table(f, rows)
 
-print(html.footer, end="", file=f)
+print(html.footer, file=f)

@@ -75,7 +75,7 @@ def ts_bsse(fn_template, title, rows):
         counter += 1
 
 f = open("bssetab.html", "w")
-print >> f, html.header % "BSSE Overview"
+print(html.header % "BSSE Overview", end="", file=f)
 
 rows = []
 ts_bsse("%s__6-31gd/ho_%s_summary_gauche.txt", "Gauche, HO, Consistent, 6-31G(d)", rows)
@@ -85,7 +85,7 @@ ts_bsse("%s__6-311+g3df2p/ho_%s_summary_trans.txt", "Trans, HO, Consistent, 6-31
 ts_bsse("GEO__b3lyp__6-31gd__ENERGY__%s__6-311+g3df2p/ho_%s_summary_gauche.txt", "Gauche, HO, GEO=B3LYP/6-31G(d), 6-311+G(3df,2p)", rows)
 ts_bsse("GEO__b3lyp__6-31gd__ENERGY__%s__6-311+g3df2p/ho_%s_summary_trans.txt", "Trans, HO, GEO=B3LYP/6-31G(d), 6-311+G(3df,2p)", rows)
 
-print >> f, "<p>BSSE corrections on the transition state.</p>"
+print("<p>BSSE corrections on the transition state.</p>", end="", file=f)
 html.print_table(f, rows)
 
-print >> f, html.footer
+print(html.footer, end="", file=f)

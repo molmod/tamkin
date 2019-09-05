@@ -120,30 +120,30 @@ class G03Job(object):
 
         # write the input file
         f = open(fn_com, "w")
-        print >> f, "%chk=gaussian.chk"
-        print >> f, "%nproc=1"
-        print >> f, "%mem=1000MB"
-        print >> f, "#p %s/%s %s %s maxdisk=5GB" % (lot.name, basis.name, self.cmd, lot.iop),
+        print("%chk=gaussian.chk", end="", file=f)
+        print("%nproc=1", end="", file=f)
+        print("%mem=1000MB", end="", file=f)
+        print("#p %s/%s %s %s maxdisk=5GB" % (lot.name, basis.name, self.cmd, lot.iop), end="", file=f)
         if basis.diffuse:
-            print >> f, "scf=tight",
+            print("scf=tight", end="", file=f)
         if not (self.name == "opt" or self.name == "bsse" or self.name.startswith("cps")):
-            print >> f, "guess=read",
+            print("guess=read", end="", file=f)
         if len(lot.extra_overlay) > 0:
-            print >> f, "extraoverlay",
-        print >> f
-        print >> f
+            print("extraoverlay", end="", file=f)
+        print(end="", file=f)
+        print(end="", file=f)
         if len(lot.extra_overlay) > 0:
-            print >> f, lot.extra_overlay
-            print >> f
-        print >> f, dirname
-        print >> f
+            print(lot.extra_overlay, end="", file=f)
+            print(end="", file=f)
+        print(dirname, end="", file=f)
+        print(end="", file=f)
         if self.name == "bsse":
-            print >> f, " ".join(mol.charge_mult)
+            print(" ".join(mol.charge_mult), end="", file=f)
         elif self.name.startswith("cps"):
             i = int(self.name[-1])
-            print >> f, " ".join(mol.charge_mult[2*i:2*i+2])
+            print(" ".join(mol.charge_mult[2*i:2*i+2]), end="", file=f)
         else:
-            print >> f, " ".join(mol.charge_mult[:2])
+            print(" ".join(mol.charge_mult[:2]), end="", file=f)
         for i in range(mol.size):
             if random and self.name == "opt":
                 x, y, z = mol.coordinates[i]/angstrom + numpy.random.uniform(-0.1,0.1,3)
@@ -161,16 +161,16 @@ class G03Job(object):
                 else:
                     if self.name[-1] != mol.tags[i]:
                         continue
-            print >> f, " %2s   % 10.5f   % 10.5f   % 10.5f  %s" % (
+            print(" %2s   % 10.5f   % 10.5f   % 10.5f  %s" % (
                 symbol, x, y, z, tag
-            )
-        print >> f
-        print >> f, self.post
-        print >> f
-        print >> f
+            ), end="", file=f)
+        print(end="", file=f)
+        print(self.post, end="", file=f)
+        print(end="", file=f)
+        print(end="", file=f)
         f.close()
 
-        print dirname
+        print(dirname)
 
 
 

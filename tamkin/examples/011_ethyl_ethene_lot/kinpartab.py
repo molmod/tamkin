@@ -74,7 +74,7 @@ def overview(template, title, fn_img, rows):
 
 
 f = open("kinpartab.html", "w")
-print >> f, html.header % "KIN par Overview"
+print(html.header % "KIN par Overview", end="", file=f)
 
 for do_rotor in False, True:
     ir_str = {True: "ir", False: "ho"}[do_rotor]
@@ -113,7 +113,7 @@ for do_rotor in False, True:
                 rows,
             )
 
-        print >> f, "<p>Kinetic parameters (%s, %s)</p>" % (ir_info, cp_info)
+        print("<p>Kinetic parameters (%s, %s)</p>" % (ir_info, cp_info), end="", file=f)
         html.print_table(f, rows)
 
-print >> f, html.footer
+print(html.footer, end="", file=f)

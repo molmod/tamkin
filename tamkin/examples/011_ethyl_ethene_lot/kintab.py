@@ -163,7 +163,7 @@ def overview(template, title, fn_img, rows):
 
 
 f = open("kintab.html", "w")
-print >> f, html.header % "KIN Overview"
+print(html.header % "KIN Overview", end="", file=f)
 
 for do_rotor in False, True:
     ir_str = {True: "ir", False: "ho"}[do_rotor]
@@ -202,7 +202,7 @@ for do_rotor in False, True:
                 rows,
             )
 
-        print >> f, "<p>10Log10 of ratio between theoretical and experimental rate (%s, %s)</p>" % (ir_info, cp_info)
+        print("<p>10Log10 of ratio between theoretical and experimental rate (%s, %s)</p>" % (ir_info, cp_info), end="", file=f)
         html.print_table(f, rows)
 
-print >> f, html.footer
+print(html.footer, end="", file=f)

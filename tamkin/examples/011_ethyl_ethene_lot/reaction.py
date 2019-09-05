@@ -213,7 +213,7 @@ def run(do_rotor, do_counterpoise, load_sp):
 
     def write_ra_summary(fn, ra):
         f = open(fn, "w")
-        print >> f, "% 10.5e % 10.5e % 10.5e % 10.5e    %10.5e %10.2e    %10.2e %10.2e" % (
+        print("% 10.5e % 10.5e % 10.5e % 10.5e    %10.5e %10.2e    %10.2e %10.2e" % (
             ra.compute_rate_coeff(300)/ra.unit,
             ra.compute_rate_coeff(400)/ra.unit,
             ra.compute_rate_coeff(500)/ra.unit,
@@ -222,7 +222,7 @@ def run(do_rotor, do_counterpoise, load_sp):
             ra.Ea/kjmol,
             ra.compute_delta_G(0.0)/kjmol,
             ra.compute_delta_E()/kjmol,
-        )
+        ), end="", file=f)
         f.close()
 
     write_ra_summary("%s_summary_gauche.txt" % prefix, ra_gauche)

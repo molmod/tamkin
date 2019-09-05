@@ -203,26 +203,26 @@ def dump_modes_gaussian(filename, nma, selected=None):
 
     ### E) Actual writing of the fake log file
     with open(filename, "w") as f:
-        print >> f, header
+        print(header, end="", file=f)
 
         ### E1) ATOM PART
         assert modes.shape[0] % 3 == 0
         natom = modes.shape[0]/3
-        print >> f, header_coordinates
+        print(header_coordinates, end="", file=f)
         for iatom in range(natom):
-           print >> f, '%5d %10d %13s %15f %11f %11f' %(
+           print('%5d %10d %13s %15f %11f %11f' %(
                        iatom + 1, numbers[iatom], "0",
                        coordinates[iatom,0]/angstrom,
                        coordinates[iatom,1]/angstrom,
-                       coordinates[iatom,2]/angstrom)
+                       coordinates[iatom,2]/angstrom), end="", file=f)
 
         ### E2) ORBITAL PART
-        print >> f, header_basisfunctions
-        print >> f, " "   #this part is just empty
+        print(header_basisfunctions, end="", file=f)
+        print(" ", end="", file=f)  #this part is just empty
 
         ### D3) FREQUENCY PART
         # Modes are written in sections with three columns each.
-        print >> f, header_freq
+        print(header_freq, end="", file=f)
         # istart: the current mode index, will be incremented by 3 in each iteration.
         istart = 0
         while istart < nmode:
@@ -232,31 +232,31 @@ def dump_modes_gaussian(filename, nma, selected=None):
             # print stuff to file
             #  - mode indexes
             for imode in range(istart, iend):
-                print >> f, '%22d' % (imode + 1),
-            print >> f
+                print('%22d' % (imode + 1), end="", file=f)
+            print(end="", file=f)
             #  - (fake) symmetry info
-            print >> f, ' '.join(["                    ?A"]*ncol)
+            print(' '.join(["                    ?A"]*ncol)
             #  - frequencies converted to inverse centimeters
-            print >> f, ' Frequencies --',
+            print(' Frequencies --', end="", file=f)
             for imode in range(istart, iend):
-                print >> f, '%10.4f' % (freqs[imode]/lightspeed*centimeter),
+                print('%10.4f' % (freqs[imode]/lightspeed*centimeter), end="", file=f)
                 if imode != iend-1:
-                    print >> f, '           ',
-            print >> f
+                    print('           ', end="", file=f)
+            print(end="", file=f)
             #  - a blob of text below the frequencies
-            print >> f, txt_freqbelow[ncol-1]
+            print(txt_freqbelow[ncol-1], end="", file=f)
             #  - the modes
             for iatom in range(natom):
-                print >> f, '%6d %3d' % (iatom + 1, numbers[iatom]),
+                print('%6d %3d' % (iatom + 1, numbers[iatom]), end="", file=f)
                 for imode in range(istart, iend):
-                    print >> f, '%8.2f %6.2f %6.2f' % (
+                    print('%8.2f %6.2f %6.2f' % (
                        modes[3*iatom, imode], modes[3*iatom+1, imode],
-                       modes[3*iatom+2, imode]),
-                print >> f
+                       modes[3*iatom+2, imode]), end="", file=f)
+                print(end="", file=f)
             # prepare for next iteration
             istart = iend
 
-        print >> f, " Normal termination of Gaussian 09."
+        print(" Normal termination of Gaussian 09.", end="", file=f)
 
 # For backward compatibility with TAMkin before version 1.0.2
 dump_modes_molden = dump_modes_gaussian

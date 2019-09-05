@@ -81,7 +81,7 @@ def strip(fn):
     # print stuff back into the same file
     f = open(fn, "w")
     for line in lines:
-        print >> f, line
+        print(line, end="", file=f)
     f.close()
 
 

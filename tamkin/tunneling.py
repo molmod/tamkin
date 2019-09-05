@@ -179,7 +179,7 @@ class Eckart(TunnelingCorrection):
         energies = np.arange(emin, emax, 1*kjmol)
         integranda = np.array([integrandum(energy) for energy in energies])
         if max(integranda) * 1e-5 < max([integranda[0], integranda[-1]]):
-            print "Integrandum is not negligible at borders.", integranda[0] / max(integranda), integranda[-1] / max(integranda)
+            print("Integrandum is not negligible at borders.", integranda[0] / max(integranda), integranda[-1] / max(integranda))
 
         # actual integration
         integral, error = quad(integrandum, emin, emax)

@@ -56,7 +56,7 @@ def load_summary(fn):
          (A, Ea)  --  The pre-exponential factor and the activation energy
          E0, E  --  The zero-point corrected barrier and the classical barrier
     """
-    f = file(fn)
+    f = open(fn)
     result = tuple(float(word) for word in f.next().split())
     f.close()
     return result[:-4], result[-4:-2], result[-2:]

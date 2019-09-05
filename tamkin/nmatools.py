@@ -132,7 +132,7 @@ def write_overlap(freqs1, freqs2, overlap, filename="overlap.csv", unit="au"):
     #freqs2 = freqs2 / invcm
 
     to_append="w+"   # not append, just overwrite
-    f = file(filename,to_append)
+    f = open(filename,to_append)
 
     [rows,cols] = overlap.shape
 

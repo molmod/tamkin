@@ -221,7 +221,7 @@ class BaseModel(object):
                           quantities.
             | ``filename`` -- The name of the CSV file.
         """
-        f = file(filename, "w")
+        f = open(filename, "w")
         c = csv.writer(f)
         self.dump_table(temp, c)
         f.close()
@@ -274,7 +274,7 @@ class BaseModel(object):
            One argument:
             | ``filename`` -- The file to write the output.
         """
-        f = file(filename, "w")
+        f = open(filename, "w")
         self.dump(f)
         f.close()
 

@@ -294,7 +294,7 @@ class ReactionAnalysis(object):
            One argument:
             | ``filename`` -- the file to write the output.
         """
-        f = file(filename, "w")
+        f = open(filename, "w")
         self.dump(f)
         f.close()
 

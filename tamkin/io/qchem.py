@@ -70,7 +70,7 @@ def load_molecule_qchem(qchemfile, hessfile = None, multiplicity=1, is_periodic 
        MBH and PHVA_MBH).
     """
     # TODO fill in keyword for printing hessian
-    f = file(qchemfile)
+    f = open(qchemfile)
     # get coords
     for line in f:
         if line.strip().startswith("Standard Nuclear Orientation (Angstroms)"):
@@ -142,7 +142,7 @@ def load_molecule_qchem(qchemfile, hessfile = None, multiplicity=1, is_periodic 
 
     # or get Hessian from other file
     if hessfile is not None:
-      f = file(hessfile)
+      f = open(hessfile)
       row = 0
       col = 0
       for line in f:

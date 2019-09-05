@@ -72,7 +72,7 @@ def overview(template, title, fn_img, rows):
 
 
 
-f = file("kinpartab.html", "w")
+f = open("kinpartab.html", "w")
 print >> f, html.header % "KIN par Overview"
 
 for do_rotor in False, True:

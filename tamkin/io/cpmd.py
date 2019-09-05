@@ -64,7 +64,7 @@ def load_molecule_cpmd(fn_out, fn_geometry, fn_hessian, multiplicity=1, is_perio
     """
     # go through the output file: grep the total energy
     energy = None
-    f = file(fn_out)
+    f = open(fn_out)
     while True:
         line = f.readline()
         if line == "":
@@ -82,7 +82,7 @@ def load_molecule_cpmd(fn_out, fn_geometry, fn_hessian, multiplicity=1, is_perio
     f.close()
 
     # load the optimal geometry
-    f = file(fn_geometry)
+    f = open(fn_geometry)
     num_atoms = int(f.readline())
     numbers = np.zeros(num_atoms, int)
     coordinates = np.zeros((num_atoms,3), float)
@@ -111,7 +111,7 @@ def load_molecule_cpmd(fn_out, fn_geometry, fn_hessian, multiplicity=1, is_perio
     f.close()
 
     # go trhough the freq file: hessian
-    f = file(fn_hessian)
+    f = open(fn_hessian)
 
     line = f.readline()
     if not line.startswith(" &CART"):

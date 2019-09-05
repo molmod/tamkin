@@ -59,7 +59,7 @@ def load_molecule_charmm(charmmfile_cor, charmmfile_hess, is_periodic=False):
         | is_periodic  --  True when the system is periodic in three dimensions.
                            False when the systen is aperiodic. [default=True]
     """
-    f = file(charmmfile_hess)
+    f = open(charmmfile_hess)
     # skip lines if they start with a *
     while True:
         line = f.readline()
@@ -103,7 +103,7 @@ def load_molecule_charmm(charmmfile_cor, charmmfile_hess, is_periodic=False):
     # format:  header lines, which start with *
     #          N lines with   - mass in last column
     #                         - atomic type in 4th column
-    f = file(charmmfile_cor)
+    f =open(charmmfile_cor)
     masses = np.zeros(N,float)
     symbols  = []
     for line in f:
@@ -187,7 +187,7 @@ def load_modes_charmm(filename):
          | freqs  --  numpy array with frequencies in atomic units
          | masses  --  atomic masses in atomic units
     """
-    f = file(filename)
+    f = open(filename)
 
     # skip the lines that start with * comments
     for line in f:
@@ -264,7 +264,7 @@ def load_peptide_info_charmm(filename):
          | nitrogen  --  indices of the backbone nitrogens ('N' in CHARMM file)
     """
     # Reading from charmmfile
-    f = file(filename)
+    f = open(filename)
     # nb of atoms
     for i,line in enumerate(f):
         words = line.split()

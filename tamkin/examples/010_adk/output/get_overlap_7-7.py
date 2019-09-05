@@ -45,7 +45,7 @@ usage:  python %progr
 
 
 def get_freqs_and_overlap_7_7(filename):
-    f = file(filename)
+    f = open(filename)
     print "-"*20
     print "Reading file...", filename
 
@@ -97,7 +97,7 @@ for filename in filenames:
 conv = 7.25163277859109E-07  # conversion factor such that frequencies are printed in 1/cm
 
 filename_out = "delta.overlaps.7-7.csv"
-f = file(filename_out,"w+")
+f = open(filename_out,"w+")
 for i in range(len(freqs1)):
     print >> f, filenames[i]+";"+str(freqs1[i]/conv)+";"+str(freqs2[i]/conv)+";"+str(overlaps[i])
 f.close()

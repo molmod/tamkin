@@ -74,7 +74,7 @@ def overview(template, title, fn_img, rows):
 
 
 
-f = file("abskintab.html", "w")
+f = open("abskintab.html", "w")
 print >> f, html.header % "KIN Overview"
 
 for do_rotor in False, True:

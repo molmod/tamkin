@@ -57,7 +57,7 @@ def load_fixed_g03com(filename):
        A fixed atom is recognized by the '-1' after the atom symbol in the
        molecule specification. The '-1' is the second word in the line.
     """
-    f = file(filename)
+    f = open(filename)
     for line in f:
         # iterate until we reach the title line
         line = line.strip()
@@ -87,7 +87,7 @@ def load_fixed_g03com(filename):
 
 
 def iter_floats_file(fn):
-    f = file(fn)
+    f = open(fn)
     for line in f:
         words = line.split()
         for w in words:

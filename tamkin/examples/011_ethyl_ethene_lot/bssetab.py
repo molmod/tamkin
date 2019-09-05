@@ -39,7 +39,7 @@ from lot_basis import lots_list
 import html
 
 def load_summary(fn):
-    f = file(fn)
+    f = open(fn)
     result = tuple(float(word) for word in f.next().split())
     f.close()
     return result[:-4], result[-4:-2], result[-2:]
@@ -73,7 +73,7 @@ def ts_bsse(fn_template, title, rows):
             rows[counter].append("<td>&nbsp</td><td>&nbsp</td><td>&nbsp</td>")
         counter += 1
 
-f = file("bssetab.html", "w")
+f = open("bssetab.html", "w")
 print >> f, html.header % "BSSE Overview"
 
 rows = []

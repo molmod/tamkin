@@ -69,7 +69,7 @@ pf = PartFun(
 
 
 # Write the frequencies to a csv file
-f = file(os.path.join(args[0], "freqs.csv"), "w")
+f = open(os.path.join(args[0], "freqs.csv"), "w")
 print >> f, '"Frequency","Wavenumber","Vibrational temperature"'
 print >> f, '"Atomic units","1/cm","K"'
 for i in range(len(pf.vibrational.freqs)):

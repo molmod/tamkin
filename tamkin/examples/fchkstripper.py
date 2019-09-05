@@ -51,7 +51,7 @@ def strip(fn):
     # a list with all lines that we'd like to keep
     lines = []
     # load the good lines
-    f = file(fn, "r")
+    f = oepn(fn, "r")
     busy = False
     keep = False
     for line in f:
@@ -76,7 +76,7 @@ def strip(fn):
                     keep = False
     f.close()
     # print stuff back into the same file
-    f = file(fn, "w")
+    f = oepn(fn, "w")
     for line in lines:
         print >> f, line
     f.close()

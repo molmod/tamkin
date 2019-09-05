@@ -76,7 +76,7 @@ class G03Job(object):
             # load the optimized geometry
             fn_fchk = "%s/%s__opt/gaussian.fchk" % (root, state.name)
             mol = FCHKFile(fn_fchk, field_labels=[]).molecule
-        f = file("init/%s.fragments" % state.name)
+        f = open("init/%s.fragments" % state.name)
         mol.charge_mult = f.readline().split()
         mol.tags = f.readline().split()
         f.close()
@@ -118,7 +118,7 @@ class G03Job(object):
             )
 
         # write the input file
-        f = file(fn_com, "w")
+        f = open(fn_com, "w")
         print >> f, "%chk=gaussian.chk"
         print >> f, "%nproc=1"
         print >> f, "%mem=1000MB"

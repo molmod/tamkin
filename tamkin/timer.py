@@ -92,6 +92,6 @@ class Timer(object):
            Argument:
             | filename  --  the file to write to.
         """
-        f = file(filename, 'w')
+        f = open(filename, 'w')
         self.dump(f)
         f.close()

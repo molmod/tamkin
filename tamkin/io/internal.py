@@ -57,7 +57,7 @@ def load_chk(filename):
        The file format is similar to the Gaussian fchk format, but has the extra
        feature that the shapes of the arrays are also stored.
     """
-    f = file(filename)
+    f = open(filename)
     result = {}
     while True:
         line = f.readline()
@@ -124,7 +124,7 @@ def dump_chk(filename, data):
        The file format is similar to the Gaussian fchk format, but has the extra
        feature that the shapes of the arrays are also stored.
     """
-    f = file(filename, "w")
+    f = open(filename, "w")
     for key, value in sorted(data.iteritems()):
         if not isinstance(key, str):
             raise TypeError("The keys must be strings.")

@@ -95,7 +95,7 @@ def ra_geom(mol_name, basis_label, rows):
     generic_geom(ic_descs, fn_fchk, mol_name, basis_label, rows)
 
 
-f = file("geotab.html", "w")
+f = open("geotab.html", "w")
 print >> f, html.header % "GEO Overview"
 
 rows = []

@@ -1,6 +1,7 @@
 env:
   matrix:
     - MYCONDAPY=2.7
+    # - MYCONDAPY=3.7
   global:
     # ANACONDA_TOKEN
     - secure: "JCX7xPCgInrZVvt78cZeU+M4dx0CWC7MmVawSR4GqoAxrscG5yEkTjbG0uL6jVc1OxV2wiEzzY\
@@ -57,7 +58,7 @@ install:
 # Install extra package needed to make things work. Most things can be listed as
 # dependencies on metal.yaml and setup.py, unless setup.py already imports them.
 # Install conda tools for packaging and uploading
-- conda install python=${MYCONDAPY} sphinx conda-build anaconda-client
+- conda install python=${MYCONDAPY} sphinx conda-build anaconda-client numpy
 # Add the molmod channel to get access to the molmod dependency
 - conda config --add channels molmod
 # Install more recent stuff with pip

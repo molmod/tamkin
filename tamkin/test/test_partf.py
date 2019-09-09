@@ -84,7 +84,7 @@ class PartFunTestCase(unittest.TestCase):
             1.7955340E+06, 2.1708793E+06, 2.6112829E+06, 3.1256298E+06,
             3.7236678E+06, 4.4160510E+06, 5.2143822E+06
         ])
-        for i in xrange(len(temps)):
+        for i in range(len(temps)):
             k = km.rate_constant(temps[i])
             self.assertAlmostEqual(np.log(k/(1/second)), np.log(expected_ks[i]),5)
             log_k = km.rate_constant(temps[i], do_log=True)
@@ -109,7 +109,7 @@ class PartFunTestCase(unittest.TestCase):
                 0.674278, 0.292167, -0.357617, -1.017249, -1.018740, -1.427556,
                 -1.428865
             ])
-            for i in xrange(len(expected_vib_contribs)):
+            for i in range(len(expected_vib_contribs)):
                 self.assertAlmostEqual(vib_contribs[i], expected_vib_contribs[i], 2)
             self.assertAlmostEqual(-53.068692, pf.log(temp)-(-pf.electronic.energy/(boltzmann*temp)), 2)
 
@@ -126,7 +126,7 @@ class PartFunTestCase(unittest.TestCase):
                 0.674278, 0.292167, -0.357617, -1.017249, -1.018740, -1.427556,
                 -1.428865
             ])
-            for i in xrange(len(expected_vib_contribs)):
+            for i in range(len(expected_vib_contribs)):
                 self.assertAlmostEqual(vib_contribs[i], expected_vib_contribs[i], 2)
             self.assertAlmostEqual(-53.068692, pf.log(temp)-(-pf.electronic.energy/(boltzmann*temp)), 2)
 
@@ -145,7 +145,7 @@ class PartFunTestCase(unittest.TestCase):
                 0.959168, 0.413328, -0.287477, -0.371573, -0.983851, -1.040910,
                 -1.311721, -1.428436,
             ])
-            for i in xrange(len(expected_vib_contribs)):
+            for i in range(len(expected_vib_contribs)):
                 self.assertAlmostEqual(vib_contribs[i], expected_vib_contribs[i], 2+precision_wn)
             self.assertAlmostEqual(-61.738525, pf.log(temp)-(-pf.electronic.energy/(boltzmann*temp)), 1+precision_wn)
 
@@ -170,7 +170,7 @@ class PartFunTestCase(unittest.TestCase):
                 -0.060710, -0.281250, -0.309673, -0.423131, -0.447578, -0.983086,
                 -1.017063, -1.107892, -1.192276, -1.318341, -1.352385, -1.427939,
             ])
-            for i in xrange(len(expected_vib_contribs)):
+            for i in range(len(expected_vib_contribs)):
                 self.assertAlmostEqual(vib_contribs[i], expected_vib_contribs[i], 2+precision_wn)
             self.assertAlmostEqual(-139.302816, pf.log(temp)-(-pf.electronic.energy/(boltzmann*temp)), 1+precision_wn)
 
@@ -194,7 +194,7 @@ class PartFunTestCase(unittest.TestCase):
             9.86811E+00, 1.84247E+01, 3.13480E+01, 4.97189E+01,
         ])
         unit = meter**3/mol/second
-        for i in xrange(len(temps)):
+        for i in range(len(temps)):
             k = km.rate_constant(temps[i])
             # Sometimes, the fancy excel files use slightly different constants.
             # Therefore, only expect numbers to be equal up to 2 decimals.
@@ -389,7 +389,7 @@ class PartFunTestCase(unittest.TestCase):
             [Vibrations(classical=True), ExtTrans(), ExtRot(1)],
         )
 
-        for i in xrange(10):
+        for i in range(10):
             tmp = pf.vibrational.heat_capacity_terms(np.random.uniform(100,500))
             for value in tmp:
                 self.assertAlmostEqual(value, boltzmann, 10)
@@ -562,7 +562,7 @@ class PartFunTestCase(unittest.TestCase):
         zpe_sum = 0.0
         zpes_vib = pf.vibrational.zero_point_energy_terms()
         freqs = pf.vibrational.positive_freqs
-        for i in xrange(len(freqs)):
+        for i in range(len(freqs)):
             self.assertAlmostEqual(0.5*freqs[i]*planck, zpes_vib[i])
             zpe_sum += zpes_vib[i]
         # check the electronic part

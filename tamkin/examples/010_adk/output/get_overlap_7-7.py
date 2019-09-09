@@ -43,11 +43,13 @@ Script does this for every delta.*overlap.csv file present in the directory.
 usage:  python %progr
 """
 
+from __future__ import print_function
+
 
 def get_freqs_and_overlap_7_7(filename):
-    f = file(filename)
-    print "-"*20
-    print "Reading file...", filename
+    f = open(filename)
+    print("-"*20)
+    print("Reading file...", filename)
 
     # read 7th freq on first line (first element is 0, so is 8th freq)
     for line in f:
@@ -69,9 +71,9 @@ def get_freqs_and_overlap_7_7(filename):
             break
 
     f.close()
-    print "freq1: ", freq1
-    print "freq2: ", freq2
-    print "overlap: ", overlap
+    print("freq1: ", freq1)
+    print("freq2: ", freq2)
+    print("overlap: ", overlap)
 
     return freq1, freq2, overlap
 
@@ -84,7 +86,7 @@ overlaps = []
 filenames = glob.glob("delta.*overlap.csv")
 
 filenames.sort()
-print "Considered files: ", filenames
+print("Considered files: ", filenames)
 for filename in filenames:
     #y = str(x)
     #if x < 10:
@@ -97,8 +99,8 @@ for filename in filenames:
 conv = 7.25163277859109E-07  # conversion factor such that frequencies are printed in 1/cm
 
 filename_out = "delta.overlaps.7-7.csv"
-f = file(filename_out,"w+")
+f = open(filename_out,"w+")
 for i in range(len(freqs1)):
-    print >> f, filenames[i]+";"+str(freqs1[i]/conv)+";"+str(freqs2[i]/conv)+";"+str(overlaps[i])
+    print(filenames[i]+";"+str(freqs1[i]/conv)+";"+str(freqs2[i]/conv)+";"+str(overlaps[i]), file=f)
 f.close()
-print "file written:", filename_out
+print("file written:", filename_out)

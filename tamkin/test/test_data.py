@@ -217,8 +217,8 @@ def test_get_external_basis_new2():
     # a redundant basis of internal coordinates based on all interatomic
     # distances. this is overkill...
     ib = []
-    for i in xrange(mol.size):
-        for j in xrange(i):
+    for i in range(mol.size):
+        for j in range(i):
             b = np.zeros((mol.size, 3), float)
             delta = mol.coordinates[j] - mol.coordinates[i]
             delta /= np.linalg.norm(delta)

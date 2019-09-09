@@ -34,7 +34,7 @@
 # --
 """Timer to keep track of wall and cpu time"""
 
-
+from __future__ import print_function
 import time, sys
 
 
@@ -72,19 +72,19 @@ class Timer(object):
            Optional argument:
             | f  --  the stream to write to. [default=sys.stdout]
         """
-        print >> f, "-------------------"
-        print >> f, "Printing LOG jobtimer"
-        print >> f, '%12s %12s %21s %16s %30s' %("cpu times [s]", "diff [s]", "wall times [s]", "diff [s]", "labels" )
+        print("-------------------", file=f)
+        print("Printing LOG jobtimer", file=f)
+        print('%12s %12s %21s %16s %30s' %("cpu times [s]", "diff [s]", "wall times [s]", "diff [s]", "labels" ), file=f)
         for i,label in enumerate(self.labels[:-1]):
-            print >> f, '%12.3f %12.3f %21.3f %16.3f %30s' %(self.cpu_times[i],
+            print('%12.3f %12.3f %21.3f %16.3f %30s' %(self.cpu_times[i],
                                          self.cpu_times[i+1]-self.cpu_times[i],
                                          self.wall_times[i],
                                          self.wall_times[i+1]-self.wall_times[i],
-                                         label)
-        print >> f, '%12.3f %12s %21.3f %16s %30s' %(self.cpu_times[-1], "",
+                                         label), file=f)
+        print('%12.3f %12s %21.3f %16s %30s' %(self.cpu_times[-1], "",
                                          self.wall_times[-1], "",
-                                         self.labels[-1])
-        print >> f, "-------------------"
+                                         self.labels[-1]), file=f)
+        print("-------------------", file=f)
 
     def write_to_file(self, filename):
         """Write the logfile with timing information to filename.
@@ -92,6 +92,6 @@ class Timer(object):
            Argument:
             | filename  --  the file to write to.
         """
-        f = file(filename, 'w')
+        f = open(filename, 'w')
         self.dump(f)
         f.close()

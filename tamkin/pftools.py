@@ -35,6 +35,7 @@
 """High level utilities for partition functions"""
 
 
+from __future__ import print_function
 import sys, numpy, types, csv
 
 from molmod.units import kjmol, mol, kelvin, joule, centimeter
@@ -96,7 +97,7 @@ class ThermoAnalysis(object):
         """
         for table in self.tables:
             table.dump(f)
-            print >> f
+            print(file=f)
 
 
 class ThermoTable(object):
@@ -160,7 +161,7 @@ class ThermoTable(object):
             method = getattr(term, "%s_terms" % method_name, None)
             if isinstance(method, types.MethodType):
                 columns = []
-                for i in xrange(term.num_terms):
+                for i in range(term.num_terms):
                     self.keys.append("%s (%i)" % (term.name, i))
                 for temp in temps:
                     columns.append(method(temp))
@@ -252,41 +253,41 @@ class ReactionAnalysis(object):
            Argument:
             | ``f`` -- the file object to write to.
         """
-        print >> f, "Summary"
-        print >> f, "A [%s] = %.5e" % (self.kinetic_model.unit_name, self.A/self.kinetic_model.unit)
-        print >> f, "ln(A [a.u.]) = %.2f" % (self.parameters[0])
-        print >> f, "Ea [kJ/mol] = %.2f" % (self.Ea/kjmol)
-        print >> f, "R2 (Pearson) = %.2f%%" % (self.R2*100)
-        print >> f
+        print("Summary", file=f)
+        print("A [%s] = %.5e" % (self.kinetic_model.unit_name, self.A/self.kinetic_model.unit), file=f)
+        print("ln(A [a.u.]) = %.2f" % (self.parameters[0]), file=f)
+        print("Ea [kJ/mol] = %.2f" % (self.Ea/kjmol), file=f)
+        print("R2 (Pearson) = %.2f%%" % (self.R2*100), file=f)
+        print(file=f)
         if self.covariance is not None:
-            print >> f, "Error analysis"
-            print >> f, "Number of Monte Carlo iterations = %i" % self.monte_carlo_iter
-            print >> f, "Relative systematic error on the frequencies = %.2f" % self.freq_error
-            print >> f, "Relative systematic error on the energy = %.2f" % self.energy_error
-            print >> f, "Error on A [%s] = %10.5e" % (self.kinetic_model.unit_name, numpy.sqrt(self.covariance[0,0])*self.A/self.kinetic_model.unit)
-            print >> f, "Error on ln(A [a.u.]) = %.2f" % numpy.sqrt(self.covariance[0,0])
-            print >> f, "Error on Ea [kJ/mol] = %.2f" % (numpy.sqrt(self.covariance[1,1])/kjmol)
-            print >> f, "Parameter correlation = %.2f" % (self.covariance[0,1]/numpy.sqrt(self.covariance[0,0]*self.covariance[1,1]))
-            print >> f
-        print >> f, "Temperature grid"
-        print >> f, "T_low [K] = %.1f" % self.temp_low
-        print >> f, "T_high [K] = %.1f" % self.temp_high
-        print >> f, "T_step [K] = %.1f" % self.temp_step
-        print >> f, "Number of temperatures = %i" % len(self.temps)
-        print >> f
+            print("Error analysis", file=f)
+            print("Number of Monte Carlo iterations = %i" % self.monte_carlo_iter, file=f)
+            print("Relative systematic error on the frequencies = %.2f" % self.freq_error, file=f)
+            print("Relative systematic error on the energy = %.2f" % self.energy_error, file=f)
+            print("Error on A [%s] = %10.5e" % (self.kinetic_model.unit_name, numpy.sqrt(self.covariance[0,0])*self.A/self.kinetic_model.unit), file=f)
+            print("Error on ln(A [a.u.]) = %.2f" % numpy.sqrt(self.covariance[0,0]), file=f)
+            print("Error on Ea [kJ/mol] = %.2f" % (numpy.sqrt(self.covariance[1,1])/kjmol), file=f)
+            print("Parameter correlation = %.2f" % (self.covariance[0,1]/numpy.sqrt(self.covariance[0,0]*self.covariance[1,1])), file=f)
+            print(file=f)
+        print("Temperature grid",file=f)
+        print("T_low [K] = %.1f" % self.temp_low, file=f)
+        print("T_high [K] = %.1f" % self.temp_high, file=f)
+        print("T_step [K] = %.1f" % self.temp_step, file=f)
+        print("Number of temperatures = %i" % len(self.temps), file=f)
+        print(file=f)
         if self.kinetic_model.tunneling is not None:
             self.kinetic_model.tunneling.dump(f)
-        print >> f, "Reaction rate constants"
-        print >> f, "    T [K]    Delta_r F [kJ/mol]      k(T) [%s]" % (self.kinetic_model.unit_name)
-        for i in xrange(len(self.temps)):
+        print("Reaction rate constants", file=f)
+        print("    T [K]    Delta_r F [kJ/mol]      k(T) [%s]" % (self.kinetic_model.unit_name), file=f)
+        for i in range(len(self.temps)):
             temp = self.temps[i]
             delta_free = self.kinetic_model.free_energy_change(temp)
-            print >> f, "% 10.2f      %8.1f             % 10.5e" % (
+            print("% 10.2f      %8.1f             % 10.5e" % (
                 temp, delta_free/kjmol, self.rate_consts[i]/self.kinetic_model.unit
-            )
-        print >> f
+            ), file=f)
+        print(file=f)
         self.kinetic_model.dump(f)
-        print >> f
+        print(file=f)
 
     def write_to_file(self, filename):
         """Write the entire analysis to a text file.
@@ -294,7 +295,7 @@ class ReactionAnalysis(object):
            One argument:
             | ``filename`` -- the file to write the output.
         """
-        f = file(filename, "w")
+        f = open(filename, "w")
         self.dump(f)
         f.close()
 
@@ -385,7 +386,7 @@ class ReactionAnalysis(object):
         self.kinetic_model.backup_freqs()
 
         solutions = numpy.zeros((num_iter, 2), float)
-        for i in xrange(num_iter):
+        for i in range(num_iter):
             scale_energy = 1.0 + numpy.random.normal(0.0, 1.0)*energy_error
             self.kinetic_model.alter_freqs(freq_error, scale_energy)
             altered_ra = ReactionAnalysis(

@@ -35,11 +35,12 @@
 #--
 
 
+from __future__ import print_function
 from lot_basis import lots_list
 import html
 
 def load_summary(fn):
-    f = file(fn)
+    f = open(fn)
     result = tuple(float(word) for word in f.next().split())
     f.close()
     return result[:-4], result[-4:-2], result[-2:]
@@ -73,8 +74,8 @@ def ts_bsse(fn_template, title, rows):
             rows[counter].append("<td>&nbsp</td><td>&nbsp</td><td>&nbsp</td>")
         counter += 1
 
-f = file("bssetab.html", "w")
-print >> f, html.header % "BSSE Overview"
+f = open("bssetab.html", "w")
+print(html.header % "BSSE Overview", file=f)
 
 rows = []
 ts_bsse("%s__6-31gd/ho_%s_summary_gauche.txt", "Gauche, HO, Consistent, 6-31G(d)", rows)
@@ -84,7 +85,7 @@ ts_bsse("%s__6-311+g3df2p/ho_%s_summary_trans.txt", "Trans, HO, Consistent, 6-31
 ts_bsse("GEO__b3lyp__6-31gd__ENERGY__%s__6-311+g3df2p/ho_%s_summary_gauche.txt", "Gauche, HO, GEO=B3LYP/6-31G(d), 6-311+G(3df,2p)", rows)
 ts_bsse("GEO__b3lyp__6-31gd__ENERGY__%s__6-311+g3df2p/ho_%s_summary_trans.txt", "Trans, HO, GEO=B3LYP/6-31G(d), 6-311+G(3df,2p)", rows)
 
-print >> f, "<p>BSSE corrections on the transition state.</p>"
+print("<p>BSSE corrections on the transition state.</p>", file=f)
 html.print_table(f, rows)
 
-print >> f, html.footer
+print(html.footer,  file=f)

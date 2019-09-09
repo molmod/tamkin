@@ -68,7 +68,7 @@ class NMATestCase(unittest.TestCase):
         else:
             self.assertEqual(len(expected_freqs), len(nma.freqs)-len(nma.zeros))
         counter = 0
-        for i in xrange(len(nma.freqs)):
+        for i in range(len(nma.freqs)):
             if check_zeros or (i not in nma.zeros):
                 freq_in_cm = (nma.freqs[i]/lightspeed)/(1/centimeter)
                 expected_freq = expected_freqs[counter]
@@ -85,7 +85,7 @@ class NMATestCase(unittest.TestCase):
         self.assertEqual(len(expected_eig_mode), len(eig_mode))
         if np.dot(eig_mode, expected_eig_mode) < 0:
             expected_eig_mode *= -1
-        for i in xrange(len(eig_mode)):
+        for i in range(len(eig_mode)):
             self.assertAlmostEqual(
                 expected_eig_mode[i], eig_mode[i], precision,
                 "Component %i does not match, expected - computed = %.3f - %.3f = %e" % (i, expected_eig_mode[i], eig_mode[i], expected_eig_mode[i]-eig_mode[i])
@@ -357,7 +357,7 @@ class NMATestCase(unittest.TestCase):
             self.check_ortho(nma2.modes)
 
             ratio12 = 1.0
-            for i in xrange(len(nma1.freqs)):
+            for i in range(len(nma1.freqs)):
                 if i not in nma1.zeros:
                     ratio12 *= nma1.freqs[i]
                 if i not in nma2.zeros:
@@ -569,7 +569,7 @@ class NMATestCase(unittest.TestCase):
         blocks = [[1, 0, 2, 6, 7], [1, 0, 3, 4, 5 ]]
         nma = NMA(molecule, MBH(blocks))
         self.assertEqual(len(nma.freqs), 7)
-        non_zero = [i for i in xrange(7) if i not in nma.zeros][0]
+        non_zero = [i for i in range(7) if i not in nma.zeros][0]
         self.assertAlmostEqual(nma.freqs[non_zero]/lightspeed*centimeter, 314, 0)
 
     def test_mbhconstrainext(self):

@@ -102,7 +102,7 @@ def load_molecule_vasp(contcar, outcar_freq, outcar_energy=None, energy=None, mu
         natom = sum(symbol_counts)
         # Construct array with atomic numbers.
         numbers = []
-        for iunique in xrange(len(unique_symbols)):
+        for iunique in range(len(unique_symbols)):
             number = periodic[unique_symbols[iunique]].number
             numbers.extend([number]*symbol_counts[iunique])
         numbers = np.array(numbers)
@@ -113,7 +113,7 @@ def load_molecule_vasp(contcar, outcar_freq, outcar_energy=None, energy=None, mu
 
         # Load fractional coordinates
         fractional = np.zeros((natom, 3), float)
-        for iatom in xrange(natom):
+        for iatom in range(natom):
             words = f.next().split()
             fractional[iatom, 0] = float(words[0])
             fractional[iatom, 1] = float(words[1])
@@ -150,7 +150,7 @@ def load_molecule_vasp(contcar, outcar_freq, outcar_energy=None, energy=None, mu
         f.next()
         gradient = np.zeros((natom, 3), float)
         gunit = electronvolt/angstrom
-        for iatom in xrange(natom):
+        for iatom in range(natom):
             words = f.next().split()
             gradient[iatom, 0] = -float(words[3])*gunit
             gradient[iatom, 1] = -float(words[4])*gunit
@@ -175,13 +175,13 @@ def load_molecule_vasp(contcar, outcar_freq, outcar_energy=None, energy=None, mu
         # Load the actual Hessian
         hunit = electronvolt/angstrom**2
         hessian = np.zeros((3*natom, 3*natom), float)
-        for ifree0 in xrange(nfree_dof):
+        for ifree0 in range(nfree_dof):
             line = f.next()
             irow = indices_free[ifree0]
             # skip first col
             words = line.split()[1:]
             assert len(words) == nfree_dof
-            for ifree1 in xrange(nfree_dof):
+            for ifree1 in range(nfree_dof):
                 icol = indices_free[ifree1]
                 hessian[irow, icol] = -float(words[ifree1])*hunit
 
@@ -237,5 +237,5 @@ def load_fixed_vasp(filename):
         if row >= 3*Nfree: break
     f.close()
 
-    fixed_atoms = [at for at in xrange(N) if at not in atoms_free]
+    fixed_atoms = [at for at in range(N) if at not in atoms_free]
     return np.array(fixed_atoms)

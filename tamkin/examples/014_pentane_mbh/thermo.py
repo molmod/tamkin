@@ -35,6 +35,7 @@
 #--
 
 
+from __future__ import print_function
 # Import the tamkin libarary.
 from tamkin import *
 # Import unit conversin factors
@@ -45,7 +46,7 @@ from numpy import *
 
 # Load the gaussian data.
 molecule = load_molecule_g03fchk("gaussian.fchk")
-print "Energy [kJ/mol]:", molecule.energy/kjmol
+print("Energy [kJ/mol]:", molecule.energy/kjmol)
 
 
 # A) Detect all blocks such that only the dihedral angles remain free, and apply
@@ -59,15 +60,15 @@ for central, neighbors in molecule.graph.neighbors.iteritems():
         block = list(neighbors)
         block.append(central)
         blocks.append(block)
-print "Blocks:", blocks
+print("Blocks:", blocks)
 nma = NMA(molecule, MBH(blocks))
-print "The zero eigenmodes: %s" % nma.zeros
+print("The zero eigenmodes: %s" % nma.zeros)
 # write the modes to file
 dump_modes_gaussian("molden.vib", nma)
 
 # B) Construct a partition function with the typical gas phase contributions.
 pf = PartFun(nma, [ExtTrans(), ExtRot()])
-print "Heat capacity at 300K, constant pressure [J/(mol*K)]:", pf.heat_capacity(300*kelvin)/(joule/mol/kelvin)
+print("Heat capacity at 300K, constant pressure [J/(mol*K)]:", pf.heat_capacity(300*kelvin)/(joule/mol/kelvin))
 # Write some general information about the molecule and the partition function
 # to a file.
 pf.write_to_file("partfun.txt")

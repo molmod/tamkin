@@ -35,6 +35,7 @@
 #--
 
 
+from __future__ import print_function
 from lot_basis import lots_list
 import html
 from kin import *
@@ -63,7 +64,7 @@ def overview(template, title, fn_img, rows):
             rows.append(["<th>%s</th>" % lot_label])
         try:
             ks = load_summary(template % lot_label)[0]
-            for j in xrange(4):
+            for j in range(4):
                 ln10ratio = np.log10(ks[j]/experimental_k[j])
                 color = get_error_color(ln10ratio)
                 rows[counter].append("<td style='background-color:%s'>%.1e</td>" % (color, ks[j]))
@@ -74,8 +75,8 @@ def overview(template, title, fn_img, rows):
 
 
 
-f = file("abskintab.html", "w")
-print >> f, html.header % "KIN Overview"
+f = open("abskintab.html", "w")
+print(html.header % "KIN Overview", file=f)
 
 for do_rotor in False, True:
     ir_str = {True: "ir", False: "ho"}[do_rotor]
@@ -114,7 +115,7 @@ for do_rotor in False, True:
                 rows,
             )
 
-        print >> f, "<p>Theoretical rate constants (%s, %s)</p>" % (ir_info, cp_info)
+        print("<p>Theoretical rate constants (%s, %s)</p>" % (ir_info, cp_info), file=f)
         html.print_table(f, rows)
 
-print >> f, html.footer
+print(html.footer, file=f)

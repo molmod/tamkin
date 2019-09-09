@@ -43,6 +43,8 @@
 """
 
 
+from __future__ import print_function
+
 from molmod import boltzmann, planck, kjmol, lightspeed, centimeter
 
 import numpy as np
@@ -132,11 +134,11 @@ class Eckart(TunnelingCorrection):
 
     def dump(self, f):
         '''Write descriptive info about the tunneling correction to a text file'''
-        print >> f, 'Eckart Tunneling Correction'
-        print >> f, 'Forward Barrier [kJ/mol] = %.2f' % (self.Ef/kjmol)
-        print >> f, 'Reverse Barrier [kJ/mol] = %.2f' % (self.Er/kjmol)
-        print >> f, 'Imaginary frequeny [cm^-1] = %.1f' % (self.nu/(lightspeed/centimeter))
-        print >> f
+        print('Eckart Tunneling Correction', file=f)
+        print('Forward Barrier [kJ/mol] = %.2f' % (self.Ef/kjmol), file=f)
+        print('Reverse Barrier [kJ/mol] = %.2f' % (self.Er/kjmol), file=f)
+        print('Imaginary frequeny [cm^-1] = %.1f' % (self.nu/(lightspeed/centimeter)), file=f)
+        print(file=f)
 
     def _compute_one_temp(self, temp):
         """Computes the correction for one temperature
@@ -179,7 +181,7 @@ class Eckart(TunnelingCorrection):
         energies = np.arange(emin, emax, 1*kjmol)
         integranda = np.array([integrandum(energy) for energy in energies])
         if max(integranda) * 1e-5 < max([integranda[0], integranda[-1]]):
-            print "Integrandum is not negligible at borders.", integranda[0] / max(integranda), integranda[-1] / max(integranda)
+            print("Integrandum is not negligible at borders.", integranda[0] / max(integranda), integranda[-1] / max(integranda))
 
         # actual integration
         integral, error = quad(integrandum, emin, emax)
@@ -233,9 +235,9 @@ class Wigner(TunnelingCorrection):
 
     def dump(self, f):
         '''Write descriptive info about the tunneling correction to a text file'''
-        print >> f, 'Wigner Tunneling Correction'
-        print >> f, 'Imaginary frequeny [cm^-1] = %.1f' % (self.nu/(lightspeed/centimeter))
-        print >> f
+        print('Wigner Tunneling Correction', file=f)
+        print('Imaginary frequeny [cm^-1] = %.1f' % (self.nu/(lightspeed/centimeter)), file=f)
+        print(file=f)
 
     def __call__(self, temps):
         """See :meth:`TunnelingCorrection.__call__`."""
@@ -278,9 +280,9 @@ class Miller(TunnelingCorrection):
 
     def dump(self, f):
         '''Write descriptive info about the tunneling correction to a text file'''
-        print >> f, 'Miller Tunneling Correction'
-        print >> f, 'Imaginary frequeny [cm^-1] = %.1f' % (self.nu/(lightspeed/centimeter))
-        print >> f
+        print('Miller Tunneling Correction', file=f)
+        print('Imaginary frequeny [cm^-1] = %.1f' % (self.nu/(lightspeed/centimeter)), file=f)
+        print(file=f)
 
     def __call__(self, temps):
         """See :meth:`TunnelingCorrection.__call__`."""

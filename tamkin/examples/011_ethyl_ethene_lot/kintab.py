@@ -35,6 +35,7 @@
 #--
 
 
+from __future__ import print_function
 from lot_basis import lots_list
 import html
 from kin import *
@@ -78,7 +79,7 @@ def overview(template, title, fn_img, rows):
             line = pt.plot(invtemps, ks, color=lot.color, linestyle=lot.linestyle, lw=2)
             lines.append(line)
             labels.append(lot_label)
-            for j in xrange(4):
+            for j in range(4):
                 ln10ratio = numpy.log10(ks[j]/experimental_k[j])
                 color = get_error_color(ln10ratio)
                 rows[counter].append("<td style='background-color:%s'>%.0f</td>" % (color, ln10ratio*10))
@@ -161,8 +162,8 @@ def overview(template, title, fn_img, rows):
 
 
 
-f = file("kintab.html", "w")
-print >> f, html.header % "KIN Overview"
+f = open("kintab.html", "w")
+print(html.header % "KIN Overview", file=f)
 
 for do_rotor in False, True:
     ir_str = {True: "ir", False: "ho"}[do_rotor]
@@ -201,7 +202,7 @@ for do_rotor in False, True:
                 rows,
             )
 
-        print >> f, "<p>10Log10 of ratio between theoretical and experimental rate (%s, %s)</p>" % (ir_info, cp_info)
+        print("<p>10Log10 of ratio between theoretical and experimental rate (%s, %s)</p>" % (ir_info, cp_info), file=f)
         html.print_table(f, rows)
 
-print >> f, html.footer
+print(html.footer, file=f)

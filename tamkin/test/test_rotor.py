@@ -152,9 +152,9 @@ class RotorTestCase(unittest.TestCase):
             else:
                 return np.conjugate(v_exp[-index])
         v_op_exp = np.zeros((2*nmax+1,2*nmax+1), complex)
-        for i0 in xrange(2*nmax+1):
+        for i0 in range(2*nmax+1):
             k0 = ((i0-1)/2+1)*(2*(i0%2)-1)
-            for i1 in xrange(2*nmax+1):
+            for i1 in range(2*nmax+1):
                 k1 = ((i1-1)/2+1)*(2*(i1%2)-1)
                 #print (i0,i1), (k0,k1), k0-k1
                 v_op_exp[i0,i1] = get_v(k0-k1)/np.sqrt(a)
@@ -174,8 +174,8 @@ class RotorTestCase(unittest.TestCase):
         ])/np.sqrt(2)
 
         lc_dagger = lc.transpose().conjugate()
-        for i0 in xrange(nmax):
-            for i1 in xrange(nmax):
+        for i0 in range(nmax):
+            for i1 in range(nmax):
                 check = np.dot(lc_dagger, np.dot(v_op_exp[2*i0+1:2*i0+3,2*i1+1:2*i1+3], lc))
                 self.assert_(abs(check.imag).max() < 1e-3)
                 check = check.real
@@ -194,7 +194,7 @@ class RotorTestCase(unittest.TestCase):
         import matplotlib.pyplot as pt
         x = np.arange(0.0, a, 0.001)
         pt.clf()
-        for i in xrange(10):
+        for i in range(10):
             f = hb.eval_fn(x, orbitals[:,i])
             pt.plot(x, f+i)
         with tmpdir(__name__, 'test_flat') as dn:
@@ -241,7 +241,7 @@ class RotorTestCase(unittest.TestCase):
         import matplotlib.pyplot as pt
         x = np.arange(0.0, a, 0.001)
         pt.clf()
-        for i in xrange(10):
+        for i in range(10):
             f = hb.eval_fn(x, orbitals[:,i])
             pt.plot(x, f)
         with tmpdir(__name__, 'test_harmonic1') as dn:
@@ -374,7 +374,7 @@ class RotorTestCase(unittest.TestCase):
         import matplotlib.pyplot as pt
         x = np.arange(0.0, a, 0.001)
         pt.clf()
-        for i in xrange(10):
+        for i in range(10):
             f = hb.eval_fn(x, orbitals[:,i])
             pt.plot(x, f+i)
         with tmpdir(__name__, 'test_legacy1') as dn:

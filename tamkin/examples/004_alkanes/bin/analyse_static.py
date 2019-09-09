@@ -35,19 +35,20 @@
 #--
 
 
+from __future__ import print_function
 # Import the tamkin library
 from tamkin import *
 # Import unit conversion factors and physical constants
 from molmod.units import *
 from molmod.constants import *
 
-import sys, os, numpy # standard libraries
+import sys, os, numpy  # standard libraries
 
 
 # Parse the command line arguments
 args = sys.argv[1:]
 if len(args) != 1:
-    print "One arguments are required: alkane_n"
+    print("One arguments are required: alkane_n")
     sys.exit()
 
 # Hardcoded parameters
@@ -69,12 +70,12 @@ pf = PartFun(
 
 
 # Write the frequencies to a csv file
-f = file(os.path.join(args[0], "freqs.csv"), "w")
-print >> f, '"Frequency","Wavenumber","Vibrational temperature"'
-print >> f, '"Atomic units","1/cm","K"'
-for i in xrange(len(pf.vibrational.freqs)):
+f = open(os.path.join(args[0], "freqs.csv"), "w")
+print('"Frequency","Wavenumber","Vibrational temperature"', file=f)
+print('"Atomic units","1/cm","K"', file=f)
+for i in range(len(pf.vibrational.freqs)):
     freq = pf.vibrational.freqs[i]
-    print >> f, '%e,%f,%f' % (freq, freq/lightspeed*centimeter, 2*numpy.pi*freq/boltzmann)
+    print('%e,%f,%f' % (freq, freq/lightspeed*centimeter, 2*numpy.pi*freq/boltzmann), file=f)
 f.close()
 
 

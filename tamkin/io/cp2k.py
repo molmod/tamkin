@@ -65,7 +65,7 @@ def load_molecule_cp2k(fn_sp, fn_freq, multiplicity=1, is_periodic=True):
     # auxiliary routine to read atoms
     def atom_helper(f):
         # skip some lines
-        for i in xrange(3):
+        for i in range(3):
             f.readline()
         # read the atom lines until an empty line is encountered
         numbers = []
@@ -96,7 +96,7 @@ def load_molecule_cp2k(fn_sp, fn_freq, multiplicity=1, is_periodic=True):
     # auxiliary routine to read forces
     def force_helper(f, skip, offset):
         # skip some lines
-        for i in xrange(skip):
+        for i in range(skip):
             f.readline()
         # Read the actual forces
         tmp = []
@@ -155,10 +155,10 @@ def load_molecule_cp2k(fn_sp, fn_freq, multiplicity=1, is_periodic=True):
                 num_cols = min(5, free_size - i2)
                 f.next() # skip two lines
                 f.next()
-                for j in xrange(free_size):
+                for j in range(free_size):
                     line = f.next()
                     words = line.split()
-                    for i1 in xrange(num_cols):
+                    for i1 in range(num_cols):
                         hessian[free_indices[i2 + i1], free_indices[j]] = \
                             float(words[i1 + 2])
                 i2 += num_cols
@@ -237,4 +237,4 @@ def load_fixed_cp2k(fn_freq):
     if len(free_indices) == 0:
         raise IOError('Could not find the free atoms.')
     free_atoms = np.array(free_indices[::3])/3
-    return np.array([i for i in xrange(natom) if i not in free_atoms])
+    return np.array([i for i in range(natom) if i not in free_atoms])

@@ -35,6 +35,7 @@
 #--
 
 
+from __future__ import print_function
 # Import the tamkin libarary.
 from tamkin import *
 # Import unit conversin factors
@@ -45,7 +46,7 @@ from numpy import *
 
 # Load the gaussian data.
 molecule = load_molecule_g03fchk("freq/gaussian.fchk")
-print "Energy [kJ/mol]:", molecule.energy/kjmol
+print("Energy [kJ/mol]:", molecule.energy/kjmol)
 rot_scan = load_rotscan_g03log("scan/gaussian.log")
 
 
@@ -53,7 +54,7 @@ rot_scan = load_rotscan_g03log("scan/gaussian.log")
 nma = NMA(molecule, ConstrainExt())
 rotor = Rotor(rot_scan, molecule, rotsym=1, even=True)
 pf = PartFun(nma, [ExtTrans(), ExtRot(), rotor])
-print "Heat capacity at 300K, constant pressure [J/(mol*K)]:", pf.heat_capacity(300*kelvin)/(joule/mol/kelvin)
+print("Heat capacity at 300K, constant pressure [J/(mol*K)]:", pf.heat_capacity(300*kelvin)/(joule/mol/kelvin))
 # Write some general information about the molecule and the partition function
 # to a file.
 pf.write_to_file("partfun.txt")
@@ -64,8 +65,8 @@ for angle, energy in array(rot_scan.potential).transpose():
     K = rotor.hb.eval_deriv2(array([angle]), rotor.v_coeffs)[0]
     nu = sqrt(abs(K/I))
     hertz = 1/second
-    print "Angle in deg:", angle/deg
-    print "Energy in kJ/mol", energy/joule
-    print "Frequency in THz:", nu/hertz/1e12/(2*pi)
-    print "Wavenumber in cm-1:", nu/(lightspeed/centimeter)/(2*pi)
-    print
+    print("Angle in deg:", angle/deg)
+    print("Energy in kJ/mol", energy/joule)
+    print("Frequency in THz:", nu/hertz/1e12/(2*pi))
+    print("Wavenumber in cm-1:", nu/(lightspeed/centimeter)/(2*pi))
+    print()

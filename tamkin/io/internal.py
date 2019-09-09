@@ -34,6 +34,7 @@
 # --
 
 
+from __future__ import print_function
 import numpy as np
 
 
@@ -57,7 +58,7 @@ def load_chk(filename):
        The file format is similar to the Gaussian fchk format, but has the extra
        feature that the shapes of the arrays are also stored.
     """
-    f = file(filename)
+    f = open(filename)
     result = {}
     while True:
         line = f.readline()
@@ -124,7 +125,7 @@ def dump_chk(filename, data):
        The file format is similar to the Gaussian fchk format, but has the extra
        feature that the shapes of the arrays are also stored.
     """
-    f = file(filename, "w")
+    f = open(filename, "w")
     for key, value in sorted(data.iteritems()):
         if not isinstance(key, str):
             raise TypeError("The keys must be strings.")
@@ -135,13 +136,13 @@ def dump_chk(filename, data):
                 raise TypeError("Only small strings are supported (256 chars).")
             if "\n" in value:
                 raise ValueError("The string can not contain new lines.")
-            print >> f, "%40s  kind=str   %s" % (key.ljust(40), value)
+            print("%40s  kind=str   %s" % (key.ljust(40), value), file=f)
         elif isinstance(value, bool):
-            print >> f, "%40s  kind=bln   %s" % (key.ljust(40), value)
+            print("%40s  kind=bln   %s" % (key.ljust(40), value), file=f)
         elif isinstance(value, int):
-            print >> f, "%40s  kind=int   %i" % (key.ljust(40), value)
+            print("%40s  kind=int   %i" % (key.ljust(40), value), file=f)
         elif isinstance(value, float):
-            print >> f, "%40s  kind=flt   %22.15e" % (key.ljust(40), value)
+            print("%40s  kind=flt   %22.15e" % (key.ljust(40), value), file=f)
         elif isinstance(value, np.ndarray) or isinstance(value, list) or \
              isinstance(value, tuple):
             if isinstance(value, list) or isinstance(value, tuple):
@@ -155,16 +156,16 @@ def dump_chk(filename, data):
                         raise ValueError("In case of string arrays, a string may contain at most 21 characters.")
                     if " " in cell or "\n" in cell:
                         raise ValueError("In case of string arrays, a string may not contain spaces or new lines.")
-                print >> f, "%40s  kind=strar %s" % (key.ljust(40), shape_str)
+                print("%40s  kind=strar %s" % (key.ljust(40), shape_str), file=f)
                 format_str = "%22s"
             elif issubclass(value.dtype.type, int):
-                print >> f, "%40s  kind=intar %s" % (key.ljust(40), shape_str)
+                print("%40s  kind=intar %s" % (key.ljust(40), shape_str), file=f)
                 format_str = "%22i"
             elif issubclass(value.dtype.type, np.bool_):
-                print >> f, "%40s  kind=blnar %s" % (key.ljust(40), shape_str)
+                print("%40s  kind=blnar %s" % (key.ljust(40), shape_str), file=f)
                 format_str = "%22s"
             elif issubclass(value.dtype.type, float):
-                print >> f, "%40s  kind=fltar %s" % (key.ljust(40), shape_str)
+                print("%40s  kind=fltar %s" % (key.ljust(40), shape_str), file=f)
                 format_str = "%22.15e"
             else:
                 raise TypeError("Numpy array dtype %s not supported." % value.dtype)
@@ -173,12 +174,12 @@ def dump_chk(filename, data):
             for x in value.ravel():
                 short.append(x)
                 if len(short) == 4:
-                    print >> f, " ".join(format_str  % s for s in short)
+                    print(" ".join(format_str  % s for s in short), file=f)
                     short = []
             if len(short) > 0:
-                print >> f, " ".join(format_str  % s for s in short)
+                print(" ".join(format_str  % s for s in short), file=f)
         elif value is None:
-            print >> f, "%40s  kind=none   None" % key.ljust(40)
+            print("%40s  kind=none   None" % key.ljust(40), file=f)
         else:
             raise TypeError("Type %s not supported." % type(value))
     f.close()
@@ -286,8 +287,8 @@ def dump_indices(filename, indices, shift=1, compact=True):
     separator = {True: " ", False: "\n"}[compact]
 
     with open(filename, "w") as f:
-        print >> f, "#shift={}".format(-shift)
+        print("#shift={}".format(-shift), file=f)
         for l in indices:
             group_str = separator.join(str(index+shift) for index in l)
-            print >> f, group_str
-            print >> f
+            print(group_str, file=f)
+            print(file=f)

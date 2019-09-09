@@ -35,6 +35,8 @@
 """Convenient interfaces to define thermodynamic and kinetic models"""
 
 
+from __future__ import print_function
+
 import numpy as np, csv
 
 from molmod import boltzmann, kjmol, second, meter, mol, planck
@@ -221,7 +223,7 @@ class BaseModel(object):
                           quantities.
             | ``filename`` -- The name of the CSV file.
         """
-        f = file(filename, "w")
+        f = open(filename, "w")
         c = csv.writer(f)
         self.dump_table(temp, c)
         f.close()
@@ -274,22 +276,22 @@ class BaseModel(object):
            One argument:
             | ``filename`` -- The file to write the output.
         """
-        f = file(filename, "w")
+        f = open(filename, "w")
         self.dump(f)
         f.close()
 
     def dump(self, f):
         """Write all info about the model to a file."""
-        print >> f, "The chemical balance:"
-        print >> f, "  ", " + ".join("%s*(\"%s\")" % (-st, pf.title) for pf, st in self._iter_pfs() if st < 0),
-        print >> f, " <--> ",
-        print >> f, " + ".join("%s*(\"%s\")" % (st, pf.title) for pf, st in self._iter_pfs() if st > 0)
-        print >> f
+        print("The chemical balance:", file=f)
+        print("  ", " + ".join("%s*(\"%s\")" % (-st, pf.title) for pf, st in self._iter_pfs() if st < 0), end="", file=f)
+        print(" <--> ", end="", file=f)
+        print(" + ".join("%s*(\"%s\")" % (st, pf.title) for pf, st in self._iter_pfs() if st > 0), file=f)
+        print(file=f)
         for counter, (pf, st) in enumerate(self._iter_pfs()):
-            print >> f, "Partition function %i" % counter
-            print >> f, "Signed stoichiometry: %i" % st
+            print("Partition function %i" % counter, file=f)
+            print("Signed stoichiometry: %i" % st, file=f)
             pf.dump(f)
-            print >> f
+            print(file=f)
 
 
 class ThermodynamicModel(BaseModel):
@@ -330,10 +332,10 @@ class ThermodynamicModel(BaseModel):
     def dump(self, f):
         """Write all info about the thermodynamic model to a file."""
         delta_E = self.energy_difference()
-        print >> f, "Electronic energy difference [kJ/mol] = %.1f" % (delta_E/kjmol)
+        print("Electronic energy difference [kJ/mol] = %.1f" % (delta_E/kjmol), file=f)
         delta_ZPE = self.zero_point_energy_difference()
-        print >> f, "Zero-point energy difference [kJ/mol] = %.1f" % (delta_ZPE/kjmol)
-        print >> f
+        print("Zero-point energy difference [kJ/mol] = %.1f" % (delta_ZPE/kjmol), file=f)
+        print(file=f)
         BaseModel.dump(self, f)
 
 
@@ -415,10 +417,10 @@ class KineticModel(BaseKineticModel):
     def dump(self, f):
         """Write all info about the kinetic model to a file."""
         delta_E = self.energy_difference()
-        print >> f, "Electronic energy barrier [kJ/mol] = %.1f" % (delta_E/kjmol)
+        print("Electronic energy barrier [kJ/mol] = %.1f" % (delta_E/kjmol), file=f)
         delta_ZPE = self.zero_point_energy_difference()
-        print >> f, "Zero-point energy barrier [kJ/mol] = %.1f" % (delta_ZPE/kjmol)
-        print >> f
+        print("Zero-point energy barrier [kJ/mol] = %.1f" % (delta_ZPE/kjmol), file=f)
+        print(file=f)
         BaseKineticModel.dump(self, f)
 
 
@@ -449,12 +451,12 @@ class ActivationKineticModel(BaseKineticModel):
     def dump(self, f):
         """Write all info about the kinetic model to a file."""
         delta_E = self.energy_difference()
-        print >> f, "Electronic energy barrier [kJ/mol] = %.1f" % (delta_E/kjmol)
+        print("Electronic energy barrier [kJ/mol] = %.1f" % (delta_E/kjmol), file=f)
         delta_ZPE = self.zero_point_energy_difference()
-        print >> f, "Zero-point energy barrier [kJ/mol] = %.1f" % (delta_ZPE/kjmol)
-        print >> f
-        print >> f, "Thermodynamic submodel"
+        print("Zero-point energy barrier [kJ/mol] = %.1f" % (delta_ZPE/kjmol), file=f)
+        print(file=f)
+        print("Thermodynamic submodel", file=f)
         self.tm.dump(f)
-        print >> f
-        print >> f, "Kinetic submodel"
+        print(file=f)
+        print("Kinetic submodel", file=f)
         self.km.dump(f)

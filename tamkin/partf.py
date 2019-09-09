@@ -83,6 +83,7 @@
 """
 
 
+from __future__ import print_function
 from molmod import boltzmann, lightspeed, atm, bar, amu, centimeter, kjmol, \
     planck, mol, meter, newton
 
@@ -114,7 +115,7 @@ class Info(object):
            Arguments:
             | ``f`` -- the file object to write to
         """
-        print >> f, "  %s" % self.name.upper()
+        print("  %s" % self.name.upper(), file=f)
 
     def dump_values(self, f, label, values, format, num_col=8):
         """Write a nicely formatted array of numbers to file.
@@ -137,7 +138,7 @@ class Info(object):
             if parts[-1] == "\n    ":
                 parts.pop()
             parts.insert(0, "    %s:\n" % label)
-            print >> f, "".join(parts)
+            print("".join(parts), file=f)
 
 
 class StatFys(object):
@@ -742,8 +743,8 @@ class Electronic(Info, StatFys):
     def dump(self, f):
         """See :meth:`Info.dump`."""
         Info.dump(self, f)
-        print >> f, "    Multiplicity: %i" % self.multiplicity
-        print >> f, "    Electronic energy: %.7f" % self.energy
+        print("    Multiplicity: %i" % self.multiplicity, file=f)
+        print("    Electronic energy: %.7f" % self.energy, file=f)
 
     def helper(self, temp, n):
         """See :meth:`StatFys.helper`."""
@@ -897,25 +898,25 @@ class ExtTrans(Info, StatFys):
     def dump(self, f):
         """See :meth:`Info.dump`."""
         Info.dump(self, f)
-        print >> f, "    Dimension: %i" % self.dim
-        print >> f, "    Constant pressure: %s" % self.cp
+        print("    Dimension: %i" % self.dim, file=f)
+        print("    Constant pressure: %s" % self.cp, file=f)
         if self.cp:
-            print >> f, "    Pressure [%s]: %.5f" % (self.pressure_unit_name, self._pressure/self.pressure_unit)
+            print("    Pressure [%s]: %.5f" % (self.pressure_unit_name, self._pressure/self.pressure_unit), file=f)
         else:
-            print >> f, "    Density [%s]: %.5f" % (self.density_unit_name, self._density/self.density_unit)
+            print("    Density [%s]: %.5f" % (self.density_unit_name, self._density/self.density_unit), file=f)
         if self.cp:
-            print >> f, "      BIG FAT WARNING!!!"
-            print >> f, "      This is an NpT partition function."
-            print >> f, "      Internal heat contains a PV term (and is therefore the enthalpy)."
-            print >> f, "      Free energy contains a PV term (and is therefore the Gibbs free energy)."
-            print >> f, "      The heat capacity is computed at constant pressure."
+            print("      BIG FAT WARNING!!!", file=f)
+            print("      This is an NpT partition function.", file=f)
+            print("      Internal heat contains a PV term (and is therefore the enthalpy).", file=f)
+            print("      Free energy contains a PV term (and is therefore the Gibbs free energy).", file=f)
+            print("      The heat capacity is computed at constant pressure.", file=f)
         else:
-            print >> f, "      BIG FAT WARNING!!!"
-            print >> f, "      This is an NVT partition function."
-            print >> f, "      Internal heat does NOT contain a PV term."
-            print >> f, "      Free energy does NOT contain a PV term (and is therefore the Helmholtz free energy)."
-            print >> f, "      The heat capacity is computed at constant volume."
-        print >> f, "    Mass [amu]: %f" % (self.mass/amu)
+            print("      BIG FAT WARNING!!!", file=f)
+            print("      This is an NVT partition function.", file=f)
+            print("      Internal heat does NOT contain a PV term.", file=f)
+            print("      Free energy does NOT contain a PV term (and is therefore the Helmholtz free energy).", file=f)
+            print("      The heat capacity is computed at constant volume.", file=f)
+        print("    Mass [amu]: %f" % (self.mass/amu), file=f)
 
     def _z1(self, temp):
         return 0.5*self.dim*np.log(2*np.pi*self.mass*boltzmann*temp/planck**2)
@@ -1016,7 +1017,7 @@ class ExtRot(Info, StatFys):
                 self.symmetry_number = tmp_mol.compute_rotsym()
             else:
                 self.symmetry_number = 1
-                print 'WARNING: molecule is too large (%i atoms > 10) to quickly estimate the rotational symmetry number.' % natom
+                print('WARNING: molecule is too large (%i atoms > 10) to quickly estimate the rotational symmetry number.' % natom)
         self.factor = np.sqrt(np.product([
             2*np.pi*m*boltzmann for m in self.moments if m > self.im_threshold
         ]))/self.symmetry_number/np.pi
@@ -1025,10 +1026,10 @@ class ExtRot(Info, StatFys):
     def dump(self, f):
         """See :meth:`Info.dump`."""
         Info.dump(self, f)
-        print >> f, "    Rotational symmetry number: %i" % self.symmetry_number
-        print >> f, "    Moments of inertia [amu*bohr**2]: %f  %f %f" % tuple(self.moments/amu)
-        print >> f, "    Threshold for non-zero moments of inertia [amu*bohr**2]: %e" % (self.im_threshold/amu)
-        print >> f, "    Non-zero moments of inertia: %i" % self.count
+        print("    Rotational symmetry number: %i" % self.symmetry_number, file=f)
+        print("    Moments of inertia [amu*bohr**2]: %f  %f %f" % tuple(self.moments/amu), file=f)
+        print("    Threshold for non-zero moments of inertia [amu*bohr**2]: %e" % (self.im_threshold/amu), file=f)
+        print("    Non-zero moments of inertia: %i" % self.count, file=f)
 
     def helper(self, temp, n):
         """See :meth:`StatFys.helper`."""
@@ -1080,16 +1081,16 @@ class PCMCorrection(Info, StatFys):
     def dump(self, f):
         """See :meth:`Info.dump`."""
         Info.dump(self, f)
-        print >> f, "    Point 1:"
-        print >> f, "       Delta G [kJ/mol]: %.2f" % (self.point1[0]/kjmol)
-        print >> f, "       Temperature [K]: %.2f" % (self.point1[1])
-        print >> f, "    Point 2:"
+        print("    Point 1:", file=f)
+        print("       Delta G [kJ/mol]: %.2f" % (self.point1[0]/kjmol), file=f)
+        print("       Temperature [K]: %.2f" % (self.point1[1]), file=f)
+        print("    Point 2:", file=f)
         if self.point2 is not None:
-            print >> f, "       Delta G [kJ/mol]: %.2f" % (self.point2[0]/kjmol)
-            print >> f, "       Temperature [K]: %.2f" % (self.point2[1])
+            print("       Delta G [kJ/mol]: %.2f" % (self.point2[0]/kjmol), file=f)
+            print("       Temperature [K]: %.2f" % (self.point2[1]), file=f)
         else:
-            print >> f, "       Not Defined!! Only rely on computations on temperature of point 1!!"
-        print >> f, "    Zero-point contribution [kJ/mol]: %.7f" % (self.zero_point_energy()/kjmol)
+            print( "       Not Defined!! Only rely on computations on temperature of point 1!!", file=f)
+        print("    Zero-point contribution [kJ/mol]: %.7f" % (self.zero_point_energy()/kjmol), file=f)
 
     def _eval_free(self, temp):
         if self.point2 is None:
@@ -1275,15 +1276,15 @@ class Vibrations(Info, StatFysTerms):
     def dump(self, f):
         """See :meth:`Info.dump`."""
         Info.dump(self, f)
-        print >> f, "    Number of zero wavenumbers: %i " % (len(self.zero_freqs))
-        print >> f, "    Number of real wavenumbers: %i " % (len(self.positive_freqs))
-        print >> f, "    Number of imaginary wavenumbers: %i" % (len(self.negative_freqs))
-        print >> f, "    Frequency scaling factor: %.4f" % self.freq_scaling
-        print >> f, "    Zero-point scaling factor: %.4f" % self.zp_scaling
+        print("    Number of zero wavenumbers: %i " % (len(self.zero_freqs)), file=f)
+        print("    Number of real wavenumbers: %i " % (len(self.positive_freqs)), file=f)
+        print("    Number of imaginary wavenumbers: %i" % (len(self.negative_freqs)), file=f)
+        print("    Frequency scaling factor: %.4f" % self.freq_scaling, file=f)
+        print("    Zero-point scaling factor: %.4f" % self.zp_scaling, file=f)
         self.dump_values(f, "Zero Wavenumbers [1/cm]", self.zero_freqs/(lightspeed/centimeter), "% 8.1f", 8)
         self.dump_values(f, "Real Wavenumbers [1/cm]", self.positive_freqs/(lightspeed/centimeter), "% 8.1f", 8)
         self.dump_values(f, "Imaginary Wavenumbers [1/cm]", self.negative_freqs/(lightspeed/centimeter), "% 8.1f", 8)
-        print >> f, "    Zero-point contribution [kJ/mol]: %.7f" % (self.zero_point_energy()/kjmol)
+        print("    Zero-point contribution [kJ/mol]: %.7f" % (self.zero_point_energy()/kjmol), file=f)
 
     def helper_terms(self, temp, n):
         """See :meth:`StatFysTerms.helper_terms`."""
@@ -1383,12 +1384,12 @@ class PartFun(Info, StatFys):
 
     def dump(self, f):
         """See :meth:`Info.dump`."""
-        print >> f, "Title:", self.title
-        print >> f, "Chemical formula:", self.chemical_formula
-        print >> f, "Electronic energy [au]: %.5f" % self.electronic.energy
-        print >> f, "Zero-point contribution [kJ/mol]: %.7f" % ((self.zero_point_energy() - self.electronic.energy)/kjmol)
-        print >> f, "Zero-point energy [au]: %.5f" % self.zero_point_energy()
-        print >> f, "Contributions to the partition function:"
+        print("Title:", self.title, file=f)
+        print("Chemical formula:", self.chemical_formula, file=f)
+        print("Electronic energy [au]: %.5f" % self.electronic.energy, file=f)
+        print("Zero-point contribution [kJ/mol]: %.7f" % ((self.zero_point_energy() - self.electronic.energy)/kjmol), file=f)
+        print("Zero-point energy [au]: %.5f" % self.zero_point_energy(), file=f)
+        print("Contributions to the partition function:", file=f)
         for term in self.terms:
             term.dump(f)
 

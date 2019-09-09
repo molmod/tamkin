@@ -64,7 +64,7 @@ def load_molecule_cpmd(fn_out, fn_geometry, fn_hessian, multiplicity=1, is_perio
     """
     # go through the output file: grep the total energy
     energy = None
-    f = file(fn_out)
+    f = open(fn_out)
     while True:
         line = f.readline()
         if line == "":
@@ -82,7 +82,7 @@ def load_molecule_cpmd(fn_out, fn_geometry, fn_hessian, multiplicity=1, is_perio
     f.close()
 
     # load the optimal geometry
-    f = file(fn_geometry)
+    f = open(fn_geometry)
     num_atoms = int(f.readline())
     numbers = np.zeros(num_atoms, int)
     coordinates = np.zeros((num_atoms,3), float)
@@ -111,13 +111,13 @@ def load_molecule_cpmd(fn_out, fn_geometry, fn_hessian, multiplicity=1, is_perio
     f.close()
 
     # go trhough the freq file: hessian
-    f = file(fn_hessian)
+    f = open(fn_hessian)
 
     line = f.readline()
     if not line.startswith(" &CART"):
         raise IOError("File %s does not start with &CART." % fn_hessian)
     masses = np.zeros(num_atoms, float)
-    for i in xrange(num_atoms):
+    for i in range(num_atoms):
         line = f.readline()
         words = line.split()
         masses[i] = float(words[4])*amu
@@ -128,10 +128,10 @@ def load_molecule_cpmd(fn_out, fn_geometry, fn_hessian, multiplicity=1, is_perio
         raise IOError("File %s does not contain section &FCON." % fn_hessian)
     num_cart = num_atoms*3
     hessian = np.zeros((num_cart, num_cart), float)
-    for i in xrange(num_cart):
+    for i in range(num_cart):
         line = f.readline()
         words = line.split()
-        for j in xrange(num_cart):
+        for j in range(num_cart):
             hessian[i,j] = float(words[j])
 
     f.close()

@@ -34,6 +34,7 @@
 # --
 """Tools for further investigation of a normal mode analysis"""
 
+from __future__ import print_function
 from tamkin.data import Molecule
 from tamkin.nma import NMA
 from tamkin.io.charmm import load_peptide_info_charmm
@@ -132,25 +133,25 @@ def write_overlap(freqs1, freqs2, overlap, filename="overlap.csv", unit="au"):
     #freqs2 = freqs2 / invcm
 
     to_append="w+"   # not append, just overwrite
-    f = file(filename,to_append)
+    f = open(filename,to_append)
 
     [rows,cols] = overlap.shape
 
     if unit is "au":
         # 1. row of freqs2
-        print >> f, ";"+";".join(str(g) for g in freqs2)  #this is the same
+        print(";"+";".join(str(g) for g in freqs2), file=f)  # this is the same
 
         # 2. start each row with freq of freqs1 and continue with overlaps
         for r in range(rows):
-            print >> f, str(freqs1[r])+";"+";".join(str(g) for g in overlap[r,:].tolist())
+            print(str(freqs1[r])+";"+";".join(str(g) for g in overlap[r,:].tolist()), file=f)
 
     elif unit is "cm1":
         # 1. row of freqs2
-        print >> f, ";"+";".join(str(g*centimeter/lightspeed) for g in freqs2)  #this is the same
+        print(";"+";".join(str(g*centimeter/lightspeed) for g in freqs2), file=f)  # this is the same
 
         # 2. start each row with freq of freqs1 and continue with overlaps
         for r in range(rows):
-            print >> f, str(freqs1[r]*centimeter/lightspeed)+";"+";".join(str(g) for g in overlap[r,:].tolist())
+            print(str(freqs1[r]*centimeter/lightspeed)+";"+";".join(str(g) for g in overlap[r,:].tolist()), file=f)
 
     else:
         raise NotImplementedError("this unit is not implemented/recognized")
@@ -251,7 +252,7 @@ def _get_pept_linked(N, calpha, proline):
     """
     # PEPT bonds = calpha + CONH + calpha = 6 atoms
     pept = []
-    for i in xrange(1,len(calpha)):
+    for i in range(1,len(calpha)):
         if calpha[i] in proline:
             pept.append( [calpha[i-1]] + range(calpha[i]-6,calpha[i]+1) )
             #print "proline found!", calpha[i]
@@ -281,7 +282,7 @@ def _calc_blocks_RTB(blocksize, N, calpha, proline, carbon, oxygen, nitrogen):
             pept.append(range(1,calpha[k-1]-2))
 
     # for next blocks :  (N - calpha,R - CO) x size
-    for i in xrange(1,n):   # do n-1 times
+    for i in range(1,n):   # do n-1 times
         # from first N till next N
         if calpha[i*k-1] in proline:
             if calpha[(i+1)*k-1] in proline:
@@ -324,7 +325,7 @@ def _calc_blocks_dihedral(N, calpha, proline, carbon, oxygen, nitrogen):
     else:
         res.append( range(1,calpha[1]-3) )
     # continue with normal residues : N - calpha,R - C
-    for i in xrange(1,len(calpha)-1):
+    for i in range(1,len(calpha)-1):
         if calpha[i] in proline:
             if calpha[i+1] in proline:
                 res.append( [calpha[i]-4]+range(calpha[i],calpha[i+1]-5) )
@@ -363,9 +364,9 @@ def _calc_blocks_RHbending(N, calpha, proline, carbon, oxygen, nitrogen):
     else:
         res.append( range(1,calpha[1]-4) )
     # continue with normal residues
-    for i in xrange(1,len(calpha)-1):  # calpha and HA
+    for i in range(1,len(calpha)-1):  # calpha and HA
         CH.append( [calpha[i],calpha[i]+1] )
-    for i in xrange(1,len(calpha)-1):  # calpha and rest of residue
+    for i in range(1,len(calpha)-1):  # calpha and rest of residue
         if calpha[i+1] in proline:
             res.append( [calpha[i]]+range(calpha[i]+2,calpha[i+1]-6) )
             #print "(side chain) proline found!", calpha[i+1]
@@ -394,7 +395,7 @@ def _calc_blocks_normal(N, calpha, proline, carbon, oxygen, nitrogen):
     else:
         res.append( range(1,calpha[1]-4) )
     # continue with normal residues
-    for i in xrange(1,len(calpha)-1):
+    for i in range(1,len(calpha)-1):
         if calpha[i+1] in proline:
             res.append( range(calpha[i],calpha[i+1]-6) )
             #print "(side chain) proline found!", calpha[i+1]
@@ -498,7 +499,7 @@ def plot_spectrum_dos(filename, all_freqs, low=None, high=None, imax=None,
         intensity = np.zeros(nu.shape, float)
 
         s2 = width**2 / ( 8*np.log(2) )  # standard deviation squared
-        for i in xrange(len(freqs)):
+        for i in range(len(freqs)):
             if freqs[i] > low and freqs[i] < high:
                 tmp = np.exp(-(nu-freqs[i])**2/(2*s2))
                 if amps is not None:

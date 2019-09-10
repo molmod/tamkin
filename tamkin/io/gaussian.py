@@ -283,7 +283,7 @@ def load_rotscan_g03log(fn_log, top_indexes=None):
                 last_coordinates = []
                 ## skip four lines
                 for i in range(4):
-                    f.next()
+                    next(f)
                 # read atoms
                 for line in f:
                     if line.startswith(" -----"):

@@ -58,7 +58,7 @@ def load_summary(fn):
          E0, E  --  The zero-point corrected barrier and the classical barrier
     """
     f = open(fn)
-    result = tuple(float(word) for word in f.next().split())
+    result = tuple(float(word) for word in next(f).split())
     f.close()
     return result[:-4], result[-4:-2], result[-2:]
 

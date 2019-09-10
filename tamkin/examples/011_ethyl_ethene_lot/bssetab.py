@@ -41,7 +41,7 @@ import html
 
 def load_summary(fn):
     f = open(fn)
-    result = tuple(float(word) for word in f.next().split())
+    result = tuple(float(word) for word in next(f).split())
     f.close()
     return result[:-4], result[-4:-2], result[-2:]
 

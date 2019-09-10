@@ -75,8 +75,8 @@ def load_molecule_qchem(qchemfile, hessfile = None, multiplicity=1, is_periodic 
     for line in f:
         if line.strip().startswith("Standard Nuclear Orientation (Angstroms)"):
             break
-    f.next()
-    f.next()
+    next(f)
+    next(f)
     positions = []
     symbols = []
     for line in f:
@@ -113,7 +113,7 @@ def load_molecule_qchem(qchemfile, hessfile = None, multiplicity=1, is_periodic 
               break
       nb = int(np.ceil(N*3/6))
       for i in range(nb):
-          f.next()
+          next(f)
           row = 0
           for line in f:
               words = line.split()
@@ -126,7 +126,7 @@ def load_molecule_qchem(qchemfile, hessfile = None, multiplicity=1, is_periodic 
     for line in f:
         if line.strip().startswith("Zero point vibrational"):
             break
-    f.next()
+    next(f)
     count=0
     for line in f:
         masses[count] = float(line.split()[-1])*amu

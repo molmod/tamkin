@@ -141,7 +141,7 @@ def load_molecule_cp2k(fn_sp, fn_freq, multiplicity=1, is_periodic=True):
             if line.startswith(" CELL"):
                 break
         for axis in range(3):
-            line = f.next()
+            line = next(f)
             vectors[:,axis] = np.array( [float(line[29:39]), float(line[39:49]), float(line[49:59])] )
         unit_cell = UnitCell(vectors*angstrom)
 
@@ -153,10 +153,10 @@ def load_molecule_cp2k(fn_sp, fn_freq, multiplicity=1, is_periodic=True):
             i2 = 0
             while i2 < free_size:
                 num_cols = min(5, free_size - i2)
-                f.next() # skip two lines
-                f.next()
+                next(f) # skip two lines
+                next(f)
                 for j in range(free_size):
-                    line = f.next()
+                    line = next(f)
                     words = line.split()
                     for i1 in range(num_cols):
                         hessian[free_indices[i2 + i1], free_indices[j]] = \

@@ -435,8 +435,8 @@ class ActivationKineticModel(BaseKineticModel):
         BaseKineticModel.__init__(self)
         self.tm = tm
         self.km = km
-        self._add_pfs(tm.pfs_all.iteritems())
-        self._add_pfs(km.pfs_all.iteritems())
+        self._add_pfs(tm.pfs_all.items())
+        self._add_pfs(km.pfs_all.items())
         self._set_unit(per_second=True)
 
     def rate_constant(self, temp, do_log=False):

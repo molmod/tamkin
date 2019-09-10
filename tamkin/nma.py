@@ -236,7 +236,7 @@ class NMA(object):
                             construction of a partition function)
         """
         if fields == 'all':
-            data = dict((key, val) for key, val in self.__dict__.iteritems())
+            data = dict((key, val) for key, val in self.__dict__.items())
         elif fields == 'modes':
             keys = ["freqs", "modes", "masses", "numbers", "coordinates", "zeros", "title"]
             data = dict((key, self.__dict__[key]) for key in keys)
@@ -1284,7 +1284,7 @@ class MBH(Treatment):
         nbrows = (np.sum(blkinfo.sharenbs)-molecule.size)*3
         K = np.zeros(( nbrows, mbhdim1-3*len(blkinfo.free)), float)
         row = 0
-        for (at,apps) in blkinfo.appearances.iteritems():
+        for (at,apps) in blkinfo.appearances.items():
             if len(apps) >= 2:
                 # the first block
                 b0 = apps[0]
@@ -1438,7 +1438,7 @@ class Blocks(object):
 
         # make a strict partition of the atoms: each atom belongs to one block only
         bA1 = np.zeros((molecule.size),int)
-        for (at,apps) in appearances.iteritems():
+        for (at,apps) in appearances.items():
             bA1[at] = apps[0]
 
         blocks_nlin_strict = []
@@ -1468,7 +1468,7 @@ class Blocks(object):
 
         # Check if there are linked blocks
         sharenbs = np.zeros((molecule.size),int)  # share number of each atom
-        for (at,apps) in appearances.iteritems():
+        for (at,apps) in appearances.items():
             sharenbs[at] = len(apps)
         is_linked = False
         for sharenb in np.ravel(sharenbs):

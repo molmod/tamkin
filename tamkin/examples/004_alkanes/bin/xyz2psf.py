@@ -60,7 +60,7 @@ atom_filters = {
 }
 
 def get_atom_type(index, graph):
-    for atom_type, atom_filter in atom_filters.iteritems():
+    for atom_type, atom_filter in atom_filters.items():
         if atom_filter(index, graph):
             return atom_type
     raise ValueError("Unrecognized atom (index %i)." % index)

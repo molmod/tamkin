@@ -111,7 +111,7 @@ def load_molecule_cp2k(fn_sp, fn_freq, multiplicity=1, is_periodic=True):
             words = line.split()
             try:
                 tmp.append([float(words[offset]), float(words[offset+1]), float(words[offset+2])])
-            except StandardError:
+            except ValueError:
                 break
         return -np.array(tmp) # force to gradient
 

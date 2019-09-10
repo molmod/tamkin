@@ -94,8 +94,7 @@ setup(
     packages = ['tamkin', 'tamkin.io', 'tamkin.test'],
     scripts=["scripts/tamkin-driver"],
     include_package_data=True,
-    install_requires=['numpy>=1.0', 'nose>=0.11', 'matplotlib>1.1',
-                      'molmod>=1.3.2', 'scipy>=0.17.1'],
+    install_requires=['numpy>=1.0', 'matplotlib>1.1', 'molmod>=1.3.2', 'scipy>=0.17.1'],
     classifiers=[
         'Environment :: Console',
         'License :: OSI Approved :: GNU General Public License v3 or later (GPLv3+)',

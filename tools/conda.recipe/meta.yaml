@@ -11,17 +11,15 @@ build:
   script: python setup.py install --single-version-externally-managed --record=record.txt
 
 requirements:
-  run:
-    - python
-    - numpy
-    - nose
-    - scipy
-    - matplotlib
-    - future
-    - molmod
   build:
     - python
     - setuptools
+  run:
+    - python
+    - numpy
+    - scipy
+    - matplotlib
+    - molmod
 
 about:
   dev_url: https://github.com/molmod/tamkin

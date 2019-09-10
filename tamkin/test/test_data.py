@@ -240,5 +240,5 @@ def test_rot_scan_ts():
         try:
             scan = RotScan(np.array(dihed)-1, mol)
             assert False
-        except ValueError, e:
+        except ValueError as e:
             assert e.message == "The rotating top could not be assigned properly. Specify the top_indexes manually."

@@ -244,14 +244,14 @@ def main():
     if len(args) != 1:
         parser.error("Expecting exactly on argument")
 
-    print "Processing %s" % args[0]
+    print("Processing %s" % args[0])
     os.chdir(args[0])
     load_sp = args[0].startswith("GEO")
     for do_rotor in True, False:
         for do_counterpoise in True, False:
             #try:
                 run(do_rotor, do_counterpoise, load_sp)
-                print "      OK: do_rotor=%i, do_counterpoise=%i, load_sp=%i" % (do_rotor, do_counterpoise, load_sp)
+                print("      OK: do_rotor=%i, do_counterpoise=%i, load_sp=%i" % (do_rotor, do_counterpoise, load_sp))
             #except (IOError, KeyError), e:
             #    print "  Failed: do_rotor=%i, do_counterpoise=%i, load_sp=%i" % (do_rotor, do_counterpoise, load_sp)
             #    print e

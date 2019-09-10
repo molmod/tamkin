@@ -66,7 +66,7 @@ def overview(template, title, fn_img, rows):
             rows[counter].append("<td style='background-color:%s'>%.1e</td>" % (color, A))
             color = get_error_color(abs(Ea - experimental_Ea)/4)
             rows[counter].append("<td style='background-color:%s'>%.1f</td>" % (color, Ea))
-        except IOError, StopIteration:
+        except (IOError, StopIteration):
             rows[counter].append("<td>&nbsp</td><td>&nbsp</td>")
         counter += 1
 

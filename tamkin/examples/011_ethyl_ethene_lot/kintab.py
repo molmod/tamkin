@@ -83,7 +83,7 @@ def overview(template, title, fn_img, rows):
                 ln10ratio = numpy.log10(ks[j]/experimental_k[j])
                 color = get_error_color(ln10ratio)
                 rows[counter].append("<td style='background-color:%s'>%.0f</td>" % (color, ln10ratio*10))
-        except IOError, StopIteration:
+        except (IOError, StopIteration):
             rows[counter].append("<td>&nbsp</td><td>&nbsp</td><td>&nbsp</td><td>&nbsp</td>")
         counter += 1
     pt.semilogy()
@@ -127,7 +127,7 @@ def overview(template, title, fn_img, rows):
             lines.append(line)
             labels.append(label)
             continue
-        except IOError, StopIteration:
+        except (IOError, StopIteration):
             pass
 
     pt.title(title)

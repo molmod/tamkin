@@ -68,7 +68,7 @@ def overview(template, title, fn_img, rows):
                 ln10ratio = np.log10(ks[j]/experimental_k[j])
                 color = get_error_color(ln10ratio)
                 rows[counter].append("<td style='background-color:%s'>%.1e</td>" % (color, ks[j]))
-        except IOError, StopIteration:
+        except (IOError, StopIteration):
             rows[counter].append("<td>&nbsp</td><td>&nbsp</td><td>&nbsp</td><td>&nbsp</td>")
         counter += 1
 

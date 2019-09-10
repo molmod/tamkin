@@ -69,7 +69,7 @@ def ts_bsse(fn_template, title, rows):
             #rows[counter].append("<td>%.0f</td>" % Ea)
             #rows[counter].append("<td>%.0f</td>" % Eap)
             #rows[counter].append("<td style='background-color:#DDD;'>%.0f</td>" % (Eap-Ea))
-        except IOError, StopIteration:
+        except (IOError, StopIteration):
             #rows[counter].append("<td>&nbsp</td><td>&nbsp</td><td>&nbsp</td>")
             rows[counter].append("<td>&nbsp</td><td>&nbsp</td><td>&nbsp</td>")
         counter += 1

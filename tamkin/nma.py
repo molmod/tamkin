@@ -273,7 +273,7 @@ class NMA(object):
             "coordinates", "inertia_tensor", "multiplicity", "symmetry_number",
             "periodic", "energy", "zeros", "title", "chemical_formula",
         ])
-        if not set(data.iterkeys()).issubset(possible_fields):
+        if not set(data).issubset(possible_fields):
             raise IOError("The Checkpoint file does not contain the correct fields.")
         # assign the attributes
         result.__dict__.update(data)

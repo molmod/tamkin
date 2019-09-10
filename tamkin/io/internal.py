@@ -140,9 +140,9 @@ def dump_chk(filename, data):
                 print("%40s  kind=str   %s" % (key.ljust(40), value), file=f)
             elif isinstance(value, bool):
                 print("%40s  kind=bln   %s" % (key.ljust(40), value), file=f)
-            elif isinstance(value, int):
+            elif isinstance(value, int) or isinstance(value, np.integer):
                 print("%40s  kind=int   %i" % (key.ljust(40), value), file=f)
-            elif isinstance(value, float):
+            elif isinstance(value, float) or isinstance(value, np.floating):
                 print("%40s  kind=flt   %22.15e" % (key.ljust(40), value), file=f)
             elif isinstance(value, np.ndarray) or isinstance(value, list) or \
                  isinstance(value, tuple):
@@ -159,13 +159,13 @@ def dump_chk(filename, data):
                             raise ValueError("In case of string arrays, a string may not contain spaces or new lines.")
                     print("%40s  kind=strar %s" % (key.ljust(40), shape_str), file=f)
                     format_str = "%22s"
-                elif issubclass(value.dtype.type, int):
+                elif issubclass(value.dtype.type, np.integer):
                     print("%40s  kind=intar %s" % (key.ljust(40), shape_str), file=f)
                     format_str = "%22i"
                 elif issubclass(value.dtype.type, np.bool_):
                     print("%40s  kind=blnar %s" % (key.ljust(40), shape_str), file=f)
                     format_str = "%22s"
-                elif issubclass(value.dtype.type, float):
+                elif issubclass(value.dtype.type, np.floating):
                     print("%40s  kind=fltar %s" % (key.ljust(40), shape_str), file=f)
                     format_str = "%22.15e"
                 else:

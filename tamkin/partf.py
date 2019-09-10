@@ -83,7 +83,8 @@
 """
 
 
-from __future__ import print_function
+from __future__ import print_function, division
+
 from molmod import boltzmann, lightspeed, atm, bar, amu, centimeter, kjmol, \
     planck, mol, meter, newton
 

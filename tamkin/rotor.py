@@ -41,7 +41,8 @@
    [1] Chemical Physics, Vol. 328 (1-3) 251 - 258, 2006
 """
 
-from __future__ import print_function
+from __future__ import print_function, division
+
 from tamkin.partf import Info, StatFysTerms, helper_vibrations, \
     helpert_vibrations, helpertt_vibrations, helper_levels, helpert_levels, \
     helpertt_levels
@@ -466,7 +467,7 @@ class Rotor(Info, StatFysTerms):
             # free rotor
             self.energy_levels = np.zeros(self.num_levels, float)
             for i in range(self.num_levels-1):
-                index = i/2+1
+                index = i // 2 + 1
                 self.energy_levels[i+1] = index**2/(2*moment)
             self.hb = None
             self.v_coeffs = None

@@ -35,7 +35,8 @@
 """High level utilities for partition functions"""
 
 
-from __future__ import print_function
+from __future__ import print_function, division
+
 import sys, numpy, types, csv
 
 from molmod.units import kjmol, mol, kelvin, joule, centimeter

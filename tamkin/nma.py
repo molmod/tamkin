@@ -79,6 +79,8 @@ The second argument is an instance of a class that derives from the
 #   weighted Hessian in the new coordinates.
 
 
+from __future__ import print_function, division
+
 from tamkin.data import Molecule
 from tamkin.geom import transrot_basis, rank_linearity
 from tamkin.io.internal import load_chk, dump_chk

@@ -34,6 +34,8 @@
 # --
 
 
+from __future__ import print_function, division
+
 from tamkin.data import Molecule
 
 from molmod.periodic import periodic
@@ -236,5 +238,5 @@ def load_fixed_cp2k(fn_freq):
         raise IOError('Could not read number of atoms from CP2K output.')
     if len(free_indices) == 0:
         raise IOError('Could not find the free atoms.')
-    free_atoms = np.array(free_indices[::3])/3
+    free_atoms = np.array(free_indices[::3]) // 3
     return np.array([i for i in range(natom) if i not in free_atoms])

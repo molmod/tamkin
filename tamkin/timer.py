@@ -34,8 +34,10 @@
 # --
 """Timer to keep track of wall and cpu time"""
 
-from __future__ import print_function
-import time, sys
+from __future__ import print_function, division
+
+import time
+import sys
 
 
 __all__ = ["Timer"]

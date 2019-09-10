@@ -34,6 +34,8 @@
 # --
 
 
+from __future__ import print_function, division
+
 from tamkin.data import Molecule
 
 from molmod import electronvolt, angstrom, amu
@@ -220,7 +222,7 @@ def load_fixed_vasp(filename):
             if line.strip().startswith("SECOND DERIVATIVES (NOT SYMMETRIZED)"):  break
         next(f)
         for line in f:
-            Nfree = len(line.split())/3   # nb of non-fixed atoms
+            Nfree = len(line.split()) // 3   # nb of non-fixed atoms
             break
         # find the non-fixed atoms
         atoms_free = []

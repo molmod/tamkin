@@ -39,6 +39,8 @@
    output with a standardized interface.
 """
 
+from __future__ import print_function, division
+
 from tamkin.geom import transrot_basis
 
 from molmod import Molecule as BaseMolecule, MolecularGraph, ReadOnly, \

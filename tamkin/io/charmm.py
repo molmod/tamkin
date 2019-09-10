@@ -34,6 +34,8 @@
 # --
 
 
+from __future__ import print_function, division
+
 from tamkin.data import Molecule
 
 from molmod import angstrom, amu, calorie, avogadro, lightspeed, centimeter
@@ -193,10 +195,10 @@ def load_modes_charmm(filename):
         # read nb of atoms and nbfreqs (if not yet specified by user)
         words = line.split()        # the current line does not start with a *
         nbfreqs = int(words[0])
-        N       = int(words[1])/3   # nb of atoms
+        N = int(words[1]) // 3   # nb of atoms
 
         # lines with masses, 6 masses on each line
-        nblines = int(np.ceil(N/6.0))
+        nblines = int(np.ceil(N/6))
         masses = np.zeros(N,float)
         count = 0
         for line in f:
@@ -204,7 +206,8 @@ def load_modes_charmm(filename):
             n = len(words)
             masses[count:count+n] = np.array([float(word) for word in words])
             count += n
-            if count >= N: break
+            if count >= N:
+                break
 
         # read nbfreqs freqs
         CNVFRQ = 2045.5/(2.99793*6.28319)  # conversion factor, see c36a0/source/fcm/consta.fcm in charmm code

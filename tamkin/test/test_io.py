@@ -34,6 +34,8 @@
 # --
 
 
+from __future__ import print_function, division
+
 import numpy as np
 import os
 import pkg_resources
@@ -55,7 +57,7 @@ class IOTestCase(unittest.TestCase):
         fixed_atoms = load_fixed_g03com(
             pkg_resources.resource_filename(__name__, "../data/test/mat/Zp_p_prod.18aug.com"))
         self.assertEqual(len(fixed_atoms), 48)
-        self.assertEqual(fixed_atoms, range(114,114+48))
+        self.assertEqual(fixed_atoms, list(range(114,114+48)))
 
     def test_load_molecule_g03fchk(self):
         atoms = 181

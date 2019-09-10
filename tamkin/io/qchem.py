@@ -33,6 +33,8 @@
 #
 # --
 
+from __future__ import print_function, division
+
 from tamkin.data import Molecule
 
 from molmod import angstrom, amu, calorie, avogadro
@@ -111,7 +113,7 @@ def load_molecule_qchem(qchemfile, hessfile = None, multiplicity=1, is_periodic 
           for line in f:
               if line.strip().startswith("Hessian of the SCF Energy") or line.strip().startswith("Final Hessian"):
                   break
-          nb = int(np.ceil(N*3/6))
+          nb = int(np.ceil(N/2))
           for i in range(nb):
               next(f)
               row = 0

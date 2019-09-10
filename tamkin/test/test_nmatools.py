@@ -34,6 +34,8 @@
 # --
 
 
+from __future__ import print_function, division
+
 import os
 import numpy as np
 import pkg_resources
@@ -118,7 +120,7 @@ class NMAToolsTestCase(unittest.TestCase):
             pkg_resources.resource_filename(__name__, "../data/test/an/ethanol.cor"),
             pkg_resources.resource_filename(__name__, "../data/test/an/ethanol.hess.full"))
         nma = NMA(molecule)
-        for i in range(7,27):
+        for i in range(7, 27):
             sensit = compute_sensitivity_freq(nma, i)
             self.assertAlmostEqual(np.sum((np.dot(sensit,nma.modes)-nma.modes)**2,0)[i],0.0,9)
 
@@ -129,14 +131,14 @@ class NMAToolsTestCase(unittest.TestCase):
         blocks2 = create_blocks_peptide_charmm(
             pkg_resources.resource_filename(__name__, "../data/test/charmm/crambin.crd"),
             "RTB", blocksize=2)
-        self.assertEqual(len(blocks1)/2+1, len(blocks2))
+        self.assertEqual(len(blocks1) // 2 + 1, len(blocks2))
         subs1 = create_subs_peptide_charmm(
             pkg_resources.resource_filename(__name__, "../data/test/charmm/crambin.crd"),
             frequency=1)
         subs2 = create_subs_peptide_charmm(
             pkg_resources.resource_filename(__name__, "../data/test/charmm/crambin.crd"),
             frequency=2)
-        self.assertEqual(len(subs1)/2, len(subs2))
+        self.assertEqual(len(subs1) // 2, len(subs2))
 
         blocks = create_blocks_peptide_charmm(
             pkg_resources.resource_filename(__name__, "../data/test/charmm/crambin.crd"))

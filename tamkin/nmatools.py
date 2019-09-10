@@ -34,7 +34,8 @@
 # --
 """Tools for further investigation of a normal mode analysis"""
 
-from __future__ import print_function
+from __future__ import print_function, division
+
 from tamkin.data import Molecule
 from tamkin.nma import NMA
 from tamkin.io.charmm import load_peptide_info_charmm
@@ -266,8 +267,8 @@ def _calc_blocks_RTB(blocksize, N, calpha, proline, carbon, oxygen, nitrogen):
        one or more residues per block.
     """
     pept = []
-    k = blocksize               # number of residues per block
-    n = len(calpha)/blocksize   # number of complete RTB-blocks
+    k = blocksize                  # number of residues per block
+    n = len(calpha) // blocksize   # number of complete RTB-blocks
 
     # do for first block : ... (calpha,R) x size - CO
     if calpha[k-1] > 1:
@@ -277,7 +278,7 @@ def _calc_blocks_RTB(blocksize, N, calpha, proline, carbon, oxygen, nitrogen):
             pept.append(range(1,calpha[k-1]-2))
 
     # for next blocks :  (N - calpha,R - CO) x size
-    for i in range(1,n):   # do n-1 times
+    for i in range(1, n):   # do n-1 times
         # from first N till next N
         if calpha[i*k-1] in proline:
             if calpha[(i+1)*k-1] in proline:
@@ -449,7 +450,7 @@ def plot_spectrum_lines(filename, all_freqs, low=None, high=None, title=None):
     pt.clf()
     for i, freqs in enumerate(all_freqs):
         for freq in freqs:
-            if (freq>low or low is None) and (freq<high or high is None):
+            if (low is None or freq > low) and (high is None or freq < high):
                 pt.plot([i+0.75,i+1.25],[freq/invcm,freq/invcm],"k-")
     pt.xticks(range(1,len(all_freqs)+1))
     if low is not None:

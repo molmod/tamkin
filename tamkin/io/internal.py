@@ -34,7 +34,8 @@
 # --
 
 
-from __future__ import print_function
+from __future__ import print_function, division
+
 import numpy as np
 
 
@@ -195,7 +196,7 @@ def _convert_range(s, shift):
     b, e = s[1:-1].split(',')
     b = int(b) + shift
     e = int(e) + shift
-    result = range(b, e)
+    result = list(range(b, e))
     if s.endswith(']'):
         result.append(e)
     return result

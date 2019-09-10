@@ -34,6 +34,8 @@
 # --
 
 
+from __future__ import print_function, division
+
 from molmod.test.test_examples import check_example
 
 

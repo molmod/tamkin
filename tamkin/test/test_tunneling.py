@@ -34,6 +34,8 @@
 # --
 
 
+from __future__ import print_function, division
+
 import numpy as np
 import pkg_resources
 import unittest
@@ -104,7 +106,7 @@ class TunnelingTestCase(unittest.TestCase):
             for f, c in zip(fs, cs):
                 correction = Eckart._from_parameters(Ef, Er, f)
                 our = correction([temp])[0]
-                self.assert_(abs(our-c)/c < 0.09)
+                assert abs(our - c) / c < 0.09
                 #if not (("%.1e" % our)==("%.1e" % c)):
                 #    print "%.1e" % our, "%.1e" % c
 

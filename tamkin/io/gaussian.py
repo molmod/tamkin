@@ -34,6 +34,8 @@
 # --
 
 
+from __future__ import print_function, division
+
 from tamkin.data import Molecule, RotScan
 
 from molmod.io import FCHKFile
@@ -145,10 +147,10 @@ def load_molecule_g03fchk(fn_freq, fn_ener=None, fn_vdw=None, energy=None, fn_pu
         iterator = iter_floats_file(fn_punch)
         for i in range(natom):
             for j in range(3):
-                gradient[i,j] = iterator.next()
+                gradient[i,j] = next(iterator)
         for i in range(3*natom):
             for j in range(i+1):
-                v = iterator.next()
+                v = next(iterator)
                 hessian[i,j] = v
                 hessian[j,i] = v
 

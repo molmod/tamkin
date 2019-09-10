@@ -1018,7 +1018,7 @@ class ExtRot(Info, StatFys):
                     self.symmetry_number = tmp_mol.compute_rotsym()
                 except ValueError:
                     self.symmetry_number = 1
-                    print 'WARNING: error while estimating rotational symmetry number.'
+                    print('WARNING: error while estimating rotational symmetry number.')
             else:
                 self.symmetry_number = 1
                 print('WARNING: molecule is too large (%i atoms > 10) to quickly estimate the rotational symmetry number.' % natom)

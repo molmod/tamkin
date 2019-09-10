@@ -75,7 +75,7 @@ def test_get_submolecule_cp2k():
     molecule = load_molecule_cp2k(
         pkg_resources.resource_filename(__name__, "../data/test/cp2k/pentane/sp.out"),
         pkg_resources.resource_filename(__name__, "../data/test/cp2k/pentane/freq.out"))
-    select = range(5)+[9,11,14]
+    select = list(range(5)) + [9,11,14]
     molecule2 = molecule.get_submolecule(select, title="this is submol", energy=5., periodic=False, symmetry_number=6)  # just trying out something
     for i,at in enumerate(select):
         assert molecule.numbers[at] == molecule2.numbers[i]
@@ -99,7 +99,7 @@ def test_translate_pbc():
     assert abs(molecule.unit_cell.matrix[1,1]/angstrom - 30.000) < 1e-3
     assert abs(molecule.unit_cell.matrix[0,1]/angstrom - 0.000) < 1e-3
     assert abs(molecule.coordinates[5,1]/angstrom - 13.928520) < 1e-5
-    selected = range(6)+[11,14]
+    selected = list(range(6)) + [11,14]
     molecule2 = translate_pbc(molecule, selected, [1,-1,0])
     assert abs(molecule2.coordinates[5,1]/angstrom -  (13.928520-30.0)) < 1e-5
     for i in range(molecule.size):

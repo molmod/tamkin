@@ -155,9 +155,9 @@ class RotorTestCase(unittest.TestCase):
                 return np.conjugate(v_exp[-index])
         v_op_exp = np.zeros((2*nmax+1,2*nmax+1), complex)
         for i0 in range(2*nmax+1):
-            k0 = ((i0-1)/2+1)*(2*(i0%2)-1)
+            k0 = ((i0-1)//2+1)*(2*(i0%2)-1)
             for i1 in range(2*nmax+1):
-                k1 = ((i1-1)/2+1)*(2*(i1%2)-1)
+                k1 = ((i1-1)//2+1)*(2*(i1%2)-1)
                 #print (i0,i1), (k0,k1), k0-k1
                 v_op_exp[i0,i1] = get_v(k0-k1)/np.sqrt(a)
         #for row in v_op_exp:

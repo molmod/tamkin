@@ -223,10 +223,9 @@ class BaseModel(object):
                           quantities.
             | ``filename`` -- The name of the CSV file.
         """
-        f = open(filename, "w")
-        c = csv.writer(f)
-        self.dump_table(temp, c)
-        f.close()
+        with open(filename, "w") as f:
+            c = csv.writer(f)
+            self.dump_table(temp, c)
 
 
     def dump_table(self, temp, c):
@@ -276,9 +275,8 @@ class BaseModel(object):
            One argument:
             | ``filename`` -- The file to write the output.
         """
-        f = open(filename, "w")
-        self.dump(f)
-        f.close()
+        with open(filename, "w") as f:
+            self.dump(f)
 
     def dump(self, f):
         """Write all info about the model to a file."""

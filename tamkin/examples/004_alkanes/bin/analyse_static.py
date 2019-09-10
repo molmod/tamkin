@@ -70,13 +70,12 @@ pf = PartFun(
 
 
 # Write the frequencies to a csv file
-f = open(os.path.join(args[0], "freqs.csv"), "w")
-print('"Frequency","Wavenumber","Vibrational temperature"', file=f)
-print('"Atomic units","1/cm","K"', file=f)
-for i in range(len(pf.vibrational.freqs)):
-    freq = pf.vibrational.freqs[i]
-    print('%e,%f,%f' % (freq, freq/lightspeed*centimeter, 2*numpy.pi*freq/boltzmann), file=f)
-f.close()
+with open(os.path.join(args[0], "freqs.csv"), "w") as f:
+    print('"Frequency","Wavenumber","Vibrational temperature"', file=f)
+    print('"Atomic units","1/cm","K"', file=f)
+    for i in range(len(pf.vibrational.freqs)):
+        freq = pf.vibrational.freqs[i]
+        print('%e,%f,%f' % (freq, freq/lightspeed*centimeter, 2*numpy.pi*freq/boltzmann), file=f)
 
 
 # B) Generate a thermo analysis report

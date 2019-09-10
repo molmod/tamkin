@@ -295,9 +295,8 @@ class ReactionAnalysis(object):
            One argument:
             | ``filename`` -- the file to write the output.
         """
-        f = open(filename, "w")
-        self.dump(f)
-        f.close()
+        with open(filename, "w") as f:
+            self.dump(f)
 
     def plot_arrhenius(self, filename=None, label=None, color="red"):
         """Plot the rate constant and the fitted line.

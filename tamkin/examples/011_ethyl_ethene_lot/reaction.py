@@ -212,18 +212,17 @@ def run(do_rotor, do_counterpoise, load_sp):
     ra_trans.write_to_file("%s_reaction_trans.txt" % prefix)
 
     def write_ra_summary(fn, ra):
-        f = open(fn, "w")
-        print("% 10.5e % 10.5e % 10.5e % 10.5e    %10.5e %10.2e    %10.2e %10.2e" % (
-            ra.compute_rate_coeff(300)/ra.unit,
-            ra.compute_rate_coeff(400)/ra.unit,
-            ra.compute_rate_coeff(500)/ra.unit,
-            ra.compute_rate_coeff(600)/ra.unit,
-            ra.A/ra.unit,
-            ra.Ea/kjmol,
-            ra.compute_delta_G(0.0)/kjmol,
-            ra.compute_delta_E()/kjmol,
-        ), file=f)
-        f.close()
+        with open(fn, "w") as f:
+            print("% 10.5e % 10.5e % 10.5e % 10.5e    %10.5e %10.2e    %10.2e %10.2e" % (
+                ra.compute_rate_coeff(300)/ra.unit,
+                ra.compute_rate_coeff(400)/ra.unit,
+                ra.compute_rate_coeff(500)/ra.unit,
+                ra.compute_rate_coeff(600)/ra.unit,
+                ra.A/ra.unit,
+                ra.Ea/kjmol,
+                ra.compute_delta_G(0.0)/kjmol,
+                ra.compute_delta_E()/kjmol,
+            ), file=f)
 
     write_ra_summary("%s_summary_gauche.txt" % prefix, ra_gauche)
     write_ra_summary("%s_summary_trans.txt" % prefix, ra_trans)

@@ -1403,6 +1403,5 @@ class PartFun(Info, StatFys):
            Argument:
             | ``filename`` -- The name of the file to write to.
         """
-        f = file(filename, 'w')
-        self.dump(f)
-        f.close()
+        with open(filename, 'w') as f:
+            self.dump(f)

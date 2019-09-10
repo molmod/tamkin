@@ -133,29 +133,24 @@ def write_overlap(freqs1, freqs2, overlap, filename="overlap.csv", unit="au"):
     #freqs2 = freqs2 / invcm
 
     to_append="w+"   # not append, just overwrite
-    f = open(filename,to_append)
+    with open(filename,to_append) as f:
+        [rows,cols] = overlap.shape
+        if unit is "au":
+            # 1. row of freqs2
+            print(";"+";".join(str(g) for g in freqs2), file=f)  # this is the same
 
-    [rows,cols] = overlap.shape
+            # 2. start each row with freq of freqs1 and continue with overlaps
+            for r in range(rows):
+                print(str(freqs1[r])+";"+";".join(str(g) for g in overlap[r,:].tolist()), file=f)
+        elif unit is "cm1":
+            # 1. row of freqs2
+            print(";"+";".join(str(g*centimeter/lightspeed) for g in freqs2), file=f)  # this is the same
 
-    if unit is "au":
-        # 1. row of freqs2
-        print(";"+";".join(str(g) for g in freqs2), file=f)  # this is the same
-
-        # 2. start each row with freq of freqs1 and continue with overlaps
-        for r in range(rows):
-            print(str(freqs1[r])+";"+";".join(str(g) for g in overlap[r,:].tolist()), file=f)
-
-    elif unit is "cm1":
-        # 1. row of freqs2
-        print(";"+";".join(str(g*centimeter/lightspeed) for g in freqs2), file=f)  # this is the same
-
-        # 2. start each row with freq of freqs1 and continue with overlaps
-        for r in range(rows):
-            print(str(freqs1[r]*centimeter/lightspeed)+";"+";".join(str(g) for g in overlap[r,:].tolist()), file=f)
-
-    else:
-        raise NotImplementedError("this unit is not implemented/recognized")
-    f.close()
+            # 2. start each row with freq of freqs1 and continue with overlaps
+            for r in range(rows):
+                print(str(freqs1[r]*centimeter/lightspeed)+";"+";".join(str(g) for g in overlap[r,:].tolist()), file=f)
+        else:
+            raise NotImplementedError("this unit is not implemented/recognized")
 
 
 def compute_delta(coor1, coor2, masses=None, normalize=False):

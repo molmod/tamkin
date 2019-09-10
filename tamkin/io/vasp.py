@@ -205,37 +205,35 @@ def load_fixed_vasp(filename):
     the Hessian, or, in other words, which were fixed.
     """
     # Read data from out-VASP-file OUTCAR
-    f = open(filename)
+    with open(filename) as f:
+        # number of atoms (N)
+        for line in f:
+            if line.strip().startswith("Dimension of arrays:"):  break
+        next(f)
+        for line in f:
+            words = line.split()
+            N = int(words[-1])
+            break
 
-    # number of atoms (N)
-    for line in f:
-        if line.strip().startswith("Dimension of arrays:"):  break
-    next(f)
-    for line in f:
-        words = line.split()
-        N = int(words[-1])
-        break
-
-    # hessian, not symmetrized, useful to find indices of Hessian elements
-    for line in f:
-        if line.strip().startswith("SECOND DERIVATIVES (NOT SYMMETRIZED)"):  break
-    next(f)
-    for line in f:
-        Nfree = len(line.split())/3   # nb of non-fixed atoms
-        break
-    # find the non-fixed atoms
-    atoms_free = []
-    row = 0
-    mu = 0
-    for line in f:
-        if mu==0:
-            atom = int(line.split()[0][:-1])
-            atoms_free.append(atom-1)
-        mu+=1
-        row+=1
-        if mu >= 3: mu=0
-        if row >= 3*Nfree: break
-    f.close()
+        # hessian, not symmetrized, useful to find indices of Hessian elements
+        for line in f:
+            if line.strip().startswith("SECOND DERIVATIVES (NOT SYMMETRIZED)"):  break
+        next(f)
+        for line in f:
+            Nfree = len(line.split())/3   # nb of non-fixed atoms
+            break
+        # find the non-fixed atoms
+        atoms_free = []
+        row = 0
+        mu = 0
+        for line in f:
+            if mu==0:
+                atom = int(line.split()[0][:-1])
+                atoms_free.append(atom-1)
+            mu+=1
+            row+=1
+            if mu >= 3: mu=0
+            if row >= 3*Nfree: break
 
     fixed_atoms = [at for at in range(N) if at not in atoms_free]
     return np.array(fixed_atoms)

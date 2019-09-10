@@ -64,77 +64,72 @@ def load_molecule_cpmd(fn_out, fn_geometry, fn_hessian, multiplicity=1, is_perio
     """
     # go through the output file: grep the total energy
     energy = None
-    f = open(fn_out)
-    while True:
-        line = f.readline()
-        if line == "":
-            raise IOError("Could not find final results in %s. Is the output file truncated?" % fn_out)
-        if line == " *                        FINAL RESULTS                         *\n":
-            break
-    while True:
-        line = f.readline()
-        if line == "":
-            raise IOError("Could not find total energy in %s. Is the output file truncated?" % fn_out)
-        if line.startswith(" (K+E1+L+N+X)           TOTAL ENERGY ="):
-            words= (line.strip()).split()
-            energy = float(words[4])
-            break
-    f.close()
+    with open(fn_out) as f:
+        while True:
+            line = f.readline()
+            if line == "":
+                raise IOError("Could not find final results in %s. Is the output file truncated?" % fn_out)
+            if line == " *                        FINAL RESULTS                         *\n":
+                break
+        while True:
+            line = f.readline()
+            if line == "":
+                raise IOError("Could not find total energy in %s. Is the output file truncated?" % fn_out)
+            if line.startswith(" (K+E1+L+N+X)           TOTAL ENERGY ="):
+                words= (line.strip()).split()
+                energy = float(words[4])
+                break
 
     # load the optimal geometry
-    f = open(fn_geometry)
-    num_atoms = int(f.readline())
-    numbers = np.zeros(num_atoms, int)
-    coordinates = np.zeros((num_atoms,3), float)
-    gradient = np.zeros((num_atoms,3), float)
+    with open(fn_geometry) as f:
+        num_atoms = int(f.readline())
+        numbers = np.zeros(num_atoms, int)
+        coordinates = np.zeros((num_atoms,3), float)
+        gradient = np.zeros((num_atoms,3), float)
 
-    f.readline()
-    i = 0
-    while True:
-        line = f.readline()
-        if line == "":
-            break # end of file
-        words = (line.strip()).split()
-        if len(words) == 7:
-            numbers[i] = periodic[words[0]].number
-            coordinates[i][0] = float(words[1])*angstrom
-            coordinates[i][1] = float(words[2])*angstrom
-            coordinates[i][2] = float(words[3])*angstrom
-            gradient[i][1] = float(words[4])
-            gradient[i][1] = float(words[5])
-            gradient[i][2] = float(words[6])
-            i += 1
-        else:
-            raise IOError("Expecting seven words at each atom line in %s." % fn_geometry)
-    if i != num_atoms:
-        raise IOError("The number of atoms is incorrect in %s." % fn_geometry)
-    f.close()
+        f.readline()
+        i = 0
+        while True:
+            line = f.readline()
+            if line == "":
+                break # end of file
+            words = (line.strip()).split()
+            if len(words) == 7:
+                numbers[i] = periodic[words[0]].number
+                coordinates[i][0] = float(words[1])*angstrom
+                coordinates[i][1] = float(words[2])*angstrom
+                coordinates[i][2] = float(words[3])*angstrom
+                gradient[i][1] = float(words[4])
+                gradient[i][1] = float(words[5])
+                gradient[i][2] = float(words[6])
+                i += 1
+            else:
+                raise IOError("Expecting seven words at each atom line in %s." % fn_geometry)
+        if i != num_atoms:
+            raise IOError("The number of atoms is incorrect in %s." % fn_geometry)
 
     # go trhough the freq file: hessian
-    f = open(fn_hessian)
-
-    line = f.readline()
-    if not line.startswith(" &CART"):
-        raise IOError("File %s does not start with &CART." % fn_hessian)
-    masses = np.zeros(num_atoms, float)
-    for i in range(num_atoms):
+    with open(fn_hessian) as f:
         line = f.readline()
-        words = line.split()
-        masses[i] = float(words[4])*amu
-    f.readline() # &END
+        if not line.startswith(" &CART"):
+            raise IOError("File %s does not start with &CART." % fn_hessian)
+        masses = np.zeros(num_atoms, float)
+        for i in range(num_atoms):
+            line = f.readline()
+            words = line.split()
+            masses[i] = float(words[4])*amu
+        f.readline() # &END
 
-    line = f.readline()
-    if not line.startswith(" &FCON"):
-        raise IOError("File %s does not contain section &FCON." % fn_hessian)
-    num_cart = num_atoms*3
-    hessian = np.zeros((num_cart, num_cart), float)
-    for i in range(num_cart):
         line = f.readline()
-        words = line.split()
-        for j in range(num_cart):
-            hessian[i,j] = float(words[j])
-
-    f.close()
+        if not line.startswith(" &FCON"):
+            raise IOError("File %s does not contain section &FCON." % fn_hessian)
+        num_cart = num_atoms*3
+        hessian = np.zeros((num_cart, num_cart), float)
+        for i in range(num_cart):
+            line = f.readline()
+            words = line.split()
+            for j in range(num_cart):
+                hessian[i,j] = float(words[j])
 
     return Molecule(
         numbers, coordinates, masses, energy, gradient, hessian, multiplicity,

@@ -38,6 +38,12 @@
 Release history
 ###############
 
+* **Version 1.2.5** September 10, 2019
+
+    - Python 3 compatibility.
+    - Fixes in MANIFEST file.
+    - Catch exception when failing to determine rotational symmetry number.
+
 * **Version 1.2.4** September 13, 2017
 
     - Fix broken link to nosetests in docs.

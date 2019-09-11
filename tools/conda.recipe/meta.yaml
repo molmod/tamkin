@@ -11,12 +11,14 @@ build:
   script: python setup.py install --single-version-externally-managed --record=record.txt
 
 requirements:
+  host:
+    - numpy >=1.0
   build:
     - python
     - setuptools
   run:
     - python
-    - numpy
+    - {{ pin_compatible('numpy') }}
     - scipy
     - matplotlib
     - molmod

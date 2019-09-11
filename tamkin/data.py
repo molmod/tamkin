@@ -70,13 +70,13 @@ class Molecule(BaseMolecule):
 
     energy = ReadOnlyAttribute(float, none=False)
     gradient = ReadOnlyAttribute(np.ndarray, none=False,
-        check=check_gradient, npdim=2, npshape=(None, 3), npdtype=float)
+        check=check_gradient, npdim=2, npshape=(None, 3), npdtype=np.floating)
     hessian = ReadOnlyAttribute(np.ndarray, none=False,
-        check=check_hessian, npdim=2, npdtype=float)
+        check=check_hessian, npdim=2, npdtype=np.floating)
     multiplicity = ReadOnlyAttribute(int)
     symmetry_number = ReadOnlyAttribute(int)
     periodic = ReadOnlyAttribute(bool)
-    fixed = ReadOnlyAttribute(np.ndarray, npdim=1, npdtype=int)
+    fixed = ReadOnlyAttribute(np.ndarray, npdim=1, npdtype=np.signedinteger)
 
     def __init__(self, numbers, coordinates, masses, energy, gradient, hessian, multiplicity=None, symmetry_number=None, periodic=False, title=None, graph=None, symbols=None, unit_cell=None, fixed=None):
         """
@@ -456,11 +456,11 @@ class RotScan(ReadOnly):
                 "rotating")
 
     dihedral = ReadOnlyAttribute(np.ndarray, none=False, npdim=1,
-        npshape=(4,), npdtype=int)
+        npshape=(4,), npdtype=np.signedinteger)
     top_indexes = ReadOnlyAttribute(np.ndarray, none=False,
-        check=check_top_indexes, npdim=1, npdtype=int)
+        check=check_top_indexes, npdim=1, npdtype=np.signedinteger)
     potential = ReadOnlyAttribute(np.ndarray, npdim=2, npshape=(2, None),
-        npdtype=float)
+        npdtype=np.floating)
 
     def __init__(self, dihedral, molecule=None, top_indexes=None, potential=None):
         """

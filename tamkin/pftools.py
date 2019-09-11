@@ -238,7 +238,7 @@ class ReactionAnalysis(object):
         if not numpy.isfinite(expected_values).all():
             raise ValueError("non-finite rate constants. check your partition functions for errors.")
         self.hessian = numpy.dot(design_matrix.transpose(), design_matrix)
-        self.parameters, SSE, rank, s = numpy.linalg.lstsq(design_matrix, self.ln_rate_consts)
+        self.parameters, SSE, rank, s = numpy.linalg.lstsq(design_matrix, self.ln_rate_consts, rcond=None)
 
         SST = ((self.ln_rate_consts - self.ln_rate_consts.mean())**2).sum()
         self.R2 = 1-SSE/SST

@@ -53,7 +53,7 @@ install:
 # Install extra package needed to make things work. Most things can be listed as
 # dependencies on metal.yaml and setup.py, unless setup.py already imports them.
 # Install conda tools for packaging and uploading
-- conda install python=${MYCONDAPY} sphinx conda-build anaconda-client numpy codecov coverage nose
+- conda install python=${MYCONDAPY} sphinx conda-build anaconda-client numpy codecov coverage nose graphviz conda-verify
 # Add the molmod channel to get access to the molmod dependency
 - conda config --add channels molmod
 # Show conda info for debugging

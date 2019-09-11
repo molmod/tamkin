@@ -1,6 +1,7 @@
 env:
   matrix:
     - MYCONDAPY=2.7
+    - MYCONDAPY=3.6
     - MYCONDAPY=3.7
   global:
     # ANACONDA_TOKEN

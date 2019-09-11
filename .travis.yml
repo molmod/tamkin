@@ -7,7 +7,7 @@ env:
     # ANACONDA_TOKEN
     - secure: "C9W6W6tPzXEhMWpkrRSf3lx6f3JJ5j5jZCsGymUQqrF9SU7RLgTvINc57M72s+I9enaL8wvldELzut0pamzMxuicFeFsSZzPlBuPdJcAy1QdxDYI3HWM8g/TmLTq9PV9sBgmbJ7rO7hGYdAXcTcrfFQk3SBARUWF5IGA95k+Kto="
     # GITHUB_TOKEN
-    - secure: secure: "Skwu+NVG5NuZdp6G8N4y4dPS4nGmifg2NSgp/Vz2vUO0R34IrdY/lBT0aWoDMVxxYnG6h8U0S4mr3NKgVvcbugXD/omDDLJlg07PmpByrZI42gSpRcnQ6CVq8teEwCFT923ZaM5T+jujTHHQ3fzP219J/Jy+WxyImUjDVTxIzBQ="
+    - secure: "Skwu+NVG5NuZdp6G8N4y4dPS4nGmifg2NSgp/Vz2vUO0R34IrdY/lBT0aWoDMVxxYnG6h8U0S4mr3NKgVvcbugXD/omDDLJlg07PmpByrZI42gSpRcnQ6CVq8teEwCFT923ZaM5T+jujTHHQ3fzP219J/Jy+WxyImUjDVTxIzBQ="
     # PYPI_PASSWD
     - secure: "K3A2uBMjw2akoLaVeKMkW7kpxsui5yz9GClUjWgP2L/hbt9S4S81fwE+8htw2gDmM1ehFDhWgbHYU1HomB3k6KHhaBxmtyZ842dewqZRgtdwKQUyVleK0FaB+I1MpJyVggABfAbwSuqCDaL2QxDVnDmwdJ45yed4DPemyuCMkEw="
     - PYPKG=tamkin

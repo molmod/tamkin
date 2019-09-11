@@ -92,7 +92,9 @@ setup(
     url='http://molmod.ugent.be/code/',
     package_dir = {'tamkin': 'tamkin'},
     packages = ['tamkin', 'tamkin.io', 'tamkin.test'],
-    scripts=["scripts/tamkin-driver"],
+    entry_points={
+        'console_scripts': ['tamkin-driver = tamkin.driver:main']
+    },
     include_package_data=True,
     install_requires=['numpy>=1.0', 'matplotlib>1.1', 'molmod>=1.3.2', 'scipy>=0.17.1'],
     classifiers=[

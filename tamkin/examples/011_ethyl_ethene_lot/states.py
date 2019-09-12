@@ -77,10 +77,9 @@ class G03Job(object):
             # load the optimized geometry
             fn_fchk = "%s/%s__opt/gaussian.fchk" % (root, state.name)
             mol = FCHKFile(fn_fchk, field_labels=[]).molecule
-        f = open("init/%s.fragments" % state.name)
-        mol.charge_mult = f.readline().split()
-        mol.tags = f.readline().split()
-        f.close()
+        with open("init/%s.fragments" % state.name) as f:
+            mol.charge_mult = f.readline().split()
+            mol.tags = f.readline().split()
         return mol
 
     def write_input(self, state, root, lot_label, basis_label, suffix="", random=False):
@@ -119,57 +118,55 @@ class G03Job(object):
             )
 
         # write the input file
-        f = open(fn_com, "w")
-        print("%chk=gaussian.chk", file=f)
-        print("%nproc=1", file=f)
-        print("%mem=1000MB", file=f)
-        print("#p %s/%s %s %s maxdisk=5GB" % (lot.name, basis.name, self.cmd, lot.iop), end="", file=f)
-        if basis.diffuse:
-            print("scf=tight", end="", file=f)
-        if not (self.name == "opt" or self.name == "bsse" or self.name.startswith("cps")):
-            print("guess=read", end="", file=f)
-        if len(lot.extra_overlay) > 0:
-            print("extraoverlay", end="", file=f)
-        print(file=f)
-        print(file=f)
-        if len(lot.extra_overlay) > 0:
-            print(lot.extra_overlay, file=f)
-            print( file=f)
-        print(dirname, file=f)
-        print(file=f)
-        if self.name == "bsse":
-            print(" ".join(mol.charge_mult), file=f)
-        elif self.name.startswith("cps"):
-            i = int(self.name[-1])
-            print(" ".join(mol.charge_mult[2*i:2*i+2]), file=f)
-        else:
-            print(" ".join(mol.charge_mult[:2]), file=f)
-        for i in range(mol.size):
-            if random and self.name == "opt":
-                x, y, z = mol.coordinates[i]/angstrom + numpy.random.uniform(-0.1,0.1,3)
-            else:
-                x, y, z = mol.coordinates[i]/angstrom
-            symbol = periodic[mol.numbers[i]].symbol
+        with open(fn_com, "w") as f:
+            print("%chk=gaussian.chk", file=f)
+            print("%nproc=1", file=f)
+            print("%mem=1000MB", file=f)
+            print("#p %s/%s %s %s maxdisk=5GB" % (lot.name, basis.name, self.cmd, lot.iop), end="", file=f)
+            if basis.diffuse:
+                print("scf=tight", end="", file=f)
+            if not (self.name == "opt" or self.name == "bsse" or self.name.startswith("cps")):
+                print("guess=read", end="", file=f)
+            if len(lot.extra_overlay) > 0:
+                print("extraoverlay", end="", file=f)
+            print(file=f)
+            print(file=f)
+            if len(lot.extra_overlay) > 0:
+                print(lot.extra_overlay, file=f)
+                print( file=f)
+            print(dirname, file=f)
+            print(file=f)
             if self.name == "bsse":
-                tag = mol.tags[i]
+                print(" ".join(mol.charge_mult), file=f)
+            elif self.name.startswith("cps"):
+                i = int(self.name[-1])
+                print(" ".join(mol.charge_mult[2*i:2*i+2]), file=f)
             else:
-                tag = ""
-            if self.name.startswith("cps"):
-                if self.name.startswith("cps_full"):
-                    if self.name[-1] != mol.tags[i] and self.name[-1] != "0":
-                        symbol += "-Bq"
+                print(" ".join(mol.charge_mult[:2]), file=f)
+            for i in range(mol.size):
+                if random and self.name == "opt":
+                    x, y, z = mol.coordinates[i]/angstrom + numpy.random.uniform(-0.1,0.1,3)
                 else:
-                    if self.name[-1] != mol.tags[i]:
-                        continue
-            print(" %2s   % 10.5f   % 10.5f   % 10.5f  %s" % (
-                symbol, x, y, z, tag
-            ), file=f)
-        print(file=f)
-        print(self.post, file=f)
-        print(file=f)
-        print(file=f)
-        f.close()
-
+                    x, y, z = mol.coordinates[i]/angstrom
+                symbol = periodic[mol.numbers[i]].symbol
+                if self.name == "bsse":
+                    tag = mol.tags[i]
+                else:
+                    tag = ""
+                if self.name.startswith("cps"):
+                    if self.name.startswith("cps_full"):
+                        if self.name[-1] != mol.tags[i] and self.name[-1] != "0":
+                            symbol += "-Bq"
+                    else:
+                        if self.name[-1] != mol.tags[i]:
+                            continue
+                print(" %2s   % 10.5f   % 10.5f   % 10.5f  %s" % (
+                    symbol, x, y, z, tag
+                ), file=f)
+            print(file=f)
+            print(self.post, file=f)
+            print(file=f)
+            print(file=f)
         print(dirname)
 
 

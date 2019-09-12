@@ -34,7 +34,8 @@
 # --
 
 
-from __future__ import print_function
+from __future__ import print_function, division
+
 from tamkin.nma import NMA
 
 from molmod import angstrom, lightspeed, centimeter
@@ -207,7 +208,7 @@ def dump_modes_gaussian(filename, nma, selected=None):
 
         ### E1) ATOM PART
         assert modes.shape[0] % 3 == 0
-        natom = modes.shape[0]/3
+        natom = modes.shape[0] // 3
         print(header_coordinates, file=f)
         for iatom in range(natom):
            print('%5d %10d %13s %15f %11f %11f' %(

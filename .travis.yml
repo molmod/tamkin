@@ -1,20 +1,15 @@
 env:
   matrix:
     - MYCONDAPY=2.7
-    # - MYCONDAPY=3.7
+    - MYCONDAPY=3.6
+    - MYCONDAPY=3.7
   global:
     # ANACONDA_TOKEN
-    - secure: "JCX7xPCgInrZVvt78cZeU+M4dx0CWC7MmVawSR4GqoAxrscG5yEkTjbG0uL6jVc1OxV2wiEzzY\
-rtYYUnRY4W0UCs2hHSew99REUKm4UE52mKI+pcN0KDEVdub2pcNamfL1t00mjfOG6fzOZ02dN+ugDSmJJXLGOzYRB\
-mAZNgWC4="
+    - secure: "C9W6W6tPzXEhMWpkrRSf3lx6f3JJ5j5jZCsGymUQqrF9SU7RLgTvINc57M72s+I9enaL8wvldELzut0pamzMxuicFeFsSZzPlBuPdJcAy1QdxDYI3HWM8g/TmLTq9PV9sBgmbJ7rO7hGYdAXcTcrfFQk3SBARUWF5IGA95k+Kto="
     # GITHUB_TOKEN
-    - secure: "JjZdWGS8ZxYw5GBChepbu4jEJpT5Hemgj4DITkmridUdyjRB+hpxxR3z08pDz3SXkmuEsXyLsx\
-7RJAg2a+IpCnK8sG4wrOyb3Jf0tXhE1vKa1t80CVXDd0somQe6Mna+7X5SrOsP5pLs1IsaP/j6pnrDCPB2wUP3g/j\
-/iAQ1SP8="
+    - secure: "Skwu+NVG5NuZdp6G8N4y4dPS4nGmifg2NSgp/Vz2vUO0R34IrdY/lBT0aWoDMVxxYnG6h8U0S4mr3NKgVvcbugXD/omDDLJlg07PmpByrZI42gSpRcnQ6CVq8teEwCFT923ZaM5T+jujTHHQ3fzP219J/Jy+WxyImUjDVTxIzBQ="
     # PYPI_PASSWD
-    - secure: "CVw8wOQNRR7E7McAsy52Rq3f1eAvn4ukfWhW6Nn5H7GwQzha+qykm1MOnj3U1qsg7qvPvg0k2L\
-wVYkPU6nImdqHqQt8R8ekiNQNP9z97pGlJDC8T3hc/5VpvaRQA3E2wI5jzvHhNLafum/ss5h1+CsOs2AkdKgwRzM6\
-HlxbmLCE="
+    - secure: "K3A2uBMjw2akoLaVeKMkW7kpxsui5yz9GClUjWgP2L/hbt9S4S81fwE+8htw2gDmM1ehFDhWgbHYU1HomB3k6KHhaBxmtyZ842dewqZRgtdwKQUyVleK0FaB+I1MpJyVggABfAbwSuqCDaL2QxDVnDmwdJ45yed4DPemyuCMkEw="
     - PYPKG=tamkin
     - GITHUB_REPO_NAME=molmod/tamkin
 
@@ -48,21 +43,19 @@ install:
     fi;
   fi
 - bash miniconda.sh -b -p $HOME/miniconda
-- export PATH="$HOME/miniconda/bin:$PATH"
+- source ~/miniconda/bin/activate
 - hash -r
 
 # Configure conda and get a few essentials
 - conda config --set always_yes yes --set changeps1 no
-- conda update -q conda
+- conda update conda
 # Get the right python version for building. This only does something for 3.5.
 # Install extra package needed to make things work. Most things can be listed as
 # dependencies on metal.yaml and setup.py, unless setup.py already imports them.
 # Install conda tools for packaging and uploading
-- conda install python=${MYCONDAPY} sphinx conda-build anaconda-client numpy
+- conda install python=${MYCONDAPY} sphinx conda-build anaconda-client numpy codecov coverage nose graphviz conda-verify
 # Add the molmod channel to get access to the molmod dependency
 - conda config --add channels molmod
-# Install more recent stuff with pip
-- pip install codecov coverage
 # Show conda info for debugging
 - conda info -a
 
@@ -78,7 +71,7 @@ script:
 
 # Build the conda package
 - git fetch origin --tags
-- conda build -q tools/conda.recipe
+- conda build tools/conda.recipe
 
 # Build source package, should work too and needed for deployment.
 - python setup.py sdist

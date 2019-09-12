@@ -53,30 +53,31 @@ distribution to install these dependencies.
 
 The following software must be installed for TAMkin:
 
-* Python >=2.7,<3.0: http://www.python.org/doc/
+* Python >=2.7,>=3.6: http://www.python.org/doc/
 * Numpy >=1.0: http://numpy.scipy.org/
 * Scipy >=0.17.1: http://www.scipy.org/
 * MatPlotLib >=1.1: http://matplotlib.org/
 * MolMod >=1.3.1: https://github.com/molmod/molmod/
 * Nosetests >=0.11: http://nose.readthedocs.io/en/latest/
 
-Most Linux distributions can install most required software with a single command. Except
-for Python, missing dependencies will get automatically installed by pip. (See below.)
+Most Linux distributions can install most required software with a single
+command. Except for Python, missing dependencies will get automatically
+installed by pip. (See below.)
 
 * **Ubuntu**
 
-    sudo apt-get install python python-numpy python-scipy python-matplotlib
+    sudo apt-get install python python-numpy python-scipy python-matplotlib python-nose
 
 * **Debian 5** or newer. You first have to become root because the sudo program is not
   configured by default::
 
     su -
-    apt-get install python python-numpy python-scipy python-matplotlib
+    apt-get install python python-numpy python-scipy python-matplotlib python-nose
     exit
 
-* **Fedora 17 to 22**
+* **Fedora 23 and up**
 
-    sudo yum install python numpy scipy python-matplotlib
+    sudo dnf install python numpy scipy python-matplotlib python-nose
 
 
 Installation
@@ -88,6 +89,7 @@ TAMkin can be installed with pip (system wide or in a virtual environment):
 
     pip install numpy
     pip install tamkin
+    pip install nose  # only needed to run unit tests
 
 Alternatively, you can install TAMkin in your home directory:
 
@@ -95,13 +97,14 @@ Alternatively, you can install TAMkin in your home directory:
 
     pip install numpy --user
     pip install tamkin --user
+    pip install nose --user  # only needed to run unit tests
 
-Lastly, you can also install MolMod with conda. (See
+Lastly, you can also install TAMkin with conda. (See
 https://www.continuum.io/downloads)
 
 .. code:: bash
 
-    conda install -c molmod tamkin
+    conda install -c molmod tamkin nose
 
 
 Testing your installation

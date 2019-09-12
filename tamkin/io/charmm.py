@@ -34,6 +34,8 @@
 # --
 
 
+from __future__ import print_function, division
+
 from tamkin.data import Molecule
 
 from molmod import angstrom, amu, calorie, avogadro, lightspeed, centimeter
@@ -59,63 +61,61 @@ def load_molecule_charmm(charmmfile_cor, charmmfile_hess, is_periodic=False):
         | is_periodic  --  True when the system is periodic in three dimensions.
                            False when the systen is aperiodic. [default=True]
     """
-    f = open(charmmfile_hess)
-    # skip lines if they start with a *
-    while True:
-        line = f.readline()
-        if not line.startswith("*"): break
-    N = int(line.split()[-1])
-    assert N > 0   # nb of atoms should be > 0
+    with open(charmmfile_hess) as f:
+        # skip lines if they start with a *
+        while True:
+            line = f.readline()
+            if not line.startswith("*"): break
+        N = int(line.split()[-1])
+        assert N > 0   # nb of atoms should be > 0
 
-    energy = float(f.readline().split()[-1]) * 1000*calorie/avogadro
+        energy = float(f.readline().split()[-1]) * 1000*calorie/avogadro
 
-    gradient = np.zeros((N,3),float)
-    for i,line in enumerate(f):
-        words = line.split()
-        gradient[i,:] = [float(word) for word in words]
-        if i == (N-1):
-            break
-    gradient *= 1000*calorie/avogadro/angstrom
-    hessian = np.zeros((3*N,3*N),float)
-    row = 0
-    col = 0
-    for line in f:
-        element = float(line.split()[-1])
-        hessian[row,col]=element
-        hessian[col,row]=element
-        col += 1
-        if col>=3*N:        #if this new col doesn't exist
-            row += 1        #go to next row
-            col = row       #to diagonal element
-            if row >= 3*N:  #if this new row doesn't exist
-               break
-    hessian = hessian * 1000*calorie/avogadro /angstrom**2
+        gradient = np.zeros((N,3),float)
+        for i,line in enumerate(f):
+            words = line.split()
+            gradient[i,:] = [float(word) for word in words]
+            if i == (N-1):
+                break
+        gradient *= 1000*calorie/avogadro/angstrom
+        hessian = np.zeros((3*N,3*N),float)
+        row = 0
+        col = 0
+        for line in f:
+            element = float(line.split()[-1])
+            hessian[row,col]=element
+            hessian[col,row]=element
+            col += 1
+            if col>=3*N:        #if this new col doesn't exist
+                row += 1        #go to next row
+                col = row       #to diagonal element
+                if row >= 3*N:  #if this new row doesn't exist
+                   break
+        hessian = hessian * 1000*calorie/avogadro /angstrom**2
 
-    positions = np.zeros((N,3),float)
-    for i,line in enumerate(f):
-        words = line.split()
-        positions[i,:] = [float(word)*angstrom for word in words]
-        if i == (N-1):
-            break
-    f.close()
+        positions = np.zeros((N,3),float)
+        for i,line in enumerate(f):
+            words = line.split()
+            positions[i,:] = [float(word)*angstrom for word in words]
+            if i == (N-1):
+                break
 
     # Read from coordinates-CHARMM-file
     # format:  header lines, which start with *
     #          N lines with   - mass in last column
     #                         - atomic type in 4th column
-    f =open(charmmfile_cor)
-    masses = np.zeros(N,float)
-    symbols  = []
-    for line in f:
-        if not line.startswith("*"): # skip header lines
-            break
-    for i,line in enumerate(f):
-        words = line.split()
-        masses[i] = float(words[-1])*amu   # mass
-        symbols.append( words[3] )         # symbol
-        if i == (N-1):
-            break
-    f.close()
+    with open(charmmfile_cor) as f:
+        masses = np.zeros(N,float)
+        symbols  = []
+        for line in f:
+            if not line.startswith("*"): # skip header lines
+                break
+        for i,line in enumerate(f):
+            words = line.split()
+            masses[i] = float(words[-1])*amu   # mass
+            symbols.append( words[3] )         # symbol
+            if i == (N-1):
+                break
 
     # get corresponding atomic numbers
     mass_table = np.zeros(len(periodic))
@@ -153,24 +153,24 @@ def load_coordinates_charmm(filename):
     """
 
     # skip the lines that start with * comments
-    f = open(filename,'r')
-    for line in f:
-        if not line.startswith("*"): break
-    N = int(line.split()[0])   # nb of atoms
+    with open(filename) as f:
+        for line in f:
+            if not line.startswith("*"): break
+        N = int(line.split()[0])   # nb of atoms
 
-    # store coordinates in Nbx3 matrix
-    symbols = ['']*N
-    coordinates = np.zeros((N,3),float)
-    masses = np.zeros(N,float)
-    count = 0
-    for line in f:
-        words = line.split()
-        symbols[count]       = words[3]
-        coordinates[count,:] = np.array([float(word) for word in words[4:7]])*angstrom
-        masses[count]        = float(words[9])*amu
-        count += 1
-        if count >= N: break
-    f.close()
+        # store coordinates in Nbx3 matrix
+        symbols = ['']*N
+        coordinates = np.zeros((N,3),float)
+        masses = np.zeros(N,float)
+        count = 0
+        for line in f:
+            words = line.split()
+            symbols[count]       = words[3]
+            coordinates[count,:] = np.array([float(word) for word in words[4:7]])*angstrom
+            masses[count]        = float(words[9])*amu
+            count += 1
+            if count >= N: break
+
     return coordinates, masses, symbols
 
 
@@ -187,62 +187,61 @@ def load_modes_charmm(filename):
          | freqs  --  numpy array with frequencies in atomic units
          | masses  --  atomic masses in atomic units
     """
-    f = open(filename)
+    with open(filename) as f:
+        # skip the lines that start with * comments
+        for line in f:
+            if not line.strip().startswith("*"): break
 
-    # skip the lines that start with * comments
-    for line in f:
-        if not line.strip().startswith("*"): break
+        # read nb of atoms and nbfreqs (if not yet specified by user)
+        words = line.split()        # the current line does not start with a *
+        nbfreqs = int(words[0])
+        N = int(words[1]) // 3   # nb of atoms
 
-    # read nb of atoms and nbfreqs (if not yet specified by user)
-    words = line.split()        # the current line does not start with a *
-    nbfreqs = int(words[0])
-    N       = int(words[1])/3   # nb of atoms
+        # lines with masses, 6 masses on each line
+        nblines = int(np.ceil(N/6))
+        masses = np.zeros(N,float)
+        count = 0
+        for line in f:
+            words = line.split()
+            n = len(words)
+            masses[count:count+n] = np.array([float(word) for word in words])
+            count += n
+            if count >= N:
+                break
 
-    # lines with masses, 6 masses on each line
-    nblines = int(np.ceil(N/6.0))
-    masses = np.zeros(N,float)
-    count = 0
-    for line in f:
-        words = line.split()
-        n = len(words)
-        masses[count:count+n] = np.array([float(word) for word in words])
-        count += n
-        if count >= N: break
+        # read nbfreqs freqs
+        CNVFRQ = 2045.5/(2.99793*6.28319)  # conversion factor, see c36a0/source/fcm/consta.fcm in charmm code
+        nblines = int(np.ceil(nbfreqs/6.0))
+        freqs = np.zeros(nbfreqs, float)
+        countline = 0
+        countfreq = 0
+        for line in f:
+            words = line.split()
+            for word in words:
+                # do conversion
+                freq_sq = float(word) #squared value
+                if freq_sq > 0.0:  freq =  np.sqrt( freq_sq)
+                else:              freq = -np.sqrt(-freq_sq) #actually imaginary
+                freqs[countfreq] = freq * CNVFRQ * lightspeed/centimeter # conversion factor CHARMM, put into Tamkin internal units
+                countfreq += 1
+            countline += 1
+            if countline >= nblines: break
+        if countfreq != nbfreqs:
+            raise ValueError("should have read "+str(nbfreqs)+" frequencies, but read "+str(countfreq))
 
-    # read nbfreqs freqs
-    CNVFRQ = 2045.5/(2.99793*6.28319)  # conversion factor, see c36a0/source/fcm/consta.fcm in charmm code
-    nblines = int(np.ceil(nbfreqs/6.0))
-    freqs = np.zeros(nbfreqs, float)
-    countline = 0
-    countfreq = 0
-    for line in f:
-        words = line.split()
-        for word in words:
-            # do conversion
-            freq_sq = float(word) #squared value
-            if freq_sq > 0.0:  freq =  np.sqrt( freq_sq)
-            else:              freq = -np.sqrt(-freq_sq) #actually imaginary
-            freqs[countfreq] = freq * CNVFRQ * lightspeed/centimeter # conversion factor CHARMM, put into Tamkin internal units
-            countfreq += 1
-        countline += 1
-        if countline >= nblines: break
-    if countfreq != nbfreqs:
-        raise ValueError("should have read "+str(nbfreqs)+" frequencies, but read "+str(countfreq))
+        # read the nbfreqs modes
+        modes = np.zeros((3*N,nbfreqs),float)
+        row = 0
+        col = 0
+        for line in f:
+            words = line.split()
+            n = len(words)
+            modes[row:row+n,col] = np.array([float(word) for word in words])
+            row += n
+            if row == 3*N:
+                col += 1
+                row = 0
 
-    # read the nbfreqs modes
-    modes = np.zeros((3*N,nbfreqs),float)
-    row = 0
-    col = 0
-    for line in f:
-        words = line.split()
-        n = len(words)
-        modes[row:row+n,col] = np.array([float(word) for word in words])
-        row += n
-        if row == 3*N:
-            col += 1
-            row = 0
-
-    f.close()
     return modes, freqs, masses
 
 
@@ -264,30 +263,30 @@ def load_peptide_info_charmm(filename):
          | nitrogen  --  indices of the backbone nitrogens ('N' in CHARMM file)
     """
     # Reading from charmmfile
-    f = open(filename)
-    # nb of atoms
-    for i,line in enumerate(f):
-        words = line.split()
-        if words[0]!="*":
-            N = int(words[0])
-            break
-    # find alpha carbons, proline residues, carbons, oxygens, nitrogens
-    calpha = []
-    proline = []
-    carbon = []
-    oxygen = []
-    nitrogen = []
-    for i,line in enumerate(f):
-        words = line.split()
-        if words[3].startswith("CA"):
-            calpha.append(int(words[0]))
-            if words[2]=="PRO":
-                proline.append(int(words[0]))
-        if words[3]=="C":
-            carbon.append(int(words[0]))
-        if words[3]=="O":
-            oxygen.append(int(words[0]))
-        if words[3]=="N":
-            nitrogen.append(int(words[0]))
-    f.close()
+    with open(filename) as f:
+        # nb of atoms
+        for i,line in enumerate(f):
+            words = line.split()
+            if words[0]!="*":
+                N = int(words[0])
+                break
+        # find alpha carbons, proline residues, carbons, oxygens, nitrogens
+        calpha = []
+        proline = []
+        carbon = []
+        oxygen = []
+        nitrogen = []
+        for i,line in enumerate(f):
+            words = line.split()
+            if words[3].startswith("CA"):
+                calpha.append(int(words[0]))
+                if words[2]=="PRO":
+                    proline.append(int(words[0]))
+            if words[3]=="C":
+                carbon.append(int(words[0]))
+            if words[3]=="O":
+                oxygen.append(int(words[0]))
+            if words[3]=="N":
+                nitrogen.append(int(words[0]))
+
     return N, calpha, proline, carbon, oxygen, nitrogen

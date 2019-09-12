@@ -32,8 +32,7 @@
 # You should have received a copy of the GNU General Public License
 # along with this program; if not, see <http://www.gnu.org/licenses/>
 #
-#--
-#!/usr/bin/env python
+# --
 u'''\
 
 The TAMkin driver script
@@ -270,11 +269,17 @@ Notes
 '''
 
 
-from __future__ import print_function
-import sys, os, numpy as np
+from __future__ import print_function, division
+
+import sys
+import os
 from glob import glob
-from tamkin import *
+
+import numpy as np
 from molmod.periodic import periodic
+
+from tamkin import *
+
 
 # A few variables for debugging purposes only
 gradient_threshold = 1e-2
@@ -520,7 +525,7 @@ def get_pf(dn, temps):
 
 def get_chemical_formula(numbers):
     tmp = dict((number, (numbers == number).sum()) for number in np.unique(numbers))
-    return ' '.join(['%s_%i' % (periodic[number].symbol, count) for number, count in tmp.iteritems()])
+    return ' '.join(['%s_%i' % (periodic[number].symbol, count) for number, count in tmp.items()])
 
 
 def check_mass_balance(pfs1, pfs2, name1, name2):

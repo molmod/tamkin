@@ -47,35 +47,35 @@ from __future__ import print_function
 
 
 def get_freqs_and_overlap_7_7(filename):
-    f = open(filename)
-    print("-"*20)
-    print("Reading file...", filename)
+    with open(filename) as f:
+        print("-"*20)
+        print("Reading file...", filename)
 
-    # read 7th freq on first line (first element is 0, so is 8th freq)
-    for line in f:
-        words = line.split(";")
-        #freq1 = float(words[7])  # !!!!!!!!!!!!!
-        freq1 = float(words[-1])
-        break
-
-    # get 7th freq in first column (we already skipped first line)
-    # and overlap 7th-7th
-    count = 0
-    for line in f:
-        count +=1
-        if count==7:
+        # read 7th freq on first line (first element is 0, so is 8th freq)
+        for line in f:
             words = line.split(";")
-            freq2 = float(words[0])
-            #overlap = float(words[7])  # !!!!!!!!!
-            overlap = float(words[-1])
+            #freq1 = float(words[7])  # !!!!!!!!!!!!!
+            freq1 = float(words[-1])
             break
 
-    f.close()
-    print("freq1: ", freq1)
-    print("freq2: ", freq2)
-    print("overlap: ", overlap)
+        # get 7th freq in first column (we already skipped first line)
+        # and overlap 7th-7th
+        count = 0
+        for line in f:
+            count +=1
+            if count==7:
+                words = line.split(";")
+                freq2 = float(words[0])
+                #overlap = float(words[7])  # !!!!!!!!!
+                overlap = float(words[-1])
+                break
 
-    return freq1, freq2, overlap
+        f.close()
+        print("freq1: ", freq1)
+        print("freq2: ", freq2)
+        print("overlap: ", overlap)
+
+        return freq1, freq2, overlap
 
 
 import sys, glob
@@ -99,8 +99,7 @@ for filename in filenames:
 conv = 7.25163277859109E-07  # conversion factor such that frequencies are printed in 1/cm
 
 filename_out = "delta.overlaps.7-7.csv"
-f = open(filename_out,"w+")
-for i in range(len(freqs1)):
-    print(filenames[i]+";"+str(freqs1[i]/conv)+";"+str(freqs2[i]/conv)+";"+str(overlaps[i]), file=f)
-f.close()
+with open(filename_out, "w+") as f:
+    for i in range(len(freqs1)):
+        print(filenames[i]+";"+str(freqs1[i]/conv)+";"+str(freqs2[i]/conv)+";"+str(overlaps[i]), file=f)
 print("file written:", filename_out)

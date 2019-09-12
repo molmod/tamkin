@@ -35,7 +35,8 @@
 """High level utilities for partition functions"""
 
 
-from __future__ import print_function
+from __future__ import print_function, division
+
 import sys, numpy, types, csv
 
 from molmod.units import kjmol, mol, kelvin, joule, centimeter
@@ -237,7 +238,7 @@ class ReactionAnalysis(object):
         if not numpy.isfinite(expected_values).all():
             raise ValueError("non-finite rate constants. check your partition functions for errors.")
         self.hessian = numpy.dot(design_matrix.transpose(), design_matrix)
-        self.parameters, SSE, rank, s = numpy.linalg.lstsq(design_matrix, self.ln_rate_consts)
+        self.parameters, SSE, rank, s = numpy.linalg.lstsq(design_matrix, self.ln_rate_consts, rcond=None)
 
         SST = ((self.ln_rate_consts - self.ln_rate_consts.mean())**2).sum()
         self.R2 = 1-SSE/SST
@@ -295,9 +296,8 @@ class ReactionAnalysis(object):
            One argument:
             | ``filename`` -- the file to write the output.
         """
-        f = open(filename, "w")
-        self.dump(f)
-        f.close()
+        with open(filename, "w") as f:
+            self.dump(f)
 
     def plot_arrhenius(self, filename=None, label=None, color="red"):
         """Plot the rate constant and the fitted line.

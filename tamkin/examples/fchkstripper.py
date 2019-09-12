@@ -54,35 +54,33 @@ def strip(fn):
     # a list with all lines that we'd like to keep
     lines = []
     # load the good lines
-    f = oepn(fn, "r")
-    busy = False
-    keep = False
-    for line in f:
-        line = line.rstrip()
-        if len(lines) < 2:
-            # keep the first two lines
-            lines.append(line)
-        else:
-            if busy:
-                if not line.startswith(" "):
-                    keep = False
-                    busy = False
-                if keep:
-                    lines.append(line)
-            if not busy:
-                busy = line[47:49] == "N="
-                field = line[:43].strip()
-                if field in keep_fields:
-                    lines.append(line)
-                    keep = True
-                else:
-                    keep = False
-    f.close()
+    with open(fn, "r") as f:
+        busy = False
+        keep = False
+        for line in f:
+            line = line.rstrip()
+            if len(lines) < 2:
+                # keep the first two lines
+                lines.append(line)
+            else:
+                if busy:
+                    if not line.startswith(" "):
+                        keep = False
+                        busy = False
+                    if keep:
+                        lines.append(line)
+                if not busy:
+                    busy = line[47:49] == "N="
+                    field = line[:43].strip()
+                    if field in keep_fields:
+                        lines.append(line)
+                        keep = True
+                    else:
+                        keep = False
     # print stuff back into the same file
-    f = open(fn, "w")
-    for line in lines:
-        print(line, file=f)
-    f.close()
+    with open(fn, "w") as f:
+        for line in lines:
+            print(line, file=f)
 
 
 if __name__ == "__main__":

@@ -83,7 +83,8 @@
 """
 
 
-from __future__ import print_function
+from __future__ import print_function, division
+
 from molmod import boltzmann, lightspeed, atm, bar, amu, centimeter, kjmol, \
     planck, mol, meter, newton
 
@@ -1018,7 +1019,7 @@ class ExtRot(Info, StatFys):
                     self.symmetry_number = tmp_mol.compute_rotsym()
                 except ValueError:
                     self.symmetry_number = 1
-                    print 'WARNING: error while estimating rotational symmetry number.'
+                    print('WARNING: error while estimating rotational symmetry number.')
             else:
                 self.symmetry_number = 1
                 print('WARNING: molecule is too large (%i atoms > 10) to quickly estimate the rotational symmetry number.' % natom)
@@ -1403,6 +1404,5 @@ class PartFun(Info, StatFys):
            Argument:
             | ``filename`` -- The name of the file to write to.
         """
-        f = file(filename, 'w')
-        self.dump(f)
-        f.close()
+        with open(filename, 'w') as f:
+            self.dump(f)

@@ -55,7 +55,7 @@ print("Energy [kJ/mol]:", molecule.energy/kjmol)
 molecule.set_default_graph()
 # define a block for each atom and its neighbors (if it has more than one neighbor)
 blocks = []
-for central, neighbors in molecule.graph.neighbors.iteritems():
+for central, neighbors in molecule.graph.neighbors.items():
     if len(neighbors) > 1:
         block = list(neighbors)
         block.append(central)

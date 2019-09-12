@@ -35,7 +35,7 @@
 """Convenient interfaces to define thermodynamic and kinetic models"""
 
 
-from __future__ import print_function
+from __future__ import print_function, division
 
 import numpy as np, csv
 
@@ -223,10 +223,9 @@ class BaseModel(object):
                           quantities.
             | ``filename`` -- The name of the CSV file.
         """
-        f = open(filename, "w")
-        c = csv.writer(f)
-        self.dump_table(temp, c)
-        f.close()
+        with open(filename, "w") as f:
+            c = csv.writer(f)
+            self.dump_table(temp, c)
 
 
     def dump_table(self, temp, c):
@@ -276,9 +275,8 @@ class BaseModel(object):
            One argument:
             | ``filename`` -- The file to write the output.
         """
-        f = open(filename, "w")
-        self.dump(f)
-        f.close()
+        with open(filename, "w") as f:
+            self.dump(f)
 
     def dump(self, f):
         """Write all info about the model to a file."""
@@ -435,8 +433,8 @@ class ActivationKineticModel(BaseKineticModel):
         BaseKineticModel.__init__(self)
         self.tm = tm
         self.km = km
-        self._add_pfs(tm.pfs_all.iteritems())
-        self._add_pfs(km.pfs_all.iteritems())
+        self._add_pfs(tm.pfs_all.items())
+        self._add_pfs(km.pfs_all.items())
         self._set_unit(per_second=True)
 
     def rate_constant(self, temp, do_log=False):

@@ -34,6 +34,8 @@
 # --
 
 
+from __future__ import print_function, division
+
 from tamkin.data import Molecule
 
 from molmod import electronvolt, angstrom, amu
@@ -75,29 +77,29 @@ def load_molecule_vasp(contcar, outcar_freq, outcar_energy=None, energy=None, mu
             if line.startswith('  FREE ENERGIE OF THE ION-ELECTRON SYSTEM (eV)'):
                 break
         # Skip three lines and read energy
-        f.next()
-        f.next()
-        f.next()
-        return float(f.next().split()[3])*electronvolt
+        next(f)
+        next(f)
+        next(f)
+        return float(next(f).split()[3])*electronvolt
 
     # Read atomic symbols, coordinates and cell vectors from CONTCAR
     symbols = []
     coordinates = []
     with open(contcar) as f:
         # Skip title.
-        f.next().strip()
+        next(f).strip()
 
         # Read scale for rvecs.
-        rvec_scale = float(f.next())
+        rvec_scale = float(next(f))
         # Read rvecs. VASP uses one row per cell vector.
-        rvecs = np.fromstring(f.next()+f.next()+f.next(), sep=' ').reshape(3, 3)
+        rvecs = np.fromstring(next(f)+next(f)+next(f), sep=' ').reshape(3, 3)
         rvecs *= rvec_scale*angstrom
         unit_cell = UnitCell(rvecs)
 
         # Read symbols
-        unique_symbols = f.next().split()
+        unique_symbols = next(f).split()
         # Read atom counts per symbol
-        symbol_counts = [int(w) for w in f.next().split()]
+        symbol_counts = [int(w) for w in next(f).split()]
         assert len(symbol_counts) == len(unique_symbols)
         natom = sum(symbol_counts)
         # Construct array with atomic numbers.
@@ -108,13 +110,13 @@ def load_molecule_vasp(contcar, outcar_freq, outcar_energy=None, energy=None, mu
         numbers = np.array(numbers)
 
         # Check next line
-        while f.next() != 'Direct\n':
+        while next(f) != 'Direct\n':
             continue
 
         # Load fractional coordinates
         fractional = np.zeros((natom, 3), float)
         for iatom in range(natom):
-            words = f.next().split()
+            words = next(f).split()
             fractional[iatom, 0] = float(words[0])
             fractional[iatom, 1] = float(words[1])
             fractional[iatom, 2] = float(words[2])
@@ -131,7 +133,7 @@ def load_molecule_vasp(contcar, outcar_freq, outcar_energy=None, energy=None, mu
         number = None
         masses = np.zeros(natom, float)
         while True:
-            line = f.next()
+            line = next(f)
             if line.startswith('   VRHFIN ='):
                 symbol = line[11:line.find(':')].strip()
                 number = periodic[symbol].number
@@ -147,11 +149,11 @@ def load_molecule_vasp(contcar, outcar_freq, outcar_energy=None, energy=None, mu
             if line.startswith(' POSITION'):
                 break
         # Skip one line and read the gradient
-        f.next()
+        next(f)
         gradient = np.zeros((natom, 3), float)
         gunit = electronvolt/angstrom
         for iatom in range(natom):
-            words = f.next().split()
+            words = next(f).split()
             gradient[iatom, 0] = -float(words[3])*gunit
             gradient[iatom, 1] = -float(words[4])*gunit
             gradient[iatom, 2] = -float(words[5])*gunit
@@ -164,10 +166,10 @@ def load_molecule_vasp(contcar, outcar_freq, outcar_energy=None, energy=None, mu
             if line.startswith(' SECOND DERIVATIVES (NOT SYMMETRIZED)'):  break
 
         # Skip one line.
-        f.next()
+        next(f)
 
         # Load free atoms (not fixed in space).
-        keys = f.next().split()
+        keys = next(f).split()
         nfree_dof = len(keys)
         indices_free = [3*int(key[:-1])+{'X': 0, 'Y': 1, 'Z': 2}[key[-1]]-3 for key in keys]
         assert nfree_dof % 3 == 0
@@ -176,7 +178,7 @@ def load_molecule_vasp(contcar, outcar_freq, outcar_energy=None, energy=None, mu
         hunit = electronvolt/angstrom**2
         hessian = np.zeros((3*natom, 3*natom), float)
         for ifree0 in range(nfree_dof):
-            line = f.next()
+            line = next(f)
             irow = indices_free[ifree0]
             # skip first col
             words = line.split()[1:]
@@ -205,37 +207,35 @@ def load_fixed_vasp(filename):
     the Hessian, or, in other words, which were fixed.
     """
     # Read data from out-VASP-file OUTCAR
-    f = open(filename)
+    with open(filename) as f:
+        # number of atoms (N)
+        for line in f:
+            if line.strip().startswith("Dimension of arrays:"):  break
+        next(f)
+        for line in f:
+            words = line.split()
+            N = int(words[-1])
+            break
 
-    # number of atoms (N)
-    for line in f:
-        if line.strip().startswith("Dimension of arrays:"):  break
-    f.next()
-    for line in f:
-        words = line.split()
-        N = int(words[-1])
-        break
-
-    # hessian, not symmetrized, useful to find indices of Hessian elements
-    for line in f:
-        if line.strip().startswith("SECOND DERIVATIVES (NOT SYMMETRIZED)"):  break
-    f.next()
-    for line in f:
-        Nfree = len(line.split())/3   # nb of non-fixed atoms
-        break
-    # find the non-fixed atoms
-    atoms_free = []
-    row = 0
-    mu = 0
-    for line in f:
-        if mu==0:
-            atom = int(line.split()[0][:-1])
-            atoms_free.append(atom-1)
-        mu+=1
-        row+=1
-        if mu >= 3: mu=0
-        if row >= 3*Nfree: break
-    f.close()
+        # hessian, not symmetrized, useful to find indices of Hessian elements
+        for line in f:
+            if line.strip().startswith("SECOND DERIVATIVES (NOT SYMMETRIZED)"):  break
+        next(f)
+        for line in f:
+            Nfree = len(line.split()) // 3   # nb of non-fixed atoms
+            break
+        # find the non-fixed atoms
+        atoms_free = []
+        row = 0
+        mu = 0
+        for line in f:
+            if mu==0:
+                atom = int(line.split()[0][:-1])
+                atoms_free.append(atom-1)
+            mu+=1
+            row+=1
+            if mu >= 3: mu=0
+            if row >= 3*Nfree: break
 
     fixed_atoms = [at for at in range(N) if at not in atoms_free]
     return np.array(fixed_atoms)

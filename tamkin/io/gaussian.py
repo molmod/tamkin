@@ -34,6 +34,8 @@
 # --
 
 
+from __future__ import print_function, division
+
 from tamkin.data import Molecule, RotScan
 
 from molmod.io import FCHKFile
@@ -57,42 +59,41 @@ def load_fixed_g03com(filename):
        A fixed atom is recognized by the '-1' after the atom symbol in the
        molecule specification. The '-1' is the second word in the line.
     """
-    f = open(filename)
-    for line in f:
-        # iterate until we reach the title line
-        line = line.strip()
-        if not (len(line)==0 or line[0] == "#" or line[0] == "%"):
-            break
-    for line in f:
-        # skip lines until charge/multiplicty is reached
-        words = line.split()
-        if len(words) == 2:
-            try:
-                int(words[0])
-                int(words[1])
+    with open(filename) as f:
+        for line in f:
+            # iterate until we reach the title line
+            line = line.strip()
+            if not (len(line)==0 or line[0] == "#" or line[0] == "%"):
                 break
-            except ValueError:
-                pass
-    counter = 0
-    fixed_atoms = []
-    for line in f:
-        # go trough the list of atoms and store the fixed ones.
-        words = line.split()
-        if len(words) == 0:
-            break
-        if words[1] == "-1":
-            fixed_atoms.append(counter)
-        counter += 1
+        for line in f:
+            # skip lines until charge/multiplicty is reached
+            words = line.split()
+            if len(words) == 2:
+                try:
+                    int(words[0])
+                    int(words[1])
+                    break
+                except ValueError:
+                    pass
+        counter = 0
+        fixed_atoms = []
+        for line in f:
+            # go trough the list of atoms and store the fixed ones.
+            words = line.split()
+            if len(words) == 0:
+                break
+            if words[1] == "-1":
+                fixed_atoms.append(counter)
+            counter += 1
     return fixed_atoms
 
 
 def iter_floats_file(fn):
-    f = open(fn)
-    for line in f:
-        words = line.split()
-        for w in words:
-            yield float(w.replace('D', 'E'))
-    f.close()
+    with open(fn) as f:
+        for line in f:
+            words = line.split()
+            for w in words:
+                yield float(w.replace('D', 'E'))
 
 
 def load_molecule_g03fchk(fn_freq, fn_ener=None, fn_vdw=None, energy=None, fn_punch=None):
@@ -146,10 +147,10 @@ def load_molecule_g03fchk(fn_freq, fn_ener=None, fn_vdw=None, energy=None, fn_pu
         iterator = iter_floats_file(fn_punch)
         for i in range(natom):
             for j in range(3):
-                gradient[i,j] = iterator.next()
+                gradient[i,j] = next(iterator)
         for i in range(3*natom):
             for j in range(i+1):
-                v = iterator.next()
+                v = next(iterator)
                 hessian[i,j] = v
                 hessian[j,i] = v
 
@@ -283,7 +284,7 @@ def load_rotscan_g03log(fn_log, top_indexes=None):
                 last_coordinates = []
                 ## skip four lines
                 for i in range(4):
-                    f.next()
+                    next(f)
                 # read atoms
                 for line in f:
                     if line.startswith(" -----"):

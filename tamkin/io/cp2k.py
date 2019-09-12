@@ -34,6 +34,8 @@
 # --
 
 
+from __future__ import print_function, division
+
 from tamkin.data import Molecule
 
 from molmod.periodic import periodic
@@ -109,7 +111,7 @@ def load_molecule_cp2k(fn_sp, fn_freq, multiplicity=1, is_periodic=True):
             words = line.split()
             try:
                 tmp.append([float(words[offset]), float(words[offset+1]), float(words[offset+2])])
-            except StandardError:
+            except ValueError:
                 break
         return -np.array(tmp) # force to gradient
 
@@ -141,7 +143,7 @@ def load_molecule_cp2k(fn_sp, fn_freq, multiplicity=1, is_periodic=True):
             if line.startswith(" CELL"):
                 break
         for axis in range(3):
-            line = f.next()
+            line = next(f)
             vectors[:,axis] = np.array( [float(line[29:39]), float(line[39:49]), float(line[49:59])] )
         unit_cell = UnitCell(vectors*angstrom)
 
@@ -153,10 +155,10 @@ def load_molecule_cp2k(fn_sp, fn_freq, multiplicity=1, is_periodic=True):
             i2 = 0
             while i2 < free_size:
                 num_cols = min(5, free_size - i2)
-                f.next() # skip two lines
-                f.next()
+                next(f) # skip two lines
+                next(f)
                 for j in range(free_size):
-                    line = f.next()
+                    line = next(f)
                     words = line.split()
                     for i1 in range(num_cols):
                         hessian[free_indices[i2 + i1], free_indices[j]] = \
@@ -236,5 +238,5 @@ def load_fixed_cp2k(fn_freq):
         raise IOError('Could not read number of atoms from CP2K output.')
     if len(free_indices) == 0:
         raise IOError('Could not find the free atoms.')
-    free_atoms = np.array(free_indices[::3])/3
+    free_atoms = np.array(free_indices[::3]) // 3
     return np.array([i for i in range(natom) if i not in free_atoms])

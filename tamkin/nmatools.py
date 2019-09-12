@@ -34,7 +34,8 @@
 # --
 """Tools for further investigation of a normal mode analysis"""
 
-from __future__ import print_function
+from __future__ import print_function, division
+
 from tamkin.data import Molecule
 from tamkin.nma import NMA
 from tamkin.io.charmm import load_peptide_info_charmm
@@ -133,29 +134,24 @@ def write_overlap(freqs1, freqs2, overlap, filename="overlap.csv", unit="au"):
     #freqs2 = freqs2 / invcm
 
     to_append="w+"   # not append, just overwrite
-    f = open(filename,to_append)
+    with open(filename,to_append) as f:
+        [rows,cols] = overlap.shape
+        if unit is "au":
+            # 1. row of freqs2
+            print(";"+";".join(str(g) for g in freqs2), file=f)  # this is the same
 
-    [rows,cols] = overlap.shape
+            # 2. start each row with freq of freqs1 and continue with overlaps
+            for r in range(rows):
+                print(str(freqs1[r])+";"+";".join(str(g) for g in overlap[r,:].tolist()), file=f)
+        elif unit is "cm1":
+            # 1. row of freqs2
+            print(";"+";".join(str(g*centimeter/lightspeed) for g in freqs2), file=f)  # this is the same
 
-    if unit is "au":
-        # 1. row of freqs2
-        print(";"+";".join(str(g) for g in freqs2), file=f)  # this is the same
-
-        # 2. start each row with freq of freqs1 and continue with overlaps
-        for r in range(rows):
-            print(str(freqs1[r])+";"+";".join(str(g) for g in overlap[r,:].tolist()), file=f)
-
-    elif unit is "cm1":
-        # 1. row of freqs2
-        print(";"+";".join(str(g*centimeter/lightspeed) for g in freqs2), file=f)  # this is the same
-
-        # 2. start each row with freq of freqs1 and continue with overlaps
-        for r in range(rows):
-            print(str(freqs1[r]*centimeter/lightspeed)+";"+";".join(str(g) for g in overlap[r,:].tolist()), file=f)
-
-    else:
-        raise NotImplementedError("this unit is not implemented/recognized")
-    f.close()
+            # 2. start each row with freq of freqs1 and continue with overlaps
+            for r in range(rows):
+                print(str(freqs1[r]*centimeter/lightspeed)+";"+";".join(str(g) for g in overlap[r,:].tolist()), file=f)
+        else:
+            raise NotImplementedError("this unit is not implemented/recognized")
 
 
 def compute_delta(coor1, coor2, masses=None, normalize=False):
@@ -252,12 +248,12 @@ def _get_pept_linked(N, calpha, proline):
     """
     # PEPT bonds = calpha + CONH + calpha = 6 atoms
     pept = []
-    for i in range(1,len(calpha)):
+    for i in range(1, len(calpha)):
         if calpha[i] in proline:
-            pept.append( [calpha[i-1]] + range(calpha[i]-6,calpha[i]+1) )
+            pept.append( [calpha[i-1]] + list(range(calpha[i]-6,calpha[i]+1)) )
             #print "proline found!", calpha[i]
         else:
-            pept.append( [calpha[i-1]] + range(calpha[i]-4,calpha[i]+1) )
+            pept.append( [calpha[i-1]] + list(range(calpha[i]-4,calpha[i]+1)) )
     return pept
 
 
@@ -271,40 +267,40 @@ def _calc_blocks_RTB(blocksize, N, calpha, proline, carbon, oxygen, nitrogen):
        one or more residues per block.
     """
     pept = []
-    k = blocksize               # number of residues per block
-    n = len(calpha)/blocksize   # number of complete RTB-blocks
+    k = blocksize                  # number of residues per block
+    n = len(calpha) // blocksize   # number of complete RTB-blocks
 
     # do for first block : ... (calpha,R) x size - CO
     if calpha[k-1] > 1:
         if calpha[k-1] in proline:
-            pept.append(range(1,calpha[k-1]-4))
+            pept.append(list(range(1,calpha[k-1]-4)))
         else:
-            pept.append(range(1,calpha[k-1]-2))
+            pept.append(list(range(1,calpha[k-1]-2)))
 
     # for next blocks :  (N - calpha,R - CO) x size
-    for i in range(1,n):   # do n-1 times
+    for i in range(1, n):   # do n-1 times
         # from first N till next N
         if calpha[i*k-1] in proline:
             if calpha[(i+1)*k-1] in proline:
-                pept.append(range(calpha[i*k-1]-4,calpha[(i+1)*k-1]-4))
+                pept.append(list(range(calpha[i*k-1]-4,calpha[(i+1)*k-1]-4)))
                 #print "(side chain) proline found! (1,2)", calpha[i*k-1],calpha[(i+1)*k-1]
             else:
-                pept.append(range(calpha[i*k-1]-4,calpha[(i+1)*k-1]-2))
+                pept.append(list(range(calpha[i*k-1]-4,calpha[(i+1)*k-1]-2)))
                 #print "(side chain) proline found! (1)", calpha[i*k-1]
         else:
             if calpha[(i+1)*k-1] in proline:
-                pept.append(range(calpha[i*k-1]-2,calpha[(i+1)*k-1]-4))
+                pept.append(list(range(calpha[i*k-1]-2,calpha[(i+1)*k-1]-4)))
                 #print "(side chain) proline found! (2)", calpha[(i+1)*k-1]
             else:
-                pept.append(range(calpha[i*k-1]-2,calpha[(i+1)*k-1]-2))
+                pept.append(list(range(calpha[i*k-1]-2,calpha[(i+1)*k-1]-2)))
 
     # for last block : N - calpha,R
     if n*k-1 < len(calpha):
         if calpha[n*k-1] in proline:
-            pept.append(range(calpha[n*k-1]-4,N+1))
+            pept.append(list(range(calpha[n*k-1]-4,N+1)))
             #print "(side chain) proline found! (1)", calpha[n*k-1]
         else:
-            pept.append(range(calpha[n*k-1]-2,N+1))
+            pept.append(list(range(calpha[n*k-1]-2,N+1)))
     return pept
 
 
@@ -320,31 +316,31 @@ def _calc_blocks_dihedral(N, calpha, proline, carbon, oxygen, nitrogen):
 
     # start with an ending :   ... calpha_0,R - C
     if calpha[1] in proline:
-        res.append( range(1,calpha[1]-5) )
+        res.append( list(range(1, calpha[1]-5)) )
         #print "proline found!", calpha[1]
     else:
-        res.append( range(1,calpha[1]-3) )
+        res.append( list(range(1, calpha[1]-3)) )
     # continue with normal residues : N - calpha,R - C
-    for i in range(1,len(calpha)-1):
+    for i in range(1, len(calpha)-1):
         if calpha[i] in proline:
             if calpha[i+1] in proline:
-                res.append( [calpha[i]-4]+range(calpha[i],calpha[i+1]-5) )
+                res.append( [calpha[i]-4] + list(range(calpha[i],calpha[i+1]-5)) )
                 #print "(side chain) proline found! (1,2)", calpha[i],calpha[i+1]
             else:
-                res.append( [calpha[i]-4]+range(calpha[i],calpha[i+1]-3) )
+                res.append( [calpha[i]-4] + list(range(calpha[i],calpha[i+1]-3)) )
                 #print "(side chain) proline found! (1)", calpha[i]
         else:
             if calpha[i+1] in proline:
-                res.append( [calpha[i]-2]+range(calpha[i],calpha[i+1]-5) )
+                res.append( [calpha[i]-2] + list(range(calpha[i],calpha[i+1]-5)) )
                 #print "(side chain) proline found! (2)", calpha[i+1]
             else:
-                res.append( [calpha[i]-2]+range(calpha[i],calpha[i+1]-3) )
+                res.append( [calpha[i]-2] + list(range(calpha[i],calpha[i+1]-3)) )
     # finish with another ending : N - calpha,R
     if calpha[-1] in proline:
-        res.append([calpha[-1]-4]+range(calpha[-1],N+1))
+        res.append([calpha[-1]-4] + list(range(calpha[-1],N+1)))
         #print "(side chain) proline found!", calpha[-1]
     else:
-        res.append([calpha[-1]-2]+range(calpha[-1],N+1))
+        res.append([calpha[-1]-2] + list(range(calpha[-1],N+1)))
     return res + pept
 
 
@@ -359,22 +355,22 @@ def _calc_blocks_RHbending(N, calpha, proline, carbon, oxygen, nitrogen):
 
     # start with an ending
     if calpha[1] in proline:
-        res.append( range(1,calpha[1]-6) )
+        res.append( list(range(1,calpha[1]-6)) )
         #print "(side chain) proline found!", calpha[1]
     else:
-        res.append( range(1,calpha[1]-4) )
+        res.append( list(range(1,calpha[1]-4)) )
     # continue with normal residues
     for i in range(1,len(calpha)-1):  # calpha and HA
         CH.append( [calpha[i],calpha[i]+1] )
     for i in range(1,len(calpha)-1):  # calpha and rest of residue
         if calpha[i+1] in proline:
-            res.append( [calpha[i]]+range(calpha[i]+2,calpha[i+1]-6) )
+            res.append( [calpha[i]]+list(range(calpha[i]+2,calpha[i+1]-6)) )
             #print "(side chain) proline found!", calpha[i+1]
         else:
-            res.append( [calpha[i]]+range(calpha[i]+2,calpha[i+1]-4) )
+            res.append( [calpha[i]]+list(range(calpha[i]+2,calpha[i+1]-4)) )
     # finish with another ending
     CH.append([calpha[-1],calpha[-1]+1]) # calpha and HA
-    res.append([calpha[-1]]+range(calpha[-1]+2,N+1)) # calpha and rest of residue
+    res.append([calpha[-1]]+list(range(calpha[-1]+2,N+1))) # calpha and rest of residue
 
     return res + pept + CH
 
@@ -390,17 +386,17 @@ def _calc_blocks_normal(N, calpha, proline, carbon, oxygen, nitrogen):
 
     # start with an ending
     if calpha[1] in proline:
-        res.append( range(1,calpha[1]-6) )
+        res.append( list(range(1,calpha[1]-6)) )
         #print "(side chain) proline found!", calpha[1]
     else:
-        res.append( range(1,calpha[1]-4) )
+        res.append( list(range(1,calpha[1]-4)) )
     # continue with normal residues
     for i in range(1,len(calpha)-1):
         if calpha[i+1] in proline:
-            res.append( range(calpha[i],calpha[i+1]-6) )
+            res.append( list(range(calpha[i],calpha[i+1]-6)) )
             #print "(side chain) proline found!", calpha[i+1]
         else:
-            res.append( range(calpha[i],calpha[i+1]-4) )
+            res.append( list(range(calpha[i],calpha[i+1]-4)) )
     # finish with another ending
     res.append(range(calpha[-1],N+1))
 
@@ -454,7 +450,7 @@ def plot_spectrum_lines(filename, all_freqs, low=None, high=None, title=None):
     pt.clf()
     for i, freqs in enumerate(all_freqs):
         for freq in freqs:
-            if (freq>low or low is None) and (freq<high or high is None):
+            if (low is None or freq > low) and (high is None or freq < high):
                 pt.plot([i+0.75,i+1.25],[freq/invcm,freq/invcm],"k-")
     pt.xticks(range(1,len(all_freqs)+1))
     if low is not None:

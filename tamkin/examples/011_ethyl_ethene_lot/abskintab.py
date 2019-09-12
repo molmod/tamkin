@@ -68,54 +68,54 @@ def overview(template, title, fn_img, rows):
                 ln10ratio = np.log10(ks[j]/experimental_k[j])
                 color = get_error_color(ln10ratio)
                 rows[counter].append("<td style='background-color:%s'>%.1e</td>" % (color, ks[j]))
-        except IOError, StopIteration:
+        except (IOError, StopIteration):
             rows[counter].append("<td>&nbsp</td><td>&nbsp</td><td>&nbsp</td><td>&nbsp</td>")
         counter += 1
 
 
 
 
-f = open("abskintab.html", "w")
-print(html.header % "KIN Overview", file=f)
+with open("abskintab.html", "w") as f:
+    print(html.header % "KIN Overview", file=f)
 
-for do_rotor in False, True:
-    ir_str = {True: "ir", False: "ho"}[do_rotor]
-    ir_info = {
-        True: "internal rotor",
-        False: "harmonic oscillator",
-    }[do_rotor]
-    for do_counterpoise in False, True:
-        cp_str = {True: "cps", False: "bss"}[do_counterpoise]
-        cp_info = {
-            True: "with counterpoise correction",
-            False: "without counterpoise correction",
-        }[do_counterpoise]
+    for do_rotor in False, True:
+        ir_str = {True: "ir", False: "ho"}[do_rotor]
+        ir_info = {
+            True: "internal rotor",
+            False: "harmonic oscillator",
+        }[do_rotor]
+        for do_counterpoise in False, True:
+            cp_str = {True: "cps", False: "bss"}[do_counterpoise]
+            cp_info = {
+                True: "with counterpoise correction",
+                False: "without counterpoise correction",
+            }[do_counterpoise]
 
-        rows = []
+            rows = []
 
-        for ts_conformer in "Gauche", "Trans":
-            overview(
-                "%%s__6-31gd/%s_%s_summary_%s.txt" % (ir_str, cp_str, ts_conformer.lower()),
-                "%s, %s, %s, Consistent, 6-31G(d)" % (ir_str.upper(), cp_str.upper(), ts_conformer),
-                "kin_%s_%s_%s_consistent_6-31gd_%%s.pdf" % (ir_str, cp_str, ts_conformer.lower()),
-                rows,
-            )
-        for ts_conformer in "Gauche", "Trans":
-            overview(
-                "%%s__6-311+g3df2p/%s_%s_summary_%s.txt" % (ir_str, cp_str, ts_conformer.lower()),
-                "%s, %s, %s, Consistent, 6-311+G(3df,2p)" % (ir_str.upper(), cp_str.upper(), ts_conformer),
-                "kin_%s_%s_%s_consistent_6-311+g3df2p_%%s.pdf" % (ir_str, cp_str, ts_conformer.lower()),
-                rows,
-            )
-        for ts_conformer in "Gauche", "Trans":
-            overview(
-                "GEO__b3lyp__6-31gd__ENERGY__%%s__6-311+g3df2p/%s_%s_summary_%s.txt" % (ir_str, cp_str, ts_conformer.lower()),
-                "%s, %s, %s, GEO=B3LYP/6-31G(d), 6-311+G(3df,2p)" % (ir_str.upper(), cp_str.upper(), ts_conformer),
-                "kin_%s_%s_%s_geo_6-311+g3df2p_%%s.pdf" % (ir_str, cp_str, ts_conformer.lower()),
-                rows,
-            )
+            for ts_conformer in "Gauche", "Trans":
+                overview(
+                    "%%s__6-31gd/%s_%s_summary_%s.txt" % (ir_str, cp_str, ts_conformer.lower()),
+                    "%s, %s, %s, Consistent, 6-31G(d)" % (ir_str.upper(), cp_str.upper(), ts_conformer),
+                    "kin_%s_%s_%s_consistent_6-31gd_%%s.pdf" % (ir_str, cp_str, ts_conformer.lower()),
+                    rows,
+                )
+            for ts_conformer in "Gauche", "Trans":
+                overview(
+                    "%%s__6-311+g3df2p/%s_%s_summary_%s.txt" % (ir_str, cp_str, ts_conformer.lower()),
+                    "%s, %s, %s, Consistent, 6-311+G(3df,2p)" % (ir_str.upper(), cp_str.upper(), ts_conformer),
+                    "kin_%s_%s_%s_consistent_6-311+g3df2p_%%s.pdf" % (ir_str, cp_str, ts_conformer.lower()),
+                    rows,
+                )
+            for ts_conformer in "Gauche", "Trans":
+                overview(
+                    "GEO__b3lyp__6-31gd__ENERGY__%%s__6-311+g3df2p/%s_%s_summary_%s.txt" % (ir_str, cp_str, ts_conformer.lower()),
+                    "%s, %s, %s, GEO=B3LYP/6-31G(d), 6-311+G(3df,2p)" % (ir_str.upper(), cp_str.upper(), ts_conformer),
+                    "kin_%s_%s_%s_geo_6-311+g3df2p_%%s.pdf" % (ir_str, cp_str, ts_conformer.lower()),
+                    rows,
+                )
 
-        print("<p>Theoretical rate constants (%s, %s)</p>" % (ir_info, cp_info), file=f)
-        html.print_table(f, rows)
+            print("<p>Theoretical rate constants (%s, %s)</p>" % (ir_info, cp_info), file=f)
+            html.print_table(f, rows)
 
-print(html.footer, file=f)
+    print(html.footer, file=f)

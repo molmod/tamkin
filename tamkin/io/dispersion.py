@@ -35,6 +35,9 @@
 '''Functions to load the dispersion correction from file'''
 
 
+from __future__ import print_function, division
+
+
 __all__ = ['load_dftd3', 'load_dftd_orca']
 
 

@@ -33,6 +33,8 @@
 #
 # --
 
+from __future__ import print_function, division
+
 from tamkin.data import Molecule
 
 from molmod import angstrom, amu, calorie, avogadro
@@ -70,88 +72,86 @@ def load_molecule_qchem(qchemfile, hessfile = None, multiplicity=1, is_periodic 
        MBH and PHVA_MBH).
     """
     # TODO fill in keyword for printing hessian
-    f = open(qchemfile)
-    # get coords
-    for line in f:
-        if line.strip().startswith("Standard Nuclear Orientation (Angstroms)"):
-            break
-    f.next()
-    f.next()
-    positions = []
-    symbols = []
-    for line in f:
-        if line.strip().startswith("----"): break
-        words = line.split()
-        symbols.append(words[1])
-        coor = [float(words[2]),float(words[3]),float(words[4])]
-        positions.append(coor)
-    positions = np.array(positions)*angstrom
-    N = len(positions)    #nb of atoms
+    with open(qchemfile) as f:
+        # get coords
+        for line in f:
+            if line.strip().startswith("Standard Nuclear Orientation (Angstroms)"):
+                break
+        next(f)
+        next(f)
+        positions = []
+        symbols = []
+        for line in f:
+            if line.strip().startswith("----"): break
+            words = line.split()
+            symbols.append(words[1])
+            coor = [float(words[2]),float(words[3]),float(words[4])]
+            positions.append(coor)
+        positions = np.array(positions)*angstrom
+        N = len(positions)    #nb of atoms
 
-    numbers = np.zeros(N,int)
-    for i, symbol in enumerate(symbols):
-        numbers[i] = periodic[symbol].number
-    #masses = np.zeros(N,float)
-    #for i, symbol in enumerate(symbols):
-    #    masses[i] = periodic[symbol].mass
+        numbers = np.zeros(N,int)
+        for i, symbol in enumerate(symbols):
+            numbers[i] = periodic[symbol].number
+        #masses = np.zeros(N,float)
+        #for i, symbol in enumerate(symbols):
+        #    masses[i] = periodic[symbol].mass
 
-    # grep the SCF energy
-    energy = None
-    for line in f:
-        if line.strip().startswith("Cycle       Energy         DIIS Error"):
-            break
-    for line in f:
-        if line.strip().endswith("met"):
-            energy = float(line.split()[1]) # in hartree
-            break
+        # grep the SCF energy
+        energy = None
+        for line in f:
+            if line.strip().startswith("Cycle       Energy         DIIS Error"):
+                break
+        for line in f:
+            if line.strip().endswith("met"):
+                energy = float(line.split()[1]) # in hartree
+                break
 
-    # get Hessian
-    hessian = np.zeros((3*N,3*N),float)
-    if hessfile is None:
-      for line in f:
-          if line.strip().startswith("Hessian of the SCF Energy") or line.strip().startswith("Final Hessian"):
-              break
-      nb = int(np.ceil(N*3/6))
-      for i in range(nb):
-          f.next()
-          row = 0
+        # get Hessian
+        hessian = np.zeros((3*N,3*N),float)
+        if hessfile is None:
           for line in f:
-              words = line.split()
-              hessian[row, 6*i:6*(i+1)] = np.array(sum([[float(word)] for word in words[1:]],[])) #/ angstrom**2
-              row += 1
-              if row >= 3*N : break
+              if line.strip().startswith("Hessian of the SCF Energy") or line.strip().startswith("Final Hessian"):
+                  break
+          nb = int(np.ceil(N/2))
+          for i in range(nb):
+              next(f)
+              row = 0
+              for line in f:
+                  words = line.split()
+                  hessian[row, 6*i:6*(i+1)] = np.array(sum([[float(word)] for word in words[1:]],[])) #/ angstrom**2
+                  row += 1
+                  if row >= 3*N : break
 
-    # get masses
-    masses = np.zeros(N,float)
-    for line in f:
-        if line.strip().startswith("Zero point vibrational"):
-            break
-    f.next()
-    count=0
-    for line in f:
-        masses[count] = float(line.split()[-1])*amu
-        count += 1
-        if count >= N : break
+        # get masses
+        masses = np.zeros(N,float)
+        for line in f:
+            if line.strip().startswith("Zero point vibrational"):
+                break
+        next(f)
+        count=0
+        for line in f:
+            masses[count] = float(line.split()[-1])*amu
+            count += 1
+            if count >= N : break
 
-    # get Symm Nb
-    for line in f:
-        if line.strip().startswith("Rotational Symmetry Number is"):
-            break
-    symmetry_number = int(line.split()[-1])
-    f.close()
+        # get Symm Nb
+        for line in f:
+            if line.strip().startswith("Rotational Symmetry Number is"):
+                break
+        symmetry_number = int(line.split()[-1])
 
     # or get Hessian from other file
     if hessfile is not None:
-      f = open(hessfile)
-      row = 0
-      col = 0
-      for line in f:
-          hessian[row,col] = float(line.split()[0]) *1000*calorie/avogadro /angstrom**2
-          col += 1
-          if col >= 3*N:
-              row += 1
-              col = row
-      f.close()
+      with open(hessfile) as f:
+          row = 0
+          col = 0
+          for line in f:
+              hessian[row,col] = float(line.split()[0]) *1000*calorie/avogadro /angstrom**2
+              col += 1
+              if col >= 3*N:
+                  row += 1
+                  col = row
       for i in range(len(hessian)):
           for j in range(0,i):
               hessian[i,j] = hessian[j,i]

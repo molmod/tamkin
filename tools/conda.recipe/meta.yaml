@@ -8,7 +8,7 @@ source:
 build:
   number: 0
   string: py{{ CONDA_PY }}_1
-  script: python setup.py install --single-version-externally-managed --record=record.txt
+  script: {{ PYTHON }} setup.py install --single-version-externally-managed --record=record.txt
   entry_points:
     - tamkin-driver = tamkin.driver:main
 
@@ -16,13 +16,12 @@ requirements:
   host:
     - python
     - setuptools
-    - numpy >=1.0
   run:
     - python
-    - {{ pin_compatible('numpy') }}
-    - scipy
-    - matplotlib
-    - molmod
+    - numpy >=1.0
+    - scipy >=0.17.1
+    - matplotlib >1.1
+    - molmod >=1.4.5
 
 test:
   imports:

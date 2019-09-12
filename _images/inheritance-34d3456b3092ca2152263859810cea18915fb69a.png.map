@@ -1,0 +1,17 @@
+<map id="inheritance98b00c76fa" name="inheritance98b00c76fa">
+<area shape="rect" id="node1" href="#tamkin.nma.AtomDivision" target="_top" title="A division of atoms into transformed, free and fixed." alt="" coords="29,5,140,31"/>
+<area shape="rect" id="node2" href="#tamkin.nma.Blocks" target="_top" title="Object that extracts all information from a block choice." alt="" coords="211,5,283,31"/>
+<area shape="rect" id="node3" href="#tamkin.nma.Constrain" target="_top" title="Perform a normal mode analysis where part of the internal coordinates are" alt="" coords="5,79,89,104"/>
+<area shape="rect" id="node4" href="#tamkin.nma.Treatment" target="_top" title="An abstract base class for the NMA treatments. Derived classes must" alt="" coords="331,5,419,31"/>
+<area shape="rect" id="node5" href="#tamkin.nma.ConstrainExt" target="_top" title="Almost a full vibrational analysis, but with constrained external degrees" alt="" coords="113,79,219,104"/>
+<area shape="rect" id="node6" href="#tamkin.nma.Full" target="_top" title="A full vibrational analysis, without transforming to a new set of" alt="" coords="243,79,315,104"/>
+<area shape="rect" id="node7" href="#tamkin.nma.MBH" target="_top" title="The Mobile Block Hessian approach." alt="" coords="339,79,411,104"/>
+<area shape="rect" id="node11" href="#tamkin.nma.PHVA" target="_top" title="Perform the partial Hessian vibrational analysis." alt="" coords="435,79,507,104"/>
+<area shape="rect" id="node14" href="#tamkin.nma.VSA" target="_top" title="Perform a Vibrational Subsystem Analysis." alt="" coords="531,79,603,104"/>
+<area shape="rect" id="node15" href="#tamkin.nma.VSANoMass" target="_top" title="Perform a Vibrational Subsystem Analysis, without taking into account the" alt="" coords="627,79,726,104"/>
+<area shape="rect" id="node8" href="#tamkin.nma.MBHConstrainExt" target="_top" title="The Mobile Block Hessian approach with the Eckart constraints imposed" alt="" coords="239,152,373,177"/>
+<area shape="rect" id="node12" href="#tamkin.nma.PHVA_MBH" target="_top" title="The Mobile Block Hessian combined with the Partial Hessian Vibrational Analysis." alt="" coords="397,152,492,177"/>
+<area shape="rect" id="node9" href="#tamkin.nma.MassMatrix" target="_top" title="A clever mass matrix object. It is sparse when atom coordinates remain" alt="" coords="445,5,541,31"/>
+<area shape="rect" id="node10" href="#tamkin.nma.NMA" target="_top" title="A generic normal mode analysis class." alt="" coords="566,5,638,31"/>
+<area shape="rect" id="node13" href="#tamkin.nma.Transform" target="_top" title="A clever transformation object. It is sparse when atom coordinates remain" alt="" coords="663,5,749,31"/>
+</map>

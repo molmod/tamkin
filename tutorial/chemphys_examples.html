@@ -1,0 +1,1155 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>9. Chemical Physics – Basic TAMkin recipes &#8212; TAMkin 1.2.6 documentation</title>
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="10. Chemical Physics – Advanced TAMkin examples" href="chemphys_advanced.html" />
+    <link rel="prev" title="8. Chemical Physics – Working with TAMkin" href="chemphys_tamkin.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="chemphys_advanced.html" title="10. Chemical Physics – Advanced TAMkin examples"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="chemphys_tamkin.html" title="8. Chemical Physics – Working with TAMkin"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">TAMkin 1.2.6 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="chemical-physics-basic-tamkin-recipes">
+<h1>9. Chemical Physics – Basic TAMkin recipes<a class="headerlink" href="#chemical-physics-basic-tamkin-recipes" title="Permalink to this headline">¶</a></h1>
+<p>In this chapter, we discuss a few example scripts for TAMkin in detail. They
+can be used as a template for writing new scripts, which is much easier than
+starting from scratch. There are more examples in the <code class="docutils literal notranslate"><span class="pre">tamkin/examples/</span></code> directory
+than those discussed here. Assuming the TAMkin source is downloaded in a directory
+<code class="docutils literal notranslate"><span class="pre">~/code/</span></code>, you can find the examples on the following location:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">toon</span><span class="nd">@poony</span> <span class="o">~&gt;</span> <span class="n">cd</span> <span class="o">~/</span><span class="n">code</span><span class="o">/</span><span class="n">tamkin</span><span class="o">/</span><span class="n">tamkin</span><span class="o">/</span><span class="n">examples</span>
+<span class="n">toon</span><span class="nd">@poony</span> <span class="o">~/</span><span class="n">code</span><span class="o">/</span><span class="n">tamkin</span><span class="o">/</span><span class="n">tamkin</span><span class="o">/</span><span class="n">examples</span><span class="o">&gt;</span> <span class="n">ls</span>
+<span class="mi">001</span><span class="n">_ethane</span>
+<span class="mi">002</span><span class="n">_linear_co2</span>
+<span class="mi">003</span><span class="n">_pentane</span>
+<span class="mi">004</span><span class="n">_alkanes</span>
+<span class="mi">005</span><span class="n">_acrylamide_reaction</span>
+<span class="mi">006_5</span><span class="n">T_ethene_reaction</span>
+<span class="mi">007</span><span class="n">_mfi_propene_reaction</span>
+<span class="o">...</span>
+</pre></div>
+</div>
+<div class="section" id="thermodynamic-properties-of-a-molecule">
+<h2>9.1. Thermodynamic properties of a molecule<a class="headerlink" href="#thermodynamic-properties-of-a-molecule" title="Permalink to this headline">¶</a></h2>
+<p><strong>TODO</strong>: see <code class="docutils literal notranslate"><span class="pre">tamkin/examples/001_ethane</span></code> for now.</p>
+</div>
+<div class="section" id="conformational-equilibrium">
+<h2>9.2. Conformational Equilibrium<a class="headerlink" href="#conformational-equilibrium" title="Permalink to this headline">¶</a></h2>
+<p>We will study the thermodynamic equilibrium between the two butane conformers:
+trans and gauche. The balance is as follows:</p>
+<div class="math notranslate nohighlight">
+butane (trans,gas) $\leftrightharpoons$ butane (gauche,gas)</div><p>Both butane geometries are optimized using the B3LYP/6-31G(d) level of theory,
+and consequently frequency computations are carried out using Gaussian03. The
+formatted checkpoint files of the frequency jobs are <code class="docutils literal notranslate"><span class="pre">trans.fchk</span></code> and
+<code class="docutils literal notranslate"><span class="pre">gauche.fchk</span></code> respectively. This is a trivial example, but one must not forget
+to take into account the degeneracy of the gauche ground state, i.e. there as a
+left-handed and a right-handed gauche state.</p>
+<p>The script below computes the equilibrium constant of the conformational
+equilibrium constant at different temperatures: 300K, 400K, 500K and 600K. The
+multiplicity option of the electronic contribution is (ab)used to take into
+account the geometrical gauche multiplicity.</p>
+<div class="literal-block-wrapper docutils container" id="id4">
+<div class="code-block-caption"><span class="caption-text">tamkin/examples/020_butane_conformers/equilibrium.py</span><a class="headerlink" href="#id4" title="Permalink to this code">¶</a></div>
+<div class="highlight-default notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22</pre></div></td><td class="code"><div class="highlight"><pre><span></span>
+<span class="c1"># Import libraries.</span>
+<span class="kn">from</span> <span class="nn">tamkin</span> <span class="k">import</span> <span class="o">*</span>   <span class="c1"># The TAMkin library</span>
+
+<span class="c1"># Load the molecules (including the Hessian etc.)</span>
+<span class="n">mol_trans</span> <span class="o">=</span> <span class="n">load_molecule_g03fchk</span><span class="p">(</span><span class="s2">&quot;trans.fchk&quot;</span><span class="p">)</span>
+<span class="n">mol_gauche</span> <span class="o">=</span> <span class="n">load_molecule_g03fchk</span><span class="p">(</span><span class="s2">&quot;gauche.fchk&quot;</span><span class="p">)</span>
+<span class="c1"># Perform normal mode analysis on the molecules</span>
+<span class="n">nma_trans</span> <span class="o">=</span> <span class="n">NMA</span><span class="p">(</span><span class="n">mol_trans</span><span class="p">,</span> <span class="n">ConstrainExt</span><span class="p">())</span>
+<span class="n">nma_gauche</span> <span class="o">=</span> <span class="n">NMA</span><span class="p">(</span><span class="n">mol_gauche</span><span class="p">,</span> <span class="n">ConstrainExt</span><span class="p">())</span>
+<span class="c1"># Construct the partition functions.</span>
+<span class="n">pf_trans</span> <span class="o">=</span> <span class="n">PartFun</span><span class="p">(</span><span class="n">nma_trans</span><span class="p">,</span> <span class="p">[</span><span class="n">ExtTrans</span><span class="p">(),</span> <span class="n">ExtRot</span><span class="p">()])</span>
+<span class="n">pf_gauche</span> <span class="o">=</span> <span class="n">PartFun</span><span class="p">(</span><span class="n">nma_gauche</span><span class="p">,</span> <span class="p">[</span><span class="n">ExtTrans</span><span class="p">(),</span> <span class="n">ExtRot</span><span class="p">(),</span> <span class="n">Electronic</span><span class="p">(</span><span class="n">multiplicity</span><span class="o">=</span><span class="mi">2</span><span class="p">)])</span>
+<span class="c1"># Define a kinetic model for the chemical reaction.</span>
+<span class="n">tm</span> <span class="o">=</span> <span class="n">ThermodynamicModel</span><span class="p">([</span><span class="n">pf_trans</span><span class="p">],</span> <span class="p">[</span><span class="n">pf_gauche</span><span class="p">])</span>
+<span class="c1"># Write tables with the principal energies at 300K, 400K, 500K and 600K</span>
+<span class="n">tm</span><span class="o">.</span><span class="n">write_table</span><span class="p">(</span><span class="mi">300</span><span class="p">,</span> <span class="s2">&quot;equilibrium300.csv&quot;</span><span class="p">)</span>
+<span class="n">tm</span><span class="o">.</span><span class="n">write_table</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="s2">&quot;equilibrium400.csv&quot;</span><span class="p">)</span>
+<span class="n">tm</span><span class="o">.</span><span class="n">write_table</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="s2">&quot;equilibrium500.csv&quot;</span><span class="p">)</span>
+<span class="n">tm</span><span class="o">.</span><span class="n">write_table</span><span class="p">(</span><span class="mi">600</span><span class="p">,</span> <span class="s2">&quot;equilibrium600.csv&quot;</span><span class="p">)</span>
+<span class="c1"># Write an overview of the thermodynamic model to a file</span>
+<span class="n">tm</span><span class="o">.</span><span class="n">write_to_file</span><span class="p">(</span><span class="s2">&quot;equilibrium.txt&quot;</span><span class="p">)</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>The scripts writes several output files discussed in the subsections below.</p>
+<div class="section" id="csv-files-with-the-energetic-analysis">
+<h3>9.2.1. CSV Files with the energetic analysis<a class="headerlink" href="#csv-files-with-the-energetic-analysis" title="Permalink to this headline">¶</a></h3>
+<p>The file <code class="docutils literal notranslate"><span class="pre">conformation_energies300.csv</span></code> Contains the following information.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="25%" />
+<col width="25%" />
+<col width="25%" />
+<col width="25%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Temperature [K]</td>
+<td>300</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td><strong>Quantity</strong></td>
+<td><strong>Trans</strong></td>
+<td><strong>Gauche</strong></td>
+<td><strong>Linear combination</strong> (always in kJ/mol)</td>
+</tr>
+<tr class="row-even"><td>Signed stoichiometry</td>
+<td>-1</td>
+<td>1</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td><strong>Values in a.u.</strong></td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>Electronic energy</td>
+<td>-158.4581</td>
+<td>-158.4567</td>
+<td>3.5</td>
+</tr>
+<tr class="row-odd"><td>Zero-point energy</td>
+<td>-158.3252</td>
+<td>-158.3237</td>
+<td>3.8</td>
+</tr>
+<tr class="row-even"><td>Internal heat (300.00K)</td>
+<td>-158.3184</td>
+<td>-158.3170</td>
+<td>3.7</td>
+</tr>
+<tr class="row-odd"><td>Chemical potential (300.00K)</td>
+<td>-158.3528</td>
+<td>-158.3520</td>
+<td>2.0</td>
+</tr>
+<tr class="row-even"><td><strong>Corrections in kJ/mol</strong></td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>Zero-point energy</td>
+<td>348.8</td>
+<td>349.1</td>
+<td>0.3</td>
+</tr>
+<tr class="row-even"><td>Internal heat (300.00K)</td>
+<td>366.6</td>
+<td>366.7</td>
+<td>0.1</td>
+</tr>
+<tr class="row-odd"><td>Chemical potential (300.00K)</td>
+<td>276.5</td>
+<td>274.9</td>
+<td>-1.5</td>
+</tr>
+<tr class="row-even"><td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td><strong>Other quantities</strong></td>
+<td>Unit</td>
+<td>Value</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>Equilibrium constant</td>
+<td>1</td>
+<td>0.450</td>
+<td>&#160;</td>
+</tr>
+</tbody>
+</table>
+<p>The numbers in this table are rounded to improve the readability, but the actual
+CSV file contains all numbers in full machine precision. The linear combination
+of the chemical potentials is also known as the <cite>change in free energy</cite>
+associated with the reaction.</p>
+<p>From the equilibrium constant one can derive the probability of finding a trans
+or a gauche conformer at 300K:</p>
+<div class="math notranslate nohighlight">
+\[K_c = \frac{p_\text{gauche}}{p_\text{trans}}\]</div>
+<p>Given that the probabilities sum to unity, one gets:</p>
+<div class="math notranslate nohighlight">
+\[p_\text{trans} = \frac{1}{1+K_c} \approx 69\%\]</div>
+<div class="math notranslate nohighlight">
+\[p_\text{gauche} = \frac{K_c}{1+K_c} \approx 31\%\]</div>
+</div>
+<div class="section" id="a-log-file-with-an-description-of-the-equilibrium">
+<h3>9.2.2. A log file with an description of the equilibrium<a class="headerlink" href="#a-log-file-with-an-description-of-the-equilibrium" title="Permalink to this headline">¶</a></h3>
+<p>The file <code class="docutils literal notranslate"><span class="pre">equilibrium.txt</span></code> contains the following data:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Electronic energy difference [kJ/mol] = 3.5
+Zero-point energy difference [kJ/mol] = 3.8
+
+The chemical balance:
+   1.0*(&quot;Trans&quot;)  &lt;--&gt;  1.0*(&quot;Gauche&quot;)
+
+Partition function 0
+Signed stoichiometry: -1
+Title: Trans
+Electronic energy [au]: -158.45806
+Zero-point contribution [kJ/mol]: 348.7969543
+Zero-point energy [au]: -158.32521
+Contributions to the partition function:
+  ELECTRONIC
+    Multiplicity: 1
+    Electronic energy: -158.4580557
+  ROTATIONAL
+    Rotational symmetry number: 2
+    Moments of inertia [amu*bohr**2]: 77.114693  501.601343 533.985400
+    Threshold for non-zero moments of inertia [amu*bohr**2]: 5.485799e-04
+    Non-zero moments of inertia: 3
+  TRANSLATIONAL
+    Dimension: 3
+    Constant pressure: True
+    Pressure [bar]: 1.01325
+      BIG FAT WARNING!!!
+      This is an NpT partition function.
+      Internal heat contains a PV term (and is therefore the enthalpy).
+      Free energy contains a PV term (and is therefore the Gibbs free energy).
+      The heat capacity is computed at constant pressure.
+    Mass [amu]: 58.078250
+  VIBRATIONAL
+    Number of zero wavenumbers: 0
+    Number of real wavenumbers: 36
+    Number of imaginary wavenumbers: 0
+    Frequency scaling factor: 1.0000
+    Zero-point scaling factor: 1.0000
+    Real Wavenumbers [1/cm]:
+       126.0   221.0   257.8   260.9   424.2   744.3   821.0   847.3
+       973.7   988.5  1027.2  1072.5  1180.5  1225.4  1306.7  1340.8
+      1348.9  1418.7  1439.6  1442.0  1517.4  1522.0  1528.8  1530.0
+      1536.2  1543.7  3020.4  3028.1  3041.0  3041.7  3042.3  3064.3
+      3103.4  3107.5  3110.0  3110.8
+    Zero-point contribution [kJ/mol]: 348.7969543
+
+Partition function 1
+Signed stoichiometry: 1
+Title: Gauche
+Electronic energy [au]: -158.45671
+Zero-point contribution [kJ/mol]: 349.0988179
+Zero-point energy [au]: -158.32375
+Contributions to the partition function:
+  ELECTRONIC
+    Multiplicity: 2
+    Electronic energy: -158.4567137
+  ROTATIONAL
+    Rotational symmetry number: 2
+    Moments of inertia [amu*bohr**2]: 135.679032  386.092746 451.000474
+    Threshold for non-zero moments of inertia [amu*bohr**2]: 5.485799e-04
+    Non-zero moments of inertia: 3
+  TRANSLATIONAL
+    Dimension: 3
+    Constant pressure: True
+    Pressure [bar]: 1.01325
+      BIG FAT WARNING!!!
+      This is an NpT partition function.
+      Internal heat contains a PV term (and is therefore the enthalpy).
+      Free energy contains a PV term (and is therefore the Gibbs free energy).
+      The heat capacity is computed at constant pressure.
+    Mass [amu]: 58.078250
+  VIBRATIONAL
+    Number of zero wavenumbers: 0
+    Number of real wavenumbers: 36
+    Number of imaginary wavenumbers: 0
+    Frequency scaling factor: 1.0000
+    Zero-point scaling factor: 1.0000
+    Real Wavenumbers [1/cm]:
+       112.6   216.7   266.5   324.1   433.1   756.2   799.6   840.7
+       972.6   979.8  1003.4  1093.9  1166.1  1209.4  1305.1  1328.6
+      1391.4  1397.9  1442.2  1443.2  1514.0  1517.0  1528.1  1536.6
+      1537.1  1542.6  3024.4  3024.9  3043.4  3045.6  3058.1  3062.0
+      3106.4  3107.7  3113.6  3120.2
+    Zero-point contribution [kJ/mol]: 349.0988179
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="chemical-equilibrium">
+<h2>9.3. Chemical Equilibrium<a class="headerlink" href="#chemical-equilibrium" title="Permalink to this headline">¶</a></h2>
+<p><strong>TODO</strong></p>
+</div>
+<div class="section" id="heat-of-formation">
+<h2>9.4. Heat of formation<a class="headerlink" href="#heat-of-formation" title="Permalink to this headline">¶</a></h2>
+<p>In this example we compute the heat of formation of the water molecule (in gas
+phase). This comes down to the computation of the chemical equilibrium
+properties of the following reaction:</p>
+<div class="math notranslate nohighlight">
+O$_2$ (gas) + 2H$_2$ (gas) $\leftrightharpoons$ 2H$_2$O (gas)</div><p>As we will see below, this is not an equilibrium reaction, so the term <cite>chemical
+equilibrium</cite> is somewhat misleading. The point is that the underlying
+computation is exactly that of any other thermodynamic equilibrium with TAMkin.</p>
+<p>We prepared optimized geometries and frequency computations for the three
+components at the B3LYP/6-31G(d) level using Gaussian03. The
+formatted checkpoint files of the frequency jobs are <code class="docutils literal notranslate"><span class="pre">oxygen.fchk</span></code>,
+<code class="docutils literal notranslate"><span class="pre">hydrogen.fchk</span></code> and <code class="docutils literal notranslate"><span class="pre">water.fchk</span></code>.</p>
+<p>The following script computes the heat of formation at 298.15K.</p>
+<div class="literal-block-wrapper docutils container" id="id5">
+<div class="code-block-caption"><span class="caption-text">tamkin/examples/021_water_formation/formation.py</span><a class="headerlink" href="#id5" title="Permalink to this code">¶</a></div>
+<div class="highlight-default notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22</pre></div></td><td class="code"><div class="highlight"><pre><span></span>
+<span class="c1"># Import libraries.</span>
+<span class="kn">from</span> <span class="nn">tamkin</span> <span class="k">import</span> <span class="o">*</span>   <span class="c1"># The TAMkin library</span>
+
+<span class="c1"># Load the molecules (including the Hessian etc.)</span>
+<span class="n">mol_oxygen</span> <span class="o">=</span> <span class="n">load_molecule_g03fchk</span><span class="p">(</span><span class="s2">&quot;oxygen.fchk&quot;</span><span class="p">)</span>
+<span class="n">mol_hydrogen</span> <span class="o">=</span> <span class="n">load_molecule_g03fchk</span><span class="p">(</span><span class="s2">&quot;hydrogen.fchk&quot;</span><span class="p">)</span>
+<span class="n">mol_water</span> <span class="o">=</span> <span class="n">load_molecule_g03fchk</span><span class="p">(</span><span class="s2">&quot;water.fchk&quot;</span><span class="p">)</span>
+<span class="c1"># Perform normal mode analysis on the molecules</span>
+<span class="n">nma_oxygen</span> <span class="o">=</span> <span class="n">NMA</span><span class="p">(</span><span class="n">mol_oxygen</span><span class="p">,</span> <span class="n">ConstrainExt</span><span class="p">())</span>
+<span class="n">nma_hydrogen</span> <span class="o">=</span> <span class="n">NMA</span><span class="p">(</span><span class="n">mol_hydrogen</span><span class="p">,</span> <span class="n">ConstrainExt</span><span class="p">())</span>
+<span class="n">nma_water</span> <span class="o">=</span> <span class="n">NMA</span><span class="p">(</span><span class="n">mol_water</span><span class="p">,</span> <span class="n">ConstrainExt</span><span class="p">())</span>
+<span class="c1"># Construct the partition functions.</span>
+<span class="n">pf_oxygen</span> <span class="o">=</span> <span class="n">PartFun</span><span class="p">(</span><span class="n">nma_oxygen</span><span class="p">,</span> <span class="p">[</span><span class="n">ExtTrans</span><span class="p">(),</span> <span class="n">ExtRot</span><span class="p">()])</span>
+<span class="n">pf_hydrogen</span> <span class="o">=</span> <span class="n">PartFun</span><span class="p">(</span><span class="n">nma_hydrogen</span><span class="p">,</span> <span class="p">[</span><span class="n">ExtTrans</span><span class="p">(),</span> <span class="n">ExtRot</span><span class="p">()])</span>
+<span class="n">pf_water</span> <span class="o">=</span> <span class="n">PartFun</span><span class="p">(</span><span class="n">nma_water</span><span class="p">,</span> <span class="p">[</span><span class="n">ExtTrans</span><span class="p">(),</span> <span class="n">ExtRot</span><span class="p">()])</span>
+<span class="c1"># Define a kinetic model for the chemical reaction.</span>
+<span class="n">tm</span> <span class="o">=</span> <span class="n">ThermodynamicModel</span><span class="p">([</span><span class="n">pf_oxygen</span><span class="p">,</span> <span class="p">(</span><span class="n">pf_hydrogen</span><span class="p">,</span> <span class="mi">2</span><span class="p">)],</span> <span class="p">[(</span><span class="n">pf_water</span><span class="p">,</span> <span class="mi">2</span><span class="p">)])</span>
+<span class="c1"># Write tables with the principal energies at 298.15K</span>
+<span class="n">tm</span><span class="o">.</span><span class="n">write_table</span><span class="p">(</span><span class="mf">298.15</span><span class="p">,</span> <span class="s2">&quot;formation.csv&quot;</span><span class="p">)</span>
+<span class="c1"># Write an overview of the thermodynamic model to a file</span>
+<span class="n">tm</span><span class="o">.</span><span class="n">write_to_file</span><span class="p">(</span><span class="s2">&quot;formation.txt&quot;</span><span class="p">)</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>Pay special attention to the way the stoichiometry of the balance is passed to
+the <code class="docutils literal notranslate"><span class="pre">ThermodynamicModel</span></code> constructor. One can always replace a partition
+function, <code class="docutils literal notranslate"><span class="pre">pf</span></code>, with a tuple <code class="docutils literal notranslate"><span class="pre">(pf,</span> <span class="pre">st)</span></code> where <code class="docutils literal notranslate"><span class="pre">st</span></code> is the stoichiometry,
+which does not have to be an integer. The same can be done with the
+<code class="docutils literal notranslate"><span class="pre">KineticModel</span></code> constructor.</p>
+<div class="section" id="id1">
+<h3>9.4.1. CSV Files with the energetic analysis<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h3>
+<p>The thermodynamic equilibrium properties at 298.15 K are summarized in the file
+<code class="docutils literal notranslate"><span class="pre">formation.csv</span></code>.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="20%" />
+<col width="20%" />
+<col width="20%" />
+<col width="20%" />
+<col width="20%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Temperature [K]</td>
+<td>298.15</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td><strong>Quantity</strong></td>
+<td><strong>Oxygen</strong></td>
+<td><strong>Hydrogen</strong></td>
+<td><strong>Water</strong></td>
+<td><strong>Linear combination</strong> (always in kJ/mol)</td>
+</tr>
+<tr class="row-even"><td>Signed stoichiometry</td>
+<td>-1</td>
+<td>-2</td>
+<td>2</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td><strong>Values in a.u.</strong></td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>Electronic energy</td>
+<td>-150.2574</td>
+<td>-1.1755</td>
+<td>-76.4090</td>
+<td>-550</td>
+</tr>
+<tr class="row-odd"><td>Zero-point energy</td>
+<td>-150.2537</td>
+<td>-1.1653</td>
+<td>-76.3878</td>
+<td>-502</td>
+</tr>
+<tr class="row-even"><td>Internal heat (298.15K)</td>
+<td>-150.2504</td>
+<td>-1.1620</td>
+<td>-76.3840</td>
+<td>-508</td>
+</tr>
+<tr class="row-odd"><td>Chemical potential (298.15K)</td>
+<td>-150.2726</td>
+<td>-1.1768</td>
+<td>-76.4055</td>
+<td>-485</td>
+</tr>
+<tr class="row-even"><td><strong>Corrections in kJ/mol</strong></td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>Zero-point energy</td>
+<td>10</td>
+<td>27</td>
+<td>56</td>
+<td>48</td>
+</tr>
+<tr class="row-even"><td>Internal heat (298.15K)</td>
+<td>19</td>
+<td>35</td>
+<td>65</td>
+<td>42</td>
+</tr>
+<tr class="row-odd"><td>Chemical potential (298.15K)</td>
+<td>-40</td>
+<td>-4</td>
+<td>9</td>
+<td>65</td>
+</tr>
+<tr class="row-even"><td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td><strong>Other quantities</strong></td>
+<td>Unit</td>
+<td>Value</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>Equilibrium constant</td>
+<td>m**3*mol**-1</td>
+<td>2.068e+83</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+</tbody>
+</table>
+<p>The linear combination of internal heats is the heat of formation of two water
+molecules (due to the stoichiometry). For a single water molecule, one gets
+about 254 kJ/mol. The experimental value reported on the <a class="reference external" href="http://webbook.nist.gov/cgi/cbook.cgi?ID=C7732185&amp;Units=SI&amp;Mask=1#Thermo-Gas">NIST Chemistry webbook</a>
+is about 242 kJ/mol.</p>
+</div>
+<div class="section" id="id2">
+<h3>9.4.2. A log file with an description of the equilibrium<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h3>
+<p>The file <code class="docutils literal notranslate"><span class="pre">formation.txt</span></code> contains the following data:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Electronic energy difference [kJ/mol] = -550.1
+Zero-point energy difference [kJ/mol] = -502.1
+
+The chemical balance:
+   1.0*(&quot;Oxygen&quot;) + 2.0*(&quot;Hydrogen&quot;)  &lt;--&gt;  2.0*(&quot;Water&quot;)
+
+Partition function 0
+Signed stoichiometry: -1
+Title: Oxygen
+Electronic energy [au]: -150.25743
+Zero-point contribution [kJ/mol]: 9.8303186
+Zero-point energy [au]: -150.25368
+Contributions to the partition function:
+  ELECTRONIC
+    Multiplicity: 1
+    Electronic energy: -150.2574266
+  ROTATIONAL
+    Rotational symmetry number: 2
+    Moments of inertia [amu*bohr**2]: -0.000000  42.224541 42.224541
+    Threshold for non-zero moments of inertia [amu*bohr**2]: 5.485799e-04
+    Non-zero moments of inertia: 2
+  TRANSLATIONAL
+    Dimension: 3
+    Constant pressure: True
+    Pressure [bar]: 1.01325
+      BIG FAT WARNING!!!
+      This is an NpT partition function.
+      Internal heat contains a PV term (and is therefore the enthalpy).
+      Free energy contains a PV term (and is therefore the Gibbs free energy).
+      The heat capacity is computed at constant pressure.
+    Mass [amu]: 31.989829
+  VIBRATIONAL
+    Number of zero wavenumbers: 0
+    Number of real wavenumbers: 1
+    Number of imaginary wavenumbers: 0
+    Frequency scaling factor: 1.0000
+    Zero-point scaling factor: 1.0000
+    Real Wavenumbers [1/cm]:
+      1643.5
+    Zero-point contribution [kJ/mol]: 9.8303186
+
+Partition function 1
+Signed stoichiometry: -2
+Title: Hydrogen
+Electronic energy [au]: -1.17548
+Zero-point contribution [kJ/mol]: 26.6354070
+Zero-point energy [au]: -1.16534
+Contributions to the partition function:
+  ELECTRONIC
+    Multiplicity: 1
+    Electronic energy: -1.1754824
+  ROTATIONAL
+    Rotational symmetry number: 2
+    Moments of inertia [amu*bohr**2]: -0.000000  0.992848 0.992848
+    Threshold for non-zero moments of inertia [amu*bohr**2]: 5.485799e-04
+    Non-zero moments of inertia: 2
+  TRANSLATIONAL
+    Dimension: 3
+    Constant pressure: True
+    Pressure [bar]: 1.01325
+      BIG FAT WARNING!!!
+      This is an NpT partition function.
+      Internal heat contains a PV term (and is therefore the enthalpy).
+      Free energy contains a PV term (and is therefore the Gibbs free energy).
+      The heat capacity is computed at constant pressure.
+    Mass [amu]: 2.015650
+  VIBRATIONAL
+    Number of zero wavenumbers: 0
+    Number of real wavenumbers: 1
+    Number of imaginary wavenumbers: 0
+    Frequency scaling factor: 1.0000
+    Zero-point scaling factor: 1.0000
+    Real Wavenumbers [1/cm]:
+      4453.1
+    Zero-point contribution [kJ/mol]: 26.6354070
+
+Partition function 2
+Signed stoichiometry: 2
+Title: Water
+Electronic energy [au]: -76.40895
+Zero-point contribution [kJ/mol]: 55.5664022
+Zero-point energy [au]: -76.38779
+Contributions to the partition function:
+  ELECTRONIC
+    Multiplicity: 1
+    Electronic energy: -76.4089533
+  ROTATIONAL
+    Rotational symmetry number: 2
+    Moments of inertia [amu*bohr**2]: 2.291774  4.174463 6.466237
+    Threshold for non-zero moments of inertia [amu*bohr**2]: 5.485799e-04
+    Non-zero moments of inertia: 3
+  TRANSLATIONAL
+    Dimension: 3
+    Constant pressure: True
+    Pressure [bar]: 1.01325
+      BIG FAT WARNING!!!
+      This is an NpT partition function.
+      Internal heat contains a PV term (and is therefore the enthalpy).
+      Free energy contains a PV term (and is therefore the Gibbs free energy).
+      The heat capacity is computed at constant pressure.
+    Mass [amu]: 18.010565
+  VIBRATIONAL
+    Number of zero wavenumbers: 0
+    Number of real wavenumbers: 3
+    Number of imaginary wavenumbers: 0
+    Frequency scaling factor: 1.0000
+    Zero-point scaling factor: 1.0000
+    Real Wavenumbers [1/cm]:
+      1713.1  3727.4  3849.4
+    Zero-point contribution [kJ/mol]: 55.5664022
+</pre></div>
+</div>
+<p>Note how TAMkin picks up the right rotational symmetry numbers and the non-zero
+moments of inertia.</p>
+</div>
+</div>
+<div class="section" id="reaction-kinetics-unimolecular">
+<h2>9.5. Reaction Kinetics (unimolecular)<a class="headerlink" href="#reaction-kinetics-unimolecular" title="Permalink to this headline">¶</a></h2>
+<p><strong>TODO</strong></p>
+</div>
+<div class="section" id="reaction-kinetics-bimolecular">
+<h2>9.6. Reaction Kinetics (bimolecular)<a class="headerlink" href="#reaction-kinetics-bimolecular" title="Permalink to this headline">¶</a></h2>
+<p>In this example we show how one estimates kinetic parameters for the addition of
+ethene to ethyl in the gas phase at constant pressure. The reaction balance is</p>
+<div class="math notranslate nohighlight">
+\newcommand{\rad}{\raisebox{0.4ex}{\scriptsize{\ensuremath{\bullet}}}}
+
+CH$_2$=CH$_2$ (gas) + \rad{C}H$_2-$CH$_3$ (gas) $\rightarrow$ \rad{C}H$_2$-CH$_2$-CH$_2$-CH$_3$ (gas)</div><p>For this example we prepared three frequency computations:</p>
+<ul class="simple">
+<li>One for each ground state geometry of the reactants (ethene and ethyl). The
+formatted checkpoint files of the frequency jobs are <code class="docutils literal notranslate"><span class="pre">ethene.fchk</span></code> and
+<code class="docutils literal notranslate"><span class="pre">ethyl.fchk</span></code>.</li>
+<li>One for the transition state where ethene performs a <cite>trans</cite> attack on ethyl.
+The geometry of the transition state is optimized towards the saddle point
+in the potential energy surface. The formatted checkpoint file of the
+frequency job is <code class="docutils literal notranslate"><span class="pre">ts_trans.fchk</span></code>.</li>
+</ul>
+<p>The frequency computations are carried out with Gaussian03. The level of theory
+is B3LYP/6-31G(d). The following script computes the kinetic parameters (A and
+E<sub>a</sub>) through a linear fit of <span class="math notranslate nohighlight">\(\ln(k)\)</span> versus <span class="math notranslate nohighlight">\(T\)</span> in the
+temperature range 300K-600K.</p>
+<div class="literal-block-wrapper docutils container" id="id6">
+<div class="code-block-caption"><span class="caption-text">tamkin/examples/019_ethyl_ethene_simple/kinetic.py</span><a class="headerlink" href="#id6" title="Permalink to this code">¶</a></div>
+<div class="highlight-default notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29</pre></div></td><td class="code"><div class="highlight"><pre><span></span>
+<span class="c1"># Import libraries.</span>
+<span class="kn">from</span> <span class="nn">tamkin</span> <span class="k">import</span> <span class="o">*</span>   <span class="c1"># The TAMkin library</span>
+
+<span class="c1"># Load the molecules (including the Hessian etc.)</span>
+<span class="n">mol_ethyl</span> <span class="o">=</span> <span class="n">load_molecule_g03fchk</span><span class="p">(</span><span class="s2">&quot;ethyl.fchk&quot;</span><span class="p">)</span>
+<span class="n">mol_ethene</span> <span class="o">=</span> <span class="n">load_molecule_g03fchk</span><span class="p">(</span><span class="s2">&quot;ethene.fchk&quot;</span><span class="p">)</span>
+<span class="n">mol_ts_trans</span> <span class="o">=</span> <span class="n">load_molecule_g03fchk</span><span class="p">(</span><span class="s2">&quot;ts_trans.fchk&quot;</span><span class="p">)</span>
+<span class="c1"># Perform normal mode analysis on the molecules</span>
+<span class="n">nma_ethyl</span> <span class="o">=</span> <span class="n">NMA</span><span class="p">(</span><span class="n">mol_ethyl</span><span class="p">,</span> <span class="n">ConstrainExt</span><span class="p">())</span>
+<span class="n">nma_ethene</span> <span class="o">=</span> <span class="n">NMA</span><span class="p">(</span><span class="n">mol_ethene</span><span class="p">,</span> <span class="n">ConstrainExt</span><span class="p">())</span>
+<span class="n">nma_ts_trans</span> <span class="o">=</span> <span class="n">NMA</span><span class="p">(</span><span class="n">mol_ts_trans</span><span class="p">,</span> <span class="n">ConstrainExt</span><span class="p">())</span>
+<span class="c1"># Construct the partition functions.</span>
+<span class="n">pf_ethyl</span> <span class="o">=</span> <span class="n">PartFun</span><span class="p">(</span><span class="n">nma_ethyl</span><span class="p">,</span> <span class="p">[</span><span class="n">ExtTrans</span><span class="p">(),</span> <span class="n">ExtRot</span><span class="p">()])</span>
+<span class="n">pf_ethene</span> <span class="o">=</span> <span class="n">PartFun</span><span class="p">(</span><span class="n">nma_ethene</span><span class="p">,</span> <span class="p">[</span><span class="n">ExtTrans</span><span class="p">(),</span> <span class="n">ExtRot</span><span class="p">()])</span>
+<span class="n">pf_ts_trans</span> <span class="o">=</span> <span class="n">PartFun</span><span class="p">(</span><span class="n">nma_ts_trans</span><span class="p">,</span> <span class="p">[</span><span class="n">ExtTrans</span><span class="p">(),</span> <span class="n">ExtRot</span><span class="p">()])</span>
+<span class="c1"># Define a kinetic model for the chemical reaction.</span>
+<span class="n">km_trans</span> <span class="o">=</span> <span class="n">KineticModel</span><span class="p">([</span><span class="n">pf_ethyl</span><span class="p">,</span> <span class="n">pf_ethene</span><span class="p">],</span> <span class="n">pf_ts_trans</span><span class="p">)</span>
+<span class="c1"># Write tables with the principal energies at 300K, 400K, 500K and 600K</span>
+<span class="n">km_trans</span><span class="o">.</span><span class="n">write_table</span><span class="p">(</span><span class="mi">300</span><span class="p">,</span> <span class="s2">&quot;kinetic300.csv&quot;</span><span class="p">)</span>
+<span class="n">km_trans</span><span class="o">.</span><span class="n">write_table</span><span class="p">(</span><span class="mi">400</span><span class="p">,</span> <span class="s2">&quot;kinetic400.csv&quot;</span><span class="p">)</span>
+<span class="n">km_trans</span><span class="o">.</span><span class="n">write_table</span><span class="p">(</span><span class="mi">500</span><span class="p">,</span> <span class="s2">&quot;kinetic500.csv&quot;</span><span class="p">)</span>
+<span class="n">km_trans</span><span class="o">.</span><span class="n">write_table</span><span class="p">(</span><span class="mi">600</span><span class="p">,</span> <span class="s2">&quot;kinetic600.csv&quot;</span><span class="p">)</span>
+<span class="c1"># Analyze the chemical reactions.</span>
+<span class="n">ra_trans</span> <span class="o">=</span> <span class="n">ReactionAnalysis</span><span class="p">(</span><span class="n">km_trans</span><span class="p">,</span> <span class="mi">300</span><span class="p">,</span> <span class="mi">600</span><span class="p">)</span>
+<span class="c1"># Make the Arrhenius plot</span>
+<span class="n">ra_trans</span><span class="o">.</span><span class="n">plot_arrhenius</span><span class="p">(</span><span class="s2">&quot;arrhenius.png&quot;</span><span class="p">)</span>
+<span class="c1"># Write the analysis to a file</span>
+<span class="n">ra_trans</span><span class="o">.</span><span class="n">write_to_file</span><span class="p">(</span><span class="s2">&quot;kinetic.txt&quot;</span><span class="p">)</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>The scripts writes several output files discussed in the subsections below.</p>
+<div class="section" id="id3">
+<h3>9.6.1. CSV Files with the energetic analysis<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h3>
+<p>CSV files are created for different temperatures: 300K, 400K, 500K and 600K.
+The file at 300 K contains the following data:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="20%" />
+<col width="20%" />
+<col width="20%" />
+<col width="20%" />
+<col width="20%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>Temperature [K]</td>
+<td>300</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td><strong>Quantity</strong></td>
+<td><strong>Ethyl</strong></td>
+<td><strong>Ethene</strong></td>
+<td><strong>Transition state</strong></td>
+<td><strong>Linear combination</strong> (always in kJ/mol)</td>
+</tr>
+<tr class="row-even"><td>Signed stoichiometry</td>
+<td>-1</td>
+<td>-1</td>
+<td>1</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td><strong>Values in a.u.</strong></td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>Electronic energy</td>
+<td>-79.1579</td>
+<td>-78.5875</td>
+<td>-157.7371</td>
+<td>22</td>
+</tr>
+<tr class="row-odd"><td>Zero-point energy</td>
+<td>-79.0982</td>
+<td>-78.5362</td>
+<td>-157.6231</td>
+<td>30</td>
+</tr>
+<tr class="row-even"><td>Internal heat (300.00K)</td>
+<td>-79.0933</td>
+<td>-78.5322</td>
+<td>-157.6157</td>
+<td>26</td>
+</tr>
+<tr class="row-odd"><td>Chemical potential (300.00K)</td>
+<td>-79.1225</td>
+<td>-78.5573</td>
+<td>-157.6536</td>
+<td>69</td>
+</tr>
+<tr class="row-even"><td><strong>Corrections in kJ/mol</strong></td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td>Zero-point energy</td>
+<td>157</td>
+<td>134</td>
+<td>299</td>
+<td>8</td>
+</tr>
+<tr class="row-even"><td>Internal heat (300.00K)</td>
+<td>170</td>
+<td>145</td>
+<td>319</td>
+<td>4</td>
+</tr>
+<tr class="row-odd"><td>Chemical potential (300.00K)</td>
+<td>93</td>
+<td>79</td>
+<td>219</td>
+<td>47</td>
+</tr>
+<tr class="row-even"><td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-odd"><td><strong>Other quantities</strong></td>
+<td>Unit</td>
+<td>Value</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+<tr class="row-even"><td>Rate constant</td>
+<td>m**3*mol**-1/second</td>
+<td>0.167</td>
+<td>&#160;</td>
+<td>&#160;</td>
+</tr>
+</tbody>
+</table>
+<p>The numbers in this table are rounded to improve the readability, but the actual
+CSV file contains all numbers in full machine precision. The linear combination
+of the chemical potentials is also known as the <cite>change in free energy</cite>
+associated with the reaction.</p>
+</div>
+<div class="section" id="arrhenius-plot">
+<h3>9.6.2. Arrhenius plot<a class="headerlink" href="#arrhenius-plot" title="Permalink to this headline">¶</a></h3>
+<p>The file <code class="docutils literal notranslate"><span class="pre">arrhenius.png</span></code> contains the Arrhenius plot. This plot can be used
+for a visual check of the linear regression analysis to estimate the kinetic
+parameters.</p>
+<img alt="../_images/arrhenius_bimolecular_gas_phase.png" src="../_images/arrhenius_bimolecular_gas_phase.png" />
+</div>
+<div class="section" id="a-log-file-with-an-analysis-of-the-kinetic-parameters">
+<h3>9.6.3. A log file with an analysis of the kinetic parameters<a class="headerlink" href="#a-log-file-with-an-analysis-of-the-kinetic-parameters" title="Permalink to this headline">¶</a></h3>
+<p>This file is written to the file <code class="docutils literal notranslate"><span class="pre">kinetic.txt</span></code>. It contains the
+following data:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>Summary
+A [m**3*mol**-1/second] = 8.93643e+04
+ln(A [a.u.]) = -10.63
+Ea [kJ/mol] = 33.16
+R2 (Pearson) = 99.94%
+
+Temperature grid
+T_low [K] = 300.0
+T_high [K] = 600.0
+T_step [K] = 10.0
+Number of temperatures = 31
+
+Reaction rate constants
+    T [K]    Delta_r F [kJ/mol]      k(T) [m**3*mol**-1/second]
+    300.00          68.7              1.66848e-01
+    310.00          70.1              2.48896e-01
+    320.00          71.6              3.62870e-01
+    330.00          73.0              5.18109e-01
+    340.00          74.4              7.25806e-01
+    350.00          75.9              9.99197e-01
+    360.00          77.3              1.35374e+00
+    370.00          78.7              1.80731e+00
+    380.00          80.1              2.38032e+00
+    390.00          81.6              3.09593e+00
+    400.00          83.0              3.98015e+00
+    410.00          84.4              5.06200e+00
+    420.00          85.8              6.37365e+00
+    430.00          87.3              7.95046e+00
+    440.00          88.7              9.83115e+00
+    450.00          90.1              1.20579e+01
+    460.00          91.5              1.46762e+01
+    470.00          92.9              1.77354e+01
+    480.00          94.4              2.12883e+01
+    490.00          95.8              2.53912e+01
+    500.00          97.2              3.01043e+01
+    510.00          98.6              3.54916e+01
+    520.00         100.0              4.16205e+01
+    530.00         101.4              4.85623e+01
+    540.00         102.8              5.63922e+01
+    550.00         104.2              6.51888e+01
+    560.00         105.6              7.50346e+01
+    570.00         107.1              8.60158e+01
+    580.00         108.5              9.82222e+01
+    590.00         109.9              1.11747e+02
+    600.00         111.3              1.26688e+02
+
+Electronic energy barrier [kJ/mol] = 21.6
+Zero-point energy barrier [kJ/mol] = 29.7
+
+Reactant 0 partition function
+Title: Ethyl
+Electronic energy [au]: -79.15787
+Zero-point contribution [kJ/mol]: 156.6101213
+Zero-point energy [au]: -79.09822
+Contributions to the partition function:
+  ELECTRONIC
+    Multiplicity: 2
+    Electronic energy: -79.1578683
+  ROTATIONAL
+    Rotational symmetry number: 1
+    Moments of inertia [amu*bohr**2]: 17.468474  79.684868 85.942337
+    Threshold for non-zero moments of inertia [amu*bohr**2]: 5.485799e-04
+    Non-zero moments of inertia: 3
+  TRANSLATIONAL
+    Dimension: 3
+    Constant pressure: True
+    Pressure [bar]: 1.01325
+      BIG FAT WARNING!!!
+      This is an NpT partition function.
+      Internal energy contains a PV term (and is therefore the enthalpy).
+      Free energy contains a PV term (and is therefore the Gibbs free energy).
+      The heat capacity is computed at constant pressure.
+    Mass [amu]: 29.039125
+  VIBRATIONAL
+    Number of zero wavenumbers: 0
+    Number of real wavenumbers: 15
+    Number of imaginary wavenumbers: 0
+    Frequency scaling factor: 1.0000
+    Zero-point scaling factor: 1.0000
+    Real Wavenumbers [1/cm]:
+       123.7   457.5   817.9   995.0  1074.2  1207.6  1430.1  1492.4
+      1510.8  1514.8  2965.5  3058.3  3102.3  3168.1  3264.7
+    Zero-point contribution [kJ/mol]: 156.6101213
+
+Reactant 1 partition function
+Title: Ethene
+Electronic energy [au]: -78.58746
+Zero-point contribution [kJ/mol]: 134.4868825
+Zero-point energy [au]: -78.53624
+Contributions to the partition function:
+  ELECTRONIC
+    Multiplicity: 1
+    Electronic energy: -78.5874587
+  ROTATIONAL
+    Rotational symmetry number: 4
+    Moments of inertia [amu*bohr**2]: 12.280076  60.075552 72.355628
+    Threshold for non-zero moments of inertia [amu*bohr**2]: 5.485799e-04
+    Non-zero moments of inertia: 3
+  TRANSLATIONAL
+    Dimension: 3
+    Constant pressure: True
+    Pressure [bar]: 1.01325
+      BIG FAT WARNING!!!
+      This is an NpT partition function.
+      Internal energy contains a PV term (and is therefore the enthalpy).
+      Free energy contains a PV term (and is therefore the Gibbs free energy).
+      The heat capacity is computed at constant pressure.
+    Mass [amu]: 28.031300
+  VIBRATIONAL
+    Number of zero wavenumbers: 0
+    Number of real wavenumbers: 12
+    Number of imaginary wavenumbers: 0
+    Frequency scaling factor: 1.0000
+    Zero-point scaling factor: 1.0000
+    Real Wavenumbers [1/cm]:
+       834.8   956.1   976.1  1070.1  1248.0  1395.8  1494.3  1720.2
+      3151.9  3167.3  3222.2  3247.7
+    Zero-point contribution [kJ/mol]: 134.4868825
+
+Transition state partition function
+Title: Transition state
+Electronic energy [au]: -157.73711
+Zero-point contribution [kJ/mol]: 299.2533370
+Zero-point energy [au]: -157.62313
+Contributions to the partition function:
+  ELECTRONIC
+    Multiplicity: 2
+    Electronic energy: -157.7371095
+  ROTATIONAL
+    Rotational symmetry number: 1
+    Moments of inertia [amu*bohr**2]: 92.846631  597.569081 642.613097
+    Threshold for non-zero moments of inertia [amu*bohr**2]: 5.485799e-04
+    Non-zero moments of inertia: 3
+  TRANSLATIONAL
+    Dimension: 3
+    Constant pressure: True
+    Pressure [bar]: 1.01325
+      BIG FAT WARNING!!!
+      This is an NpT partition function.
+      Internal energy contains a PV term (and is therefore the enthalpy).
+      Free energy contains a PV term (and is therefore the Gibbs free energy).
+      The heat capacity is computed at constant pressure.
+    Mass [amu]: 57.070425
+  VIBRATIONAL
+    Number of zero wavenumbers: 0
+    Number of real wavenumbers: 32
+    Number of imaginary wavenumbers: 1
+    Frequency scaling factor: 1.0000
+    Zero-point scaling factor: 1.0000
+    Real Wavenumbers [1/cm]:
+        48.5   154.6   157.1   247.0   370.8   547.0   765.2   823.5
+       831.9   848.8   917.8  1024.8  1035.8  1075.2  1228.4  1247.8
+      1317.9  1432.1  1487.2  1498.5  1514.5  1518.4  1609.4  2985.9
+      3061.7  3100.7  3149.1  3153.7  3163.8  3225.6  3237.2  3251.4
+    Imaginary Wavenumbers [1/cm]:
+      -383.6
+    Zero-point contribution [kJ/mol]: 299.2533370
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="reaction-kinetics-with-bsse-corrections-bimolecular">
+<h2>9.7. Reaction Kinetics with BSSE corrections (bimolecular)<a class="headerlink" href="#reaction-kinetics-with-bsse-corrections-bimolecular" title="Permalink to this headline">¶</a></h2>
+<p>There is little special required to include BSSE corrected energies for
+transition states or complexes. In addition to the frequency computation output,
+TAMkin also requires an output file from a BSSE computation.</p>
+<p>In the case of a Gaussian computation, one justs replaces the normal way to load
+the molecule,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mol</span> <span class="o">=</span> <span class="n">load_molecule_g03fchk</span><span class="p">(</span><span class="s2">&quot;freq.fchk&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>by</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mol</span> <span class="o">=</span> <span class="n">load_molecule_g03fchk</span><span class="p">(</span><span class="s2">&quot;freq.fchk&quot;</span><span class="p">,</span> <span class="s2">&quot;bsse.fchk&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>One may compute the BSSE corrected energy at a refined level of theory.</p>
+</div>
+<div class="section" id="reaction-kinetics-with-internal-rotors-bimolecular">
+<h2>9.8. Reaction Kinetics with internal rotors (bimolecular)<a class="headerlink" href="#reaction-kinetics-with-internal-rotors-bimolecular" title="Permalink to this headline">¶</a></h2>
+<p><strong>TODO</strong></p>
+</div>
+<div class="section" id="thermodynamic-isotope-effects">
+<h2>9.9. Thermodynamic isotope effects<a class="headerlink" href="#thermodynamic-isotope-effects" title="Permalink to this headline">¶</a></h2>
+<p><strong>TODO</strong></p>
+</div>
+<div class="section" id="kinetic-isotope-effects">
+<h2>9.10. Kinetic isotope effects<a class="headerlink" href="#kinetic-isotope-effects" title="Permalink to this headline">¶</a></h2>
+<p><strong>TODO</strong>: see <code class="docutils literal notranslate"><span class="pre">examples/015_kie</span></code> for now.</p>
+</div>
+<div class="section" id="physisorption">
+<h2>9.11. Physisorption<a class="headerlink" href="#physisorption" title="Permalink to this headline">¶</a></h2>
+<p><strong>TODO</strong>: see <code class="docutils literal notranslate"><span class="pre">examples/018_physisorption</span></code> for now.</p>
+</div>
+<div class="section" id="chemisorption">
+<h2>9.12. Chemisorption<a class="headerlink" href="#chemisorption" title="Permalink to this headline">¶</a></h2>
+<p><strong>TODO</strong></p>
+</div>
+<div class="section" id="reaction-kinetics-on-a-surface">
+<h2>9.13. Reaction kinetics on a surface<a class="headerlink" href="#reaction-kinetics-on-a-surface" title="Permalink to this headline">¶</a></h2>
+<p><strong>TODO</strong></p>
+</div>
+<div class="section" id="reactions-with-a-pre-reactive-complex">
+<h2>9.14. Reactions with a pre-reactive complex<a class="headerlink" href="#reactions-with-a-pre-reactive-complex" title="Permalink to this headline">¶</a></h2>
+<p><strong>TODO</strong>: see <code class="docutils literal notranslate"><span class="pre">examples/017_activationkineticmodel</span></code> for now.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">9. Chemical Physics – Basic TAMkin recipes</a><ul>
+<li><a class="reference internal" href="#thermodynamic-properties-of-a-molecule">9.1. Thermodynamic properties of a molecule</a></li>
+<li><a class="reference internal" href="#conformational-equilibrium">9.2. Conformational Equilibrium</a><ul>
+<li><a class="reference internal" href="#csv-files-with-the-energetic-analysis">9.2.1. CSV Files with the energetic analysis</a></li>
+<li><a class="reference internal" href="#a-log-file-with-an-description-of-the-equilibrium">9.2.2. A log file with an description of the equilibrium</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#chemical-equilibrium">9.3. Chemical Equilibrium</a></li>
+<li><a class="reference internal" href="#heat-of-formation">9.4. Heat of formation</a><ul>
+<li><a class="reference internal" href="#id1">9.4.1. CSV Files with the energetic analysis</a></li>
+<li><a class="reference internal" href="#id2">9.4.2. A log file with an description of the equilibrium</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#reaction-kinetics-unimolecular">9.5. Reaction Kinetics (unimolecular)</a></li>
+<li><a class="reference internal" href="#reaction-kinetics-bimolecular">9.6. Reaction Kinetics (bimolecular)</a><ul>
+<li><a class="reference internal" href="#id3">9.6.1. CSV Files with the energetic analysis</a></li>
+<li><a class="reference internal" href="#arrhenius-plot">9.6.2. Arrhenius plot</a></li>
+<li><a class="reference internal" href="#a-log-file-with-an-analysis-of-the-kinetic-parameters">9.6.3. A log file with an analysis of the kinetic parameters</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#reaction-kinetics-with-bsse-corrections-bimolecular">9.7. Reaction Kinetics with BSSE corrections (bimolecular)</a></li>
+<li><a class="reference internal" href="#reaction-kinetics-with-internal-rotors-bimolecular">9.8. Reaction Kinetics with internal rotors (bimolecular)</a></li>
+<li><a class="reference internal" href="#thermodynamic-isotope-effects">9.9. Thermodynamic isotope effects</a></li>
+<li><a class="reference internal" href="#kinetic-isotope-effects">9.10. Kinetic isotope effects</a></li>
+<li><a class="reference internal" href="#physisorption">9.11. Physisorption</a></li>
+<li><a class="reference internal" href="#chemisorption">9.12. Chemisorption</a></li>
+<li><a class="reference internal" href="#reaction-kinetics-on-a-surface">9.13. Reaction kinetics on a surface</a></li>
+<li><a class="reference internal" href="#reactions-with-a-pre-reactive-complex">9.14. Reactions with a pre-reactive complex</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="chemphys_tamkin.html"
+                        title="previous chapter">8. Chemical Physics – Working with TAMkin</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="chemphys_advanced.html"
+                        title="next chapter">10. Chemical Physics – Advanced TAMkin examples</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/tutorial/chemphys_examples.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="chemphys_advanced.html" title="10. Chemical Physics – Advanced TAMkin examples"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="chemphys_tamkin.html" title="8. Chemical Physics – Working with TAMkin"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">TAMkin 1.2.6 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2010, Toon Verstraelen, An Ghysels.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+    </div>
+  </body>
+</html>

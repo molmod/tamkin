@@ -1,0 +1,269 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>10. Chemical Physics – Advanced TAMkin examples &#8212; TAMkin 1.2.6 documentation</title>
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="11. TAMkin programmer’s guide" href="development.html" />
+    <link rel="prev" title="9. Chemical Physics – Basic TAMkin recipes" href="chemphys_examples.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="development.html" title="11. TAMkin programmer’s guide"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="chemphys_examples.html" title="9. Chemical Physics – Basic TAMkin recipes"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">TAMkin 1.2.6 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="chemical-physics-advanced-tamkin-examples">
+<h1>10. Chemical Physics – Advanced TAMkin examples<a class="headerlink" href="#chemical-physics-advanced-tamkin-examples" title="Permalink to this headline">¶</a></h1>
+<p><strong>TODO</strong>: add introductory text.</p>
+<div class="section" id="intrinsic-rate-constants-of-reactions-in-zeolites">
+<h2>10.1. Intrinsic rate constants of reactions in zeolites<a class="headerlink" href="#intrinsic-rate-constants-of-reactions-in-zeolites" title="Permalink to this headline">¶</a></h2>
+<p>Intrinsic rate constants are typically modeled in a two-step approach where one
+first describes the reaction in a small (e.g. 5T) cluster model of the zeolite.
+Given the reactant and transition state geometry with the small cluster, one can
+construct an initial estimate of the corresponding geometries in a larger
+cluster using <a class="reference external" href="http://molmod.ugent.be/code/wiki/Zeobuilder">Zeobuilder</a>. These
+structures can be refined with ONIOM or another type of QM/MM computations.</p>
+<p>In the example below we study the addition of ethene to an ethyl alkoxide on an
+acid site in ZSM-5. The product of this reaction is methylcyclopropane. For the
+forward reaction rate no computations on the product state are required.</p>
+<div class="section" id="small-cluster-computation-5t">
+<h3>10.1.1. Small cluster computation (5T)<a class="headerlink" href="#small-cluster-computation-5t" title="Permalink to this headline">¶</a></h3>
+<p>The reactant and the transition state are depicted in the figures below</p>
+<img alt="../_images/5t.png" src="../_images/5t.png" />
+<p>The two checkpoint files in the example are derived from frequency computations
+with Gaussian03 using the B3LYP/6-31G(d) level of theory at the reactant and
+transition state.</p>
+<div class="literal-block-wrapper docutils container" id="id1">
+<div class="code-block-caption"><span class="caption-text">tamkin/examples/006_5T_ethyl_ethene_addition/reaction.py</span><a class="headerlink" href="#id1" title="Permalink to this code">¶</a></div>
+<div class="highlight-default notranslate"><table class="highlighttable"><tr><td class="linenos"><div class="linenodiv"><pre> 1
+ 2
+ 3
+ 4
+ 5
+ 6
+ 7
+ 8
+ 9
+10
+11
+12
+13
+14
+15
+16
+17
+18
+19
+20
+21
+22
+23
+24
+25
+26
+27
+28
+29
+30
+31
+32
+33</pre></div></td><td class="code"><div class="highlight"><pre><span></span>
+<span class="c1"># Import the tamkin library.</span>
+<span class="kn">from</span> <span class="nn">tamkin</span> <span class="k">import</span> <span class="o">*</span>
+
+<span class="c1"># Load the gaussian data:</span>
+<span class="n">mol_react</span> <span class="o">=</span> <span class="n">load_molecule_g03fchk</span><span class="p">(</span><span class="s2">&quot;react.fchk&quot;</span><span class="p">)</span>
+<span class="n">mol_ts</span> <span class="o">=</span> <span class="n">load_molecule_g03fchk</span><span class="p">(</span><span class="s2">&quot;ts.fchk&quot;</span><span class="p">)</span>
+<span class="c1"># Perform the normal mode analysis</span>
+<span class="n">nma_react</span> <span class="o">=</span> <span class="n">NMA</span><span class="p">(</span><span class="n">mol_react</span><span class="p">,</span> <span class="n">ConstrainExt</span><span class="p">())</span>
+<span class="n">nma_ts</span> <span class="o">=</span> <span class="n">NMA</span><span class="p">(</span><span class="n">mol_ts</span><span class="p">,</span> <span class="n">ConstrainExt</span><span class="p">(</span><span class="mf">2e-4</span><span class="p">))</span>
+<span class="c1"># Construct the two partition functions.</span>
+<span class="n">pf_react</span> <span class="o">=</span> <span class="n">PartFun</span><span class="p">(</span><span class="n">nma_react</span><span class="p">,</span> <span class="p">[])</span>
+<span class="n">pf_ts</span> <span class="o">=</span> <span class="n">PartFun</span><span class="p">(</span><span class="n">nma_ts</span><span class="p">,</span> <span class="p">[])</span>
+
+<span class="c1"># Define a kinetic model for the chemical reaction. These are the mandatory arguments:</span>
+<span class="c1">#  1) a list of reactant partition functions</span>
+<span class="c1">#     (one for unimolecular, two for bimolecular, ...)</span>
+<span class="c1">#  2) the transition state partition function</span>
+<span class="c1"># There is one more optional argument:</span>
+<span class="c1">#  3) tunneling: a model for the tunelling correction</span>
+<span class="n">km</span> <span class="o">=</span> <span class="n">KineticModel</span><span class="p">([</span><span class="n">pf_react</span><span class="p">],</span> <span class="n">pf_ts</span><span class="p">,</span> <span class="n">tunneling</span><span class="o">=</span><span class="kc">None</span><span class="p">)</span>
+
+<span class="c1"># Analyze the chemical reaction. These are the arguments:</span>
+<span class="c1">#  1) A kinetic model</span>
+<span class="c1">#  2) the starting temperature for the fit</span>
+<span class="c1">#  3) the final temperature for the fit</span>
+<span class="c1"># The following argument is optional:</span>
+<span class="c1">#  4) temp_step: The interval on the temperature grid in Kelvin, 10 is default</span>
+<span class="n">ra</span> <span class="o">=</span> <span class="n">ReactionAnalysis</span><span class="p">(</span><span class="n">km</span><span class="p">,</span> <span class="mi">670</span><span class="p">,</span> <span class="mi">770</span><span class="p">)</span>
+<span class="c1"># Make the Arrhenius plot</span>
+<span class="n">ra</span><span class="o">.</span><span class="n">plot_arrhenius</span><span class="p">(</span><span class="s2">&quot;arrhenius.png&quot;</span><span class="p">)</span>
+<span class="c1"># Write all results to a file.</span>
+<span class="n">ra</span><span class="o">.</span><span class="n">write_to_file</span><span class="p">(</span><span class="s2">&quot;reaction.txt&quot;</span><span class="p">)</span>
+</pre></div>
+</td></tr></table></div>
+</div>
+<p>Take note of the following (subtle) choices in the input file:</p>
+<dl class="docutils">
+<dt>Line 8:</dt>
+<dd>The transition state geometry is not perfectly optimized. This would be a
+time-consuming computation and not really required for setting up a draft
+model. The gradient_threshold parameter is increased from <code class="docutils literal notranslate"><span class="pre">1e-4</span></code> to
+<code class="docutils literal notranslate"><span class="pre">2e-4</span></code>.</dd>
+<dt>Line 11-12:</dt>
+<dd>The translational and rotational contribution can be omitted as these
+reactions take place on a fixed active site in a zeolite catalyst. Free
+rotation and translation of the 5T fragment with the guest molecules is
+not possible. In principle these missing degrees of freedom in the partition
+function should be replaced by a vibrational coupling of the cluster with
+the surrounding framework. This is coupling is essentially neglected in
+a small cluster computation.</dd>
+</dl>
+</div>
+<div class="section" id="large-cluster-computation">
+<h3>10.1.2. Large cluster computation<a class="headerlink" href="#large-cluster-computation" title="Permalink to this headline">¶</a></h3>
+</div>
+</div>
+<div class="section" id="diy-kinetic-parameter-estimation">
+<h2>10.2. DIY Kinetic parameter estimation<a class="headerlink" href="#diy-kinetic-parameter-estimation" title="Permalink to this headline">¶</a></h2>
+<p><strong>TODO</strong>: show how TAMkin can be used to make a powerful <code class="docutils literal notranslate"><span class="pre">freqchk</span></code>-like
+program.</p>
+</div>
+<div class="section" id="many-similar-reactions-with-a-single-script">
+<h2>10.3. Many similar reactions with a single script<a class="headerlink" href="#many-similar-reactions-with-a-single-script" title="Permalink to this headline">¶</a></h2>
+<p><strong>TODO</strong>: explain the for-loop.</p>
+</div>
+<div class="section" id="basic-kinetics-level-of-theory-study">
+<h2>10.4. Basic kinetics level of theory study<a class="headerlink" href="#basic-kinetics-level-of-theory-study" title="Permalink to this headline">¶</a></h2>
+<p><strong>TODO</strong></p>
+</div>
+<div class="section" id="smart-tamkin-script">
+<h2>10.5. Smart TAMkin script<a class="headerlink" href="#smart-tamkin-script" title="Permalink to this headline">¶</a></h2>
+<p><strong>TODO</strong>: explain how to write a smart script with TAMkin that detects, based on
+a few filename convetions, what type of computation must be carried out.
+(Specific for Gaussian.)</p>
+</div>
+<div class="section" id="heat-of-formation">
+<h2>10.6. Heat of formation<a class="headerlink" href="#heat-of-formation" title="Permalink to this headline">¶</a></h2>
+<p><strong>TODO</strong>: general script for the computation of the heat of formation.</p>
+</div>
+<div class="section" id="pattern-matching">
+<h2>10.7. Pattern matching<a class="headerlink" href="#pattern-matching" title="Permalink to this headline">¶</a></h2>
+<p><strong>TODO</strong>: how to use the <code class="docutils literal notranslate"><span class="pre">molmod.graphs</span></code> module to locate a set of frozen
+atoms in a series of similar systems with unknown atom order.</p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">10. Chemical Physics – Advanced TAMkin examples</a><ul>
+<li><a class="reference internal" href="#intrinsic-rate-constants-of-reactions-in-zeolites">10.1. Intrinsic rate constants of reactions in zeolites</a><ul>
+<li><a class="reference internal" href="#small-cluster-computation-5t">10.1.1. Small cluster computation (5T)</a></li>
+<li><a class="reference internal" href="#large-cluster-computation">10.1.2. Large cluster computation</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#diy-kinetic-parameter-estimation">10.2. DIY Kinetic parameter estimation</a></li>
+<li><a class="reference internal" href="#many-similar-reactions-with-a-single-script">10.3. Many similar reactions with a single script</a></li>
+<li><a class="reference internal" href="#basic-kinetics-level-of-theory-study">10.4. Basic kinetics level of theory study</a></li>
+<li><a class="reference internal" href="#smart-tamkin-script">10.5. Smart TAMkin script</a></li>
+<li><a class="reference internal" href="#heat-of-formation">10.6. Heat of formation</a></li>
+<li><a class="reference internal" href="#pattern-matching">10.7. Pattern matching</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="chemphys_examples.html"
+                        title="previous chapter">9. Chemical Physics – Basic TAMkin recipes</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="development.html"
+                        title="next chapter">11. TAMkin programmer’s guide</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/tutorial/chemphys_advanced.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="development.html" title="11. TAMkin programmer’s guide"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="chemphys_examples.html" title="9. Chemical Physics – Basic TAMkin recipes"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">TAMkin 1.2.6 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2010, Toon Verstraelen, An Ghysels.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+    </div>
+  </body>
+</html>

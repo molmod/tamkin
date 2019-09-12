@@ -1,0 +1,218 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>11. TAMkin programmer’s guide &#8212; TAMkin 1.2.6 documentation</title>
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="1. The TAMkin driver script" href="../reference/tamkin-driver.html" />
+    <link rel="prev" title="10. Chemical Physics – Advanced TAMkin examples" href="chemphys_advanced.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../reference/tamkin-driver.html" title="1. The TAMkin driver script"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="chemphys_advanced.html" title="10. Chemical Physics – Advanced TAMkin examples"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">TAMkin 1.2.6 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="tamkin-programmer-s-guide">
+<h1>11. TAMkin programmer’s guide<a class="headerlink" href="#tamkin-programmer-s-guide" title="Permalink to this headline">¶</a></h1>
+<p><strong>TODO</strong>: introductory text</p>
+<div class="section" id="git-basics-get-the-latest-development-version">
+<h2>11.1. Git Basics – Get the latest development version<a class="headerlink" href="#git-basics-get-the-latest-development-version" title="Permalink to this headline">¶</a></h2>
+<p><strong>TODO</strong></p>
+</div>
+<div class="section" id="have-a-look-at-the-structure-of-the-package">
+<h2>11.2. Have a look at the structure of the package<a class="headerlink" href="#have-a-look-at-the-structure-of-the-package" title="Permalink to this headline">¶</a></h2>
+<p>It may be useful to understand the basic structure of the TAMkin package. Assume
+TAMkin is installed in a directory <code class="docutils literal notranslate"><span class="pre">~/code/</span></code>, then one can have a look at the
+TAMkin files in the following way:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ cd ~/code/tamkin
+$ ls
+cleancode.sh   COPYING   HEADER.py   lib       test
+cleanfiles.sh  examples  install.sh  setup.py  uninstall.sh
+</pre></div>
+</div>
+<ul>
+<li><p class="first">The <code class="docutils literal notranslate"><span class="pre">install.sh</span></code> script uses the <code class="docutils literal notranslate"><span class="pre">setup.py</span></code> script to install TAMkin
+(see the <a class="reference external" href="https://molmod.ugent.be/code/wiki/TAMkin/InstallationGuide">https://molmod.ugent.be/code/wiki/TAMkin/InstallationGuide</a>).
+Similarly, the <code class="docutils literal notranslate"><span class="pre">uninstall.sh</span></code> script can be used to uninstall TAMkin.</p>
+</li>
+<li><p class="first">The <code class="docutils literal notranslate"><span class="pre">cleancode.sh</span></code>, <code class="docutils literal notranslate"><span class="pre">cleanfiles.sh</span></code> and <code class="docutils literal notranslate"><span class="pre">HEADER.py</span></code> files are only
+relevant for code developers, but not for the general user.</p>
+</li>
+<li><p class="first">The file <code class="docutils literal notranslate"><span class="pre">COPYING</span></code> contains the license under which TAMKin is distributed.</p>
+</li>
+<li><p class="first">The directory <code class="docutils literal notranslate"><span class="pre">test/</span></code> contains the testing routines. This is mainly intended
+for developers, but a regular user can also use it to test the validity of its
+installation.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ls test/
+input  nma.py       partf.py    rotor.py  timer.py
+io.py  nmatools.py  pftools.py  test.py   tunneling.py
+</pre></div>
+</div>
+</li>
+<li><p class="first">The directory <code class="docutils literal notranslate"><span class="pre">examples/</span></code> contains worked out examples (see further).</p>
+</li>
+<li><p class="first">The directory <code class="docutils literal notranslate"><span class="pre">lib/</span></code> contains the TAMkin source code itself (the files with
+lines of code, for developers).</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>$ ls lib/
+data.py  __init__.py  nma.py       partf.py    rotor.py  tunneling.py
+geom.py  io           nmatools.py  pftools.py  timer.py
+</pre></div>
+</div>
+</li>
+</ul>
+</div>
+<div class="section" id="coding-guidelines">
+<h2>11.3. Coding guidelines<a class="headerlink" href="#coding-guidelines" title="Permalink to this headline">¶</a></h2>
+<p><strong>TODO</strong></p>
+</div>
+<div class="section" id="doc-string-guidelines">
+<h2>11.4. Doc-string guidelines<a class="headerlink" href="#doc-string-guidelines" title="Permalink to this headline">¶</a></h2>
+<p><strong>TODO</strong></p>
+</div>
+<div class="section" id="test-and-example-guidelines">
+<h2>11.5. Test and example guidelines<a class="headerlink" href="#test-and-example-guidelines" title="Permalink to this headline">¶</a></h2>
+<dl class="docutils">
+<dt><strong>Self-explaining filenames and job titles</strong></dt>
+<dd>Think of filenames for scripts and data files that are self-explaining. Also
+include English titles that make sense. These titles will appear in the output
+generated by TAMkin to label the different partition functions.</dd>
+<dt><strong>Test data size</strong></dt>
+<dd><p class="first">The smaller the total size of the source tree, the better. Before you <code class="docutils literal notranslate"><span class="pre">git</span>
+<span class="pre">commit</span></code> an example into the git repository, try to keep the data files
+from computational chemistry packages as small as possible. Try to do at least
+the following</p>
+<ol class="last arabic simple">
+<li>Keep the molecular systems in the examples small, i.e. at most 20 atoms.</li>
+<li>Strip all the trailing white spaces from every line in the output files.</li>
+<li>Strip all sections from the output files that are not used by TAMkin.</li>
+</ol>
+</dd>
+</dl>
+<div class="section" id="gaussian-fchk-files">
+<h3>11.5.1. Gaussian fchk files<a class="headerlink" href="#gaussian-fchk-files" title="Permalink to this headline">¶</a></h3>
+<p>The script <code class="docutils literal notranslate"><span class="pre">examples/fchkstripper.py</span></code> takes care of steps 2 and 3. It is used
+as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">./</span><span class="n">fchkstripper</span><span class="o">.</span><span class="n">py</span> <span class="n">file1</span><span class="o">.</span><span class="n">fchk</span> <span class="n">file2</span><span class="o">.</span><span class="n">fchk</span>
+</pre></div>
+</div>
+<p>The files will be stripped in-place. No backup copy is made. Then fill in the
+title of the <code class="docutils literal notranslate"><span class="pre">.fchk</span></code> files, i.e. the first line.</p>
+</div>
+</div>
+<div class="section" id="documentation-guidelines">
+<h2>11.6. Documentation guidelines<a class="headerlink" href="#documentation-guidelines" title="Permalink to this headline">¶</a></h2>
+<p><strong>TODO</strong></p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">11. TAMkin programmer’s guide</a><ul>
+<li><a class="reference internal" href="#git-basics-get-the-latest-development-version">11.1. Git Basics – Get the latest development version</a></li>
+<li><a class="reference internal" href="#have-a-look-at-the-structure-of-the-package">11.2. Have a look at the structure of the package</a></li>
+<li><a class="reference internal" href="#coding-guidelines">11.3. Coding guidelines</a></li>
+<li><a class="reference internal" href="#doc-string-guidelines">11.4. Doc-string guidelines</a></li>
+<li><a class="reference internal" href="#test-and-example-guidelines">11.5. Test and example guidelines</a><ul>
+<li><a class="reference internal" href="#gaussian-fchk-files">11.5.1. Gaussian fchk files</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#documentation-guidelines">11.6. Documentation guidelines</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="chemphys_advanced.html"
+                        title="previous chapter">10. Chemical Physics – Advanced TAMkin examples</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../reference/tamkin-driver.html"
+                        title="next chapter">1. The TAMkin driver script</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/tutorial/development.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../reference/tamkin-driver.html" title="1. The TAMkin driver script"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="chemphys_advanced.html" title="10. Chemical Physics – Advanced TAMkin examples"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">TAMkin 1.2.6 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2010, Toon Verstraelen, An Ghysels.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+    </div>
+  </body>
+</html>

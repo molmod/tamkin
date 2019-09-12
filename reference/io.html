@@ -1,0 +1,719 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>2. Input/output &#8212; TAMkin 1.2.6 documentation</title>
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="3. Normal mode analysis" href="nma.html" />
+    <link rel="prev" title="1. The TAMkin driver script" href="tamkin-driver.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nma.html" title="3. Normal mode analysis"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="tamkin-driver.html" title="1. The TAMkin driver script"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">TAMkin 1.2.6 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="module-tamkin.io">
+<span id="input-output"></span><h1>2. Input/output<a class="headerlink" href="#module-tamkin.io" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="tools-to-read-data-from-general-packages">
+<h2>2.1. Tools to read data from general packages<a class="headerlink" href="#tools-to-read-data-from-general-packages" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="module-tamkin.io.charmm">
+<span id="charmm"></span><h3>2.1.1. CHARMM<a class="headerlink" href="#module-tamkin.io.charmm" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="tamkin.io.charmm.load_molecule_charmm">
+<code class="descclassname">tamkin.io.charmm.</code><code class="descname">load_molecule_charmm</code><span class="sig-paren">(</span><em>charmmfile_cor</em>, <em>charmmfile_hess</em>, <em>is_periodic=False</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.io.charmm.load_molecule_charmm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read from Hessian-CHARMM-file format</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>charmmfile_cor  --  the filename of the .cor file</strong> (<em>|</em>) – </li>
+<li><strong>charmmfile_hess  --  the filename of the Hessian file</strong> (<em>|</em>) – </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Optional argument:</dt>
+<dd><div class="first last line-block">
+<div class="line">is_periodic  –  True when the system is periodic in three dimensions.
+False when the systen is aperiodic. [default=True]</div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="tamkin.io.charmm.load_coordinates_charmm">
+<code class="descclassname">tamkin.io.charmm.</code><code class="descname">load_coordinates_charmm</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.io.charmm.load_coordinates_charmm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read coordinates from a standard CHARMM coordinate file</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>filename  --  the CHARMM coordinate file</strong><strong> (</strong><strong>typically extension .crd or</strong> (<em>|</em>) – .cor)</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Return values:</dt>
+<dd><div class="first last line-block">
+<div class="line">coordinates  –  coordinates in atomic units, numpy array with
+shape (N,3)</div>
+<div class="line">masses  –  atomic masses in atomic units</div>
+<div class="line">symbols  –  list of CHARMM atom symbols</div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="tamkin.io.charmm.load_modes_charmm">
+<code class="descclassname">tamkin.io.charmm.</code><code class="descname">load_modes_charmm</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.io.charmm.load_modes_charmm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Read modes, frequencies and masses from a standard CHARMM-modes-file</p>
+<p>The CHARMM-modes-file is generated by the VIBRAN module in CHARMM.</p>
+<dl class="docutils">
+<dt>Argument:</dt>
+<dd><div class="first last line-block">
+<div class="line">filename  –  CHARMM-modes-file</div>
+</div>
+</dd>
+<dt>Return values:</dt>
+<dd><div class="first last line-block">
+<div class="line">modes  –  numpy array with mass-weighted modes in the columns</div>
+<div class="line">freqs  –  numpy array with frequencies in atomic units</div>
+<div class="line">masses  –  atomic masses in atomic units</div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="tamkin.io.charmm.load_peptide_info_charmm">
+<code class="descclassname">tamkin.io.charmm.</code><code class="descname">load_peptide_info_charmm</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.io.charmm.load_peptide_info_charmm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load information from CHARMM file for peptide blocks and subsystems</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>filename  --  the CHARMM coordinate file</strong><strong> (</strong><strong>typically extension .crd</strong> (<em>|</em>) – or .cor)</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Return values:</dt>
+<dd><div class="first last line-block">
+<div class="line">N  –  total number of atoms in the peptide</div>
+<div class="line">calpha  –  indices of the alpha carbons (‘CA’ in CHARMM file)</div>
+<div class="line">proline  –  indices of the alpha carbons that belong to proline
+residues (‘PRO  CA’ in CHARMM file)</div>
+<div class="line">carbon  – indices of the backbone carbons, exclude the alpha carbons
+(‘C’ in CHARMM file)</div>
+<div class="line">oxygen  – indices of the backbone oxygens (‘O’ in CHARMM file)</div>
+<div class="line">nitrogen  –  indices of the backbone nitrogens (‘N’ in CHARMM file)</div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-tamkin.io.cp2k">
+<span id="cp2k"></span><h3>2.1.2. CP2K<a class="headerlink" href="#module-tamkin.io.cp2k" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="tamkin.io.cp2k.load_molecule_cp2k">
+<code class="descclassname">tamkin.io.cp2k.</code><code class="descname">load_molecule_cp2k</code><span class="sig-paren">(</span><em>fn_sp</em>, <em>fn_freq</em>, <em>multiplicity=1</em>, <em>is_periodic=True</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.io.cp2k.load_molecule_cp2k" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load a molecule with the Hessian from a CP2K computation</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>fn_sp   --  The filename of the single point .out file containing the</strong> (<em>|</em>) – energy and the forces.</li>
+<li><strong>fn_freq  --  The filename of the frequency .out file containing the</strong> (<em>|</em>) – hessian</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Optional arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line">multiplicity  –  The spin multiplicity of the electronic system
+[default=1]</div>
+<div class="line">is_periodic  –  True when the system is periodic in three dimensions.
+False when the systen is aperiodic. [default=True]</div>
+<div class="line">unit_cell  –  The unit cell vectors for periodic structures</div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="tamkin.io.cp2k.load_fixed_cp2k">
+<code class="descclassname">tamkin.io.cp2k.</code><code class="descname">load_fixed_cp2k</code><span class="sig-paren">(</span><em>fn_freq</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.io.cp2k.load_fixed_cp2k" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the fixed atoms from a CP2K freq output</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fn_freq</strong> (<em>str</em>) – The filename of the CP2K freq output</td>
+</tr>
+<tr class="field-even field"><th class="field-name">Returns:</th><td class="field-body"><strong>fixed</strong> – The length of the vector corresponds to the number of atoms. For every fixed
+atom, the vector element is True. False otherwise.</td>
+</tr>
+<tr class="field-odd field"><th class="field-name">Return type:</th><td class="field-body">numpy bool array</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</div>
+<div class="section" id="module-tamkin.io.cpmd">
+<span id="cpmd"></span><h3>2.1.3. CPMD<a class="headerlink" href="#module-tamkin.io.cpmd" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="tamkin.io.cpmd.load_molecule_cpmd">
+<code class="descclassname">tamkin.io.cpmd.</code><code class="descname">load_molecule_cpmd</code><span class="sig-paren">(</span><em>fn_out</em>, <em>fn_geometry</em>, <em>fn_hessian</em>, <em>multiplicity=1</em>, <em>is_periodic=True</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.io.cpmd.load_molecule_cpmd" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load a molecule with the Hessian from a CPMD computation</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>fn_out  --  The filename of the output containing the total energy.</strong> (<em>|</em>) – </li>
+<li><strong>fn_geometry   --  The filename of geometry and the gradient of the</strong> (<em>|</em>) – (partially) optimized system. (This filename is
+typically GEOMETRY.xyz.)</li>
+<li><strong>fn_hessian  --  The filename of the of the file containing the</strong> (<em>|</em>) – Hessian. (This filename is typically MOLVIB.)</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Optional arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line">multiplicity  –  The spin multiplicity of the electronic system
+[default=1]</div>
+<div class="line">is_periodic  –  True when the system is periodic in three dimensions.
+False when the system is aperiodic. [default=True]</div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-tamkin.io.gaussian">
+<span id="gaussian-03-09"></span><h3>2.1.4. Gaussian 03/09<a class="headerlink" href="#module-tamkin.io.gaussian" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="tamkin.io.gaussian.load_fixed_g03com">
+<code class="descclassname">tamkin.io.gaussian.</code><code class="descname">load_fixed_g03com</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.io.gaussian.load_fixed_g03com" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load fixed atoms from a gaussian input file.</p>
+<dl class="docutils">
+<dt>Argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">filename</span></code> – The gaussian input file.</div>
+</div>
+</dd>
+</dl>
+<p>A fixed atom is recognized by the ‘-1’ after the atom symbol in the
+molecule specification. The ‘-1’ is the second word in the line.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tamkin.io.gaussian.load_molecule_g03fchk">
+<code class="descclassname">tamkin.io.gaussian.</code><code class="descname">load_molecule_g03fchk</code><span class="sig-paren">(</span><em>fn_freq</em>, <em>fn_ener=None</em>, <em>fn_vdw=None</em>, <em>energy=None</em>, <em>fn_punch=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.io.gaussian.load_molecule_g03fchk" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load a molecule from Gaussian03 formatted checkpoint files.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fn_freq -- the formatted checkpoint file of the frequency job</strong> (<em>|</em>) – </td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Optional arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">fn_ener</span></code> – the formatted checkpoint file of a single point
+computation for the energy. When not given, the energy
+is taken from the frequency job.</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">fn_vdw</span></code> – An orca output file containing a Van der Waals
+correction for the energy.</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">energy</span></code> – Override the energy from the formatted checkpoint file
+with the given value.</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">punch</span></code> – A Gaussian derivatives punch file. When given, the
+gradient and the Hessian are read from this file
+instead.</div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="tamkin.io.gaussian.load_molecule_g98fchk">
+<code class="descclassname">tamkin.io.gaussian.</code><code class="descname">load_molecule_g98fchk</code><span class="sig-paren">(</span><em>fn_freq</em>, <em>fn_ener=None</em>, <em>energy=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.io.gaussian.load_molecule_g98fchk" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load a molecule from Gaussian98 formatted checkpoint files.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>fn_freq -- The formatted checkpoint file of the frequency job.</strong> (<em>|</em>) – </td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Optional arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">fn_ener</span></code> – The formatted checkpoint file of a single point
+computation for the energy. When not given, the energy
+is taken from the frequency job.</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">energy</span></code> – Override the energy from the formatted checkpoint file
+with the given value.</div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="tamkin.io.gaussian.load_rotscan_g03log">
+<code class="descclassname">tamkin.io.gaussian.</code><code class="descname">load_rotscan_g03log</code><span class="sig-paren">(</span><em>fn_log</em>, <em>top_indexes=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.io.gaussian.load_rotscan_g03log" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load the torsional potential from a Gaussian 03 log/output file.</p>
+<dl class="docutils">
+<dt>Argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">fn_log</span></code> – The filename of the gaussian output.</div>
+</div>
+</dd>
+<dt>Optional argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">top_indexes</span></code> – The atom indexes that define the rotor. These do
+not have to include the atoms that define the
+rotational axis. When not given, an attempt is made
+to derive this information from the dihedral angle
+used for the scan.</div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-tamkin.io.qchem">
+<span id="qchem"></span><h3>2.1.5. QChem<a class="headerlink" href="#module-tamkin.io.qchem" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="tamkin.io.qchem.load_molecule_qchem">
+<code class="descclassname">tamkin.io.qchem.</code><code class="descname">load_molecule_qchem</code><span class="sig-paren">(</span><em>qchemfile</em>, <em>hessfile=None</em>, <em>multiplicity=1</em>, <em>is_periodic=False</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.io.qchem.load_molecule_qchem" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load a molecule from a Q-Chem frequency run</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>qchemfile  --  Filename of the Q-Chem computation output.</strong> (<em>|</em>) – </td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Optional arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line">hessfile  –  Filename of a separate Hessian file.</div>
+<div class="line">multiplicity  –  The spin multiplicity of the electronic system
+[default=1]</div>
+<div class="line">is_periodic  –  True when the system is periodic in three dimensions.
+False when the systen is nonperiodic. [default=False]</div>
+</div>
+</dd>
+</dl>
+<p>Whether the Hessian is printed to a separate Hessian file, depends on the
+used version of Q-Chem. The use of the separate Hessian file is slightly
+more accurate, because the number of printed digits is higher than in the
+Q-Chem output file.</p>
+<p><strong>Warning</strong></p>
+<p>At present, the gradient is set to a Nx3 array of zero values, since the
+gradient is not printed out in the Q-Chem output file in general. This
+means that the value of the gradient should be checked before applying
+methods designed for partially optimized structures (currently PHVA,
+MBH and PHVA_MBH).</p>
+</dd></dl>
+
+</div>
+<div class="section" id="module-tamkin.io.vasp">
+<span id="vasp"></span><h3>2.1.6. VASP<a class="headerlink" href="#module-tamkin.io.vasp" title="Permalink to this headline">¶</a></h3>
+<dl class="function">
+<dt id="tamkin.io.vasp.load_molecule_vasp">
+<code class="descclassname">tamkin.io.vasp.</code><code class="descname">load_molecule_vasp</code><span class="sig-paren">(</span><em>contcar</em>, <em>outcar_freq</em>, <em>outcar_energy=None</em>, <em>energy=None</em>, <em>multiplicity=1</em>, <em>is_periodic=True</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.io.vasp.load_molecule_vasp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load a molecule from VASP 4.6.X and 5.3.X output files</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>contcar  --  A CONTCAR file with the structure used as POSCAR file for the</strong> (<em>|</em>) – Hessian/frequency calculation in VASP. Do not use the CONTCAR file
+generated by the frequency calculation. Use the CONTCAR from the
+preceding geometry optimization instead.</li>
+<li><strong>outcar_freq  --  The OUTCAR file of the Hessian/frequency calculation. Also the</strong> (<em>|</em>) – gradient and the energy are read from this file. The energy
+without entropy (but not the extrapolation to sigma=0) is used.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Optional arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line">outcar_energy  –  When given, the (first) energy without entropy is read from
+this file (not the extrapolation to sigma=0) instead of
+reading the energy from the freq output</div>
+<div class="line">energy  –  The potential energy, which overrides the contents of outcar_freq.</div>
+<div class="line">multiplicity  –  The spin multiplicity of the electronic system
+[default=1]</div>
+<div class="line">is_periodic  –  True when the system is periodic in three dimensions.
+False when the systen is nonperiodic. [default=True].</div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="tamkin.io.vasp.load_fixed_vasp">
+<code class="descclassname">tamkin.io.vasp.</code><code class="descname">load_fixed_vasp</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.io.vasp.load_fixed_vasp" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load list of fixed atoms from VASP output file</p>
+<dl class="docutils">
+<dt>Argument:</dt>
+<dd><div class="first last line-block">
+<div class="line">filename  –  Filename of VASP output file (OUTCAR)</div>
+</div>
+</dd>
+</dl>
+<p>VASP can calculate partial Hessians: only a submatrix of the complete Hessian
+is computed with numerical differentiation. The rest of the Hessian elements
+is put to zero. This function determines which atoms have zero rows/cols in
+the Hessian, or, in other words, which were fixed.</p>
+</dd></dl>
+
+</div>
+</div>
+<div class="section" id="module-tamkin.io.internal">
+<span id="file-formats-specific-for-tamkin"></span><h2>2.2. File formats specific for TAMkin<a class="headerlink" href="#module-tamkin.io.internal" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tamkin.io.internal.load_chk">
+<code class="descclassname">tamkin.io.internal.</code><code class="descname">load_chk</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.io.internal.load_chk" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load a TAMKin checkpoint file</p>
+<dl class="docutils">
+<dt>Argument:</dt>
+<dd><div class="first last line-block">
+<div class="line">filename  –  the file to load from</div>
+</div>
+</dd>
+</dl>
+<p>The return value is a dictionary whose keys are field labels and the
+values can be None, string, integer, float, boolean or an array of
+strings, integers, booleans or floats.</p>
+<p>The file format is similar to the Gaussian fchk format, but has the extra
+feature that the shapes of the arrays are also stored.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tamkin.io.internal.dump_chk">
+<code class="descclassname">tamkin.io.internal.</code><code class="descname">dump_chk</code><span class="sig-paren">(</span><em>filename</em>, <em>data</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.io.internal.dump_chk" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dump a TAMKin checkpoint file</p>
+<dl class="docutils">
+<dt>Argument:</dt>
+<dd><div class="first last line-block">
+<div class="line">filename  –  the file to write to</div>
+<div class="line">data  – a dictionary whose keys are field labels and the values can
+be None, string, integer, float, boolean, an array/list of
+strings, integers, floats or booleans.</div>
+</div>
+</dd>
+</dl>
+<p>The file format is similar to the Gaussian fchk format, but has the extra
+feature that the shapes of the arrays are also stored.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tamkin.io.internal.load_indices">
+<code class="descclassname">tamkin.io.internal.</code><code class="descname">load_indices</code><span class="sig-paren">(</span><em>filename</em>, <em>shift=None</em>, <em>groups=False</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.io.internal.load_indices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Load atom indexes from file</p>
+<p>Individual atom indices are separated by white space or by one new-line
+character. Ranges of atoms can be specified in two ways:</p>
+<ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">[N1,N2]</span></code>: the range includes N2 (Fortranish).</li>
+<li><code class="docutils literal notranslate"><span class="pre">[N1,N2[</span></code>: the range does not include N2 (Pythonic).</li>
+</ul>
+<p>The atom indexes can be separated by one or more empty lines
+to define groups of atoms that belong toghether in one block. (See the groups
+argument.)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>filename  --  The file to load the indexes from</strong> (<em>|</em>) – </td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Optional arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line">shift  –  A constant shift applied to all atom indexes to convert
+between numbers starting from zero and numbers starting from
+one. When not given, the file is searched from a line beginning
+with <code class="docutils literal notranslate"><span class="pre">#shift=</span></code>, where the value after this prefix is used as
+translation to bring the indices back to C convention. Only the
+first occurence is parsed. If such line is not present, Fortran
+convention is assumed (shift=-1).</div>
+<div class="line">groups  –  When True, the function always returns a list of lists,
+even when only one group of indexes is found in the file.
+Otherwise only a single list of indexes is returned, even
+when multiple groups of indexes are encountered.</div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="tamkin.io.internal.dump_indices">
+<code class="descclassname">tamkin.io.internal.</code><code class="descname">dump_indices</code><span class="sig-paren">(</span><em>filename</em>, <em>indices</em>, <em>shift=1</em>, <em>compact=True</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.io.internal.dump_indices" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dump atom indexes to file</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>filename  --  the file to dump the atom indexes to</strong> (<em>|</em>) – </td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Optional arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line">indices  –  a list of atom indices or a list of lists of atom indices
+(the latter is used to define blocks of atoms)</div>
+<div class="line">shift  –  A constant shift applied to all atom indexes to convert
+between numbers starting from zero and numbers starting
+from one.</div>
+<div class="line">compact  –  When True, the numbers belonging to the same block are
+put on one line, otherwise they are separated by a
+newline character. Different blocks are separated by an
+empty line. [default=True]</div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-tamkin.io.trajectory">
+<span id="tools-to-generate-trajectories"></span><h2>2.3. Tools to generate trajectories<a class="headerlink" href="#module-tamkin.io.trajectory" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tamkin.io.trajectory.dump_modes_xyz">
+<code class="descclassname">tamkin.io.trajectory.</code><code class="descname">dump_modes_xyz</code><span class="sig-paren">(</span><em>nma</em>, <em>indexes=0</em>, <em>prefix='mode'</em>, <em>amplitude=9.44863066960626</em>, <em>frames=36</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.io.trajectory.dump_modes_xyz" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write XYZ trajectory file(s) that vizualize internal mode(s)</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>nma  --  an object that specifies the normal modes</strong><strong>, </strong><strong>several formats</strong> (<em>|</em>) – are supported: (i) a Tamkin NMA object, (ii) a 3-tuple with
+reference coordinates, mass-unweighted mode(s) and atom
+numbers or (iii) a 4-tuple with reference coordinates, mass-
+weighted mode(s), atom numbers and a masses3 vector. the
+latter is a vector with 3*N elements containing the masses of
+the atoms in groups of three.</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Optional arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line">indexes  –  the index or a list of indexes of modes that must be
+written to trajectory files [default=0]</div>
+<div class="line">prefix  –  a prefix used for the output files. the generated
+trajectory filenames have the format prefix.index.xyz
+[default=”mode”]</div>
+<div class="line">amplitude  –  the amplitude of the normal mode vibration in atomic
+untis [default=5*angstrom]</div>
+<div class="line">frames  –  the number of frames written to the trajectory file
+[default=36]</div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="tamkin.io.trajectory.dump_modes_molden">
+<code class="descclassname">tamkin.io.trajectory.</code><code class="descname">dump_modes_molden</code><span class="sig-paren">(</span><em>filename</em>, <em>nma</em>, <em>selected=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.io.trajectory.dump_modes_molden" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write freqs and modes to a file in the Gaussian log format.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>filename  --  modes are written to this file</strong><strong>,</strong> (<em>|</em>) – can be read by Molden (visualization program)</li>
+<li><strong>nma  --  an NMA object</strong><strong> or </strong><strong>a tuple</strong><strong> or </strong><strong>list with five elements</strong> (<em>|</em>) – modes,
+frequencies, masses, numbers, coordinates. See
+_make_moldenfile for details.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Optional argument:</dt>
+<dd><div class="first last line-block">
+<div class="line">selected  –  Selection of modes for which to make
+trajectories. This can be a list or array
+of mode indices (length &lt;= N), or an
+array of booleans (length = N).</div>
+</div>
+</dd>
+</dl>
+<p>The output file will look like a stripped Gaussian03 or Gaussian09 log
+file. It is sufficient to visualize the modes in Molden, Openbabel or
+Avogadro.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tamkin.io.trajectory.dump_modes_gaussian">
+<code class="descclassname">tamkin.io.trajectory.</code><code class="descname">dump_modes_gaussian</code><span class="sig-paren">(</span><em>filename</em>, <em>nma</em>, <em>selected=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.io.trajectory.dump_modes_gaussian" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write freqs and modes to a file in the Gaussian log format.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>filename  --  modes are written to this file</strong><strong>,</strong> (<em>|</em>) – can be read by Molden (visualization program)</li>
+<li><strong>nma  --  an NMA object</strong><strong> or </strong><strong>a tuple</strong><strong> or </strong><strong>list with five elements</strong> (<em>|</em>) – modes,
+frequencies, masses, numbers, coordinates. See
+_make_moldenfile for details.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Optional argument:</dt>
+<dd><div class="first last line-block">
+<div class="line">selected  –  Selection of modes for which to make
+trajectories. This can be a list or array
+of mode indices (length &lt;= N), or an
+array of booleans (length = N).</div>
+</div>
+</dd>
+</dl>
+<p>The output file will look like a stripped Gaussian03 or Gaussian09 log
+file. It is sufficient to visualize the modes in Molden, Openbabel or
+Avogadro.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">2. Input/output</a><ul>
+<li><a class="reference internal" href="#tools-to-read-data-from-general-packages">2.1. Tools to read data from general packages</a><ul>
+<li><a class="reference internal" href="#module-tamkin.io.charmm">2.1.1. CHARMM</a></li>
+<li><a class="reference internal" href="#module-tamkin.io.cp2k">2.1.2. CP2K</a></li>
+<li><a class="reference internal" href="#module-tamkin.io.cpmd">2.1.3. CPMD</a></li>
+<li><a class="reference internal" href="#module-tamkin.io.gaussian">2.1.4. Gaussian 03/09</a></li>
+<li><a class="reference internal" href="#module-tamkin.io.qchem">2.1.5. QChem</a></li>
+<li><a class="reference internal" href="#module-tamkin.io.vasp">2.1.6. VASP</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#module-tamkin.io.internal">2.2. File formats specific for TAMkin</a></li>
+<li><a class="reference internal" href="#module-tamkin.io.trajectory">2.3. Tools to generate trajectories</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="tamkin-driver.html"
+                        title="previous chapter">1. The TAMkin driver script</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="nma.html"
+                        title="next chapter">3. Normal mode analysis</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/reference/io.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="nma.html" title="3. Normal mode analysis"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="tamkin-driver.html" title="1. The TAMkin driver script"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">TAMkin 1.2.6 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2010, Toon Verstraelen, An Ghysels.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+    </div>
+  </body>
+</html>

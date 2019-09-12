@@ -1,0 +1,8 @@
+<map id="inheritance5b8be70bc3" name="inheritance5b8be70bc3">
+<area shape="rect" id="node1" title="Extensible class for molecular systems." alt="" coords="5,79,215,104"/>
+<area shape="rect" id="node4" href="#tamkin.data.Molecule" target="_top" title="A container for a Hessian computation output from QM or MM codes." alt="" coords="29,152,191,177"/>
+<area shape="rect" id="node2" title="A base class for read&#45;only objects" alt="" coords="127,5,301,31"/>
+<area shape="rect" id="node6" href="#tamkin.data.RotScan" target="_top" title="A container for rotational scan data" alt="" coords="239,79,397,104"/>
+<area shape="rect" id="node3" href="#tamkin.data.BareNucleus" target="_top" title="A molecule object for bare nuclei" alt="" coords="17,225,203,251"/>
+<area shape="rect" id="node5" href="#tamkin.data.Proton" target="_top" title="A molecule object for a proton (or one of its isotopes)" alt="" coords="37,299,183,324"/>
+</map>

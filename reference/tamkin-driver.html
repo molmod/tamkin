@@ -1,0 +1,373 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>1. The TAMkin driver script &#8212; TAMkin 1.2.6 documentation</title>
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="2. Input/output" href="io.html" />
+    <link rel="prev" title="11. TAMkin programmer’s guide" href="../tutorial/development.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="io.html" title="2. Input/output"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="../tutorial/development.html" title="11. TAMkin programmer’s guide"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">TAMkin 1.2.6 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="the-tamkin-driver-script">
+<h1>1. The TAMkin driver script<a class="headerlink" href="#the-tamkin-driver-script" title="Permalink to this headline">¶</a></h1>
+<p>The TAMkin driver script (<code class="docutils literal notranslate"><span class="pre">tamkin-driver</span></code>) runs a standardized TAMkin
+computation based on the files and directories present in the current directory.
+This script needs no command line arguments. (When command line arguments are
+present, this documentation is printed on screen.)</p>
+<div class="section" id="assumed-layout-of-the-current-directory">
+<h2>1.1. Assumed layout of the current directory<a class="headerlink" href="#assumed-layout-of-the-current-directory" title="Permalink to this headline">¶</a></h2>
+<p>This script assumes that the current directory has subdirectories as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">re_</span><span class="o">*/</span>            <span class="c1"># Reactant molecule subdirectories (at least one).</span>
+<span class="n">ts_</span><span class="o">*/</span>            <span class="c1"># Transition state molecule subdirectory (optional, at most one).</span>
+<span class="n">pr_</span><span class="o">*/</span>            <span class="c1"># Reaction product molecule subdirectories (optional).</span>
+<span class="n">kinetics</span><span class="o">.</span><span class="n">cfg</span>     <span class="c1"># Contains parameters for reaction kinetics computation.</span>
+<span class="n">equilibrium</span><span class="o">.</span><span class="n">cfg</span>  <span class="c1"># Contains parameters for chemical equilibrium computation.</span>
+</pre></div>
+</div>
+<p>The layout of each <cite>molecule</cite> subdirectory is documented below.</p>
+<p>Reactants are mandatory. One transition state or one or more products may
+be present. Depending on the available directories, the following two
+computations may take place:</p>
+<ul class="simple">
+<li>When a transition state is present, the kinetic parameters are computed. In
+this case, a config file <code class="docutils literal notranslate"><span class="pre">kinetics.cfg</span></code> must be present. (Details given below.)</li>
+<li>When reaction products are present, the equilibrium constant is computed. In
+this case, one may add a file <code class="docutils literal notranslate"><span class="pre">equilibrium.cfg</span></code>. (Details given below.)</li>
+</ul>
+<p>Even when no transition state or reaction products are present, useful computation can be
+performed, e.g. by providing a file <code class="docutils literal notranslate"><span class="pre">thermo.cfg</span></code> telling at which temperatures all
+properties of the reactants must be computed. (Details given below.)</p>
+</div>
+<div class="section" id="assumed-layout-of-a-molecule-directory-re-ts-or-pr">
+<h2>1.2. Assumed layout of a molecule directory (re_*/, ts_*/ or pr_*/)<a class="headerlink" href="#assumed-layout-of-a-molecule-directory-re-ts-or-pr" title="Permalink to this headline">¶</a></h2>
+<p>At most one of the following sets of files must be present in the directory:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">freq</span><span class="o">/</span><span class="n">gaussian</span><span class="o">.</span><span class="n">fchk</span>     <span class="c1"># the formatted checkpoint file of a Gaussian03/09 computation.</span>
+
+<span class="n">freq</span><span class="o">/</span><span class="n">POSCAR</span>            <span class="c1"># input geometry and frequency output of a VASP calculation</span>
+<span class="n">freq</span><span class="o">/</span><span class="n">OUTCAR</span>
+
+<span class="n">sp</span><span class="o">/</span><span class="n">cp2k</span><span class="o">.</span><span class="n">out</span>            <span class="c1"># CP2K output files for frequency and single-point calculations.</span>
+<span class="n">freq</span><span class="o">/</span><span class="n">cp2k</span><span class="o">.</span><span class="n">out</span>          <span class="c1"># The single-point must contain energy and forces.</span>
+</pre></div>
+</div>
+<p>The following files may be present in the directory:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">molecule</span><span class="o">.</span><span class="n">cfg</span>           <span class="c1"># specifies additional parameters of the molecule.</span>
+                       <span class="c1"># (Details given below.)</span>
+
+<span class="n">dftd3</span><span class="o">/</span><span class="n">dftd3</span><span class="o">.</span><span class="n">out</span>        <span class="c1"># the screen output of the dftd3 program redirected</span>
+                       <span class="c1"># to a file. this adds an a posteriori Grimme</span>
+                       <span class="c1"># Dispersion correction to the energy.</span>
+
+<span class="n">sp</span><span class="o">/</span><span class="n">gaussian</span><span class="o">.</span><span class="n">fchk</span>       <span class="c1"># a Gaussian03/09 formatted checkpoint file to</span>
+                       <span class="c1"># replace the energy from the frequency job by a more</span>
+                       <span class="c1"># accurate one.</span>
+
+<span class="n">sp</span><span class="o">/</span><span class="n">OUTCAR</span>              <span class="c1"># The output of a VASP single-point calculation with a</span>
+                       <span class="c1"># more accurate energy compared to the frequency calculation.</span>
+
+<span class="n">rotor_g_</span><span class="o">*/</span><span class="n">gaussian</span><span class="o">.</span><span class="n">log</span> <span class="c1"># adds a rotor based on a Gaussian 03/09 relaxed</span>
+<span class="n">rotor_g_</span><span class="o">*/</span><span class="n">rotor</span><span class="o">.</span><span class="n">cfg</span>    <span class="c1"># scan. (Details given below. More than one allowed.)</span>
+
+<span class="n">rotor_f_</span><span class="o">*/</span><span class="n">rotor</span><span class="o">.</span><span class="n">cfg</span>    <span class="c1"># specifies a free rotor. (Details given</span>
+                       <span class="c1"># below. More than one allowed.)</span>
+
+<span class="n">rotor_c_</span><span class="o">*/</span><span class="n">rotor</span><span class="o">.</span><span class="n">dat</span>    <span class="c1"># specifies a custom hindered rotor. (Details given</span>
+<span class="n">rotor_c_</span><span class="o">*/</span><span class="n">rotor</span><span class="o">.</span><span class="n">cfg</span>    <span class="c1"># below. More than one allowed.)</span>
+</pre></div>
+</div>
+<p>All other files are simply ignored.</p>
+</div>
+<div class="section" id="config-and-data-files">
+<h2>1.3. Config and data files<a class="headerlink" href="#config-and-data-files" title="Permalink to this headline">¶</a></h2>
+<p>All configuration files (<code class="docutils literal notranslate"><span class="pre">*.cfg</span></code>) have the following format. Every non-empty
+line consists of a key followed one or more values, all separated by whitespace.
+Comments can be added with a #, just as in Python source code. Each file has its
+specific keys that are processed. Unknown keys are ignored.</p>
+<p>For example, the following is a valid <code class="docutils literal notranslate"><span class="pre">molecule.cfg</span></code> file:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">freq_scaling</span> <span class="mf">0.95</span>
+<span class="n">symnum</span> <span class="mi">3</span>
+<span class="c1"># This line is ignored.</span>
+<span class="n">unkown_option</span> <span class="ow">is</span> <span class="n">ignored</span> <span class="k">as</span> <span class="n">well</span>
+</pre></div>
+</div>
+<p>The following config files are read by the <code class="docutils literal notranslate"><span class="pre">tamkin-driver</span></code> script:</p>
+<ul>
+<li><p class="first"><strong>kinetics.cfg</strong>: <code class="docutils literal notranslate"><span class="pre">temp_low</span></code>, <code class="docutils literal notranslate"><span class="pre">temp_high</span></code>, <code class="docutils literal notranslate"><span class="pre">temp_step</span></code>, <code class="docutils literal notranslate"><span class="pre">tunneling</span></code></p>
+<blockquote>
+<div><dl class="docutils">
+<dt><code class="docutils literal notranslate"><span class="pre">temp_low</span></code> and <code class="docutils literal notranslate"><span class="pre">temp_high</span></code> (mandatory)</dt>
+<dd><p class="first last">These specifiy the minimum and maximum temperature for the Arrhenius
+plot.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">temp_step</span></code> (optional)</dt>
+<dd><p class="first last">The temperature interval for the datapoints for the Arrhenius plot.
+[default=10]</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">tunneling</span></code> (optional)</dt>
+<dd><p class="first last">When set to True, the Eckart tunneling is applied to the computation
+of reaction rates.</p>
+</dd>
+</dl>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>equilibrium.cfg</strong>: <code class="docutils literal notranslate"><span class="pre">temps</span></code></p>
+<blockquote>
+<div><dl class="docutils">
+<dt><code class="docutils literal notranslate"><span class="pre">temps</span></code> (optional)</dt>
+<dd><p class="first last">A list of temperatures at which the equilibrium constant is computed.</p>
+</dd>
+</dl>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>thermo.cfg</strong>: <code class="docutils literal notranslate"><span class="pre">temps</span></code></p>
+<blockquote>
+<div><dl class="docutils">
+<dt><code class="docutils literal notranslate"><span class="pre">temps</span></code> (optional)</dt>
+<dd><p class="first last">A list of temperatures at which all properties of the partition functions must be
+computed.</p>
+</dd>
+</dl>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>molecule.cfg</strong>: <code class="docutils literal notranslate"><span class="pre">symnum</span></code>, <code class="docutils literal notranslate"><span class="pre">freq_scaling</span></code>, <code class="docutils literal notranslate"><span class="pre">zp_scaling</span></code>, <code class="docutils literal notranslate"><span class="pre">periodic</span></code></p>
+<blockquote>
+<div><dl class="docutils">
+<dt><code class="docutils literal notranslate"><span class="pre">freq_scaling</span></code> (optional)</dt>
+<dd><p class="first last">The frequency scaling factor to correct for systematic deviations of the
+level theory used to compute the Hessian. [default=1.0]</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">symnum</span></code> (optional)</dt>
+<dd><p class="first last">This keyword can be used to assign the rotational symmetry number. For
+molecules with less than 10 atoms, this number is estimated
+automatically when not given. For larger molecules, the default value is
+1.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">zp_scaling</span></code> (optional)</dt>
+<dd><p class="first last">The zero-point scaling factor to correct for systematic deviations of the
+level theory used to compute the Hessian. [default=1.0]</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">periodic</span></code> (optional)</dt>
+<dd><p class="first last">The default value is True for VASP calculations. It is ignored for Gaussian
+calculations.</p>
+</dd>
+</dl>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>rotor_g_*/rotor.cfg</strong>: <code class="docutils literal notranslate"><span class="pre">dofmax</span></code>, <code class="docutils literal notranslate"><span class="pre">even</span></code>, <code class="docutils literal notranslate"><span class="pre">fortran</span></code>, <code class="docutils literal notranslate"><span class="pre">num_levels</span></code>,
+<code class="docutils literal notranslate"><span class="pre">rotsym</span></code>, <code class="docutils literal notranslate"><span class="pre">top</span></code></p>
+</li>
+<li><p class="first"><strong>rotor_f_*/rotor.cfg</strong>: <code class="docutils literal notranslate"><span class="pre">dihed</span></code>, <code class="docutils literal notranslate"><span class="pre">dofmax</span></code>, <code class="docutils literal notranslate"><span class="pre">fortran</span></code>, <code class="docutils literal notranslate"><span class="pre">num_levels</span></code>,
+<code class="docutils literal notranslate"><span class="pre">rotsym</span></code>, <code class="docutils literal notranslate"><span class="pre">top</span></code></p>
+</li>
+<li><p class="first"><strong>rotor_c_*/rotor.cfg</strong>: <code class="docutils literal notranslate"><span class="pre">even</span></code>, <code class="docutils literal notranslate"><span class="pre">dihed</span></code>, <code class="docutils literal notranslate"><span class="pre">dofmax</span></code>, <code class="docutils literal notranslate"><span class="pre">fortran</span></code>,
+<code class="docutils literal notranslate"><span class="pre">num_levels</span></code>, <code class="docutils literal notranslate"><span class="pre">rotsym</span></code>, <code class="docutils literal notranslate"><span class="pre">top</span></code></p>
+<blockquote>
+<div><dl class="docutils">
+<dt><code class="docutils literal notranslate"><span class="pre">even</span></code> (optional)</dt>
+<dd><p class="first last">A boolean (True or False) to indicate that the torsional potential is
+even. [default=False]</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">dihed</span></code> (mandatory)</dt>
+<dd><p class="first last">A list of four atom indexes that define the dihedral angle, separated by
+whitespace.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">dofmax</span></code> (optional)</dt>
+<dd><p class="first last">The maximum number of cosines used to represent the torsional potential.
+if the potential is not even, the same number of sines is also used.
+[default=5]</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">fortran</span></code> (optional)</dt>
+<dd><p class="first last">A boolean (True or False) to indicate that the atom indexes are given in
+Fortran convention. (Counting starts from one instead of zero). This is
+option relevant for the keys <code class="docutils literal notranslate"><span class="pre">dihed</span></code> and <code class="docutils literal notranslate"><span class="pre">top</span></code>. [default=False]</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">num_levels</span></code> (optional)</dt>
+<dd><p class="first last">The number of energy levels considered in the QM treatment of the rotor.
+[default=50]</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">rotsym</span></code> (optional)</dt>
+<dd><p class="first last">The rotational symmetry of the internal rotor. [default=1]</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">top</span></code> (optional)</dt>
+<dd><p class="first last">The atoms in the rotating top. When not given, an attempt is made to
+derive this top from the choice of the dihedral angle and the molecular
+topology. (This attempt is often not successful for structures
+containing multiple molecules. In that case, top must be
+provided.</p>
+</dd>
+</dl>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>rotor_c_*/rotor.dat</strong></p>
+<blockquote>
+<div><p>The file <code class="docutils literal notranslate"><span class="pre">rotor_c_*/rotor.dat</span></code> just contains two columns of data, angles
+(radians) and energies (hartree), that specify the custom torsional potential.
+It does not follow the <code class="docutils literal notranslate"><span class="pre">*.cfg</span></code> format.</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>fixed.txt</strong></p>
+<blockquote>
+<div><p>A file with atomic indices, which are to be considered fixed in space. When fixed
+atoms are present, the PHVA method is used and external degrees of freedom are no
+longer projected out. The format of files with atomic indices is discussed below.</p>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>blocks.txt</strong></p>
+<blockquote>
+<div><p>A file with groups of atoms that should be treated as rigid blocks in the normal-mode
+analysis. The format of files with atomic indices is discussed below.</p>
+</div></blockquote>
+</li>
+</ul>
+</div>
+<div class="section" id="notes">
+<h2>1.4. Notes<a class="headerlink" href="#notes" title="Permalink to this headline">¶</a></h2>
+<ul>
+<li><p class="first">The energy levels of a hindered rotor are found by solving the Schroedinger
+equation in a plane wave basis. A truncated Fourier series is used to expand
+the potential energy. The truncation can be controlled with the <code class="docutils literal notranslate"><span class="pre">dofmax</span></code>
+parameter. When the RMSD between the Fourier series and the data is larger
+than 1 kJ/mol or 1%, the driver will stop with an error message. The simplest
+solution is to increase <code class="docutils literal notranslate"><span class="pre">dofmax</span></code> (above the default of 5). However, one also
+has to make sure that the potential from the relaxed scan is sensible. If it
+contains a rotational symmetry, limit the scan to one period and add the
+appropriate <code class="docutils literal notranslate"><span class="pre">rotsym</span></code> keyword in the <code class="docutils literal notranslate"><span class="pre">rotor.cfg</span></code> file. If the scan is even,
+one can again halve the range of the scan and add <code class="docutils literal notranslate"><span class="pre">even</span> <span class="pre">true</span></code> to the file
+<code class="docutils literal notranslate"><span class="pre">rotor.cfg</span></code>. For example, for a standard methyl top, the scan of the
+dihedral angle must be limited to the interval [0 deg, 60 deg] and the following
+lines must be added to the file <code class="docutils literal notranslate"><span class="pre">rotor.cfg</span></code></p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">rotsym</span> <span class="mi">3</span>
+<span class="n">even</span> <span class="n">true</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">Format of files with atomic indices:</p>
+<ul class="simple">
+<li>Comments start with #. All text after this character is ignored (except for shift, see
+below).</li>
+<li>Empty lines are ignored.</li>
+<li>A non-empty line contains a series of integers or ranges defined by two integers. A
+range is defined as either [N1,N2] or [N1,N2[. In the former case, the N2 is included
+in the range while in the latter case it is not.</li>
+<li>If a line is present of the form “#shift=N” (without spaces), N is used to shift all
+indices upon reading. When it is not encountered, N is assumed to be -1. When N=0,
+the indices are C-style (counting starts from zero). When N=-1, the indices are
+Fortran-style (counting starts from 1).</li>
+<li>When defining multiple rigid blocks, the atom indices must be grouped in paragraphs
+separated by an empty line.</li>
+</ul>
+</li>
+</ul>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">1. The TAMkin driver script</a><ul>
+<li><a class="reference internal" href="#assumed-layout-of-the-current-directory">1.1. Assumed layout of the current directory</a></li>
+<li><a class="reference internal" href="#assumed-layout-of-a-molecule-directory-re-ts-or-pr">1.2. Assumed layout of a molecule directory (re_*/, ts_*/ or pr_*/)</a></li>
+<li><a class="reference internal" href="#config-and-data-files">1.3. Config and data files</a></li>
+<li><a class="reference internal" href="#notes">1.4. Notes</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="../tutorial/development.html"
+                        title="previous chapter">11. TAMkin programmer’s guide</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="io.html"
+                        title="next chapter">2. Input/output</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/reference/tamkin-driver.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="io.html" title="2. Input/output"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="../tutorial/development.html" title="11. TAMkin programmer’s guide"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">TAMkin 1.2.6 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2010, Toon Verstraelen, An Ghysels.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+    </div>
+  </body>
+</html>

@@ -1,0 +1,1524 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>5. Auxiliary modules &#8212; TAMkin 1.2.6 documentation</title>
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="6. References" href="../references.html" />
+    <link rel="prev" title="4. Partition functions" href="pf.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../references.html" title="6. References"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="pf.html" title="4. Partition functions"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">TAMkin 1.2.6 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="auxiliary-modules">
+<h1>5. Auxiliary modules<a class="headerlink" href="#auxiliary-modules" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="module-tamkin.timer">
+<span id="timer-module"></span><h2>5.1. Timer module<a class="headerlink" href="#module-tamkin.timer" title="Permalink to this headline">¶</a></h2>
+<dl class="class">
+<dt id="tamkin.timer.Timer">
+<em class="property">class </em><code class="descclassname">tamkin.timer.</code><code class="descname">Timer</code><a class="headerlink" href="#tamkin.timer.Timer" title="Permalink to this definition">¶</a></dt>
+<dd><p>Timer object to keep track of the time spent in several parts of TAMKin.</p>
+<p>This timer works like a stopwatch. Each time the <a class="reference internal" href="#tamkin.timer.Timer.sample" title="tamkin.timer.Timer.sample"><code class="xref py py-meth docutils literal notranslate"><span class="pre">sample()</span></code></a> method is
+called the current cpu and wall times are recorded toghether with a label</p>
+<p>The methods <a class="reference internal" href="#tamkin.timer.Timer.dump" title="tamkin.timer.Timer.dump"><code class="xref py py-meth docutils literal notranslate"><span class="pre">dump()</span></code></a> and <a class="reference internal" href="#tamkin.timer.Timer.write_to_file" title="tamkin.timer.Timer.write_to_file"><code class="xref py py-meth docutils literal notranslate"><span class="pre">write_to_file()</span></code></a> can be used to
+generate a report.</p>
+<dl class="method">
+<dt id="tamkin.timer.Timer.dump">
+<code class="descname">dump</code><span class="sig-paren">(</span><em>f=&lt;open file '&lt;stdout&gt;'</em>, <em>mode 'w'&gt;</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.timer.Timer.dump" title="Permalink to this definition">¶</a></dt>
+<dd><p>Dump the logfile with timing information, to screen or to a file stream.</p>
+<dl class="docutils">
+<dt>Optional argument:</dt>
+<dd><div class="first last line-block">
+<div class="line">f  –  the stream to write to. [default=sys.stdout]</div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="tamkin.timer.Timer.sample">
+<code class="descname">sample</code><span class="sig-paren">(</span><em>label</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.timer.Timer.sample" title="Permalink to this definition">¶</a></dt>
+<dd><p>Record the current timings and associate them with the given label</p>
+<dl class="docutils">
+<dt>Argument:</dt>
+<dd><div class="first last line-block">
+<div class="line">label  –  A string describing this point in the code.</div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="method">
+<dt id="tamkin.timer.Timer.write_to_file">
+<code class="descname">write_to_file</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.timer.Timer.write_to_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write the logfile with timing information to filename.</p>
+<dl class="docutils">
+<dt>Argument:</dt>
+<dd><div class="first last line-block">
+<div class="line">filename  –  the file to write to.</div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="standard-representation-of-qm-or-mm-data">
+<h2>5.2. Standard representation of QM or MM data<a class="headerlink" href="#standard-representation-of-qm-or-mm-data" title="Permalink to this headline">¶</a></h2>
+<p><strong>Inheritance diagram</strong></p>
+<div class="graphviz"><img src="../_images/inheritance-92f049696a4e500d9e6b205dd80bd85119607ceb.png" alt="Inheritance diagram of tamkin.data" usemap="#inheritance5b8be70bc3" class="inheritance graphviz" /></div>
+<map id="inheritance5b8be70bc3" name="inheritance5b8be70bc3">
+<area shape="rect" id="node4" href="#tamkin.data.Molecule" target="_top" title="A container for a Hessian computation output from QM or MM codes." alt="" coords="29,152,191,177"/>
+<area shape="rect" id="node6" href="#tamkin.data.RotScan" target="_top" title="A container for rotational scan data" alt="" coords="239,79,397,104"/>
+<area shape="rect" id="node3" href="#tamkin.data.BareNucleus" target="_top" title="A molecule object for bare nuclei" alt="" coords="17,225,203,251"/>
+<area shape="rect" id="node5" href="#tamkin.data.Proton" target="_top" title="A molecule object for a proton (or one of its isotopes)" alt="" coords="37,299,183,324"/>
+</map><span class="target" id="module-tamkin.data"></span><p>Most IO routines in <a class="reference internal" href="io.html#module-tamkin.io" title="tamkin.io"><code class="xref py py-mod docutils literal notranslate"><span class="pre">tamkin.io</span></code></a> return instances of the classes
+defined here. These objects are just read-only containers for the QM or MM
+output with a standardized interface.</p>
+<dl class="class">
+<dt id="tamkin.data.Molecule">
+<em class="property">class </em><code class="descclassname">tamkin.data.</code><code class="descname">Molecule</code><span class="sig-paren">(</span><em>numbers</em>, <em>coordinates</em>, <em>masses</em>, <em>energy</em>, <em>gradient</em>, <em>hessian</em>, <em>multiplicity=None</em>, <em>symmetry_number=None</em>, <em>periodic=False</em>, <em>title=None</em>, <em>graph=None</em>, <em>symbols=None</em>, <em>unit_cell=None</em>, <em>fixed=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.data.Molecule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">molmod.molecules.Molecule</span></code></p>
+<p>A container for a Hessian computation output from QM or MM codes.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>numbers -- The atom numbers</strong> (<em>|</em>) – </li>
+<li><strong>coordinates -- the atom coordinates in Bohr</strong><strong> (</strong><strong>float numpy array</strong> (<em>|</em>) – with shape Nx3)</li>
+<li><strong>masses -- The atomic masses in atomic units</strong><strong> (</strong><strong>float numpy array</strong> (<em>|</em>) – with shape N)</li>
+<li><strong>energy -- The molecular energy in Hartree</strong> (<em>|</em>) – </li>
+<li><strong>gradient -- The gradient of the energy</strong><strong>, </strong><strong>i.e. the derivatives</strong> (<em>|</em>) – towards Cartesian coordinates, in atomic units
+(float numpy array with shape Nx3)</li>
+<li><strong>hessian -- The hessian of the energy</strong><strong>, </strong><strong>i.e. the matrix with</strong> (<em>|</em>) – second order derivatives towards Cartesian
+coordinates, in atomic units (float numpy array
+with shape 3Nx3N)</li>
+<li><strong>multiplicity -- The spin multiplicity of the electronic system</strong> (<em>|</em>) – </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Optional arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">symmetry_number</span></code> – The rotational symmetry number, None when
+not known or computed [default=None]</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">periodic</span></code> – True when the system is periodic in three
+dimensions [default=False]</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">title</span></code> – The title of the system</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">graph</span></code> – The molecular graph of the system</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">symbols</span></code> – A list with atom symbols</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">unit_cell</span></code> – The unit cell vectors for periodic structures</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">fixed</span></code> – An array with indices of fixed atoms</div>
+</div>
+</dd>
+</dl>
+<dl class="method">
+<dt id="tamkin.data.Molecule.check_gradient">
+<code class="descname">check_gradient</code><span class="sig-paren">(</span><em>gradient</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.data.Molecule.check_gradient" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tamkin.data.Molecule.check_hessian">
+<code class="descname">check_hessian</code><span class="sig-paren">(</span><em>hessian</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.data.Molecule.check_hessian" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="method">
+<dt id="tamkin.data.Molecule.constrain_ext">
+<code class="descname">constrain_ext</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.data.Molecule.constrain_ext" title="Permalink to this definition">¶</a></dt>
+<dd><p>Project the global translational and rotational vectors
+out of the Hessian and the gradient and return a new Molecule instance.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tamkin.data.Molecule.coordinates">
+<code class="descname">coordinates</code><a class="headerlink" href="#tamkin.data.Molecule.coordinates" title="Permalink to this definition">¶</a></dt>
+<dd><ul class="simple">
+<li>atomic Cartesian coordinates.</li>
+</ul>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.ndarray'&gt;</span></code></li>
+<li>Must have dimension 2.</li>
+<li>Must have shape (?, 3).</li>
+<li>Must have dtype <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.floating'&gt;</span></code>.</li>
+<li>Special conditions: the number of rows must be the same as the length of the array numbers.</li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a href="#id1"><span class="problematic" id="id2">*</span></a>Read-only attribute</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tamkin.data.Molecule.energy">
+<code class="descname">energy</code><a class="headerlink" href="#tamkin.data.Molecule.energy" title="Permalink to this definition">¶</a></dt>
+<dd><ul class="simple">
+<li>no documentation available.</li>
+</ul>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>May not be None.</li>
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'float'&gt;</span></code></li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a href="#id3"><span class="problematic" id="id4">*</span></a>Read-only attribute</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tamkin.data.Molecule.external_basis">
+<code class="descname">external_basis</code><a class="headerlink" href="#tamkin.data.Molecule.external_basis" title="Permalink to this definition">¶</a></dt>
+<dd><ul class="simple">
+<li>The basis for small displacements in the external degrees of freedom..</li>
+</ul>
+<p>The basis is expressed in mass-weighted Cartesian coordinates.
+The three translations are along the x, y, and z-axis. The three
+rotations are about an axis parallel to the x, y, and z-axis
+through the center of mass.
+The returned result depends on the periodicity of the system:</p>
+<ul class="simple">
+<li>When the system is periodic, only the translation external degrees
+are included. The result is an array with shape (3,3N)</li>
+<li>When the system is not periodic, the rotational external
+degrees are also included. The result is an array with shape (6,3N). The
+first three rows correspond to translation, the latter three rows
+correspond to rotation.</li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a href="#id5"><span class="problematic" id="id6">*</span></a>Cached attribute</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tamkin.data.Molecule.fixed">
+<code class="descname">fixed</code><a class="headerlink" href="#tamkin.data.Molecule.fixed" title="Permalink to this definition">¶</a></dt>
+<dd><ul class="simple">
+<li>no documentation available.</li>
+</ul>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.ndarray'&gt;</span></code></li>
+<li>Must have dimension 1.</li>
+<li>Must have dtype <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.signedinteger'&gt;</span></code>.</li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a href="#id7"><span class="problematic" id="id8">*</span></a>Read-only attribute</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tamkin.data.Molecule.get_external_basis_new">
+<code class="descname">get_external_basis_new</code><span class="sig-paren">(</span><em>im_threshold=1.0</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.data.Molecule.get_external_basis_new" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a robust basis for small displacements in the external degrees of freedom.</p>
+<p>The basis is expressed in mass-weighted Cartesian coordinates.
+The three translations are along the x, y, and z-axis. The three
+rotations are about an axis parallel to the x, y, and z-axis
+through the center of mass.</p>
+<p>The returned result depends on the periodicity of the system and on
+the parameter im_threshold:</p>
+<ul class="simple">
+<li>When the system is periodic, only the translation external degrees
+are included. The result is an array with shape (3,3N)</li>
+<li>When the system is not periodic, the rotational external
+degrees are also included. The result is an array with shape (5,3N)
+or (6,3N). The first three rows correspond to translation, the
+latter rows correspond to rotation. Rotational modes that have a
+angular moment below <code class="docutils literal notranslate"><span class="pre">im_threshold</span></code> are discarded.</li>
+</ul>
+</dd></dl>
+
+<dl class="method">
+<dt id="tamkin.data.Molecule.get_submolecule">
+<code class="descname">get_submolecule</code><span class="sig-paren">(</span><em>selected</em>, <em>energy=None</em>, <em>multiplicity=None</em>, <em>symmetry_number=None</em>, <em>periodic=None</em>, <em>graph=None</em>, <em>title=None</em>, <em>symbols=None</em>, <em>unit_cell=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.data.Molecule.get_submolecule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a submolecule with a selection of atoms</p>
+<dl class="docutils">
+<dt>Argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">selected</span></code> – list of atom indices, numbering starts at 0</div>
+</div>
+</dd>
+<dt>Optional arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">energy</span></code> – Molecular electronic energy</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">multiplicity</span></code> – The spin multiplicity of the electronic system</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">symmetry_number</span></code> – The rotational symmetry number. Inherited,
+None when not known or computed [default=0]</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">periodic</span></code> – True when the system is periodic in three dimensions
+[default=False]</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">title</span></code> – The title of the system</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">graph</span></code> – The molecular graph of the system</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">symbols</span></code> – A list with atom symbols</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">unit_cell</span></code> – The unit cell vectors for periodic structures</div>
+</div>
+</dd>
+</dl>
+<p>The function returns a Molecule object consisting of the
+atoms in the selected list. The numbers, coordinates, masses, gradient,
+and Hessian are reduced in size.
+The energy, multiplicity, symmetry_number, periodic and symbols
+attributes are copies of the original molecule attributes, except if
+they are explicitly specified as optional arguments, then they are
+overwritten.</p>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tamkin.data.Molecule.gradient">
+<code class="descname">gradient</code><a class="headerlink" href="#tamkin.data.Molecule.gradient" title="Permalink to this definition">¶</a></dt>
+<dd><ul class="simple">
+<li>no documentation available.</li>
+</ul>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>May not be None.</li>
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.ndarray'&gt;</span></code></li>
+<li>Must have dimension 2.</li>
+<li>Must have shape (?, 3).</li>
+<li>Must have dtype <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.floating'&gt;</span></code>.</li>
+<li>Special conditions: None.</li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a href="#id9"><span class="problematic" id="id10">*</span></a>Read-only attribute</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tamkin.data.Molecule.graph">
+<code class="descname">graph</code><a class="headerlink" href="#tamkin.data.Molecule.graph" title="Permalink to this definition">¶</a></dt>
+<dd><ul class="simple">
+<li>the molecular graph with the atom connectivity.</li>
+</ul>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;class</span> <span class="pre">'molmod.molecular_graphs.MolecularGraph'&gt;</span></code></li>
+<li>Special conditions: the atomic numbers must match.</li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a href="#id11"><span class="problematic" id="id12">*</span></a>Read-only attribute</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tamkin.data.Molecule.hessian">
+<code class="descname">hessian</code><a class="headerlink" href="#tamkin.data.Molecule.hessian" title="Permalink to this definition">¶</a></dt>
+<dd><ul class="simple">
+<li>no documentation available.</li>
+</ul>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>May not be None.</li>
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.ndarray'&gt;</span></code></li>
+<li>Must have dimension 2.</li>
+<li>Must have dtype <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.floating'&gt;</span></code>.</li>
+<li>Special conditions: None.</li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a href="#id13"><span class="problematic" id="id14">*</span></a>Read-only attribute</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tamkin.data.Molecule.masses">
+<code class="descname">masses</code><a class="headerlink" href="#tamkin.data.Molecule.masses" title="Permalink to this definition">¶</a></dt>
+<dd><ul class="simple">
+<li>the atomic masses.</li>
+</ul>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.ndarray'&gt;</span></code></li>
+<li>Must have dimension 1.</li>
+<li>Must have dtype <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.floating'&gt;</span></code>.</li>
+<li>Special conditions: the size must be the same as the length of the array numbers.</li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a href="#id15"><span class="problematic" id="id16">*</span></a>Read-only attribute</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tamkin.data.Molecule.masses3">
+<code class="descname">masses3</code><a class="headerlink" href="#tamkin.data.Molecule.masses3" title="Permalink to this definition">¶</a></dt>
+<dd><ul class="simple">
+<li>An array with the diagonal of the mass matrix in Cartesian coordinates..</li>
+</ul>
+<p>Each atom mass is repeated three times. The total length of the
+array is 3N.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a href="#id17"><span class="problematic" id="id18">*</span></a>Cached attribute</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tamkin.data.Molecule.multiplicity">
+<code class="descname">multiplicity</code><a class="headerlink" href="#tamkin.data.Molecule.multiplicity" title="Permalink to this definition">¶</a></dt>
+<dd><ul class="simple">
+<li>no documentation available.</li>
+</ul>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'int'&gt;</span></code></li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a href="#id19"><span class="problematic" id="id20">*</span></a>Read-only attribute</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tamkin.data.Molecule.numbers">
+<code class="descname">numbers</code><a class="headerlink" href="#tamkin.data.Molecule.numbers" title="Permalink to this definition">¶</a></dt>
+<dd><ul class="simple">
+<li>the atomic numbers.</li>
+</ul>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>May not be None.</li>
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.ndarray'&gt;</span></code></li>
+<li>Must have dimension 1.</li>
+<li>Must have dtype <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.signedinteger'&gt;</span></code>.</li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a href="#id21"><span class="problematic" id="id22">*</span></a>Read-only attribute</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tamkin.data.Molecule.periodic">
+<code class="descname">periodic</code><a class="headerlink" href="#tamkin.data.Molecule.periodic" title="Permalink to this definition">¶</a></dt>
+<dd><ul class="simple">
+<li>no documentation available.</li>
+</ul>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'bool'&gt;</span></code></li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a href="#id23"><span class="problematic" id="id24">*</span></a>Read-only attribute</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tamkin.data.Molecule.raise_ext">
+<code class="descname">raise_ext</code><span class="sig-paren">(</span><em>shift=1.0</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.data.Molecule.raise_ext" title="Permalink to this definition">¶</a></dt>
+<dd><p>Raise the eigenvalues of the global translations and rotations
+to a high value, such that their coupling with the internal vibrations
+becomes negligible, and they can easily be isolated from the vibrations.</p>
+</dd></dl>
+
+<dl class="classmethod">
+<dt id="tamkin.data.Molecule.read_from_file">
+<em class="property">classmethod </em><code class="descname">read_from_file</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.data.Molecule.read_from_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct a Molecule object from a previously saved checkpoint file</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>filename -- the file to load from</strong> (<em>|</em>) – </td>
+</tr>
+</tbody>
+</table>
+<p>Usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">mol</span> <span class="o">=</span> <span class="n">Molecule</span><span class="o">.</span><span class="n">read_from_file</span><span class="p">(</span><span class="s2">&quot;mol.chk&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tamkin.data.Molecule.symbols">
+<code class="descname">symbols</code><a class="headerlink" href="#tamkin.data.Molecule.symbols" title="Permalink to this definition">¶</a></dt>
+<dd><ul class="simple">
+<li>symbols for the atoms, which can be element names for force-field atom types.</li>
+</ul>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'tuple'&gt;</span></code></li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a href="#id25"><span class="problematic" id="id26">*</span></a>Read-only attribute</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tamkin.data.Molecule.symmetry_number">
+<code class="descname">symmetry_number</code><a class="headerlink" href="#tamkin.data.Molecule.symmetry_number" title="Permalink to this definition">¶</a></dt>
+<dd><ul class="simple">
+<li>no documentation available.</li>
+</ul>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'int'&gt;</span></code></li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a href="#id27"><span class="problematic" id="id28">*</span></a>Read-only attribute</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tamkin.data.Molecule.title">
+<code class="descname">title</code><a class="headerlink" href="#tamkin.data.Molecule.title" title="Permalink to this definition">¶</a></dt>
+<dd><ul class="simple">
+<li>a short description of the system.</li>
+</ul>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'str'&gt;</span></code></li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a href="#id29"><span class="problematic" id="id30">*</span></a>Read-only attribute</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tamkin.data.Molecule.unit_cell">
+<code class="descname">unit_cell</code><a class="headerlink" href="#tamkin.data.Molecule.unit_cell" title="Permalink to this definition">¶</a></dt>
+<dd><ul class="simple">
+<li>description of the periodic boundary conditions.</li>
+</ul>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;class</span> <span class="pre">'molmod.unit_cells.UnitCell'&gt;</span></code></li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a href="#id31"><span class="problematic" id="id32">*</span></a>Read-only attribute</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tamkin.data.Molecule.write_to_file">
+<code class="descname">write_to_file</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.data.Molecule.write_to_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write the molecule to a human-readable checkpoint file.</p>
+<dl class="docutils">
+<dt>Argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">filename</span></code> – the file to write to</div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tamkin.data.BareNucleus">
+<em class="property">class </em><code class="descclassname">tamkin.data.</code><code class="descname">BareNucleus</code><span class="sig-paren">(</span><em>number</em>, <em>mass=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.data.BareNucleus" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tamkin.data.Molecule" title="tamkin.data.Molecule"><code class="xref py py-class docutils literal notranslate"><span class="pre">tamkin.data.Molecule</span></code></a></p>
+<p>A molecule object for bare nuclei</p>
+<dl class="docutils">
+<dt>Argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">number</span></code> – The atom number</div>
+</div>
+</dd>
+<dt>Optional argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">mass</span></code> – The mass of the atom in atomic units</div>
+</div>
+</dd>
+</dl>
+<dl class="attribute">
+<dt id="tamkin.data.BareNucleus.coordinates">
+<code class="descname">coordinates</code><a class="headerlink" href="#tamkin.data.BareNucleus.coordinates" title="Permalink to this definition">¶</a></dt>
+<dd><ul class="simple">
+<li>atomic Cartesian coordinates.</li>
+</ul>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.ndarray'&gt;</span></code></li>
+<li>Must have dimension 2.</li>
+<li>Must have shape (?, 3).</li>
+<li>Must have dtype <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.floating'&gt;</span></code>.</li>
+<li>Special conditions: the number of rows must be the same as the length of the array numbers.</li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a href="#id33"><span class="problematic" id="id34">*</span></a>Read-only attribute</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tamkin.data.BareNucleus.energy">
+<code class="descname">energy</code><a class="headerlink" href="#tamkin.data.BareNucleus.energy" title="Permalink to this definition">¶</a></dt>
+<dd><ul class="simple">
+<li>no documentation available.</li>
+</ul>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>May not be None.</li>
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'float'&gt;</span></code></li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a href="#id35"><span class="problematic" id="id36">*</span></a>Read-only attribute</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tamkin.data.BareNucleus.fixed">
+<code class="descname">fixed</code><a class="headerlink" href="#tamkin.data.BareNucleus.fixed" title="Permalink to this definition">¶</a></dt>
+<dd><ul class="simple">
+<li>no documentation available.</li>
+</ul>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.ndarray'&gt;</span></code></li>
+<li>Must have dimension 1.</li>
+<li>Must have dtype <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.signedinteger'&gt;</span></code>.</li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a href="#id37"><span class="problematic" id="id38">*</span></a>Read-only attribute</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tamkin.data.BareNucleus.gradient">
+<code class="descname">gradient</code><a class="headerlink" href="#tamkin.data.BareNucleus.gradient" title="Permalink to this definition">¶</a></dt>
+<dd><ul class="simple">
+<li>no documentation available.</li>
+</ul>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>May not be None.</li>
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.ndarray'&gt;</span></code></li>
+<li>Must have dimension 2.</li>
+<li>Must have shape (?, 3).</li>
+<li>Must have dtype <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.floating'&gt;</span></code>.</li>
+<li>Special conditions: None.</li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a href="#id39"><span class="problematic" id="id40">*</span></a>Read-only attribute</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tamkin.data.BareNucleus.graph">
+<code class="descname">graph</code><a class="headerlink" href="#tamkin.data.BareNucleus.graph" title="Permalink to this definition">¶</a></dt>
+<dd><ul class="simple">
+<li>the molecular graph with the atom connectivity.</li>
+</ul>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;class</span> <span class="pre">'molmod.molecular_graphs.MolecularGraph'&gt;</span></code></li>
+<li>Special conditions: the atomic numbers must match.</li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a href="#id41"><span class="problematic" id="id42">*</span></a>Read-only attribute</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tamkin.data.BareNucleus.hessian">
+<code class="descname">hessian</code><a class="headerlink" href="#tamkin.data.BareNucleus.hessian" title="Permalink to this definition">¶</a></dt>
+<dd><ul class="simple">
+<li>no documentation available.</li>
+</ul>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>May not be None.</li>
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.ndarray'&gt;</span></code></li>
+<li>Must have dimension 2.</li>
+<li>Must have dtype <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.floating'&gt;</span></code>.</li>
+<li>Special conditions: None.</li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a href="#id43"><span class="problematic" id="id44">*</span></a>Read-only attribute</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tamkin.data.BareNucleus.masses">
+<code class="descname">masses</code><a class="headerlink" href="#tamkin.data.BareNucleus.masses" title="Permalink to this definition">¶</a></dt>
+<dd><ul class="simple">
+<li>the atomic masses.</li>
+</ul>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.ndarray'&gt;</span></code></li>
+<li>Must have dimension 1.</li>
+<li>Must have dtype <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.floating'&gt;</span></code>.</li>
+<li>Special conditions: the size must be the same as the length of the array numbers.</li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a href="#id45"><span class="problematic" id="id46">*</span></a>Read-only attribute</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tamkin.data.BareNucleus.multiplicity">
+<code class="descname">multiplicity</code><a class="headerlink" href="#tamkin.data.BareNucleus.multiplicity" title="Permalink to this definition">¶</a></dt>
+<dd><ul class="simple">
+<li>no documentation available.</li>
+</ul>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'int'&gt;</span></code></li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a href="#id47"><span class="problematic" id="id48">*</span></a>Read-only attribute</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tamkin.data.BareNucleus.numbers">
+<code class="descname">numbers</code><a class="headerlink" href="#tamkin.data.BareNucleus.numbers" title="Permalink to this definition">¶</a></dt>
+<dd><ul class="simple">
+<li>the atomic numbers.</li>
+</ul>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>May not be None.</li>
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.ndarray'&gt;</span></code></li>
+<li>Must have dimension 1.</li>
+<li>Must have dtype <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.signedinteger'&gt;</span></code>.</li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a href="#id49"><span class="problematic" id="id50">*</span></a>Read-only attribute</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tamkin.data.BareNucleus.periodic">
+<code class="descname">periodic</code><a class="headerlink" href="#tamkin.data.BareNucleus.periodic" title="Permalink to this definition">¶</a></dt>
+<dd><ul class="simple">
+<li>no documentation available.</li>
+</ul>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'bool'&gt;</span></code></li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a href="#id51"><span class="problematic" id="id52">*</span></a>Read-only attribute</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tamkin.data.BareNucleus.symbols">
+<code class="descname">symbols</code><a class="headerlink" href="#tamkin.data.BareNucleus.symbols" title="Permalink to this definition">¶</a></dt>
+<dd><ul class="simple">
+<li>symbols for the atoms, which can be element names for force-field atom types.</li>
+</ul>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'tuple'&gt;</span></code></li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a href="#id53"><span class="problematic" id="id54">*</span></a>Read-only attribute</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tamkin.data.BareNucleus.symmetry_number">
+<code class="descname">symmetry_number</code><a class="headerlink" href="#tamkin.data.BareNucleus.symmetry_number" title="Permalink to this definition">¶</a></dt>
+<dd><ul class="simple">
+<li>no documentation available.</li>
+</ul>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'int'&gt;</span></code></li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a href="#id55"><span class="problematic" id="id56">*</span></a>Read-only attribute</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tamkin.data.BareNucleus.title">
+<code class="descname">title</code><a class="headerlink" href="#tamkin.data.BareNucleus.title" title="Permalink to this definition">¶</a></dt>
+<dd><ul class="simple">
+<li>a short description of the system.</li>
+</ul>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'str'&gt;</span></code></li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a href="#id57"><span class="problematic" id="id58">*</span></a>Read-only attribute</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tamkin.data.BareNucleus.unit_cell">
+<code class="descname">unit_cell</code><a class="headerlink" href="#tamkin.data.BareNucleus.unit_cell" title="Permalink to this definition">¶</a></dt>
+<dd><ul class="simple">
+<li>description of the periodic boundary conditions.</li>
+</ul>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;class</span> <span class="pre">'molmod.unit_cells.UnitCell'&gt;</span></code></li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a href="#id59"><span class="problematic" id="id60">*</span></a>Read-only attribute</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tamkin.data.Proton">
+<em class="property">class </em><code class="descclassname">tamkin.data.</code><code class="descname">Proton</code><span class="sig-paren">(</span><em>mass=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.data.Proton" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tamkin.data.BareNucleus" title="tamkin.data.BareNucleus"><code class="xref py py-class docutils literal notranslate"><span class="pre">tamkin.data.BareNucleus</span></code></a></p>
+<p>A molecule object for a proton (or one of its isotopes)</p>
+<dl class="docutils">
+<dt>Optional argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">mass</span></code> – The mass of the proton in atomic units</div>
+</div>
+</dd>
+</dl>
+<dl class="attribute">
+<dt id="tamkin.data.Proton.coordinates">
+<code class="descname">coordinates</code><a class="headerlink" href="#tamkin.data.Proton.coordinates" title="Permalink to this definition">¶</a></dt>
+<dd><ul class="simple">
+<li>atomic Cartesian coordinates.</li>
+</ul>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.ndarray'&gt;</span></code></li>
+<li>Must have dimension 2.</li>
+<li>Must have shape (?, 3).</li>
+<li>Must have dtype <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.floating'&gt;</span></code>.</li>
+<li>Special conditions: the number of rows must be the same as the length of the array numbers.</li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a href="#id61"><span class="problematic" id="id62">*</span></a>Read-only attribute</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tamkin.data.Proton.energy">
+<code class="descname">energy</code><a class="headerlink" href="#tamkin.data.Proton.energy" title="Permalink to this definition">¶</a></dt>
+<dd><ul class="simple">
+<li>no documentation available.</li>
+</ul>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>May not be None.</li>
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'float'&gt;</span></code></li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a href="#id63"><span class="problematic" id="id64">*</span></a>Read-only attribute</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tamkin.data.Proton.fixed">
+<code class="descname">fixed</code><a class="headerlink" href="#tamkin.data.Proton.fixed" title="Permalink to this definition">¶</a></dt>
+<dd><ul class="simple">
+<li>no documentation available.</li>
+</ul>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.ndarray'&gt;</span></code></li>
+<li>Must have dimension 1.</li>
+<li>Must have dtype <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.signedinteger'&gt;</span></code>.</li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a href="#id65"><span class="problematic" id="id66">*</span></a>Read-only attribute</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tamkin.data.Proton.gradient">
+<code class="descname">gradient</code><a class="headerlink" href="#tamkin.data.Proton.gradient" title="Permalink to this definition">¶</a></dt>
+<dd><ul class="simple">
+<li>no documentation available.</li>
+</ul>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>May not be None.</li>
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.ndarray'&gt;</span></code></li>
+<li>Must have dimension 2.</li>
+<li>Must have shape (?, 3).</li>
+<li>Must have dtype <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.floating'&gt;</span></code>.</li>
+<li>Special conditions: None.</li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a href="#id67"><span class="problematic" id="id68">*</span></a>Read-only attribute</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tamkin.data.Proton.graph">
+<code class="descname">graph</code><a class="headerlink" href="#tamkin.data.Proton.graph" title="Permalink to this definition">¶</a></dt>
+<dd><ul class="simple">
+<li>the molecular graph with the atom connectivity.</li>
+</ul>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;class</span> <span class="pre">'molmod.molecular_graphs.MolecularGraph'&gt;</span></code></li>
+<li>Special conditions: the atomic numbers must match.</li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a href="#id69"><span class="problematic" id="id70">*</span></a>Read-only attribute</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tamkin.data.Proton.hessian">
+<code class="descname">hessian</code><a class="headerlink" href="#tamkin.data.Proton.hessian" title="Permalink to this definition">¶</a></dt>
+<dd><ul class="simple">
+<li>no documentation available.</li>
+</ul>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>May not be None.</li>
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.ndarray'&gt;</span></code></li>
+<li>Must have dimension 2.</li>
+<li>Must have dtype <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.floating'&gt;</span></code>.</li>
+<li>Special conditions: None.</li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a href="#id71"><span class="problematic" id="id72">*</span></a>Read-only attribute</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tamkin.data.Proton.masses">
+<code class="descname">masses</code><a class="headerlink" href="#tamkin.data.Proton.masses" title="Permalink to this definition">¶</a></dt>
+<dd><ul class="simple">
+<li>the atomic masses.</li>
+</ul>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.ndarray'&gt;</span></code></li>
+<li>Must have dimension 1.</li>
+<li>Must have dtype <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.floating'&gt;</span></code>.</li>
+<li>Special conditions: the size must be the same as the length of the array numbers.</li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a href="#id73"><span class="problematic" id="id74">*</span></a>Read-only attribute</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tamkin.data.Proton.multiplicity">
+<code class="descname">multiplicity</code><a class="headerlink" href="#tamkin.data.Proton.multiplicity" title="Permalink to this definition">¶</a></dt>
+<dd><ul class="simple">
+<li>no documentation available.</li>
+</ul>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'int'&gt;</span></code></li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a href="#id75"><span class="problematic" id="id76">*</span></a>Read-only attribute</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tamkin.data.Proton.numbers">
+<code class="descname">numbers</code><a class="headerlink" href="#tamkin.data.Proton.numbers" title="Permalink to this definition">¶</a></dt>
+<dd><ul class="simple">
+<li>the atomic numbers.</li>
+</ul>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>May not be None.</li>
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.ndarray'&gt;</span></code></li>
+<li>Must have dimension 1.</li>
+<li>Must have dtype <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.signedinteger'&gt;</span></code>.</li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a href="#id77"><span class="problematic" id="id78">*</span></a>Read-only attribute</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tamkin.data.Proton.periodic">
+<code class="descname">periodic</code><a class="headerlink" href="#tamkin.data.Proton.periodic" title="Permalink to this definition">¶</a></dt>
+<dd><ul class="simple">
+<li>no documentation available.</li>
+</ul>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'bool'&gt;</span></code></li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a href="#id79"><span class="problematic" id="id80">*</span></a>Read-only attribute</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tamkin.data.Proton.symbols">
+<code class="descname">symbols</code><a class="headerlink" href="#tamkin.data.Proton.symbols" title="Permalink to this definition">¶</a></dt>
+<dd><ul class="simple">
+<li>symbols for the atoms, which can be element names for force-field atom types.</li>
+</ul>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'tuple'&gt;</span></code></li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a href="#id81"><span class="problematic" id="id82">*</span></a>Read-only attribute</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tamkin.data.Proton.symmetry_number">
+<code class="descname">symmetry_number</code><a class="headerlink" href="#tamkin.data.Proton.symmetry_number" title="Permalink to this definition">¶</a></dt>
+<dd><ul class="simple">
+<li>no documentation available.</li>
+</ul>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'int'&gt;</span></code></li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a href="#id83"><span class="problematic" id="id84">*</span></a>Read-only attribute</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tamkin.data.Proton.title">
+<code class="descname">title</code><a class="headerlink" href="#tamkin.data.Proton.title" title="Permalink to this definition">¶</a></dt>
+<dd><ul class="simple">
+<li>a short description of the system.</li>
+</ul>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'str'&gt;</span></code></li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a href="#id85"><span class="problematic" id="id86">*</span></a>Read-only attribute</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tamkin.data.Proton.unit_cell">
+<code class="descname">unit_cell</code><a class="headerlink" href="#tamkin.data.Proton.unit_cell" title="Permalink to this definition">¶</a></dt>
+<dd><ul class="simple">
+<li>description of the periodic boundary conditions.</li>
+</ul>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;class</span> <span class="pre">'molmod.unit_cells.UnitCell'&gt;</span></code></li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a href="#id87"><span class="problematic" id="id88">*</span></a>Read-only attribute</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tamkin.data.RotScan">
+<em class="property">class </em><code class="descclassname">tamkin.data.</code><code class="descname">RotScan</code><span class="sig-paren">(</span><em>dihedral</em>, <em>molecule=None</em>, <em>top_indexes=None</em>, <em>potential=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.data.RotScan" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">molmod.utils.ReadOnly</span></code></p>
+<p>A container for rotational scan data</p>
+<dl class="docutils">
+<dt>Arguments</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">dihedral</span></code> – the index of the atoms that define the dihedral
+angle</div>
+</div>
+</dd>
+<dt>Optional arguments</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">molecule</span></code> – a molecule object. required when top_indexes is not
+given</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">top_indexes</span></code> – a list of atom indexes involved in the rotor.
+required when molecule is not given or when the
+top_indexes can not be derived automatically.</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">potential</span></code> – rotational potential info (if this is a hindered
+rotor). must be a two-tuple containing the angles
+and the corresponding energies.</div>
+</div>
+</dd>
+</dl>
+<dl class="method">
+<dt id="tamkin.data.RotScan.check_top_indexes">
+<code class="descname">check_top_indexes</code><span class="sig-paren">(</span><em>top_indexes</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.data.RotScan.check_top_indexes" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt id="tamkin.data.RotScan.dihedral">
+<code class="descname">dihedral</code><a class="headerlink" href="#tamkin.data.RotScan.dihedral" title="Permalink to this definition">¶</a></dt>
+<dd><ul class="simple">
+<li>no documentation available.</li>
+</ul>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>May not be None.</li>
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.ndarray'&gt;</span></code></li>
+<li>Must have dimension 1.</li>
+<li>Must have shape (4).</li>
+<li>Must have dtype <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.signedinteger'&gt;</span></code>.</li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a href="#id89"><span class="problematic" id="id90">*</span></a>Read-only attribute</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tamkin.data.RotScan.potential">
+<code class="descname">potential</code><a class="headerlink" href="#tamkin.data.RotScan.potential" title="Permalink to this definition">¶</a></dt>
+<dd><ul class="simple">
+<li>no documentation available.</li>
+</ul>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.ndarray'&gt;</span></code></li>
+<li>Must have dimension 2.</li>
+<li>Must have shape (2, ?).</li>
+<li>Must have dtype <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.floating'&gt;</span></code>.</li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a href="#id91"><span class="problematic" id="id92">*</span></a>Read-only attribute</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tamkin.data.RotScan.top_indexes">
+<code class="descname">top_indexes</code><a class="headerlink" href="#tamkin.data.RotScan.top_indexes" title="Permalink to this definition">¶</a></dt>
+<dd><ul class="simple">
+<li>no documentation available.</li>
+</ul>
+<p>The attribute must satisfy the following conditions:</p>
+<ul class="simple">
+<li>May not be None.</li>
+<li>Must be an instance of <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.ndarray'&gt;</span></code></li>
+<li>Must have dimension 1.</li>
+<li>Must have dtype <code class="docutils literal notranslate"><span class="pre">&lt;type</span> <span class="pre">'numpy.signedinteger'&gt;</span></code>.</li>
+<li>Special conditions: None.</li>
+</ul>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Type:</th><td class="field-body"><a href="#id93"><span class="problematic" id="id94">*</span></a>Read-only attribute</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="function">
+<dt id="tamkin.data.translate_pbc">
+<code class="descclassname">tamkin.data.</code><code class="descname">translate_pbc</code><span class="sig-paren">(</span><em>molecule</em>, <em>selected</em>, <em>displ</em>, <em>vectors=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.data.translate_pbc" title="Permalink to this definition">¶</a></dt>
+<dd><p>Translate the structure along the lattice vectors</p>
+<p>This method is meant to be used in periodic structures, where periodic
+boundary conditions apply (pbc).</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>molecule -- A Molecule instance.</strong> (<em>|</em>) – </li>
+<li><strong>selected -- A list of indices of the atoms that will be displaced.</strong> (<em>|</em>) – </li>
+<li><strong>displ -- A list of 3 integers</strong> (<em>|</em>) – [i0,i1,i2]. The selected atoms will
+be displaced over i0 lattice distances in the 0-axis
+direction, similarly for i1 and i2.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Optional argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">vectors</span></code> – The lattice vectors, one in each column. If not
+specified, the vectors in the unit_cell attribute of
+the molecule is used.</div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+<div class="section" id="module-tamkin.geom">
+<span id="analysis-of-molecular-geometries"></span><h2>5.3. Analysis of molecular geometries<a class="headerlink" href="#module-tamkin.geom" title="Permalink to this headline">¶</a></h2>
+<dl class="function">
+<dt id="tamkin.geom.transrot_basis">
+<code class="descclassname">tamkin.geom.</code><code class="descname">transrot_basis</code><span class="sig-paren">(</span><em>coordinates</em>, <em>rot=True</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.geom.transrot_basis" title="Permalink to this definition">¶</a></dt>
+<dd><p>Constructs 6 vectors which represent global translations/rotations.</p>
+<dl class="docutils">
+<dt>Argument:</dt>
+<dd><div class="first last line-block">
+<div class="line">coordinates  –  The atom coordinates (float numpy array with shape
+Nx3)</div>
+</div>
+</dd>
+<dt>Optional argument:</dt>
+<dd><div class="first last line-block">
+<div class="line">rot  –  When True the rotations are included [default=True]</div>
+</div>
+</dd>
+</dl>
+<p>The return value is a numpy array with 3*N columns and 6 (<code class="docutils literal notranslate"><span class="pre">rot==True</span></code>)
+or 3 (<code class="docutils literal notranslate"><span class="pre">rot==False</span></code>) rows. The rows are not mass weighted.</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tamkin.geom.rank_linearity">
+<code class="descclassname">tamkin.geom.</code><code class="descname">rank_linearity</code><span class="sig-paren">(</span><em>coordinates</em>, <em>svd_threshold=1e-05</em>, <em>masses3=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.geom.rank_linearity" title="Permalink to this definition">¶</a></dt>
+<dd><p>Test the linearity of the given coordinates</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>coordinates  --  The atom coordinates</strong><strong> (</strong><strong>float numpy array with shape</strong> (<em>|</em>) – Nx3)</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Optional argument:</dt>
+<dd><div class="first last line-block">
+<div class="line">svd_threshold  –  Defines the sensitivity for deviations from
+linearity [default=1e-5]</div>
+<div class="line">masses3  –  array with atomic masses (each mass is repeated trice)</div>
+</div>
+</dd>
+</dl>
+<p>Returns the number of external degrees of freedom (dof) and the
+corresponding basis. The dof can be</p>
+<ul class="simple">
+<li>6 dof if atoms of system are non-collinear</li>
+<li>5 dof if atoms of system are collinear, e.g. when the subsystem
+contains only 2 atoms</li>
+<li>3 dof if system contains just 1 atom</li>
+</ul>
+<p>If masses3 is given, the analysis is performed in mass-weighted
+coordinates and the returned basis is in mass-weighted coordinates.
+If masses3 is not given everything is done in non-mass-weighted Cartesian
+coordinates.</p>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">5. Auxiliary modules</a><ul>
+<li><a class="reference internal" href="#module-tamkin.timer">5.1. Timer module</a></li>
+<li><a class="reference internal" href="#standard-representation-of-qm-or-mm-data">5.2. Standard representation of QM or MM data</a></li>
+<li><a class="reference internal" href="#module-tamkin.geom">5.3. Analysis of molecular geometries</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="pf.html"
+                        title="previous chapter">4. Partition functions</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="../references.html"
+                        title="next chapter">6. References</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/reference/aux.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="../references.html" title="6. References"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="pf.html" title="4. Partition functions"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">TAMkin 1.2.6 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2010, Toon Verstraelen, An Ghysels.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+    </div>
+  </body>
+</html>

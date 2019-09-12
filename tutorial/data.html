@@ -1,0 +1,378 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>5. Generating data for TAMkin &#8212; TAMkin 1.2.6 documentation</title>
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="7. Chemical Physics – Theoretical Background" href="chemphys_theory.html" />
+    <link rel="prev" title="4. Getting started with TAMkin" href="getting_started.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="chemphys_theory.html" title="7. Chemical Physics – Theoretical Background"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="getting_started.html" title="4. Getting started with TAMkin"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">TAMkin 1.2.6 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="generating-data-for-tamkin">
+<h1>5. Generating data for TAMkin<a class="headerlink" href="#generating-data-for-tamkin" title="Permalink to this headline">¶</a></h1>
+<p>TAMkin can read information from CHARMM, Gaussian, GAMESS, CP2K, CPMD,
+Q-CHEM and VASP. Some of these programs offer freedom in the amount of output
+that is printed to the output file. To produce output that TAMkin can read from,
+we suggest the following settings.</p>
+<p>Although most packages can do the standard frequency computation, the actual
+frequencies are never read by TAMkin. Instead, TAMkin reads all the ingredients
+(such as the Hessian and the atomic masses) required for the computation the
+frequencies. This makes it possible to compute frequencies with different types
+of normal mode analysis methods.</p>
+<div class="section" id="charmm">
+<h2>5.1. CHARMM<a class="headerlink" href="#charmm" title="Permalink to this headline">¶</a></h2>
+<p>See <a class="reference external" href="http://www.charmm.org/">http://www.charmm.org/</a></p>
+<p>The CHARMM-input file should contain a <code class="docutils literal notranslate"><span class="pre">VIBRAN</span></code> section:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>CALC k = 3 * ?NATOM
+VIBRan NMODes @k
+OPEN WRITe CARD UNIT 20 NAME filename.hessian
+WRITe SECOnd CARD UNIT 20
+* title - Full Hessian
+*
+END
+</pre></div>
+</div>
+<p>where the <code class="docutils literal notranslate"><span class="pre">WRITe</span> <span class="pre">SECOnd</span></code> command will write the Hessian to the file
+<code class="docutils literal notranslate"><span class="pre">filename.hessian</span></code>. In addition, the statement</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">SCALar</span> <span class="n">MASS</span> <span class="n">SHOW</span>
+</pre></div>
+</div>
+<p>should be called before writing the coordinates to a coordinate file,
+such that the atomic masses will be included in the coordinate file.</p>
+</div>
+<div class="section" id="cp2k">
+<h2>5.2. CP2K<a class="headerlink" href="#cp2k" title="Permalink to this headline">¶</a></h2>
+<p>See <a class="reference external" href="https://www.cp2k.org/">https://www.cp2k.org/</a></p>
+<ol class="loweralpha">
+<li><p class="first">The optimization:</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&amp;</span><span class="n">GLOBAL</span>
+  <span class="n">RUN_TYPE</span> <span class="n">GEO_OPT</span>
+  <span class="n">PRINT_LEVEL</span> <span class="n">LOW</span>
+<span class="o">&amp;</span><span class="n">END</span> <span class="n">GLOBAL</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">The calculation of the energy (one SCF optimization):</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&amp;</span><span class="n">GLOBAL</span>
+  <span class="n">RUN_TYPE</span>  <span class="n">ENERGY_FORCE</span>
+  <span class="n">PRINT_LEVEL</span> <span class="n">HIGH</span>
+<span class="o">&amp;</span><span class="n">END</span> <span class="n">GLOBAL</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first">The frequency calculation:</p>
+<div class="code highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">&amp;</span><span class="n">VIBRATIONAL_ANALYSIS</span>
+  <span class="n">FULLY_PERIODIC</span> <span class="n">T</span>
+<span class="o">&amp;</span><span class="n">END</span> <span class="n">VIBRATIONAL_ANALYSIS</span>
+<span class="o">...</span>
+<span class="o">&amp;</span><span class="n">MOTION</span>
+   <span class="c1"># Optionally constrain some atoms, such that only a partial Hessian is</span>
+   <span class="c1"># computed. The same constraints can be used in the optimization.</span>
+   <span class="c1"># You should not use _more_ constraints in the optimization. Less is OK but</span>
+   <span class="c1"># sometimes not needed.</span>
+   <span class="o">&amp;</span><span class="n">CONSTRAINT</span>
+      <span class="o">&amp;</span><span class="n">FIXED_ATOMS</span>
+          <span class="n">COMPONENTS_TO_FIX</span>  <span class="n">XYZ</span>
+          <span class="n">LIST</span> <span class="p">{</span><span class="n">integer</span><span class="p">}</span>  <span class="ow">or</span> <span class="n">a</span> <span class="nb">range</span> <span class="p">{</span><span class="n">integer</span><span class="p">}</span><span class="o">..</span><span class="p">{</span><span class="n">integer</span><span class="p">}</span>
+      <span class="o">&amp;</span><span class="n">END</span> <span class="n">FIXED_ATOMS</span>
+   <span class="o">&amp;</span><span class="n">END</span> <span class="n">CONSTRAINT</span>
+<span class="o">&amp;</span><span class="n">END</span> <span class="n">MOTION</span>
+<span class="o">...</span>
+<span class="o">&amp;</span><span class="n">GLOBAL</span>
+  <span class="n">RUN_TYPE</span>  <span class="n">vibrational_analysis</span>
+  <span class="n">PRINT_LEVEL</span> <span class="n">medium</span>
+<span class="o">&amp;</span><span class="n">END</span> <span class="n">GLOBAL</span>
+</pre></div>
+</div>
+</li>
+</ol>
+</div>
+<div class="section" id="cpmd">
+<h2>5.3. CPMD<a class="headerlink" href="#cpmd" title="Permalink to this headline">¶</a></h2>
+<p><strong>TODO</strong></p>
+</div>
+<div class="section" id="gamess">
+<h2>5.4. GAMESS<a class="headerlink" href="#gamess" title="Permalink to this headline">¶</a></h2>
+<p><strong>TODO</strong></p>
+</div>
+<div class="section" id="gaussian-98-03-09">
+<h2>5.5. Gaussian 98/03/09<a class="headerlink" href="#gaussian-98-03-09" title="Permalink to this headline">¶</a></h2>
+<p>See <a class="reference external" href="http://www.gaussian.com/">http://www.gaussian.com/</a></p>
+<p>Always let Gaussian keep the checkpoint file by adding the following line on top
+of the Gaussian input:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="o">%</span><span class="n">chk</span><span class="o">=</span><span class="n">prefix</span><span class="o">.</span><span class="n">chk</span>
+</pre></div>
+</div>
+<p>Replace <code class="docutils literal notranslate"><span class="pre">prefix</span></code> by the prefix of the <code class="docutils literal notranslate"><span class="pre">.com</span></code> file. After the computation,
+immediately transform the checkpoint file into a formatted checkpoint file:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">toon</span><span class="nd">@poony</span> <span class="o">~&gt;</span> <span class="n">formchk</span> <span class="n">prefix</span><span class="o">.</span><span class="n">chk</span> <span class="n">prefix</span><span class="o">.</span><span class="n">fchk</span>
+</pre></div>
+</div>
+<p>The original checkpoint file is in binary format and is not transferable from
+one CPU architecture to another, so the <code class="docutils literal notranslate"><span class="pre">formchk</span></code> command must be executed on
+the (type of) machine where the computation was done. The formmated checkpoint
+file is a text file that is used by TAMkin to extract all the results from a
+Gaussian computation.</p>
+<p>For optimizations we recommend the <code class="docutils literal notranslate"><span class="pre">opt(tight)</span></code> option as it improves the
+reproducibility of the frequencies. For frequency calculations, one can use
+<code class="docutils literal notranslate"><span class="pre">freq(noraman)</span></code> to skip the computation of Raman intensities. They are not
+used by TAMkin and require about 10% of the computation time in a frequency job.
+It is not recommended to work with link jobs because the formatted checkpoint
+file only contains information about the last link.</p>
+</div>
+<div class="section" id="q-chem">
+<h2>5.6. Q-Chem<a class="headerlink" href="#q-chem" title="Permalink to this headline">¶</a></h2>
+<p>See <a class="reference external" href="http://www.q-chem.com/">http://www.q-chem.com/</a></p>
+<p><strong>TODO</strong></p>
+</div>
+<div class="section" id="q-chem-charmm-qm-mm">
+<h2>5.7. Q-Chem/CHARMM (QM/MM)<a class="headerlink" href="#q-chem-charmm-qm-mm" title="Permalink to this headline">¶</a></h2>
+<p><strong>TODO</strong></p>
+</div>
+<div class="section" id="vasp">
+<h2>5.8. VASP<a class="headerlink" href="#vasp" title="Permalink to this headline">¶</a></h2>
+<p><strong>TODO</strong></p>
+</div>
+</div>
+<div class="section" id="loading-data-into-tamkin">
+<h1>6. Loading data into TAMkin<a class="headerlink" href="#loading-data-into-tamkin" title="Permalink to this headline">¶</a></h1>
+<p>Once the proper output is created with a computational chemistry package, it
+can be loaded into TAMkin to perform a normal mode analysis and thermochemistry
+computations. Detailed instructions per package are listed below.</p>
+<div class="section" id="id1">
+<h2>6.1. CHARMM<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
+<p>For the details, see <a class="reference internal" href="../reference/io.html#module-tamkin.io.charmm" title="tamkin.io.charmm"><code class="xref py py-mod docutils literal notranslate"><span class="pre">tamkin.io.charmm</span></code></a>.</p>
+<p><strong>TODO</strong></p>
+</div>
+<div class="section" id="id2">
+<h2>6.2. CP2K<a class="headerlink" href="#id2" title="Permalink to this headline">¶</a></h2>
+<p>For the details, see <a class="reference internal" href="../reference/io.html#module-tamkin.io.cp2k" title="tamkin.io.cp2k"><code class="xref py py-mod docutils literal notranslate"><span class="pre">tamkin.io.cp2k</span></code></a>.</p>
+<p><strong>TODO</strong></p>
+</div>
+<div class="section" id="id3">
+<h2>6.3. CPMD<a class="headerlink" href="#id3" title="Permalink to this headline">¶</a></h2>
+<p>For the details, see <a class="reference internal" href="../reference/io.html#module-tamkin.io.cpmd" title="tamkin.io.cpmd"><code class="xref py py-mod docutils literal notranslate"><span class="pre">tamkin.io.cpmd</span></code></a>.</p>
+<p><strong>TODO</strong></p>
+</div>
+<div class="section" id="id4">
+<h2>6.4. GAMESS<a class="headerlink" href="#id4" title="Permalink to this headline">¶</a></h2>
+<p>For the details, see <code class="xref py py-mod docutils literal notranslate"><span class="pre">tamkin.io.gamess</span></code>.</p>
+<p><strong>TODO</strong></p>
+</div>
+<div class="section" id="gaussian-98">
+<h2>6.5. Gaussian 98<a class="headerlink" href="#gaussian-98" title="Permalink to this headline">¶</a></h2>
+<p>For the details, see <a class="reference internal" href="../reference/io.html#tamkin.io.gaussian.load_molecule_g98fchk" title="tamkin.io.gaussian.load_molecule_g98fchk"><code class="xref py py-func docutils literal notranslate"><span class="pre">tamkin.io.gaussian.load_molecule_g98fchk()</span></code></a>.</p>
+<p>Given a formatted checkpoint file, it is loaded as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">molecule</span> <span class="o">=</span> <span class="n">load_molecule_g98fchk</span><span class="p">(</span><span class="s2">&quot;freq.fchk&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>where <code class="docutils literal notranslate"><span class="pre">&quot;freq.fchk&quot;</span></code> is the name of the formatted checkpoint file of a
+frequency computation in Gaussian98. One may also provide a second formatted
+checkpoint with a refined energy computation:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">molecule</span> <span class="o">=</span> <span class="n">load_molecule_g98fchk</span><span class="p">(</span><span class="s2">&quot;freq.fchk&quot;</span><span class="p">,</span> <span class="s2">&quot;ener.fchk&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>It is also possible to give a numerical value for the refined energy (in
+internal units, i.e. Hartree):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">molecule</span> <span class="o">=</span> <span class="n">load_molecule_g98fchk</span><span class="p">(</span><span class="s2">&quot;freq.fchk&quot;</span><span class="p">,</span> <span class="n">energy</span><span class="o">=-</span><span class="mf">135.12597</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Gaussian98 does not write the atomic masses to the formatted checkpoint file.
+Therefore the atomic masses used by Gaussian98 are added in a rather artificial
+way inside the <code class="docutils literal notranslate"><span class="pre">load_molecule_g98fchk</span></code> routine. If you wish to override these
+masses with the IUPAC 2005 values, use the following snippet:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">molmod.periodci</span> <span class="k">import</span> <span class="n">periodic</span>
+<span class="kn">import</span> <span class="nn">numpy</span>
+
+<span class="n">molecule</span> <span class="o">=</span> <span class="n">load_molecule_g98fchk</span><span class="p">(</span><span class="s2">&quot;gaussian.fchk&quot;</span><span class="p">)</span>
+<span class="n">new_masses</span> <span class="o">=</span> <span class="n">numpy</span><span class="o">.</span><span class="n">array</span><span class="p">([</span><span class="n">periodic</span><span class="p">[</span><span class="n">n</span><span class="p">]</span><span class="o">.</span><span class="n">mass</span> <span class="k">for</span> <span class="n">n</span> <span class="ow">in</span> <span class="n">molecule</span><span class="o">.</span><span class="n">numbers</span><span class="p">])</span>
+<span class="n">molecule</span> <span class="o">=</span> <span class="n">molecule</span><span class="o">.</span><span class="n">copy_with</span><span class="p">(</span><span class="n">masses</span><span class="o">=</span><span class="n">new_masses</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="gaussian-03-09">
+<h2>6.6. Gaussian 03/09<a class="headerlink" href="#gaussian-03-09" title="Permalink to this headline">¶</a></h2>
+<p>For the details, see <a class="reference internal" href="../reference/io.html#tamkin.io.gaussian.load_molecule_g03fchk" title="tamkin.io.gaussian.load_molecule_g03fchk"><code class="xref py py-func docutils literal notranslate"><span class="pre">tamkin.io.gaussian.load_molecule_g03fchk()</span></code></a>.</p>
+<p><cite>Note</cite>: Formatted checkpoint files of Gaussian03 and Gaussian09 can both be
+read with <code class="docutils literal notranslate"><span class="pre">load_molecule_g03fchk</span></code></p>
+<p>Given a formatted checkpoint file, it is loaded as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">molecule</span> <span class="o">=</span> <span class="n">load_molecule_g03fchk</span><span class="p">(</span><span class="s2">&quot;freq.fchk&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>where <code class="docutils literal notranslate"><span class="pre">&quot;freq.fchk&quot;</span></code> is the name of the formatted checkpoint file of a
+frequency computation in Gaussian03 or Gaussian09. One may also provide a second
+formatted checkpoint with a refined energy computation:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">molecule</span> <span class="o">=</span> <span class="n">load_molecule_g03fchk</span><span class="p">(</span><span class="s2">&quot;freq.fchk&quot;</span><span class="p">,</span> <span class="s2">&quot;ener.fchk&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>It is also possible to give a numerical value for the refined energy (in
+internal units, i.e. Hartree):</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">molecule</span> <span class="o">=</span> <span class="n">load_molecule_g03fchk</span><span class="p">(</span><span class="s2">&quot;freq.fchk&quot;</span><span class="p">,</span> <span class="n">energy</span><span class="o">=-</span><span class="mf">135.12597</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="section" id="torsional-potentials">
+<h3>6.6.1. Torsional potentials<a class="headerlink" href="#torsional-potentials" title="Permalink to this headline">¶</a></h3>
+<p>For the details, see <a class="reference internal" href="../reference/io.html#tamkin.io.gaussian.load_rotscan_g03log" title="tamkin.io.gaussian.load_rotscan_g03log"><code class="xref py py-func docutils literal notranslate"><span class="pre">tamkin.io.gaussian.load_rotscan_g03log()</span></code></a>.</p>
+<p>For the treatment of hindered internal rotors one must load the torsional
+potential data from a relaxed potential energy surface scan.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">load_rotscan_g03log</span><span class="p">(</span><span class="s2">&quot;scan.log&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>where <code class="docutils literal notranslate"><span class="pre">&quot;scan.log&quot;</span></code> refers to the Gaussian log file of the PES scan. (The
+formatted checkpoint file is not used here as it does not specify the dihedral
+angle that was used for the scan.) The routine <code class="docutils literal notranslate"><span class="pre">load_rotscan_g03log</span></code> tries
+to figure out which atoms belong to the rotor <cite>top</cite>. It will always take the
+smallest of the two possibilities. In case this does not work for some reason,
+one may manually specify the atom indexes of the rotor <cite>top</cite>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">top_indexes</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">3</span><span class="p">,</span> <span class="mi">5</span><span class="p">]</span> <span class="c1"># Counting starts from zero.</span>
+<span class="n">load_rotscan_g03log</span><span class="p">(</span><span class="s2">&quot;scan.log&quot;</span><span class="p">,</span> <span class="n">top_indexes</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+<div class="section" id="id5">
+<h2>6.7. Q-Chem<a class="headerlink" href="#id5" title="Permalink to this headline">¶</a></h2>
+<p>For the details, see <a class="reference internal" href="../reference/io.html#module-tamkin.io.qchem" title="tamkin.io.qchem"><code class="xref py py-mod docutils literal notranslate"><span class="pre">tamkin.io.qchem</span></code></a>.</p>
+<p><strong>TODO</strong></p>
+</div>
+<div class="section" id="id6">
+<h2>6.8. Q-Chem/CHARMM (QM/MM)<a class="headerlink" href="#id6" title="Permalink to this headline">¶</a></h2>
+<p>For the details, see <a class="reference internal" href="../reference/io.html#module-tamkin.io.qchem" title="tamkin.io.qchem"><code class="xref py py-mod docutils literal notranslate"><span class="pre">tamkin.io.qchem</span></code></a>.</p>
+<p><strong>TODO</strong></p>
+</div>
+<div class="section" id="id7">
+<h2>6.9. VASP<a class="headerlink" href="#id7" title="Permalink to this headline">¶</a></h2>
+<p>For the details, see <a class="reference internal" href="../reference/io.html#module-tamkin.io.vasp" title="tamkin.io.vasp"><code class="xref py py-mod docutils literal notranslate"><span class="pre">tamkin.io.vasp</span></code></a>.</p>
+<p><strong>TODO</strong></p>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">5. Generating data for TAMkin</a><ul>
+<li><a class="reference internal" href="#charmm">5.1. CHARMM</a></li>
+<li><a class="reference internal" href="#cp2k">5.2. CP2K</a></li>
+<li><a class="reference internal" href="#cpmd">5.3. CPMD</a></li>
+<li><a class="reference internal" href="#gamess">5.4. GAMESS</a></li>
+<li><a class="reference internal" href="#gaussian-98-03-09">5.5. Gaussian 98/03/09</a></li>
+<li><a class="reference internal" href="#q-chem">5.6. Q-Chem</a></li>
+<li><a class="reference internal" href="#q-chem-charmm-qm-mm">5.7. Q-Chem/CHARMM (QM/MM)</a></li>
+<li><a class="reference internal" href="#vasp">5.8. VASP</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#loading-data-into-tamkin">6. Loading data into TAMkin</a><ul>
+<li><a class="reference internal" href="#id1">6.1. CHARMM</a></li>
+<li><a class="reference internal" href="#id2">6.2. CP2K</a></li>
+<li><a class="reference internal" href="#id3">6.3. CPMD</a></li>
+<li><a class="reference internal" href="#id4">6.4. GAMESS</a></li>
+<li><a class="reference internal" href="#gaussian-98">6.5. Gaussian 98</a></li>
+<li><a class="reference internal" href="#gaussian-03-09">6.6. Gaussian 03/09</a><ul>
+<li><a class="reference internal" href="#torsional-potentials">6.6.1. Torsional potentials</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#id5">6.7. Q-Chem</a></li>
+<li><a class="reference internal" href="#id6">6.8. Q-Chem/CHARMM (QM/MM)</a></li>
+<li><a class="reference internal" href="#id7">6.9. VASP</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="getting_started.html"
+                        title="previous chapter">4. Getting started with TAMkin</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="chemphys_theory.html"
+                        title="next chapter">7. Chemical Physics – Theoretical Background</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/tutorial/data.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="chemphys_theory.html" title="7. Chemical Physics – Theoretical Background"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="getting_started.html" title="4. Getting started with TAMkin"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">TAMkin 1.2.6 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2010, Toon Verstraelen, An Ghysels.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+    </div>
+  </body>
+</html>

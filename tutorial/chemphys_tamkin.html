@@ -1,0 +1,765 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>8. Chemical Physics – Working with TAMkin &#8212; TAMkin 1.2.6 documentation</title>
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="9. Chemical Physics – Basic TAMkin recipes" href="chemphys_examples.html" />
+    <link rel="prev" title="7. Chemical Physics – Theoretical Background" href="chemphys_theory.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="chemphys_examples.html" title="9. Chemical Physics – Basic TAMkin recipes"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="chemphys_theory.html" title="7. Chemical Physics – Theoretical Background"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">TAMkin 1.2.6 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="chemical-physics-working-with-tamkin">
+<h1>8. Chemical Physics – Working with TAMkin<a class="headerlink" href="#chemical-physics-working-with-tamkin" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="macroscopic-properties-of-molecular-systems">
+<h2>8.1. Macroscopic properties of molecular systems<a class="headerlink" href="#macroscopic-properties-of-molecular-systems" title="Permalink to this headline">¶</a></h2>
+<p>TAMkin describes the partition function of molecular systems starting from the
+the ideal gas and the harmonic oscillator approximation. Once the partition
+function is specified, all thermodynamic quantities can be derived as a function
+of temperature and pressure (or density). Several extensions to the ideal gas
+and harmonic oscillator approximation are supported to improve the agreement
+between computational predictions and experimental observations.</p>
+<div class="section" id="definition-of-the-partition-function">
+<h3>8.1.1. Definition of the partition function<a class="headerlink" href="#definition-of-the-partition-function" title="Permalink to this headline">¶</a></h3>
+<p>In order to compute thermodynamic quantities with TAMkin, it is crucial to
+specify the correct parameters for the partition function of the molecular
+system under scrutiny. One must pay special attention to the compatibility of
+the normal mode analysis (NMA, to compute the vibrational spectrum) and the
+definition of the partition function. TAMkin will not complain about <cite>unusual</cite>
+combinations of NMA’s and Partition functions.</p>
+<p>In the tutorial below, all the microscopic computations are all carried out with
+Gaussian03, but one can replace the <code class="docutils literal notranslate"><span class="pre">load_molecule_...</span></code> line with anything
+suitable to load data from other (quantum) chemistry packages. The same
+instructions also work starting from Gaussian09 computations.</p>
+<p>The text below shows <cite>snippets</cite> of Python code to perform certain tasks. When
+you use these <cite>snippets</cite> in a TAMkin script, do not forget to add the line
+<code class="docutils literal notranslate"><span class="pre">from</span> <span class="pre">tamkin</span> <span class="pre">import</span> <span class="pre">*</span></code> on top of the file.</p>
+<div class="section" id="ideal-gas-molecules">
+<h4>8.1.1.1. Ideal gas molecules<a class="headerlink" href="#ideal-gas-molecules" title="Permalink to this headline">¶</a></h4>
+<p>The following three lines of Python code construct a partition function for
+an ideal gas molecule using the standard options:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">mol</span> <span class="o">=</span> <span class="n">load_molecule_g03fchk</span><span class="p">(</span><span class="s2">&quot;gaussian.fchk&quot;</span><span class="p">)</span>
+<span class="n">nma</span> <span class="o">=</span> <span class="n">NMA</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">ConstrainExt</span><span class="p">())</span>
+<span class="n">pf</span> <span class="o">=</span> <span class="n">PartFun</span><span class="p">(</span><span class="n">nma</span><span class="p">,</span> <span class="p">[</span><span class="n">ExtTrans</span><span class="p">(),</span> <span class="n">ExtRot</span><span class="p">()])</span>
+</pre></div>
+</div>
+<p>In this example, the file <code class="docutils literal notranslate"><span class="pre">&quot;gaussian.fchk&quot;</span></code> comes from a Gaussian frequency
+computation on the optimized geometry of the molecule of interest.</p>
+<p>The following options can be used to specify the details, but the standard
+values for these options are suitable for most applications.</p>
+<ul>
+<li><p class="first"><strong>Options for ConstrainExt</strong>. See <a class="reference internal" href="../reference/nma.html#tamkin.nma.ConstrainExt" title="tamkin.nma.ConstrainExt"><code class="xref py py-class docutils literal notranslate"><span class="pre">tamkin.nma.ConstrainExt</span></code></a> for the
+details. The <code class="docutils literal notranslate"><span class="pre">ConstrainExt()</span></code> object specifies that the normal mode analysis
+must be performed in 3N-6 (or 3N-5) internal coordinates. This is the default
+procedure in most programs.</p>
+<p>The method only gives the correct result when the geometry is sufficiently
+optimized, i.e. when the gradient of the energy is approximately zero. This
+condition will be checked by comparing the maximum absolute value of the
+gradient vector with a threshold value. If the threshold is violated, TAMkin
+raises an error and your script will abort. The threshold can be specified as
+an option to <code class="docutils literal notranslate"><span class="pre">ConstrainExt</span></code>. The following would relax the default
+threshold:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nma</span> <span class="o">=</span> <span class="n">NMA</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">ConstrainExt</span><span class="p">(</span><span class="n">gradient_threshold</span><span class="o">=</span><span class="mf">0.01</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>The method also checks if the molecule is linear, which is based on the
+angular moments of inertia. Any angular momentum below the parameter
+im_threshold is treated as zero. The following setting would allow more
+deviations from linearity in linear molecules:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nma</span> <span class="o">=</span> <span class="n">NMA</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">ConstrainExt</span><span class="p">(</span><span class="n">im_threshold</span><span class="o">=</span><span class="mf">10.0</span><span class="p">))</span>
+</pre></div>
+</div>
+<p><em>Note:</em> that the im_threshold value is given here in internal (atomic) units.
+For comparison, the lowest moment of inertia in ethane is about 40435 atomic
+units.</p>
+<p>One can always check the log file (see below) of a partition function to see
+if the molecule was considered to be linear or not. When combining both
+options, they must be separated by a comma:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nma</span> <span class="o">=</span> <span class="n">NMA</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">ConstrainExt</span><span class="p">(</span><span class="n">gradient_threshold</span><span class="o">=</span><span class="mf">0.01</span><span class="p">,</span> <span class="n">im_threshold</span><span class="o">=</span><span class="mf">10.0</span><span class="p">))</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first"><strong>Full instead of ConstrainExt</strong>. See <a class="reference internal" href="../reference/nma.html#tamkin.nma.Full" title="tamkin.nma.Full"><code class="xref py py-class docutils literal notranslate"><span class="pre">tamkin.nma.Full</span></code></a> for the
+details. Instead of constraining the external degrees of freedom, one may
+also perform the normal mode analysis in 3N coordinates and hope that the
+Hessian is accurate enough to produce 6 zero frequencies. They will be
+elminated automatically for the vibrational contribution to the partition
+function.</p>
+<p>For a proper identification of the zero frequencies, the <code class="docutils literal notranslate"><span class="pre">Full</span></code> treatment
+will also check the linearity of the molecule, just like the <code class="docutils literal notranslate"><span class="pre">ConstrainExt</span></code>
+treatment. One can relax the linearity check as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nma</span> <span class="o">=</span> <span class="n">NMA</span><span class="p">(</span><span class="n">mol</span><span class="p">,</span> <span class="n">Full</span><span class="p">(</span><span class="n">im_threshold</span><span class="o">=</span><span class="mf">10.0</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>There are no other options for the full treatment.</p>
+</li>
+<li><p class="first"><strong>Arguments for the PartFun object</strong>. See <a class="reference internal" href="../reference/pf.html#tamkin.partf.PartFun" title="tamkin.partf.PartFun"><code class="xref py py-class docutils literal notranslate"><span class="pre">tamkin.partf.PartFun</span></code></a> for
+the details. The partition function object is merely a definition of the
+partition function. It can be used to compute the numerical value of the
+partition function (and many other properties) at a given temperature and
+pressure.</p>
+<p>The contributions to the partition function must be specified when the object
+is created. By default, the vibrational and the electronic part are included.
+The first argument is a normal mode analysis object. It is used to set up the
+vibrational and the electronic contribution. Additional contributions are
+given in a list (square brackets). For gas phase molecules, one typically adds
+the <code class="docutils literal notranslate"><span class="pre">ExtTrans</span></code> and <code class="docutils literal notranslate"><span class="pre">ExtRot</span></code> contributions.</p>
+</li>
+<li><p class="first"><strong>Options for ExtTrans</strong>. See <a class="reference internal" href="../reference/pf.html#tamkin.partf.ExtTrans" title="tamkin.partf.ExtTrans"><code class="xref py py-class docutils literal notranslate"><span class="pre">tamkin.partf.ExtTrans</span></code></a> for the details.
+The <code class="docutils literal notranslate"><span class="pre">ExtTrans</span></code> class defines the translational contribution to the partition
+function. For practical reasons, this contribution also includes the many
+body effects of the partition function of the classical (ideal) gas, and the
+optional contributions for the constant pressure ensemble. The following
+options can be used:</p>
+<dl class="docutils">
+<dt><code class="docutils literal notranslate"><span class="pre">cp</span></code> (default <code class="docutils literal notranslate"><span class="pre">cp=True</span></code>).</dt>
+<dd><p class="first last">By default the translational contribution includes the corrections to
+describe an NpT partition function instead of an NVT partition function. If
+you are interested in the constant volume boundary conditions (NVY
+ensemble), use the option <code class="docutils literal notranslate"><span class="pre">cp=False</span></code>.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">pressure</span></code> (default <code class="docutils literal notranslate"><span class="pre">pressure=None</span></code>, only allowed when <code class="docutils literal notranslate"><span class="pre">cp==True</span></code>).</dt>
+<dd><p class="first last">The default value of <code class="docutils literal notranslate"><span class="pre">pressure</span></code> is 1 bar for 3D gases, 75.64 mNewton/m for
+2D gases (surface tension of water) and 1.0 atomic units for any other
+dimension. <em>Note:</em> several quantities derived from the partition function do
+not explicitly depend on the pressure in the case of ideal gases. If you
+want to see the (absence of) pressure dependence, use the method
+<code class="docutils literal notranslate"><span class="pre">ExtTrans.set_pressure()</span></code> and recompute the thermodynamic quantities
+afterwards.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">density</span></code> (default <code class="docutils literal notranslate"><span class="pre">density=None</span></code>, only allowed when <code class="docutils literal notranslate"><span class="pre">cp==False</span></code>).</dt>
+<dd><p class="first last">The default value of <code class="docutils literal notranslate"><span class="pre">density</span></code> is 1 mol/m<sub>dim</sub>, where dim is the
+dimension of the gas. <em>Note:</em> several quantities derived from the partition
+function do not explicitly depend on the density in the case of ideal gases.
+If you want to see the (absence of) density dependence, use the method
+<code class="docutils literal notranslate"><span class="pre">ExtTrans.set_density()</span></code> and recompute the thermodynamic quantities
+afterwards.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">dim</span></code> (default <code class="docutils literal notranslate"><span class="pre">dim=3</span></code>).</dt>
+<dd><p class="first last">The dimension of the gas. For ordinary gases, the dimension is three.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">mobile</span></code> (default <code class="docutils literal notranslate"><span class="pre">mobile=None</span></code>).</dt>
+<dd><p class="first last">One may specify that only a part of the system has translational freedom.
+This is not relevant for molecules in the gas phase.</p>
+</dd>
+</dl>
+</li>
+<li><p class="first"><strong>Options for ExtRot</strong>. See <a class="reference internal" href="../reference/pf.html#tamkin.partf.ExtRot" title="tamkin.partf.ExtRot"><code class="xref py py-class docutils literal notranslate"><span class="pre">tamkin.partf.ExtRot</span></code></a> for the details.</p>
+<dl class="docutils">
+<dt><code class="docutils literal notranslate"><span class="pre">symmetry_number</span></code> (default <code class="docutils literal notranslate"><span class="pre">symmetry_number=None</span></code>).</dt>
+<dd><p class="first last">When the symmetry number is not given, it is computed from the molecular
+geometry and topology. This may not work properly or very slowly for
+gigantic systems. In that case, specify symmetry_number=1, or whatever the
+number it should be.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">im_threshold</span></code> (default <code class="docutils literal notranslate"><span class="pre">im_threshold=1.0</span></code>).</dt>
+<dd><p class="first last">The threshold to determine if the molecule is linear or not. If one of the
+moments of inertia drops below this number, the molecule is considered to be
+linear. The value 1.0 is in internal (atomic) units.</p>
+</dd>
+</dl>
+</li>
+<li><p class="first"><strong>Options for Vibrations</strong>. See <a class="reference internal" href="../reference/pf.html#tamkin.partf.Vibrations" title="tamkin.partf.Vibrations"><code class="xref py py-class docutils literal notranslate"><span class="pre">tamkin.partf.Vibrations</span></code></a> for the
+details. One does not have to add a <code class="docutils literal notranslate"><span class="pre">Vibrations</span></code> object to the list of
+contributions in the partition function, unless one wants to modify the
+options of the vibrational contribution.</p>
+<dl class="docutils">
+<dt><code class="docutils literal notranslate"><span class="pre">classical</span></code> (default <code class="docutils literal notranslate"><span class="pre">classical=False</span></code>)</dt>
+<dd><p class="first last">When True, the vibrations are treated classically. The QM treatment is the
+default. This may be useful to compare TAMkin results with Monte Carlo or
+Molecular Dynamics simulations.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">freq_scaling</span></code> (default <code class="docutils literal notranslate"><span class="pre">freq_scaling=1.0</span></code>)</dt>
+<dd><p class="first last">Scaling factor for the classical part of the vibrational partition function,
+ie. excluding the zero-point term.</p>
+</dd>
+<dt><code class="docutils literal notranslate"><span class="pre">zp_scaling</span></code>  (default <code class="docutils literal notranslate"><span class="pre">zp_scaling=1.0</span></code>)</dt>
+<dd><p class="first last">Scaling factor for the zero-point term in the vibrational contribution [default=1]</p>
+</dd>
+</dl>
+</li>
+</ul>
+</div>
+<div class="section" id="immobile-adsorbed-molecules">
+<h4>8.1.1.2. Immobile adsorbed molecules<a class="headerlink" href="#immobile-adsorbed-molecules" title="Permalink to this headline">¶</a></h4>
+<p>Make sure you first read and understand the section on partition functions for
+ideal gas molecules.</p>
+<p>In this section, we show how one defines a partition function for a particle
+that is adsorbed on a surface (flat or inside a porous material) such that it
+can not rotate or translate over the surface once adsorbed. It can only adsorb
+at another site, if it first desorbs from the surface.</p>
+<p>We assume that the adsorption energy is computed with Gaussian using a cluster
+approximation for the surface. This means that the cluster is terminated
+and that the atoms at the termination are fixed in space with constraints during
+the geometry optimization.</p>
+<p>The following code can be used to define the partition function for such a
+system:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fixed</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="c1"># atom indexes of the fixed atoms, counting from zero</span>
+<span class="n">mol_both</span> <span class="o">=</span> <span class="n">load_molecule_g03fchk</span><span class="p">(</span><span class="s2">&quot;gaussian_both.fchk&quot;</span><span class="p">)</span>
+<span class="n">nma_both</span> <span class="o">=</span> <span class="n">NMA</span><span class="p">(</span><span class="n">mol_both</span><span class="p">,</span> <span class="n">PHVA</span><span class="p">(</span><span class="n">fixed</span><span class="p">))</span>
+<span class="n">pf_both</span> <span class="o">=</span> <span class="n">PartFun</span><span class="p">(</span><span class="n">nma_both</span><span class="p">,</span> <span class="p">[])</span>
+</pre></div>
+</div>
+<p>Compared to the gas phase, external translation and rotation are removed. The
+file <code class="docutils literal notranslate"><span class="pre">&quot;gaussian_both.fchk&quot;</span></code> comes from a frequency computation of the adsorbed
+molecule on the cluster model of the surface. The list <code class="docutils literal notranslate"><span class="pre">fixed</span></code> contains all
+atom indexes that fixed in space during the optimization.</p>
+<p>The partition function of the surface without absorbed species is defined as
+follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fixed</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="c1"># atom indexes of the fixed atoms, counting from zero</span>
+<span class="n">mol_surf</span> <span class="o">=</span> <span class="n">load_molecule_g03fchk</span><span class="p">(</span><span class="s2">&quot;gaussian_surf.fchk&quot;</span><span class="p">)</span>
+<span class="n">nma_surf</span> <span class="o">=</span> <span class="n">NMA</span><span class="p">(</span><span class="n">mol_surf</span><span class="p">,</span> <span class="n">PHVA</span><span class="p">(</span><span class="n">fixed</span><span class="p">))</span>
+<span class="n">pf_surf</span> <span class="o">=</span> <span class="n">PartFun</span><span class="p">(</span><span class="n">nma_surf</span><span class="p">,</span> <span class="p">[])</span>
+</pre></div>
+</div>
+<p>The surface is treated as a cluster fixed in space, i.e. there are no external
+rotation and translation contributions to the partition function. The file
+<code class="docutils literal notranslate"><span class="pre">&quot;gaussian_surf.fchk&quot;</span></code> comes from a frequency computation on the surface
+cluster model. The geometry of the cluster must be optimized with constraints on
+the atoms that terminate the cluster. The list <code class="docutils literal notranslate"><span class="pre">fixed</span></code> contains all
+atom indexes that fixed in space during the optimization.</p>
+<p>One may load the indexes of the fixed atoms from a Gaussian <code class="docutils literal notranslate"><span class="pre">.com</span></code> file as
+follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fixed</span> <span class="o">=</span> <span class="n">load_fixed_g03com</span><span class="p">(</span><span class="s2">&quot;gaussian.com&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Be aware that the fixed atom indexes may be different in the two computations,
+but we recommend some consistency in this context. The following convention
+avoids a lot of confusion: put all your surface atoms in the beginning of the
+geometry definition, and within this group of surface atoms, put all fixed atoms
+first, then the free atoms.</p>
+</div>
+<div class="section" id="mobile-adsorbed-molecules">
+<h4>8.1.1.3. Mobile adsorbed molecules<a class="headerlink" href="#mobile-adsorbed-molecules" title="Permalink to this headline">¶</a></h4>
+<p>Make sure you first read and understand the section on partition functions for
+ideal gas molecules.</p>
+<p>In this section, we show how one defines a partition function for a particle
+that is adsorbed on a surface. We assume that the particle can still hover over
+the surface and that this translational motion can be modeled with a 2D ideal
+gas partition function with a constant surface area. We also assume that the
+adsorbed molecule is free to rotate as it can do in the gas phase.</p>
+<p>Further we assume that the adsorption energy is computed with Gaussian using
+a cluster approximation for the surface. This means that the cluster is
+terminated and that the atoms at the termination are fixed in space with
+constraints during the geometry optimization.</p>
+<p>The following code can be used to define the partition function for such a system:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fixed</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="c1"># atom indexes of the fixed atoms, counting from zero</span>
+<span class="n">mobile</span> <span class="o">=</span> <span class="p">[</span><span class="mi">5</span><span class="p">,</span> <span class="mi">6</span><span class="p">,</span> <span class="mi">7</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="c1"># atom indexes of the mobile atoms, counting from zero</span>
+<span class="n">mol_both</span> <span class="o">=</span> <span class="n">load_molecule_g03fchk</span><span class="p">(</span><span class="s2">&quot;gaussian_both.fchk&quot;</span><span class="p">)</span>
+<span class="n">nma_both</span> <span class="o">=</span> <span class="n">NMA</span><span class="p">(</span><span class="n">mol_both</span><span class="p">,</span> <span class="n">PHVA</span><span class="p">(</span><span class="n">fixed</span><span class="p">))</span>
+<span class="n">pf_both</span> <span class="o">=</span> <span class="n">PartFun</span><span class="p">(</span><span class="n">nma_both</span><span class="p">,</span> <span class="p">[</span><span class="n">ExtTrans</span><span class="p">(</span><span class="n">cp</span><span class="o">=</span><span class="kc">False</span><span class="p">,</span> <span class="n">dim</span><span class="o">=</span><span class="mi">2</span><span class="p">,</span> <span class="n">mobile</span><span class="o">=</span><span class="n">mobile</span><span class="p">),</span> <span class="n">ExtRot</span><span class="p">()])</span>
+</pre></div>
+</div>
+<p>In this code, the file <code class="docutils literal notranslate"><span class="pre">&quot;gaussian_both.fchk&quot;</span></code> comes from a frequency
+computation of the adsorbed molecule on the cluster model of the surface. The
+list <code class="docutils literal notranslate"><span class="pre">fixed</span></code> contains all atom indexes that fixed in space during the
+optimization. The <code class="docutils literal notranslate"><span class="pre">mobile</span></code> atoms refer to those of the adsorbed species that
+has 2D translational motion on the surface.</p>
+<p>The partition function of the surface without the adsorbed molecule is
+constructed as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fixed</span> <span class="o">=</span> <span class="p">[</span><span class="mi">0</span><span class="p">,</span> <span class="mi">1</span><span class="p">,</span> <span class="mi">2</span><span class="p">,</span> <span class="o">...</span><span class="p">]</span> <span class="c1"># atom indexes of the fixed atoms, counting from zero</span>
+<span class="n">mol_surf</span> <span class="o">=</span> <span class="n">load_molecule_g03fchk</span><span class="p">(</span><span class="s2">&quot;gaussian_surf.fchk&quot;</span><span class="p">)</span>
+<span class="n">nma_surf</span> <span class="o">=</span> <span class="n">NMA</span><span class="p">(</span><span class="n">mol_surf</span><span class="p">,</span> <span class="n">PHVA</span><span class="p">(</span><span class="n">fixed</span><span class="p">))</span>
+<span class="n">pf_surf</span> <span class="o">=</span> <span class="n">PartFun</span><span class="p">(</span><span class="n">nma_surf</span><span class="p">,</span> <span class="p">[])</span>
+</pre></div>
+</div>
+<p>The surface is treated as a cluster fixed in space, i.e. there are not external
+rotation and translation contributions to its partition function. The file
+<code class="docutils literal notranslate"><span class="pre">&quot;gaussian_surf.fchk&quot;</span></code> comes from a frequency computation on the surface
+cluster model. The geometry of the cluster must be optimized with constraints on
+the atoms that terminate the cluster. The list <code class="docutils literal notranslate"><span class="pre">fixed</span></code> contains all atom
+indexes that fixed in space during the optimization.</p>
+<p>One may load the indexes of the fixed atoms from a Gaussian <code class="docutils literal notranslate"><span class="pre">.com</span></code> file as
+follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">fixed</span> <span class="o">=</span> <span class="n">load_fixed_g03com</span><span class="p">(</span><span class="s2">&quot;gaussian.com&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Be aware that the fixed atom indexes may be different in the two computations,
+but we recommend some consistency in this context. The following convention
+avoids a lot of confusion: put all your surface atoms in the beginning of the
+geometry definition, and within this group of atoms, put all fixed atoms first,
+then the free atoms.</p>
+</div>
+<div class="section" id="free-or-hindered-internal-rotors">
+<h4>8.1.1.4. Free or hindered internal rotors<a class="headerlink" href="#free-or-hindered-internal-rotors" title="Permalink to this headline">¶</a></h4>
+<p>Make sure you first read and understand the section on partition functions for
+ideal gas molecules.</p>
+<p>TODO</p>
+</div>
+</div>
+<div class="section" id="the-partition-function-dump-file">
+<h3>8.1.2. The Partition function dump file<a class="headerlink" href="#the-partition-function-dump-file" title="Permalink to this headline">¶</a></h3>
+<p>Once a partition function is defined in your script, one can write an extensive
+description to a text file for later reference:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pf</span><span class="o">.</span><span class="n">write_to_file</span><span class="p">(</span><span class="s2">&quot;partfun.txt&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>It is recommended to double check the contents of the file.</p>
+</div>
+<div class="section" id="computation-of-thermodynamic-quantities">
+<h3>8.1.3. Computation of thermodynamic quantities<a class="headerlink" href="#computation-of-thermodynamic-quantities" title="Permalink to this headline">¶</a></h3>
+<p>Once a partition function object is created, one can start computing
+thermodynamic quantities at different temperatures and pressures (or densities).</p>
+<div class="section" id="overview-of-standard-quantities">
+<h4>8.1.3.1. Overview of standard quantities<a class="headerlink" href="#overview-of-standard-quantities" title="Permalink to this headline">¶</a></h4>
+<p>Thermodynamic quantities can be computed for a given <code class="docutils literal notranslate"><span class="pre">PartFun</span></code> object by
+calling the appropriate methods. All extensive quantities, i.e. all quantities
+except the chemical potential, are transformed into intensive quantities by
+dividing through the number of particles. The following table relates the
+methods to the meaning of the returned numbers for two common ensembles.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="13%" />
+<col width="12%" />
+<col width="47%" />
+<col width="28%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head"><code class="docutils literal notranslate"><span class="pre">PartFun</span></code> method</th>
+<th class="head">Internal unit</th>
+<th class="head">NVT Ensemble (3D gas)</th>
+<th class="head">NpT Ensemble (3D gas)</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">internal_heat</span></code></td>
+<td>Hartree/particle</td>
+<td>Internal energy (per particle)</td>
+<td>Enthalpy (per particle)</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">heat_capacity</span></code></td>
+<td>Hartree/(K*particle)</td>
+<td>Heat capacity at constant volume (per particle)</td>
+<td>Heat capacity at constant pressure (per particle)</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">free_energy</span></code></td>
+<td>Hartree/particle</td>
+<td>Helmholtz free energy (per particle)</td>
+<td>Gibbs free energy (per particle)</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">chemical_potential</span></code></td>
+<td>Hartree/particle</td>
+<td>Chemical potential</td>
+<td>(idem)</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">entropy</span></code></td>
+<td>Hartree/particle</td>
+<td>Entropy (per particle)</td>
+<td>(idem)</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">log</span></code></td>
+<td>1/particle</td>
+<td>Logarithm of the partition function (per particle)</td>
+<td>(idem)</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">logt</span></code></td>
+<td>1/(K*particle)</td>
+<td>First derivative of <code class="docutils literal notranslate"><span class="pre">log</span></code> towards temperature</td>
+<td>(idem)</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">logtt</span></code></td>
+<td>1/(K^2*particle)</td>
+<td>Second derivative of <code class="docutils literal notranslate"><span class="pre">log</span></code> towards temperature</td>
+<td>(idem)</td>
+</tr>
+<tr class="row-even"><td><code class="docutils literal notranslate"><span class="pre">logn</span></code></td>
+<td>1/particle</td>
+<td>Derivative of the logarithm of the partition function towards the number of particles</td>
+<td>(idem)</td>
+</tr>
+<tr class="row-odd"><td><code class="docutils literal notranslate"><span class="pre">logv</span></code></td>
+<td>1/particle</td>
+<td><code class="docutils literal notranslate"><span class="pre">logn</span></code> - <span class="math notranslate nohighlight">\(\ln(V/N)\)</span></td>
+<td>(idem)</td>
+</tr>
+</tbody>
+</table>
+<p>One can print any of these quantities in a TAMkin script:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">molmod</span> <span class="k">import</span> <span class="o">*</span>  <span class="c1"># for the unit conversion</span>
+<span class="n">pf</span> <span class="o">=</span> <span class="o">...</span>
+<span class="nb">print</span> <span class="s2">&quot;The internal heat at 300K [kJ/mol]&quot;</span><span class="p">,</span> <span class="n">pf</span><span class="o">.</span><span class="n">internal_heat</span><span class="p">(</span><span class="mi">300</span><span class="p">)</span><span class="o">/</span><span class="n">kjmol</span>
+<span class="nb">print</span> <span class="s2">&quot;The heat capacity at 300K [J/mol/K]&quot;</span><span class="p">,</span> <span class="n">pf</span><span class="o">.</span><span class="n">heat_capacity</span><span class="p">(</span><span class="mi">300</span><span class="p">)</span><span class="o">/</span><span class="p">(</span><span class="n">joule</span><span class="o">/</span><span class="p">(</span><span class="n">mol</span><span class="o">*</span><span class="n">kelvin</span><span class="p">))</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="poking-under-the-hood">
+<h4>8.1.3.2. Poking under the hood<a class="headerlink" href="#poking-under-the-hood" title="Permalink to this headline">¶</a></h4>
+<p>Besides the standard thermodynamic functions, all internal quantities of the
+partition function and its contributions are also accessible. For example, one
+computes the translational contribution to the free energy as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">molmod</span> <span class="k">import</span> <span class="o">*</span>  <span class="c1"># for the unit conversion</span>
+<span class="n">pf</span> <span class="o">=</span> <span class="o">...</span>
+<span class="nb">print</span> <span class="s2">&quot;The free energy at 300K due to translation [kJ/mol]&quot;</span><span class="p">,</span> <span class="n">pf</span><span class="o">.</span><span class="n">translational</span><span class="o">.</span><span class="n">internal_heat</span><span class="p">(</span><span class="mi">300</span><span class="p">)</span><span class="o">/</span><span class="n">kjmol</span>
+</pre></div>
+</div>
+<p>A complete overview of internals can be found in the reference documentation
+of the <a class="reference internal" href="../reference/pf.html#module-tamkin.partf" title="tamkin.partf"><code class="xref py py-mod docutils literal notranslate"><span class="pre">tamkin.partf</span></code></a> module, or by reading the source code.</p>
+</div>
+<div class="section" id="generating-tables">
+<h4>8.1.3.3. Generating tables<a class="headerlink" href="#generating-tables" title="Permalink to this headline">¶</a></h4>
+<p>See <a class="reference internal" href="../reference/pf.html#tamkin.pftools.ThermoAnalysis" title="tamkin.pftools.ThermoAnalysis"><code class="xref py py-class docutils literal notranslate"><span class="pre">tamkin.pftools.ThermoAnalysis</span></code></a> for the details.</p>
+<p>Tables of thermodynamic quantities can be computed for given temperatures and
+sorting out all contributions from the components of the partition function to
+each quantity. The example below generates a CSV file that can be loaded into
+spreadsheet software.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">tamkin</span> <span class="k">import</span> <span class="o">*</span>
+<span class="n">molecule</span> <span class="o">=</span> <span class="n">load_molecule_g03fchk</span><span class="p">(</span><span class="s2">&quot;gaussian.fchk&quot;</span><span class="p">)</span>
+<span class="n">nma</span> <span class="o">=</span> <span class="n">NMA</span><span class="p">(</span><span class="n">molecule</span><span class="p">,</span> <span class="n">ConstrainExt</span><span class="p">())</span>
+<span class="n">pf</span> <span class="o">=</span> <span class="n">PartFun</span><span class="p">(</span><span class="n">nma</span><span class="p">,</span> <span class="p">[</span><span class="n">ExtTrans</span><span class="p">(),</span> <span class="n">ExtRot</span><span class="p">()])</span>
+<span class="n">ta</span> <span class="o">=</span> <span class="n">ThermoAnalysis</span><span class="p">(</span><span class="n">pf</span><span class="p">,</span> <span class="p">[</span><span class="mi">300</span><span class="p">,</span> <span class="mi">400</span><span class="p">,</span> <span class="mi">500</span><span class="p">,</span> <span class="mi">600</span><span class="p">])</span>
+<span class="n">ta</span><span class="o">.</span><span class="n">write_to_file</span><span class="p">(</span><span class="s2">&quot;thermo.csv&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The CSV file contains tables with thermodynamic quantities, at the temperatures
+in the second argument of the <code class="docutils literal notranslate"><span class="pre">ThermoAnalysis</span></code> constructor, corresponding to
+the <code class="docutils literal notranslate"><span class="pre">PartFun</span></code> methods as explained the table below.</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="63%" />
+<col width="17%" />
+<col width="21%" />
+</colgroup>
+<thead valign="bottom">
+<tr class="row-odd"><th class="head">Name in CSV file</th>
+<th class="head">Unit</th>
+<th class="head"><code class="docutils literal notranslate"><span class="pre">PartFun</span></code> method name</th>
+</tr>
+</thead>
+<tbody valign="top">
+<tr class="row-even"><td>Internal Heat</td>
+<td>kJ/mol</td>
+<td><code class="docutils literal notranslate"><span class="pre">internal_heat</span></code></td>
+</tr>
+<tr class="row-odd"><td>Heat capacity</td>
+<td>J/(mol*K)</td>
+<td><code class="docutils literal notranslate"><span class="pre">heat_capacity</span></code></td>
+</tr>
+<tr class="row-even"><td>Free energy</td>
+<td>kJ/mol</td>
+<td><code class="docutils literal notranslate"><span class="pre">free_energy</span></code></td>
+</tr>
+<tr class="row-odd"><td>Chemical potential</td>
+<td>kJ/mol</td>
+<td><code class="docutils literal notranslate"><span class="pre">chemical_potential</span></code></td>
+</tr>
+<tr class="row-even"><td>Entropy</td>
+<td>J/(mol*K)</td>
+<td><code class="docutils literal notranslate"><span class="pre">entropy</span></code></td>
+</tr>
+<tr class="row-odd"><td>log= <span class="math notranslate nohighlight">\(\frac{log(Z_N)}{N}\)</span></td>
+<td>1</td>
+<td><code class="docutils literal notranslate"><span class="pre">log</span></code></td>
+</tr>
+<tr class="row-even"><td>logt= <span class="math notranslate nohighlight">\(\frac{\partial}{\partial T}\left(\frac{log(Z_N)}{N}\right)\)</span></td>
+<td>1/K</td>
+<td><code class="docutils literal notranslate"><span class="pre">logt</span></code></td>
+</tr>
+<tr class="row-odd"><td>logtt= <span class="math notranslate nohighlight">\(\frac{\partial^2}{\partial T^2}\left(\frac{log(Z_N)}{N}\right)\)</span></td>
+<td>1/K^2</td>
+<td><code class="docutils literal notranslate"><span class="pre">logtt</span></code></td>
+</tr>
+<tr class="row-even"><td>logn= <span class="math notranslate nohighlight">\(\frac{\partial log(Z_N)}{\partial N}\)</span></td>
+<td>1</td>
+<td><code class="docutils literal notranslate"><span class="pre">logn</span></code></td>
+</tr>
+<tr class="row-odd"><td>logv= <span class="math notranslate nohighlight">\(\frac{\partial log(Z_N)}{\partial N} - \ln(V/N)\)</span></td>
+<td>1 or ln(bohr^-dim)</td>
+<td><code class="docutils literal notranslate"><span class="pre">logv</span></code></td>
+</tr>
+</tbody>
+</table>
+</div>
+</div>
+</div>
+<div class="section" id="thermodynamic-equilibrium">
+<h2>8.2. Thermodynamic equilibrium<a class="headerlink" href="#thermodynamic-equilibrium" title="Permalink to this headline">¶</a></h2>
+<p>See <a class="reference internal" href="../reference/pf.html#tamkin.chemmod.ThermodynamicModel" title="tamkin.chemmod.ThermodynamicModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">tamkin.chemmod.ThermodynamicModel</span></code></a> for the details.</p>
+<p>Given a list of partition functions of reactants (<code class="docutils literal notranslate"><span class="pre">pfs_react</span></code>) and a list of
+product partition functions (<code class="docutils literal notranslate"><span class="pre">pfs_prod</span></code>), one can construct a
+<code class="docutils literal notranslate"><span class="pre">ThermodynamicModel</span></code> object.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">tm</span> <span class="o">=</span> <span class="n">ThermodynamicModel</span><span class="p">(</span><span class="n">pfs_react</span><span class="p">,</span> <span class="n">pfs_prod</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>With a <code class="docutils literal notranslate"><span class="pre">ThermodynamicModel</span></code> object one can compute the following quantities:</p>
+<ul>
+<li><p class="first"><strong>The equilibrium constant</strong> is computed at a given temperature, <code class="docutils literal notranslate"><span class="pre">temp</span></code>, as
+follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">kc</span> <span class="o">=</span> <span class="n">tm</span><span class="o">.</span><span class="n">equilibrium_constant</span><span class="p">(</span><span class="n">temp</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This function takes one optional argument: <code class="docutils literal notranslate"><span class="pre">do_log</span></code>, which is by default
+<code class="docutils literal notranslate"><span class="pre">False</span></code>. When set to True, the logarithm of the equilibrium constant is
+returned. The name of the SI unit of the equilibrium constant and the
+corresponding conversion factor are attributes of the <code class="docutils literal notranslate"><span class="pre">ThermodymanicModel</span></code>
+object. This can be used to facilitate the output of equilibrium constants.
+For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span> <span class="s2">&quot;K_c at 350K [</span><span class="si">%s</span><span class="s2">] = </span><span class="si">%.5e</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">tm</span><span class="o">.</span><span class="n">unit_name</span><span class="p">,</span> <span class="n">kc</span><span class="o">/</span><span class="n">tm</span><span class="o">.</span><span class="n">unit</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Currently TAMkin only supports ideal gases in the translational partition
+function which means that <span class="math notranslate nohighlight">\(K_c\)</span> does not depend on the pressure set in
+<code class="docutils literal notranslate"><span class="pre">ExtTrans.pressure</span></code> or the density set in <code class="docutils literal notranslate"><span class="pre">ExtTrans.density</span></code>. (When no
+translational freedom is included in the partition function, there is no
+pressure or density to worry about.)</p>
+</li>
+<li><p class="first"><strong>The change in free energy</strong> is computed (and printed) as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">delta_fr</span> <span class="o">=</span> <span class="n">tm</span><span class="o">.</span><span class="n">free_energy_change</span><span class="p">(</span><span class="n">temp</span><span class="p">)</span>
+<span class="nb">print</span> <span class="s2">&quot;Change in free energy [kJ/mol] = </span><span class="si">%.3f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">delta_fr</span><span class="o">/</span><span class="n">kjmol</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The change in free energy does depend on the pressure (or density) in the
+translational part of the partition functions of the reactants and products.</p>
+</li>
+<li><p class="first"><strong>The electronic energy difference</strong> between the reactants (-) and the
+products (+) can be computed as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">delta_e</span> <span class="o">=</span> <span class="n">tm</span><span class="o">.</span><span class="n">energy_difference</span><span class="p">(</span><span class="n">temp</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first"><strong>The zero-point energy difference</strong> between the reactants (-) and the
+products (+) can also be computed:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">delta_zpe</span> <span class="o">=</span> <span class="n">tm</span><span class="o">.</span><span class="n">zero_point_energy_difference</span><span class="p">(</span><span class="n">temp</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+</ul>
+<p>A complete overview of the thermodynamic model, including the specification of
+the partition functions, is written to file as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">tm</span><span class="o">.</span><span class="n">write_to_file</span><span class="p">(</span><span class="s2">&quot;thermodynamic_model.txt&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="reaction-kinetics">
+<h2>8.3. Reaction kinetics<a class="headerlink" href="#reaction-kinetics" title="Permalink to this headline">¶</a></h2>
+<p>See <a class="reference internal" href="../reference/pf.html#tamkin.chemmod.KineticModel" title="tamkin.chemmod.KineticModel"><code class="xref py py-class docutils literal notranslate"><span class="pre">tamkin.chemmod.KineticModel</span></code></a> for the details.</p>
+<p>All kinetic properties in TAMkin are computed with the <code class="docutils literal notranslate"><span class="pre">KineticModel</span></code> object.
+For a given list of reactant partition functions, <code class="docutils literal notranslate"><span class="pre">pfs_react</span></code> and a transition
+state partition function, <code class="docutils literal notranslate"><span class="pre">pf_trans</span></code>, the <code class="docutils literal notranslate"><span class="pre">KineticModel</span></code> object is created
+as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">km</span> <span class="o">=</span> <span class="n">KineticModel</span><span class="p">(</span><span class="n">pfs_react</span><span class="p">,</span> <span class="n">pf_trans</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The following kinetic properties can be computed with a <code class="docutils literal notranslate"><span class="pre">KineticModel</span></code> object:</p>
+<ul>
+<li><p class="first"><strong>The rate constant</strong> is the main property of interest. The following two
+lines print the rate constant at 303K in SI units for a given kinetic model.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">rc</span> <span class="o">=</span> <span class="n">km</span><span class="o">.</span><span class="n">rate_constant</span><span class="p">(</span><span class="mi">303</span><span class="p">)</span>
+<span class="nb">print</span> <span class="s2">&quot;Rate constant [</span><span class="si">%s</span><span class="s2">] at 303K = </span><span class="si">%.5e</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">km</span><span class="o">.</span><span class="n">unit_name</span><span class="p">,</span> <span class="n">rc</span><span class="o">/</span><span class="n">km</span><span class="o">.</span><span class="n">unit</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In the case of ideal gases, the rate constant does not depend on the pressure
+(or density) set in the translation partition functions.</p>
+</li>
+<li><p class="first"><strong>The change in free energy</strong> when going from reactants to products is
+computed as follows for a given temperature <code class="docutils literal notranslate"><span class="pre">temp</span></code>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">delta_fr</span> <span class="o">=</span> <span class="n">km</span><span class="o">.</span><span class="n">free_energy_change</span><span class="p">(</span><span class="n">temp</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first"><strong>The electronic energy difference</strong> between the reactants (-) and the
+transition state (+) is computed as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">delta_e</span> <span class="o">=</span> <span class="n">km</span><span class="o">.</span><span class="n">energy_difference</span><span class="p">(</span><span class="n">temp</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+<li><p class="first"><strong>The zero-point energy difference</strong> between the reactants (-) and the
+transition state (+) can also be computed:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">delta_zpe</span> <span class="o">=</span> <span class="n">km</span><span class="o">.</span><span class="n">zero_point_energy_difference</span><span class="p">(</span><span class="n">temp</span><span class="p">)</span>
+</pre></div>
+</div>
+</li>
+</ul>
+<p>A complete overview of the kinetic model, including the specification of the
+partition functions, is written to file as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">km</span><span class="o">.</span><span class="n">write_to_file</span><span class="p">(</span><span class="s2">&quot;kinetic_model.txt&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<div class="section" id="tunneling-corrections">
+<h3>8.3.1. Tunneling corrections<a class="headerlink" href="#tunneling-corrections" title="Permalink to this headline">¶</a></h3>
+<p>Three tunneling correction models are implemented in <a class="reference internal" href="../reference/pf.html#module-tamkin.tunneling" title="tamkin.tunneling"><code class="xref py py-mod docutils literal notranslate"><span class="pre">tamkin.tunneling</span></code></a>.
+One can include tunneling corrections in the kinetic model by giving a
+<code class="docutils literal notranslate"><span class="pre">TunnelingCorrection</span></code> object as the third argument to the <code class="docutils literal notranslate"><span class="pre">KineticModel</span></code>
+constructor. One must first create the tunneling object:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Just take one of the three following</span>
+<span class="n">tunneling</span> <span class="o">=</span> <span class="n">Eckart</span><span class="p">(</span><span class="n">pfs_react</span><span class="p">,</span> <span class="n">pf_trans</span><span class="p">,</span> <span class="n">pfs_prod</span><span class="p">)</span>
+<span class="n">tunneling</span> <span class="o">=</span> <span class="n">Wigner</span><span class="p">(</span><span class="n">pf_trans</span><span class="p">)</span>
+<span class="n">tunneling</span> <span class="o">=</span> <span class="n">Miller</span><span class="p">(</span><span class="n">pf_trans</span><span class="p">)</span>
+<span class="c1"># Then create a kinetic model</span>
+<span class="n">km</span> <span class="o">=</span> <span class="n">KineticModel</span><span class="p">(</span><span class="n">pfs_react</span><span class="p">,</span> <span class="n">pf_trans</span><span class="p">,</span> <span class="n">tunneling</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>In this snippet <code class="docutils literal notranslate"><span class="pre">pfs_prod</span></code> is the list of product partition functions. All
+rate constants computed with such a kinetic model include the tunneling
+correction. The other properties computed by the kinetic model are not affected.</p>
+</div>
+<div class="section" id="reactionanalysis-objects-fitting-kinetic-parameters-a-and-ea">
+<h3>8.3.2. ReactionAnalysis objects – fitting kinetic parameters A and E<sub>a</sub><a class="headerlink" href="#reactionanalysis-objects-fitting-kinetic-parameters-a-and-ea" title="Permalink to this headline">¶</a></h3>
+<p>See <a class="reference internal" href="../reference/pf.html#tamkin.pftools.ReactionAnalysis" title="tamkin.pftools.ReactionAnalysis"><code class="xref py py-class docutils literal notranslate"><span class="pre">tamkin.pftools.ReactionAnalysis</span></code></a> for the details.</p>
+<p>The ultimate purpose of a <code class="docutils literal notranslate"><span class="pre">KineticModel</span></code> object is to estimate the kinetic
+parameters <span class="math notranslate nohighlight">\(A\)</span> and <span class="math notranslate nohighlight">\(E_a\)</span> in the empirical Arrhenius law. This can
+be accomplished with a ReactionAnalysis object. As soon as a reaction analysis
+object is created, the kinetic parameters are fitted and stored internally for
+post-processing or direct output:</p>
+<blockquote>
+<div>ra = ReactionAnalysis(km, temp_low, temp_high)</div></blockquote>
+<p>The first argument is a kinetic model, which may include a tunneling correction.
+The two following arguments are the boundaries for the grid on the temperature
+axis used to fit the kinetic parameters. A fourth optional argument fixes the
+spacing of the temperature grid. The default spacing is 10K.</p>
+<p>The kinetic parameters and some related data are accessible as attributes:</p>
+<ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">A</span></code> and <code class="docutils literal notranslate"><span class="pre">Ea</span></code> – The kinetic parameters in atomic units.</li>
+<li><code class="docutils literal notranslate"><span class="pre">R2</span></code> – The Pearson R^2 of the fit.</li>
+<li><code class="docutils literal notranslate"><span class="pre">temps</span></code> – An array with the temperature grid in Kelvin</li>
+<li><code class="docutils literal notranslate"><span class="pre">rate_consts</span></code> – the rate constants at the grid points in atomic units</li>
+<li><code class="docutils literal notranslate"><span class="pre">ln_rate_consts</span></code> – the logarithm of <cite>the rate constants in atomic units</cite></li>
+</ul>
+<p>The pre-exponential factor can be printed in SI units, knowing that it has the
+same unit as the rate constant itself:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="nb">print</span> <span class="s2">&quot;Pre-exponential factor [</span><span class="si">%s</span><span class="s2">] = </span><span class="si">%.5e</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">km</span><span class="o">.</span><span class="n">unit_name</span><span class="p">,</span> <span class="n">ra</span><span class="o">.</span><span class="n">A</span><span class="o">/</span><span class="n">km</span><span class="o">.</span><span class="n">unit</span><span class="p">)</span>
+<span class="nb">print</span> <span class="s2">&quot;The activation energy [kJ/mol] = </span><span class="si">%.2f</span><span class="s2">&quot;</span> <span class="o">%</span> <span class="p">(</span><span class="n">ra</span><span class="o">.</span><span class="n">Ea</span><span class="o">/</span><span class="n">kjmol</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>When performing a high-throughput level-of-theory study, it is very convenient
+to use the attributes of the <code class="docutils literal notranslate"><span class="pre">ReactionAnalysis</span></code> in a post-processing program.</p>
+<p>One can write an overview of the reaction analysis to a text file as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ra</span><span class="o">.</span><span class="n">write_to_file</span><span class="p">(</span><span class="s2">&quot;reaction_analysis.txt&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The computed rate constants and the linear fit can be plotted in a typical
+Arrhenius plot as follows:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">ra</span><span class="o">.</span><span class="n">plot_arrhenius</span><span class="p">(</span><span class="s2">&quot;arrhenius.txt&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</div>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">8. Chemical Physics – Working with TAMkin</a><ul>
+<li><a class="reference internal" href="#macroscopic-properties-of-molecular-systems">8.1. Macroscopic properties of molecular systems</a><ul>
+<li><a class="reference internal" href="#definition-of-the-partition-function">8.1.1. Definition of the partition function</a><ul>
+<li><a class="reference internal" href="#ideal-gas-molecules">8.1.1.1. Ideal gas molecules</a></li>
+<li><a class="reference internal" href="#immobile-adsorbed-molecules">8.1.1.2. Immobile adsorbed molecules</a></li>
+<li><a class="reference internal" href="#mobile-adsorbed-molecules">8.1.1.3. Mobile adsorbed molecules</a></li>
+<li><a class="reference internal" href="#free-or-hindered-internal-rotors">8.1.1.4. Free or hindered internal rotors</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#the-partition-function-dump-file">8.1.2. The Partition function dump file</a></li>
+<li><a class="reference internal" href="#computation-of-thermodynamic-quantities">8.1.3. Computation of thermodynamic quantities</a><ul>
+<li><a class="reference internal" href="#overview-of-standard-quantities">8.1.3.1. Overview of standard quantities</a></li>
+<li><a class="reference internal" href="#poking-under-the-hood">8.1.3.2. Poking under the hood</a></li>
+<li><a class="reference internal" href="#generating-tables">8.1.3.3. Generating tables</a></li>
+</ul>
+</li>
+</ul>
+</li>
+<li><a class="reference internal" href="#thermodynamic-equilibrium">8.2. Thermodynamic equilibrium</a></li>
+<li><a class="reference internal" href="#reaction-kinetics">8.3. Reaction kinetics</a><ul>
+<li><a class="reference internal" href="#tunneling-corrections">8.3.1. Tunneling corrections</a></li>
+<li><a class="reference internal" href="#reactionanalysis-objects-fitting-kinetic-parameters-a-and-ea">8.3.2. ReactionAnalysis objects – fitting kinetic parameters A and E<sub>a</sub></a></li>
+</ul>
+</li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="chemphys_theory.html"
+                        title="previous chapter">7. Chemical Physics – Theoretical Background</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="chemphys_examples.html"
+                        title="next chapter">9. Chemical Physics – Basic TAMkin recipes</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/tutorial/chemphys_tamkin.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="chemphys_examples.html" title="9. Chemical Physics – Basic TAMkin recipes"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="chemphys_theory.html" title="7. Chemical Physics – Theoretical Background"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">TAMkin 1.2.6 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2010, Toon Verstraelen, An Ghysels.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+    </div>
+  </body>
+</html>

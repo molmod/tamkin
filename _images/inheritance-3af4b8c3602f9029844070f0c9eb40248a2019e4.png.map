@@ -1,0 +1,11 @@
+<map id="inheritance37628f8cbb" name="inheritance37628f8cbb">
+<area shape="rect" id="node1" href="#tamkin.partf.Electronic" target="_top" title="The electronic contribution to the partition function." alt="" coords="477,79,564,104"/>
+<area shape="rect" id="node2" href="#tamkin.partf.Info" target="_top" title="An object that has a name and that can dump info to a file." alt="" coords="433,5,505,31"/>
+<area shape="rect" id="node4" href="#tamkin.partf.ExtRot" target="_top" title="The contribution from the external rotation." alt="" coords="589,79,661,104"/>
+<area shape="rect" id="node5" href="#tamkin.partf.ExtTrans" target="_top" title="The contribution from the external translation." alt="" coords="138,79,215,104"/>
+<area shape="rect" id="node6" href="#tamkin.partf.PCMCorrection" target="_top" title="A correction to the free energy as function of the temperature." alt="" coords="239,79,357,104"/>
+<area shape="rect" id="node7" href="#tamkin.partf.PartFun" target="_top" title="The partition function." alt="" coords="381,79,453,104"/>
+<area shape="rect" id="node9" href="#tamkin.partf.Vibrations" target="_top" title="The vibrational contribution to the partition function." alt="" coords="329,152,417,177"/>
+<area shape="rect" id="node3" href="#tamkin.partf.StatFys" target="_top" title="Abstract class for (contributions to) the parition function." alt="" coords="299,5,371,31"/>
+<area shape="rect" id="node8" href="#tamkin.partf.StatFysTerms" target="_top" title="Abstract class for (contributions to) the parition function with multiple terms." alt="" coords="5,79,113,104"/>
+</map>

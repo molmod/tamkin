@@ -1,0 +1,257 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>7. Release history &#8212; TAMkin 1.2.6 documentation</title>
+    <link rel="stylesheet" href="_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
+    <script type="text/javascript" src="_static/jquery.js"></script>
+    <script type="text/javascript" src="_static/underscore.js"></script>
+    <script type="text/javascript" src="_static/doctools.js"></script>
+    <script type="text/javascript" src="_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="genindex.html" />
+    <link rel="search" title="Search" href="search.html" />
+    <link rel="prev" title="6. References" href="references.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="references.html" title="6. References"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">TAMkin 1.2.6 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="release-history">
+<span id="releases"></span><h1>7. Release history<a class="headerlink" href="#release-history" title="Permalink to this headline">¶</a></h1>
+<ul>
+<li><p class="first"><strong>Version 1.2.6</strong> September 12, 2019</p>
+<blockquote>
+<div><ul class="simple">
+<li>More Python 3 compatibility fixes. (Unit tests pass with Python 3.6 and 3.7)</li>
+<li>Fix (harmless) warning messages.</li>
+<li>Code cleanups</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>Version 1.2.5</strong> September 10, 2019</p>
+<blockquote>
+<div><ul class="simple">
+<li>Python 3 compatibility.</li>
+<li>Fixes in MANIFEST file.</li>
+<li>Catch exception when failing to determine rotational symmetry number.</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>Version 1.2.4</strong> September 13, 2017</p>
+<blockquote>
+<div><ul class="simple">
+<li>Fix broken link to nosetests in docs.</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>Version 1.2.3</strong> September 1, 2017</p>
+<blockquote>
+<div><ul class="simple">
+<li>First release in molmod channel on Anaconda.</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>Version 1.2.2</strong> August 10, 2017</p>
+<blockquote>
+<div><ul class="simple">
+<li>Fix typos in the docs.</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>Version 1.2.1</strong> August 09, 2017</p>
+<blockquote>
+<div><ul class="simple">
+<li>Git is no longer needed when installing from pip.</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>Version 1.2.0</strong> August 04, 2017</p>
+<blockquote>
+<div><ul class="simple">
+<li>Restructured package, such that it can be installed with setuptools</li>
+<li>Tests are installed as well</li>
+<li>Packaging for PyPI, Github source, anaconda.org using Travis Deployment</li>
+<li>Deployment of website with Travis</li>
+<li>Lowercase package filenames</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>Version 1.1.0</strong> July 9, 2017</p>
+<blockquote>
+<div><ul class="simple">
+<li>Fix bug in CP2K fixed atom loader.</li>
+<li>Fixed link to CP2K website.</li>
+<li>Improved format for atom indices: comments are allowed and shift can be set in the
+file.</li>
+<li>tamkin-driver support for CP2K and VASP</li>
+<li>tesing on Travis-CI</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>Version 1.0.9</strong> May 2, 2016</p>
+<blockquote>
+<div><ul class="simple">
+<li>Improved VASP IO routine, option to pass OUTCAR file of single point calculation
+used for a refined energy calculation.</li>
+<li>Use two digits in temperature filename of <code class="docutils literal notranslate"><span class="pre">tamkin-driver.py</span></code>.</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>Version 1.0.8</strong> February 5, 2016</p>
+<blockquote>
+<div><ul class="simple">
+<li>The script tamkin-driver.py now reads the fixed atoms from the Gaussian fchk file
+and carries out a PHVA analysis if fixed atoms are present.</li>
+<li>The <code class="docutils literal notranslate"><span class="pre">load_indices</span></code> now also handles ranges of atoms.</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>Version 1.0.7</strong> October 30, 2015</p>
+<blockquote>
+<div><ul class="simple">
+<li>Improved VASP IO (partial Hessians and compatibility with different VASP versions)</li>
+<li>Improved CP2K IO (partial Hessians and array with fixed atoms)</li>
+<li>More output is written by the script tamkin-driver.py</li>
+<li>Fixed mistakes in the installation instructions.</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>Version 1.0.6</strong> September 27, 2014</p>
+<blockquote>
+<div><ul class="simple">
+<li>More robust internal rotor code</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>Version 1.0.5</strong> September 9, 2014</p>
+<blockquote>
+<div><ul class="simple">
+<li>Several bug fixes and cleanups</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>Version 1.0.4</strong> August 8, 2014</p>
+<blockquote>
+<div><ul class="simple">
+<li>Improved <code class="docutils literal notranslate"><span class="pre">tamkin-driver.py</span></code> with improved documentation.</li>
+<li>Added missing test file.</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>Version 1.0.3</strong> August 7, 2014</p>
+<blockquote>
+<div><ul class="simple">
+<li>Fix bug in load_rotscan_g03log. This function now also works with G09.</li>
+<li>More output (rotors and tunneling correction)</li>
+<li>Initial version of the TAMkin driver script</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>Version 1.0.2</strong> August 5, 2014</p>
+<blockquote>
+<div><ul class="simple">
+<li>Add some statistics to several plots</li>
+<li>Make the output of dump_modes_gaussian compatible with Avogadro.</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>Version 1.0.1</strong> April 2, 2014</p>
+<blockquote>
+<div><ul class="simple">
+<li>Bug fix related to reading CP2K output files.</li>
+<li>Bug fix for linear molecules when option <code class="docutils literal notranslate"><span class="pre">treatment=Full()</span></code> is used in
+the normal mode analysis.</li>
+</ul>
+</div></blockquote>
+</li>
+<li><p class="first"><strong>Version 1.0.0</strong> December 6, 2013</p>
+<blockquote>
+<div><ul class="simple">
+<li>Initial release through github.</li>
+</ul>
+</div></blockquote>
+</li>
+</ul>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="index.html">
+              <img class="logo" src="_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="references.html"
+                        title="previous chapter">6. References</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="_sources/releases.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="references.html" title="6. References"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="index.html">TAMkin 1.2.6 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2010, Toon Verstraelen, An Ghysels.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+    </div>
+  </body>
+</html>

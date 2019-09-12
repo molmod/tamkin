@@ -1,0 +1,1294 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>3. Normal mode analysis &#8212; TAMkin 1.2.6 documentation</title>
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="4. Partition functions" href="pf.html" />
+    <link rel="prev" title="2. Input/output" href="io.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pf.html" title="4. Partition functions"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="io.html" title="2. Input/output"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">TAMkin 1.2.6 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="normal-mode-analysis">
+<h1>3. Normal mode analysis<a class="headerlink" href="#normal-mode-analysis" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="the-different-nma-models">
+<h2>3.1. The different NMA models<a class="headerlink" href="#the-different-nma-models" title="Permalink to this headline">¶</a></h2>
+<p><strong>Inheritance diagram</strong></p>
+<div class="graphviz"><img src="../_images/inheritance-34d3456b3092ca2152263859810cea18915fb69a.png" alt="Inheritance diagram of tamkin.nma" usemap="#inheritance98b00c76fa" class="inheritance graphviz" /></div>
+<map id="inheritance98b00c76fa" name="inheritance98b00c76fa">
+<area shape="rect" id="node1" href="#tamkin.nma.AtomDivision" target="_top" title="A division of atoms into transformed, free and fixed." alt="" coords="29,5,140,31"/>
+<area shape="rect" id="node2" href="#tamkin.nma.Blocks" target="_top" title="Object that extracts all information from a block choice." alt="" coords="211,5,283,31"/>
+<area shape="rect" id="node3" href="#tamkin.nma.Constrain" target="_top" title="Perform a normal mode analysis where part of the internal coordinates are" alt="" coords="5,79,89,104"/>
+<area shape="rect" id="node4" href="#tamkin.nma.Treatment" target="_top" title="An abstract base class for the NMA treatments. Derived classes must" alt="" coords="331,5,419,31"/>
+<area shape="rect" id="node5" href="#tamkin.nma.ConstrainExt" target="_top" title="Almost a full vibrational analysis, but with constrained external degrees" alt="" coords="113,79,219,104"/>
+<area shape="rect" id="node6" href="#tamkin.nma.Full" target="_top" title="A full vibrational analysis, without transforming to a new set of" alt="" coords="243,79,315,104"/>
+<area shape="rect" id="node7" href="#tamkin.nma.MBH" target="_top" title="The Mobile Block Hessian approach." alt="" coords="339,79,411,104"/>
+<area shape="rect" id="node11" href="#tamkin.nma.PHVA" target="_top" title="Perform the partial Hessian vibrational analysis." alt="" coords="435,79,507,104"/>
+<area shape="rect" id="node14" href="#tamkin.nma.VSA" target="_top" title="Perform a Vibrational Subsystem Analysis." alt="" coords="531,79,603,104"/>
+<area shape="rect" id="node15" href="#tamkin.nma.VSANoMass" target="_top" title="Perform a Vibrational Subsystem Analysis, without taking into account the" alt="" coords="627,79,726,104"/>
+<area shape="rect" id="node8" href="#tamkin.nma.MBHConstrainExt" target="_top" title="The Mobile Block Hessian approach with the Eckart constraints imposed" alt="" coords="239,152,373,177"/>
+<area shape="rect" id="node12" href="#tamkin.nma.PHVA_MBH" target="_top" title="The Mobile Block Hessian combined with the Partial Hessian Vibrational Analysis." alt="" coords="397,152,492,177"/>
+<area shape="rect" id="node9" href="#tamkin.nma.MassMatrix" target="_top" title="A clever mass matrix object. It is sparse when atom coordinates remain" alt="" coords="445,5,541,31"/>
+<area shape="rect" id="node10" href="#tamkin.nma.NMA" target="_top" title="A generic normal mode analysis class." alt="" coords="566,5,638,31"/>
+<area shape="rect" id="node13" href="#tamkin.nma.Transform" target="_top" title="A clever transformation object. It is sparse when atom coordinates remain" alt="" coords="663,5,749,31"/>
+</map><span class="target" id="module-tamkin.nma"></span><p>A normal mode analysis is carried out by constructing an NMA object. The first
+argument is a molecule object created by one of the IO routines in
+<a class="reference internal" href="io.html#module-tamkin.io" title="tamkin.io"><code class="xref py py-mod docutils literal notranslate"><span class="pre">tamkin.io</span></code></a>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">nma</span> <span class="o">=</span> <span class="n">NMA</span><span class="p">(</span><span class="n">molecule</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>This leads to a standard normal mode analysis in 3*N degrees of freedom.
+The results, including those relevant for the construction of the molecular
+partition function, are stored as attributes of the NMA object. For example:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="n">nma</span><span class="o">.</span><span class="n">freqs</span>
+</pre></div>
+</div>
+<p>prints the frequencies of the normal modes. Note that all data is stored in
+atomic units and that the freqs array contains really frequencies, not
+wavenumbers. If you want to print the wavenumbers in cm**-1, use the unit
+conversion constants from the <code class="docutils literal notranslate"><span class="pre">molmod</span></code> package:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="kn">from</span> <span class="nn">molmod</span> <span class="k">import</span> <span class="n">centimeter</span><span class="p">,</span> <span class="n">lightspeed</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">invcm</span> <span class="o">=</span> <span class="n">lightspeed</span><span class="o">/</span><span class="n">centimeter</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="nb">print</span> <span class="n">nma</span><span class="o">.</span><span class="n">freqs</span><span class="o">/</span><span class="n">invcm</span>
+</pre></div>
+</div>
+<p>One can also use modified schemes by giving a second argument to the NMA
+constructor. The following example computes the normal modes in 3*N-6 degrees
+of freedom:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">nma</span> <span class="o">=</span> <span class="n">NMA</span><span class="p">(</span><span class="n">molecule</span><span class="p">,</span> <span class="n">ConstrainExt</span><span class="p">())</span>
+</pre></div>
+</div>
+<p>The second argument is an instance of a class that derives from the
+<a class="reference internal" href="#tamkin.nma.Treatment" title="tamkin.nma.Treatment"><code class="xref py py-class docutils literal notranslate"><span class="pre">Treatment</span></code></a> class. Other treatments include: <a class="reference internal" href="#tamkin.nma.Full" title="tamkin.nma.Full"><code class="xref py py-class docutils literal notranslate"><span class="pre">Full</span></code></a> (the default),
+<a class="reference internal" href="#tamkin.nma.PHVA" title="tamkin.nma.PHVA"><code class="xref py py-class docutils literal notranslate"><span class="pre">PHVA</span></code></a>, <a class="reference internal" href="#tamkin.nma.VSA" title="tamkin.nma.VSA"><code class="xref py py-class docutils literal notranslate"><span class="pre">VSA</span></code></a>, <a class="reference internal" href="#tamkin.nma.VSANoMass" title="tamkin.nma.VSANoMass"><code class="xref py py-class docutils literal notranslate"><span class="pre">VSANoMass</span></code></a>, <a class="reference internal" href="#tamkin.nma.MBH" title="tamkin.nma.MBH"><code class="xref py py-class docutils literal notranslate"><span class="pre">MBH</span></code></a>,
+<a class="reference internal" href="#tamkin.nma.PHVA_MBH" title="tamkin.nma.PHVA_MBH"><code class="xref py py-class docutils literal notranslate"><span class="pre">PHVA_MBH</span></code></a>, <a class="reference internal" href="#tamkin.nma.Constrain" title="tamkin.nma.Constrain"><code class="xref py py-class docutils literal notranslate"><span class="pre">Constrain</span></code></a>, and <a class="reference internal" href="#tamkin.nma.MBHConstrainExt" title="tamkin.nma.MBHConstrainExt"><code class="xref py py-class docutils literal notranslate"><span class="pre">MBHConstrainExt</span></code></a>.</p>
+<dl class="class">
+<dt id="tamkin.nma.NMA">
+<em class="property">class </em><code class="descclassname">tamkin.nma.</code><code class="descname">NMA</code><span class="sig-paren">(</span><em>molecule</em>, <em>treatment=None</em>, <em>do_modes=True</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.nma.NMA" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A generic normal mode analysis class.</p>
+<p>This class gathers the functionality that is common between all types of
+NMA variations, i.e. computation of frequencies and modes, once the
+problem is transformed to reduced coordinates. The actual nature of the
+reduced coordinates is determined by the treatment argument.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>molecule -- a molecule object obtained from a routine in</strong> (<em>|</em>) – <a class="reference internal" href="io.html#module-tamkin.io" title="tamkin.io"><code class="xref py py-mod docutils literal notranslate"><span class="pre">tamkin.io</span></code></a></td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Optional arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">treatment</span></code> – an instance of a Treatment subclass
+[default=Full()]</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">do_modes</span></code> – When False, only the frequencies are computed.
+When True, also the normal modes are computed.
+[default=True]</div>
+</div>
+</dd>
+<dt>Referenced attributes of molecule:</dt>
+<dd><code class="docutils literal notranslate"><span class="pre">mass</span></code>, <code class="docutils literal notranslate"><span class="pre">masses</span></code>, <code class="docutils literal notranslate"><span class="pre">masses3</span></code>, <code class="docutils literal notranslate"><span class="pre">numbers</span></code>, <code class="docutils literal notranslate"><span class="pre">coordinates</span></code>,
+<code class="docutils literal notranslate"><span class="pre">inertia_tensor</span></code>, <code class="docutils literal notranslate"><span class="pre">multiplicity</span></code>, <code class="docutils literal notranslate"><span class="pre">symmetry_number</span></code>,
+<code class="docutils literal notranslate"><span class="pre">periodic</span></code>, <code class="docutils literal notranslate"><span class="pre">energy</span></code></dd>
+<dt>Extra attributes:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">freqs</span></code> – array of frequencies</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">modes</span></code> – array of mass-weighted Cartesian modes (if do_modes
+is True). Each column corresponds to one mode. One
+has to divide a column the square root of the masses3
+attribute to obtain the mode in non-mass-weighted
+coordinates.</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">zeros</span></code> – list of indices of zero frequencies</div>
+</div>
+</dd>
+</dl>
+<dl class="classmethod">
+<dt id="tamkin.nma.NMA.read_from_file">
+<em class="property">classmethod </em><code class="descname">read_from_file</code><span class="sig-paren">(</span><em>filename</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.nma.NMA.read_from_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Construct an NMA object from a previously saved checkpoint file</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>filename -- the file to load from</strong> (<em>|</em>) – </td>
+</tr>
+</tbody>
+</table>
+<p>Usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">nma</span> <span class="o">=</span> <span class="n">NMA</span><span class="o">.</span><span class="n">read_from_file</span><span class="p">(</span><span class="s2">&quot;foo.chk&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="tamkin.nma.NMA.write_to_file">
+<code class="descname">write_to_file</code><span class="sig-paren">(</span><em>filename</em>, <em>fields='all'</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.nma.NMA.write_to_file" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write the NMA results to a human-readable checkpoint file.</p>
+<dl class="docutils">
+<dt>Argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">filename</span></code> – the file to write to</div>
+</div>
+</dd>
+<dt>Optional argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">fields</span></code> – define the selection of attributes to be written to
+file. This is one of ‘all’ (all attributes), ‘modes’
+(only attributes required for nmatools.py), or
+‘partf’ (only attributes required for the
+construction of a partition function)</div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tamkin.nma.AtomDivision">
+<em class="property">class </em><code class="descclassname">tamkin.nma.</code><code class="descname">AtomDivision</code><span class="sig-paren">(</span><em>transformed</em>, <em>free</em>, <em>fixed</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.nma.AtomDivision" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A division of atoms into transformed, free and fixed.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>transformed -- the atom indices of the atoms whose coordinates</strong> (<em>|</em>) – are transformed into non-Cartesian coordinates.</li>
+<li><strong>free -- the atom indices that are not transformed and retained</strong> (<em>|</em>) – as Cartesian coordinates in the new set of coordinates</li>
+<li><strong>fixed -- the atoms that are not used for the new coordinates</strong><strong>,</strong> (<em>|</em>) – i.e. their positions are constrained.</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="tamkin.nma.Transform">
+<em class="property">class </em><code class="descclassname">tamkin.nma.</code><code class="descname">Transform</code><span class="sig-paren">(</span><em>matrix</em>, <em>atom_division=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.nma.Transform" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A clever transformation object. It is sparse when atom coordinates remain
+Cartesian in the reduced coordinates.</p>
+<p>This object transforms small displacements (first order) in reduced
+internal coordinates (can be mass weighted) into plain Cartesian
+coordinates.</p>
+<p>It is assumed that the reduced coordinates are always split into two
+parts (in order):</p>
+<ol class="arabic simple">
+<li>the coordinates that are non-Cartesian</li>
+<li>the free coordinates that are Cartesian</li>
+</ol>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>matrix -- the linear transformation from the transformed</strong> (<em>|</em>) – displacements to Cartesian coordinates.</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Optional argument</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">atom_division</span></code> – an AtomDivision instance, when not given all
+atom coordinates are <cite>transformed</cite></div>
+</div>
+</dd>
+</dl>
+<dl class="attribute">
+<dt>
+<code class="descname">| ``matrix`` -- see above</code></dt>
+<dd></dd></dl>
+
+<dl class="attribute">
+<dt>
+<code class="descname">| ``scalars`` -- diagonal part of the linear transformation (only</code></dt>
+<dd><p>used with mass-weighted transformations)</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tamkin.nma.Transform.__call__">
+<code class="descname">__call__</code><span class="sig-paren">(</span><em>modes</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.nma.Transform.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Transform small displacement vectors from new to Cartesian coordinates.</p>
+<dl class="docutils">
+<dt>Argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">modes</span></code> – Small (mass-weighted) displacements (or modes) in
+internal coordinates (float numpy array with shape
+KxM, where K is the number of internal coordinates
+and M is the number of modes)</div>
+</div>
+</dd>
+</dl>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Returns:</th><td class="field-body">Small non-mass-weighted displacements (or modes) in Cartesian
+coordinates (float numpy array with shape 3NxM, where N is the
+number of Cartesian coordinates and M is the number of modes)</td>
+</tr>
+</tbody>
+</table>
+<p>Usage:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="gp">&gt;&gt;&gt; </span><span class="n">transform</span> <span class="o">=</span> <span class="n">Transform</span><span class="p">(</span><span class="o">...</span><span class="p">)</span>
+<span class="gp">&gt;&gt;&gt; </span><span class="n">modes_cartesian</span> <span class="o">=</span> <span class="n">transform</span><span class="p">(</span><span class="n">modes_internal</span><span class="p">)</span>
+</pre></div>
+</div>
+</dd></dl>
+
+<dl class="method">
+<dt id="tamkin.nma.Transform.get_weighted">
+<code class="descname">get_weighted</code><span class="sig-paren">(</span><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.nma.Transform.get_weighted" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return True when the transform is already mass-weighted</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tamkin.nma.Transform.make_weighted">
+<code class="descname">make_weighted</code><span class="sig-paren">(</span><em>mass_matrix</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.nma.Transform.make_weighted" title="Permalink to this definition">¶</a></dt>
+<dd><p>Include mass-weighting into the transformation.</p>
+<p>The original transformation is from non-mass-weighted new coordinates
+to non-mass-weighted Cartesian coordinates and becomes a transform
+from mass-weighted new coordinates to non-mass-weighted Cartesian
+coordinates.</p>
+<dl class="docutils">
+<dt>Argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">mass_matrix</span></code> – A MassMatrix instance for the new coordinates</div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="attribute">
+<dt id="tamkin.nma.Transform.weighted">
+<code class="descname">weighted</code><a class="headerlink" href="#tamkin.nma.Transform.weighted" title="Permalink to this definition">¶</a></dt>
+<dd><p>Return True when the transform is already mass-weighted</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tamkin.nma.MassMatrix">
+<em class="property">class </em><code class="descclassname">tamkin.nma.</code><code class="descname">MassMatrix</code><span class="sig-paren">(</span><em>*args</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.nma.MassMatrix" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>A clever mass matrix object. It is sparse when atom coordinates remain
+Cartesian in the reduced coordinates.</p>
+<dl class="docutils">
+<dt>Arguments, if one is given and it is a two-dimensional matrix:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">mass_block</span></code> – the mass matrix associated with the transformed
+coordinates</div>
+</div>
+</dd>
+<dt>Arguments, if one is given and it is a one-dimensional matrix:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">mass_diag</span></code> – the diagonal of the mass matrix associated with
+the free atoms (each mass appears three times)</div>
+</div>
+</dd>
+<dt>Arguments, if two are given:  ! Attention for order of arguments.</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">mass_block</span></code> – the mass matrix associated with the transformed
+coordinates</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">mass_diag</span></code> – the diagonal of the mass matrix associated with
+the free atoms (each mass appears three times)</div>
+</div>
+</dd>
+</dl>
+<p>The mass of the fixed atoms does not really matter here.</p>
+<dl class="method">
+<dt id="tamkin.nma.MassMatrix.get_weighted_hessian">
+<code class="descname">get_weighted_hessian</code><span class="sig-paren">(</span><em>hessian</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.nma.MassMatrix.get_weighted_hessian" title="Permalink to this definition">¶</a></dt>
+<dd></dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tamkin.nma.Treatment">
+<em class="property">class </em><code class="descclassname">tamkin.nma.</code><code class="descname">Treatment</code><a class="headerlink" href="#tamkin.nma.Treatment" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>An abstract base class for the NMA treatments. Derived classes must
+override the __call__ function, or they have to override the individual
+compute_zeros and compute_hessian methods. Parameters specific for the
+treatment are passed to the constructor, see for example the PHVA
+implementation.</p>
+<dl class="method">
+<dt id="tamkin.nma.Treatment.__call__">
+<code class="descname">__call__</code><span class="sig-paren">(</span><em>molecule</em>, <em>do_modes</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.nma.Treatment.__call__" title="Permalink to this definition">¶</a></dt>
+<dd><p>Calls compute_hessian and compute_zeros (in order) with same arguments</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>molecule -- a Molecule instance</strong> (<em>|</em>) – </li>
+<li><strong>do_modes -- a boolean indicates whether the modes have to be</strong> (<em>|</em>) – computed</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="method">
+<dt id="tamkin.nma.Treatment.compute_hessian">
+<code class="descname">compute_hessian</code><span class="sig-paren">(</span><em>molecule</em>, <em>do_modes</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.nma.Treatment.compute_hessian" title="Permalink to this definition">¶</a></dt>
+<dd><p>To be computed in derived classes</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>molecule -- a Molecule instance</strong> (<em>|</em>) – </li>
+<li><strong>do_modes -- a boolean indicates whether the modes have to be</strong> (<em>|</em>) – </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Attributes to be computed:</p>
+<ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">treatment.hessian_small</span></code>: the Hessian in reduced coordinates</li>
+<li><code class="docutils literal notranslate"><span class="pre">treatment.mass_matrix_small</span></code>: the mass matrix in reduced
+coordinates (see MassMatrix class)</li>
+<li><code class="docutils literal notranslate"><span class="pre">treatment.transform</span></code>: (None if <code class="docutils literal notranslate"><span class="pre">do_modes==False</span></code>) the
+transformation from small displacements in reduced coordinates
+to small displacements in Cartesian coordinates. (see Transform
+class)</li>
+</ul>
+<p>For the implementation of certain treatments, it is easier to produce
+a mass-weighted small Hessian immediately. In such cases, the
+transform is readily mass-weighted and mass_matrix_small is None.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tamkin.nma.Treatment.compute_zeros">
+<code class="descname">compute_zeros</code><span class="sig-paren">(</span><em>molecule</em>, <em>do_modes</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.nma.Treatment.compute_zeros" title="Permalink to this definition">¶</a></dt>
+<dd><p>To be computed in derived classes</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>molecule -- a Molecule instance</strong> (<em>|</em>) – </li>
+<li><strong>do_modes -- a boolean indicates whether the modes have to be</strong> (<em>|</em>) – </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<p>Attributes to be computed:</p>
+<ul class="simple">
+<li><code class="docutils literal notranslate"><span class="pre">treatment.num_zeros</span></code>: the number of zero eigenvalues to expect</li>
+<li><code class="docutils literal notranslate"><span class="pre">treatment.external_basis</span></code>: (None if <code class="docutils literal notranslate"><span class="pre">do_modes=False</span></code>) the
+basis of external degrees of freedom. number of basis vectors
+matches the number of zeros. These basis vectors are mass-weighted.</li>
+</ul>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tamkin.nma.Full">
+<em class="property">class </em><code class="descclassname">tamkin.nma.</code><code class="descname">Full</code><span class="sig-paren">(</span><em>im_threshold=1.0</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.nma.Full" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tamkin.nma.Treatment" title="tamkin.nma.Treatment"><code class="xref py py-class docutils literal notranslate"><span class="pre">tamkin.nma.Treatment</span></code></a></p>
+<p>A full vibrational analysis, without transforming to a new set of
+coordinates.</p>
+<dl class="docutils">
+<dt>Optional argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">im_threshold</span></code> – Threshold for detection of deviations from
+linearity. When a moment of inertia is below
+this threshold, it is treated as a zero.</div>
+</div>
+</dd>
+</dl>
+<dl class="method">
+<dt id="tamkin.nma.Full.compute_hessian">
+<code class="descname">compute_hessian</code><span class="sig-paren">(</span><em>molecule</em>, <em>do_modes</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.nma.Full.compute_hessian" title="Permalink to this definition">¶</a></dt>
+<dd><p>See <a class="reference internal" href="#tamkin.nma.Treatment.compute_hessian" title="tamkin.nma.Treatment.compute_hessian"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Treatment.compute_hessian()</span></code></a>.</p>
+<p>The Hessian is the full 3Nx3N Hessian matrix <code class="docutils literal notranslate"><span class="pre">H</span></code>.
+The mass matrix is the full 3Nx3N mass matrix <code class="docutils literal notranslate"><span class="pre">M</span></code>.
+It is assumed that the coordinates are Cartesian coordinates, so the
+mass matrix is diagonal.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tamkin.nma.Full.compute_zeros">
+<code class="descname">compute_zeros</code><span class="sig-paren">(</span><em>molecule</em>, <em>do_modes</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.nma.Full.compute_zeros" title="Permalink to this definition">¶</a></dt>
+<dd><p>See <a class="reference internal" href="#tamkin.nma.Treatment.compute_zeros" title="tamkin.nma.Treatment.compute_zeros"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Treatment.compute_zeros()</span></code></a>.</p>
+<p>The number of zeros should be:</p>
+<ul class="simple">
+<li>3 for a single atom, nonperiodic calculation</li>
+<li>5 for a linear molecule, nonperiodic calculation</li>
+<li>6 for a nonlinear molecule, nonperiodic calculation</li>
+<li>3 in periodic calculations</li>
+</ul>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tamkin.nma.ConstrainExt">
+<em class="property">class </em><code class="descclassname">tamkin.nma.</code><code class="descname">ConstrainExt</code><span class="sig-paren">(</span><em>gradient_threshold=0.0001</em>, <em>im_threshold=1.0</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.nma.ConstrainExt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tamkin.nma.Treatment" title="tamkin.nma.Treatment"><code class="xref py py-class docutils literal notranslate"><span class="pre">tamkin.nma.Treatment</span></code></a></p>
+<p>Almost a full vibrational analysis, but with constrained external degrees
+of freedom.</p>
+<p>Note that the current implementation only works correctly when the
+gradient is zero.</p>
+<dl class="docutils">
+<dt>Optional arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">gradient_threshold</span></code> – The maximum allowed value of the
+components of the Cartesian gradient in
+atomic units. When the threshold is
+exceeded, a ValueError is raised.
+[default=1-e4]</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">im_threshold</span></code> – Threshold for detection of deviations from
+linearity. When a moment of inertia is below
+this threshold, it is treated as a zero.</div>
+</div>
+</dd>
+</dl>
+<dl class="method">
+<dt id="tamkin.nma.ConstrainExt.compute_hessian">
+<code class="descname">compute_hessian</code><span class="sig-paren">(</span><em>molecule</em>, <em>do_modes</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.nma.ConstrainExt.compute_hessian" title="Permalink to this definition">¶</a></dt>
+<dd><p>See <a class="reference internal" href="#tamkin.nma.Treatment.compute_hessian" title="tamkin.nma.Treatment.compute_hessian"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Treatment.compute_hessian()</span></code></a></p>
+<p>First a basis is constructed for the internal coordinates. The 3N-6
+(or 3N-5) basis vectors of length 3N (matrix B is (3N-6)x3N) are
+mass-weighted.
+The ConstrainExt Hessian is then: <code class="docutils literal notranslate"><span class="pre">B^T</span> <span class="pre">H</span> <span class="pre">B</span></code>.
+This matrix is already mass weigthed, such that no ConstrainExt mass
+matrix needs to be specified.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tamkin.nma.ConstrainExt.compute_zeros">
+<code class="descname">compute_zeros</code><span class="sig-paren">(</span><em>molecule</em>, <em>do_modes</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.nma.ConstrainExt.compute_zeros" title="Permalink to this definition">¶</a></dt>
+<dd><p>See <a class="reference internal" href="#tamkin.nma.Treatment.compute_zeros" title="tamkin.nma.Treatment.compute_zeros"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Treatment.compute_zeros()</span></code></a>.</p>
+<p>The number of zeros is set to 0, because the global translations
+and rotations are already projected out.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tamkin.nma.PHVA">
+<em class="property">class </em><code class="descclassname">tamkin.nma.</code><code class="descname">PHVA</code><span class="sig-paren">(</span><em>fixed</em>, <em>svd_threshold=1e-05</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.nma.PHVA" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tamkin.nma.Treatment" title="tamkin.nma.Treatment"><code class="xref py py-class docutils literal notranslate"><span class="pre">tamkin.nma.Treatment</span></code></a></p>
+<p>Perform the partial Hessian vibrational analysis.</p>
+<p>Part of the system is fixed during the vibrational analysis: the fixed
+atoms are kept at their reference positions. The rest of the atoms can
+still vibrate.</p>
+<p>See references:</p>
+<ul class="simple">
+<li>J.D. Head, Int. J. Quantum Chem. 65, 827 (1997)</li>
+<li>J.D. Head and Y. Shi, Int. J. Quantum Chem. 75, 81 (1999)</li>
+<li>J.D. Head, Int. J. Quantum Chem. 77, 350 (2000)</li>
+<li><ol class="first upperalpha" start="8">
+<li>Li and J. Jensen, Theor. Chem. Acc. 107, 211 (2002)</li>
+</ol>
+</li>
+</ul>
+<dl class="docutils">
+<dt>Argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">fixed</span></code> – a list with fixed atoms, counting starts from zero.</div>
+</div>
+</dd>
+<dt>Optional argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">svd_threshold</span></code> – threshold for detection of deviations for
+linearity</div>
+</div>
+</dd>
+</dl>
+<dl class="method">
+<dt id="tamkin.nma.PHVA.compute_hessian">
+<code class="descname">compute_hessian</code><span class="sig-paren">(</span><em>molecule</em>, <em>do_modes</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.nma.PHVA.compute_hessian" title="Permalink to this definition">¶</a></dt>
+<dd><p>See <a class="reference internal" href="#tamkin.nma.Treatment.compute_hessian" title="tamkin.nma.Treatment.compute_hessian"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Treatment.compute_hessian()</span></code></a>.</p>
+<p>The Hessian matrix for the PHVA is the submatrix of the full (3Nx3N)
+Hessian, corresponding with the non-fixed atoms: <code class="docutils literal notranslate"><span class="pre">H_nonfixed</span></code>.
+The mass matrix for the PHVA is the (diagonal) submatrix of the
+full (3Nx3N) mass matrix, corresponding with the non-fixed atoms:
+<code class="docutils literal notranslate"><span class="pre">M_nonfixed</span></code>.
+So it is a diagonal matrix with the masses of the non-fixed atoms on
+the diagonal.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tamkin.nma.PHVA.compute_zeros">
+<code class="descname">compute_zeros</code><span class="sig-paren">(</span><em>molecule</em>, <em>do_modes</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.nma.PHVA.compute_zeros" title="Permalink to this definition">¶</a></dt>
+<dd><p>See <a class="reference internal" href="#tamkin.nma.Treatment.compute_zeros" title="tamkin.nma.Treatment.compute_zeros"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Treatment.compute_zeros()</span></code></a>.</p>
+<p>This is a bit tricky. Most of the times the number of zero eigenvalues
+is zero, but there are a few exceptions. When there is one fixed
+point, there are in general three zeros. When there are two (or more
+colinear fixed atoms), there is in general one zero. When both the
+fixed and the free atoms are colinear, there are no zeros.</p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tamkin.nma.VSA">
+<em class="property">class </em><code class="descclassname">tamkin.nma.</code><code class="descname">VSA</code><span class="sig-paren">(</span><em>subs</em>, <em>svd_threshold=1e-05</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.nma.VSA" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tamkin.nma.Treatment" title="tamkin.nma.Treatment"><code class="xref py py-class docutils literal notranslate"><span class="pre">tamkin.nma.Treatment</span></code></a></p>
+<p>Perform a Vibrational Subsystem Analysis.</p>
+<p>Frequencies and modes are computed with the VSA approach, as described in
+the references:</p>
+<ul class="simple">
+<li><ol class="first upperalpha" start="23">
+<li>Zheng, B.R. Brooks, J. Biophys. 89, 167 (2006)</li>
+</ol>
+</li>
+<li>H.L. Woodcock, W. Zheng, A. Ghysels, Y. Shao, J. Kong, B.R. Brooks,
+J. Chem. Phys. 129 (21), Art. No. 214109 (2008)</li>
+</ul>
+<p>The system is partitioned into a subsystem and an environment. The subsystem
+atoms are allowed to vibrate, while the environment atoms follow the motions
+of the subsystem atoms. The environment atoms are force free.</p>
+<dl class="docutils">
+<dt>One argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">subs</span></code> – a list with the subsystem atoms, counting starts from
+zero.</div>
+</div>
+</dd>
+<dt>Optional argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">svd_threshold</span></code> – threshold for detection of deviations for
+linearity</div>
+</div>
+</dd>
+</dl>
+<dl class="method">
+<dt id="tamkin.nma.VSA.compute_hessian">
+<code class="descname">compute_hessian</code><span class="sig-paren">(</span><em>molecule</em>, <em>do_modes</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.nma.VSA.compute_hessian" title="Permalink to this definition">¶</a></dt>
+<dd><p>See <a class="reference internal" href="#tamkin.nma.Treatment.compute_hessian" title="tamkin.nma.Treatment.compute_hessian"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Treatment.compute_hessian()</span></code></a>.</p>
+<p>The VSA Hessian reads: <code class="docutils literal notranslate"><span class="pre">H_ss</span> <span class="pre">-</span> <span class="pre">H_se</span> <span class="pre">(H_ee)**(-1)</span> <span class="pre">H_es</span></code>,
+the VSA mass matrix reads: <code class="docutils literal notranslate"><span class="pre">M_s</span> <span class="pre">-</span> <span class="pre">H_se</span> <span class="pre">(H_ee)**(-1)</span> <span class="pre">M_e</span> <span class="pre">(H_ee)**(-1)</span> <span class="pre">H_es</span></code>,
+where the indices <code class="docutils literal notranslate"><span class="pre">s</span></code> and <code class="docutils literal notranslate"><span class="pre">e</span></code> refer to the subsystem and environment
+atoms respectively.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tamkin.nma.VSA.compute_zeros">
+<code class="descname">compute_zeros</code><span class="sig-paren">(</span><em>molecule</em>, <em>do_modes</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.nma.VSA.compute_zeros" title="Permalink to this definition">¶</a></dt>
+<dd><p>See <a class="reference internal" href="#tamkin.nma.Treatment.compute_zeros" title="tamkin.nma.Treatment.compute_zeros"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Treatment.compute_zeros()</span></code></a>.</p>
+<p>The number of zeros should be:</p>
+<ul class="simple">
+<li>3 for subsystem = a single atom, nonperiodic calculation</li>
+<li>5 for subsystem = a linear molecule, nonperiodic calculation</li>
+<li>6 for subsystem = a nonlinear molecule, nonperiodic calculation</li>
+<li>3 in periodic calculations</li>
+</ul>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tamkin.nma.VSANoMass">
+<em class="property">class </em><code class="descclassname">tamkin.nma.</code><code class="descname">VSANoMass</code><span class="sig-paren">(</span><em>subs</em>, <em>svd_threshold=1e-05</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.nma.VSANoMass" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tamkin.nma.Treatment" title="tamkin.nma.Treatment"><code class="xref py py-class docutils literal notranslate"><span class="pre">tamkin.nma.Treatment</span></code></a></p>
+<p>Perform a Vibrational Subsystem Analysis, without taking into account the
+mass of the environment.</p>
+<p>Frequencies and modes are computed as described in the reference:</p>
+<ul class="simple">
+<li><ol class="first upperalpha" start="23">
+<li>Zheng, B.R. Brooks, Journal of Biophysics 89, 167 (2006)</li>
+</ol>
+</li>
+<li>A. Ghysels, V. Van Speybroeck, E. Pauwels, S. Catak, B.R. Brooks,
+D. Van Neck, M. Waroquier, Journal of Computational Chemistry 31 (5),
+94-1007 (2010)</li>
+</ul>
+<p>The system is partitioned into a subsystem and an environment. The subsystem
+atoms are allowed to vibrate, while the environment atoms follow the motions
+of the subsystem atoms. The environment atoms are force free.
+Moreover, the VSA is performed according to the original version of 2006:
+no mass correction for the environment is included.
+This version of VSA corresponds to the approximation
+of zero mass for all environment atoms.</p>
+<dl class="docutils">
+<dt>One argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">subs</span></code> – a list with the subsystem atoms, counting starts from
+zero.</div>
+</div>
+</dd>
+<dt>Optional argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">svd_threshold</span></code> – threshold for detection of deviations for
+linearity</div>
+</div>
+</dd>
+</dl>
+<dl class="method">
+<dt id="tamkin.nma.VSANoMass.compute_hessian">
+<code class="descname">compute_hessian</code><span class="sig-paren">(</span><em>molecule</em>, <em>do_modes</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.nma.VSANoMass.compute_hessian" title="Permalink to this definition">¶</a></dt>
+<dd><p>See <a class="reference internal" href="#tamkin.nma.Treatment.compute_hessian" title="tamkin.nma.Treatment.compute_hessian"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Treatment.compute_hessian()</span></code></a>.</p>
+<p>The VSANoMass Hessian reads: <code class="docutils literal notranslate"><span class="pre">H_ss</span> <span class="pre">-</span> <span class="pre">H_se</span> <span class="pre">(H_ee)**(-1)</span> <span class="pre">H_es</span></code>.
+and the VSANoMass mass matrix reads: <code class="docutils literal notranslate"><span class="pre">M_s</span></code>,
+where the indices <code class="docutils literal notranslate"><span class="pre">s</span></code> and <code class="docutils literal notranslate"><span class="pre">e</span></code> refer to the subsystem and environment
+atoms respectively.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tamkin.nma.VSANoMass.compute_zeros">
+<code class="descname">compute_zeros</code><span class="sig-paren">(</span><em>molecule</em>, <em>do_modes</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.nma.VSANoMass.compute_zeros" title="Permalink to this definition">¶</a></dt>
+<dd><p>See <a class="reference internal" href="#tamkin.nma.Treatment.compute_zeros" title="tamkin.nma.Treatment.compute_zeros"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Treatment.compute_zeros()</span></code></a>.</p>
+<p>The number of zeros should be:</p>
+<ul class="simple">
+<li>3 for subsystem = a single atom, nonperiodic calculation</li>
+<li>5 for subsystem = a linear molecule, nonperiodic calculation</li>
+<li>6 for subsystem = a nonlinear molecule, nonperiodic calculation</li>
+<li>3 in periodic calculations</li>
+</ul>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tamkin.nma.MBH">
+<em class="property">class </em><code class="descclassname">tamkin.nma.</code><code class="descname">MBH</code><span class="sig-paren">(</span><em>blocks</em>, <em>do_gradient_correction=True</em>, <em>svd_threshold=1e-05</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.nma.MBH" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tamkin.nma.Treatment" title="tamkin.nma.Treatment"><code class="xref py py-class docutils literal notranslate"><span class="pre">tamkin.nma.Treatment</span></code></a></p>
+<p>The Mobile Block Hessian approach.</p>
+<p>Frequencies and modes are computed with the MBH approach, as described in
+the refences:</p>
+<ul class="simple">
+<li>“Vibrational modes in partially optimized molecular systems”, An Ghysels,
+Dimitri Van Neck, Veronique Van Speybroeck, Toon Verstraelen and Michel
+Waroquier, Journal of Chemical Physics, Vol. 126 (22), Art. No. 224102,
+2007, <a class="reference external" href="http://dx.doi.org/1.2737444">http://dx.doi.org/1.2737444</a></li>
+<li>“Cartesian formulation of the Mobile Block Hesian Approach to vibrational
+analysis in partially optimized systems”, An Ghysels, Dimitri Van Neck and
+Michel Waroquier, Journal of Chemical Physics, Vol. 127 (16), Art. No.
+164108, 2007, <a class="reference external" href="http://dx.doi.org/1.2789429">http://dx.doi.org/1.2789429</a></li>
+<li>“Calculating reaction rates with partial Hessians: validation of the MBH
+approach”, An Ghysels, Veronique Van Speybroeck, Toon Verstraelen, Dimitri
+Van Neck and Michel Waroquier, Journal of Chemical Theory and Computation,
+Vol. 4 (4), 614-625, 2008, <a class="reference external" href="http://dx.doi.org/ct7002836">http://dx.doi.org/ct7002836</a></li>
+</ul>
+<p>For the Mobile Block Hessian method with linked blocks, please refer to the
+following papers:</p>
+<ul class="simple">
+<li>“Mobile Block Hessian approach with linked blocks: an efficient approach
+for the calculation of frequencies in macromolecules”, An Ghysels,
+Veronique Van Speybroeck, Ewald Pauwels, Dimitri Van Neck, Bernard R.
+Brooks and Michel Waroquier, Journal of Chemical Theory and Computation,
+Vol. 5 (5), 1203-1215, 2009, <a class="reference external" href="http://dx.doi.org/ct800489r">http://dx.doi.org/ct800489r</a></li>
+<li>“Normal modes for large molecules with arbitrary link constraints in the
+mobile block Hessian approach”, An Ghysels, Dimitri Van Neck, Bernard R.
+Brooks, Veronique Van Speybroeck and Michel Waroquier, Journal of Chemical
+Physics, Vol. 130 (18), Art. No. 084107, 2009, <a class="reference external" href="http://dx.doi.org/1.3071261">http://dx.doi.org/1.3071261</a></li>
+</ul>
+<p>The system is partitioned into blocks which are only allowed to move as
+rigid bodies during the vibrational analysis. Atoms that are not part of a
+block can still move individually. The internal geometry of the blocks need
+not be optimized, because the MBH method performs a gradient correction to
+account for the internal forces. Only the position and orientation of each
+block should be optimized. This make MBH an appropriate method to perform
+NMA in partially optimized structures.</p>
+<dl class="docutils">
+<dt>One argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">blocks</span></code> – a list of blocks, each block is a list of atoms,
+counting starts from zero.</div>
+</div>
+</dd>
+<dt>Optional arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">do_gradient_correction</span></code> – boolean, whether gradient correction
+to MBH should be added</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">svd_threshold</span></code> – threshold for zero singular values in svd</div>
+</div>
+</dd>
+</dl>
+<dl class="method">
+<dt id="tamkin.nma.MBH.compute_hessian">
+<code class="descname">compute_hessian</code><span class="sig-paren">(</span><em>molecule</em>, <em>do_modes</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.nma.MBH.compute_hessian" title="Permalink to this definition">¶</a></dt>
+<dd><p>See <a class="reference internal" href="#tamkin.nma.Treatment.compute_hessian" title="tamkin.nma.Treatment.compute_hessian"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Treatment.compute_hessian()</span></code></a>.</p>
+<p>Gather all information about the block choice in the
+blkinfo attribute. If adjoined blocks (blocks with common atoms)
+are present, an extra STRICT block choice is defined: the partitioning
+where each atom belongs to only one block.</p>
+<p>First, the 3Nxd matrix U is constructed from the column vectors describing
+the block motions. At this point, the strict partitioning is used.
+The Hessian is equal to: <code class="docutils literal notranslate"><span class="pre">Hp</span> <span class="pre">=</span> <span class="pre">U^T</span> <span class="pre">H</span> <span class="pre">U`</span> <span class="pre">+</span> <span class="pre">G:C`.</span> <span class="pre">The</span> <span class="pre">term</span> <span class="pre">``G:C</span></code> is the
+gradient correction. The mass matrix is equal to: <code class="docutils literal notranslate"><span class="pre">Mp</span> <span class="pre">=</span> <span class="pre">U^T</span> <span class="pre">M</span> <span class="pre">U</span></code>.</p>
+<p>Second, impose the link constraints between blocks, if any of the blocks
+are adjoined. The matrix K constains the linking constraints. If
+nullspace is the null space of K, then the final Mobile block Hessian
+reads: <code class="docutils literal notranslate"><span class="pre">Hy</span> <span class="pre">=</span> <span class="pre">nullspace^T</span> <span class="pre">Hp</span> <span class="pre">nullspace</span> <span class="pre">+</span> <span class="pre">Gp:Cp</span></code>. The term <code class="docutils literal notranslate"><span class="pre">Gp:Cp</span></code>
+is the gradient correction. The Mobile Block mass matrix is equal to:
+<code class="docutils literal notranslate"><span class="pre">My</span> <span class="pre">=</span> <span class="pre">nullspace^T</span> <span class="pre">Mp</span> <span class="pre">nullspace</span></code>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tamkin.nma.MBH.compute_zeros">
+<code class="descname">compute_zeros</code><span class="sig-paren">(</span><em>molecule</em>, <em>do_modes</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.nma.MBH.compute_zeros" title="Permalink to this definition">¶</a></dt>
+<dd><p>See <a class="reference internal" href="#tamkin.nma.Treatment.compute_zeros" title="tamkin.nma.Treatment.compute_zeros"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Treatment.compute_zeros()</span></code></a>.</p>
+<p>The number of zeros should be:</p>
+<ul class="simple">
+<li>3 for a single atom, nonperiodic calculation</li>
+<li>5 for a linear molecule, nonperiodic calculation</li>
+<li>6 for a nonlinear molecule, nonperiodic calculation</li>
+<li>3 in periodic calculations</li>
+</ul>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tamkin.nma.Blocks">
+<em class="property">class </em><code class="descclassname">tamkin.nma.</code><code class="descname">Blocks</code><span class="sig-paren">(</span><em>blocks</em>, <em>molecule</em>, <em>svd_threshold</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.nma.Blocks" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <code class="xref py py-class docutils literal notranslate"><span class="pre">object</span></code></p>
+<p>Object that extracts all information from a block choice.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>blocks -- a list of lists of atoms</strong> (<em>|</em>) – [ [at1,at5,at3], [at4,at5], …]
+with a list of atoms for each block</li>
+<li><strong>molecule -- Molecule object</strong><strong>, </strong><strong>necessary for N</strong> (<em>|</em>) – and positions (linearity of blocks).</li>
+<li><strong>svd_trheshold -- threshold for zero singular values in svd</strong> (<em>|</em>) – </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="class">
+<dt id="tamkin.nma.PHVA_MBH">
+<em class="property">class </em><code class="descclassname">tamkin.nma.</code><code class="descname">PHVA_MBH</code><span class="sig-paren">(</span><em>fixed</em>, <em>blocks</em>, <em>do_gradient_correction=True</em>, <em>svd_threshold=1e-05</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.nma.PHVA_MBH" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tamkin.nma.MBH" title="tamkin.nma.MBH"><code class="xref py py-class docutils literal notranslate"><span class="pre">tamkin.nma.MBH</span></code></a></p>
+<p>The Mobile Block Hessian combined with the Partial Hessian Vibrational Analysis.</p>
+<p>The system is partitioned into</p>
+<ul class="simple">
+<li>blocks which are only allowed to move as rigid bodies (the MBH concept,
+see <a class="reference internal" href="#tamkin.nma.PHVA" title="tamkin.nma.PHVA"><code class="xref py py-class docutils literal notranslate"><span class="pre">PHVA</span></code></a>),</li>
+<li>fixed atoms which are not allowed to move at all (the PHVA concept, see
+<a class="reference internal" href="#tamkin.nma.MBH" title="tamkin.nma.MBH"><code class="xref py py-class docutils literal notranslate"><span class="pre">MBH</span></code></a>).</li>
+<li>single atoms which are allowed to vibrate individually</li>
+</ul>
+<p>The internal geometry of the blocks does not have to be optimized. The
+positions of the fixed atoms also do not have to be optimized.
+This make the PHVA_MBH an appropriate method to perform NMA in partially
+optimized structures.</p>
+<dl class="docutils">
+<dt>Two arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">fixed</span></code> – a list with fixed atoms, counting starts from zero.</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">blocks</span></code> – a list of blocks, each block is a list of atoms</div>
+</div>
+</dd>
+<dt>Optional arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">svd_threshold</span></code> – threshold for zero singular values in svd</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">do_gradient_correction</span></code> – boolean, whether gradient correction
+to MBH part should be added
+[default=True]</div>
+</div>
+</dd>
+</dl>
+<dl class="method">
+<dt id="tamkin.nma.PHVA_MBH.compute_hessian">
+<code class="descname">compute_hessian</code><span class="sig-paren">(</span><em>molecule</em>, <em>do_modes</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.nma.PHVA_MBH.compute_hessian" title="Permalink to this definition">¶</a></dt>
+<dd><p>See <a class="reference internal" href="#tamkin.nma.Treatment.compute_hessian" title="tamkin.nma.Treatment.compute_hessian"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Treatment.compute_hessian()</span></code></a>.</p>
+<p>First, the non-fixed atoms are cut out of the molecular system, i.e.
+the single atoms and the atoms belonging to the blocks and stored in a
+<em>submolecule</em>.
+Next, the regular MBH concept is applied on this submolecule.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tamkin.nma.PHVA_MBH.compute_zeros">
+<code class="descname">compute_zeros</code><span class="sig-paren">(</span><em>molecule</em>, <em>do_modes</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.nma.PHVA_MBH.compute_zeros" title="Permalink to this definition">¶</a></dt>
+<dd><p>See <a class="reference internal" href="#tamkin.nma.Treatment.compute_zeros" title="tamkin.nma.Treatment.compute_zeros"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Treatment.compute_zeros()</span></code></a></p>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tamkin.nma.Constrain">
+<em class="property">class </em><code class="descclassname">tamkin.nma.</code><code class="descname">Constrain</code><span class="sig-paren">(</span><em>constraints</em>, <em>do_gradient_correction=True</em>, <em>svd_threshold=1e-05</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.nma.Constrain" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tamkin.nma.Treatment" title="tamkin.nma.Treatment"><code class="xref py py-class docutils literal notranslate"><span class="pre">tamkin.nma.Treatment</span></code></a></p>
+<p>Perform a normal mode analysis where part of the internal coordinates are
+constrained to a fixed value.</p>
+<p>The gradient corrections are taken into account correctly. At present, only
+distance constraints are implemented. In principle, the routine can be
+adapted to angle and dihedral angle constraints.</p>
+<dl class="docutils">
+<dt>One argument:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">constraints</span></code> – a list with constraints of internal coordinates:
+[at1,at2] to constrain a distance,
+[at1,at2,at3] to constrain an angle,
+[at1,at2,at3,at4] to constrain a dihedral angle.</div>
+</div>
+</dd>
+<dt>Optional:</dt>
+<dd><div class="first last line-block">
+<div class="line"><code class="docutils literal notranslate"><span class="pre">do_gradient_correction</span></code> – whether gradient correction should
+be applied</div>
+<div class="line"><code class="docutils literal notranslate"><span class="pre">svd_threshold</span></code> – threshold for singular value decomposition</div>
+</div>
+</dd>
+</dl>
+<dl class="method">
+<dt id="tamkin.nma.Constrain.compute_hessian">
+<code class="descname">compute_hessian</code><span class="sig-paren">(</span><em>molecule</em>, <em>do_modes</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.nma.Constrain.compute_hessian" title="Permalink to this definition">¶</a></dt>
+<dd><p>See <a class="reference internal" href="#tamkin.nma.Treatment.compute_hessian" title="tamkin.nma.Treatment.compute_hessian"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Treatment.compute_hessian()</span></code></a></p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tamkin.nma.Constrain.compute_zeros">
+<code class="descname">compute_zeros</code><span class="sig-paren">(</span><em>molecule</em>, <em>do_modes</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.nma.Constrain.compute_zeros" title="Permalink to this definition">¶</a></dt>
+<dd><p>See <a class="reference internal" href="#tamkin.nma.Treatment.compute_zeros" title="tamkin.nma.Treatment.compute_zeros"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Treatment.compute_zeros()</span></code></a>.</p>
+<p>The number of zeros should be:</p>
+<ul class="simple">
+<li>3 for a single atom, nonperiodic calculation</li>
+<li>5 for a linear molecule, nonperiodic calculation</li>
+<li>6 for a nonlinear molecule, nonperiodic calculation</li>
+<li>3 in periodic calculations</li>
+</ul>
+</dd></dl>
+
+</dd></dl>
+
+<dl class="class">
+<dt id="tamkin.nma.MBHConstrainExt">
+<em class="property">class </em><code class="descclassname">tamkin.nma.</code><code class="descname">MBHConstrainExt</code><span class="sig-paren">(</span><em>blocks</em>, <em>do_gradient_correction=True</em>, <em>svd_threshold=1e-05</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.nma.MBHConstrainExt" title="Permalink to this definition">¶</a></dt>
+<dd><p>Bases: <a class="reference internal" href="#tamkin.nma.MBH" title="tamkin.nma.MBH"><code class="xref py py-class docutils literal notranslate"><span class="pre">tamkin.nma.MBH</span></code></a></p>
+<p>The Mobile Block Hessian approach with the Eckart constraints imposed</p>
+<p>This method is completely similar to the MBH, except that first the
+global translations and rotations are first projected out of the
+Hessian before applying the block partitioning and projecting by
+the MBH. The contribution of the gradient is also adapted.
+In case of a periodic simulation, only the global translations
+are projected out.</p>
+<dl class="method">
+<dt id="tamkin.nma.MBHConstrainExt.compute_hessian">
+<code class="descname">compute_hessian</code><span class="sig-paren">(</span><em>molecule</em>, <em>do_modes</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.nma.MBHConstrainExt.compute_hessian" title="Permalink to this definition">¶</a></dt>
+<dd><p>See <a class="reference internal" href="#tamkin.nma.Treatment.compute_hessian" title="tamkin.nma.Treatment.compute_hessian"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Treatment.compute_hessian()</span></code></a>.</p>
+<p>Gather all information about the block choice in the
+blkinfo attribute. If adjoined blocks (blocks with common atoms)
+are present, an extra STRICT block choice is defined: the partitioning
+where each atom belongs to only one block.</p>
+<p>First, the 3Nxd matrix U is constructed from the column vectors describing
+the block motions. At this point, the strict partitioning is used.
+The Hessian is equal to: <code class="docutils literal notranslate"><span class="pre">Hp</span> <span class="pre">=</span> <span class="pre">U^T</span> <span class="pre">H</span> <span class="pre">U`</span> <span class="pre">+</span> <span class="pre">G:C`.</span> <span class="pre">The</span> <span class="pre">term</span> <span class="pre">``G:C</span></code> is the
+gradient correction. The mass matrix is equal to: <code class="docutils literal notranslate"><span class="pre">Mp</span> <span class="pre">=</span> <span class="pre">U^T</span> <span class="pre">M</span> <span class="pre">U</span></code>.</p>
+<p>Second, impose the link constraints between blocks, if any of the blocks
+are adjoined. The matrix K constains the linking constraints. If
+nullspace is the null space of K, then the final Mobile block Hessian
+reads: <code class="docutils literal notranslate"><span class="pre">Hy</span> <span class="pre">=</span> <span class="pre">nullspace^T</span> <span class="pre">Hp</span> <span class="pre">nullspace</span> <span class="pre">+</span> <span class="pre">Gp:Cp</span></code>. The term <code class="docutils literal notranslate"><span class="pre">Gp:Cp</span></code>
+is the gradient correction. The Mobile Block mass matrix is equal to:
+<code class="docutils literal notranslate"><span class="pre">My</span> <span class="pre">=</span> <span class="pre">nullspace^T</span> <span class="pre">Mp</span> <span class="pre">nullspace</span></code>.</p>
+</dd></dl>
+
+<dl class="method">
+<dt id="tamkin.nma.MBHConstrainExt.compute_zeros">
+<code class="descname">compute_zeros</code><span class="sig-paren">(</span><em>molecule</em>, <em>do_modes</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.nma.MBHConstrainExt.compute_zeros" title="Permalink to this definition">¶</a></dt>
+<dd><p>See <a class="reference internal" href="#tamkin.nma.Treatment.compute_zeros" title="tamkin.nma.Treatment.compute_zeros"><code class="xref py py-meth docutils literal notranslate"><span class="pre">Treatment.compute_zeros()</span></code></a>.</p>
+<p>The number of zeros should be:</p>
+<ul class="simple">
+<li>3 for a single atom, nonperiodic calculation</li>
+<li>5 for a linear molecule, nonperiodic calculation</li>
+<li>6 for a nonlinear molecule, nonperiodic calculation</li>
+<li>3 in periodic calculations</li>
+</ul>
+</dd></dl>
+
+</dd></dl>
+
+</div>
+<div class="section" id="tools-to-analyze-frequencies-and-modes">
+<h2>3.2. Tools to analyze frequencies and modes<a class="headerlink" href="#tools-to-analyze-frequencies-and-modes" title="Permalink to this headline">¶</a></h2>
+<p>Some additional tools are in the <code class="docutils literal notranslate"><span class="pre">nmatools.py</span></code> code.</p>
+<span class="target" id="module-tamkin.nmatools"></span><dl class="function">
+<dt id="tamkin.nmatools.compute_overlap">
+<code class="descclassname">tamkin.nmatools.</code><code class="descname">compute_overlap</code><span class="sig-paren">(</span><em>nma1</em>, <em>nma2</em>, <em>filename=None</em>, <em>unit='au'</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.nmatools.compute_overlap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute overlap of modes and print to file if requested</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>nma1  --  modes and frequencies</strong> (<em>|</em>) – </li>
+<li><strong>nma2  --  modes and frequencies</strong> (<em>|</em>) – </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Optional argument:</dt>
+<dd><div class="first last line-block">
+<div class="line">filename  –  when given, the overlap is written to file by the
+function write_overlap</div>
+<div class="line">unit  –  unit in which frequencies should be printed in the
+file: au [default] or 1/centimeter [cm1]</div>
+</div>
+</dd>
+</dl>
+<p>The nma arguments can have different formats:</p>
+<ol class="arabic simple">
+<li>an NMA object</li>
+<li>a tuple or list with two elements: modes and frequencies</li>
+<li>a numpy array with the mass-weighted modes</li>
+<li>a numpy array with one mass-weighted mode</li>
+</ol>
+</dd></dl>
+
+<dl class="function">
+<dt id="tamkin.nmatools.write_overlap">
+<code class="descclassname">tamkin.nmatools.</code><code class="descname">write_overlap</code><span class="sig-paren">(</span><em>freqs1</em>, <em>freqs2</em>, <em>overlap</em>, <em>filename='overlap.csv'</em>, <em>unit='au'</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.nmatools.write_overlap" title="Permalink to this definition">¶</a></dt>
+<dd><p>Write the overlap matrix to a csv file</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>freqs1  --  the list of frequencies associated with the rows of the</strong> (<em>|</em>) – overlap matrix</li>
+<li><strong>freqs2  --  the list of frequencies associated with the columns of the</strong> (<em>|</em>) – overlap matrix</li>
+<li><strong>overlap  --  the overlap matrix</strong> (<em>|</em>) – </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Optional arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line">filename  –  the file to write to [default=”overlap.csv”]</div>
+<div class="line">unit      –  unit in which frequencies are printed in file:
+1/centimeter (cm1) or au  [default]</div>
+</div>
+</dd>
+</dl>
+<p>The table contains the following blocks:</p>
+<table border="1" class="docutils">
+<colgroup>
+<col width="42%" />
+<col width="58%" />
+</colgroup>
+<tbody valign="top">
+<tr class="row-odd"><td>&#160;</td>
+<td>freqs2</td>
+</tr>
+<tr class="row-even"><td>freqs1^T</td>
+<td>mat1^T . mat2</td>
+</tr>
+</tbody>
+</table>
+</dd></dl>
+
+<dl class="function">
+<dt id="tamkin.nmatools.compute_delta">
+<code class="descclassname">tamkin.nmatools.</code><code class="descname">compute_delta</code><span class="sig-paren">(</span><em>coor1</em>, <em>coor2</em>, <em>masses=None</em>, <em>normalize=False</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.nmatools.compute_delta" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute mass weighted delta vector between two conformations</p>
+<p>It is assumed that the structures have been aligned (center of mass,
+orientation) previously.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>coor1  --  coordinates of structure 1 in a numpy array with shape</strong> (<em>|</em>) – </li>
+<li><strong>coor2  --  coordinates of structure 2 in a numpy array with shape</strong> (<em>|</em>) – </li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Optional arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line">masses
+–  when given, the mass-weighted delta vector is computed</div>
+<div class="line">normalize
+–  whether delta vector should be normalized [default=False]</div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="tamkin.nmatools.compute_sensitivity_freq">
+<code class="descclassname">tamkin.nmatools.</code><code class="descname">compute_sensitivity_freq</code><span class="sig-paren">(</span><em>nma</em>, <em>index</em>, <em>symmetric=False</em>, <em>massweight=True</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.nmatools.compute_sensitivity_freq" title="Permalink to this definition">¶</a></dt>
+<dd><p>Compute the sensity of the index-th frequency to changes in the mass-weighted Hessian elements.</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><strong>--  an NMA object</strong> (<em>nma</em>) – </td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Optional arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line">symmetric  –  when True, a slightly different formula is used to take
+into account the symmetry of the Hessian [default=False]</div>
+<div class="line">massweight  –  when True, a mass-weighted hessian is considered</div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="tamkin.nmatools.create_blocks_peptide_charmm">
+<code class="descclassname">tamkin.nmatools.</code><code class="descname">create_blocks_peptide_charmm</code><span class="sig-paren">(</span><em>filename</em>, <em>label='normal'</em>, <em>blocksize=1</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.nmatools.create_blocks_peptide_charmm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create blocks list for CHARMM peptides</p>
+<dl class="docutils">
+<dt>Argument:</dt>
+<dd><div class="first last line-block">
+<div class="line">filename  –  the CHARMM coordinate file (typically extension .crd or
+.cor)</div>
+</div>
+</dd>
+<dt>Optional argument:</dt>
+<dd><div class="first last line-block">
+<div class="line">label  –  type of MBH blocks: RTB, dihedral, RHbending, normal
+[default=normal]</div>
+<div class="line">blocksize  –  when using the RTB scheme, blocksize defines the number
+of residues in a block</div>
+</div>
+</dd>
+</dl>
+<p>TODO: referenties</p>
+</dd></dl>
+
+<dl class="function">
+<dt id="tamkin.nmatools.create_subs_peptide_charmm">
+<code class="descclassname">tamkin.nmatools.</code><code class="descname">create_subs_peptide_charmm</code><span class="sig-paren">(</span><em>filename, atomtypes=['CA'], frequency=1</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.nmatools.create_subs_peptide_charmm" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create subsystem selection for CHARMM peptides</p>
+<dl class="docutils">
+<dt>Argument:</dt>
+<dd><div class="first last line-block">
+<div class="line">filename  –  the CHARMM coordinate file (typically extension .crd or
+.cor)</div>
+</div>
+</dd>
+<dt>Optional argument:</dt>
+<dd><div class="first last line-block">
+<div class="line">atomtypes  –  list of strings. Let only these atom types be part of
+the subsystem.</div>
+<div class="line">frequency  –  let only one out of every <em>frequency</em> residues be part
+of the subsystem.</div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="tamkin.nmatools.plot_spectrum_lines">
+<code class="descclassname">tamkin.nmatools.</code><code class="descname">plot_spectrum_lines</code><span class="sig-paren">(</span><em>filename</em>, <em>all_freqs</em>, <em>low=None</em>, <em>high=None</em>, <em>title=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.nmatools.plot_spectrum_lines" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot multiple spectra in a comparative line plot</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>filename  --  the filename to write the figure to</strong><strong> (</strong><strong>the extension and</strong> (<em>|</em>) – the matplotlib settings determine the file format)</li>
+<li><strong>all_freqs  --  a list with spectra</strong><strong>, </strong><strong>each item in the list is an array</strong> (<em>|</em>) – with multiple frequencies that represent one spectrum</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Optional arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line">low  –  minimum on x-axis, in atomic units</div>
+<div class="line">high  –  maximum on x-axis, in atomic units</div>
+<div class="line">title  –  title for plot (a string)</div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="tamkin.nmatools.plot_spectrum_dos">
+<code class="descclassname">tamkin.nmatools.</code><code class="descname">plot_spectrum_dos</code><span class="sig-paren">(</span><em>filename</em>, <em>all_freqs</em>, <em>low=None</em>, <em>high=None</em>, <em>imax=None</em>, <em>step=7.251632778591094e-07</em>, <em>width=7.251632778591094e-06</em>, <em>all_amps=None</em>, <em>title=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.nmatools.plot_spectrum_dos" title="Permalink to this definition">¶</a></dt>
+<dd><p>Plot multiple spectra in a comparative density of states plot</p>
+<table class="docutils field-list" frame="void" rules="none">
+<col class="field-name" />
+<col class="field-body" />
+<tbody valign="top">
+<tr class="field-odd field"><th class="field-name">Parameters:</th><td class="field-body"><ul class="first last simple">
+<li><strong>filename  --  the filename to write the figure too</strong><strong> (</strong><strong>the extension and</strong> (<em>|</em>) – the matplotlib settings determine the file format)</li>
+<li><strong>all_freqs  --  a list with spectra</strong><strong>, </strong><strong>each item in the list is an array</strong> (<em>|</em>) – with multiple frequencies that represent one spectrum</li>
+</ul>
+</td>
+</tr>
+</tbody>
+</table>
+<dl class="docutils">
+<dt>Optional arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line">low  –  minimum on x-axis, in atomic units</div>
+<div class="line">high  –  maximum on x-axis, in atomic units</div>
+<div class="line">imax  –  maximum intensity on y-axis, no unit</div>
+<div class="line">step  –  resulotion of plot, in atomic units</div>
+<div class="line">width  –  width of Gaussian, in atomic units</div>
+<div class="line">all_amps  –  list of arrays in the same format as all_freqs with an
+amplitude for each individual frequency</div>
+<div class="line">title  –  title for plot (a string)</div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+<dl class="function">
+<dt id="tamkin.nmatools.create_enm_molecule">
+<code class="descclassname">tamkin.nmatools.</code><code class="descname">create_enm_molecule</code><span class="sig-paren">(</span><em>molecule</em>, <em>selected=None</em>, <em>numbers=None</em>, <em>masses=None</em>, <em>rcut=15.117809071370017</em>, <em>K=1.0</em>, <em>periodic=None</em><span class="sig-paren">)</span><a class="headerlink" href="#tamkin.nmatools.create_enm_molecule" title="Permalink to this definition">¶</a></dt>
+<dd><p>Create a molecule according to the Elastic Network Model</p>
+<dl class="docutils">
+<dt>Argument:</dt>
+<dd><div class="first last line-block">
+<div class="line">molecule  –  The molecule to start from. can be two types: (i) a
+Molecule object or (ii) a numpy array with shape (N,3)
+with coordinates in atomic units.</div>
+</div>
+</dd>
+</dl>
+<p>When a Molecule object is given, atom numbers, masses and periodic are
+inherited from the molecule, unless they are specified explicitly in the
+optional arguments.</p>
+<dl class="docutils">
+<dt>Optional arguments:</dt>
+<dd><div class="first last line-block">
+<div class="line">selected  –  Selection of atoms to include in the ENM model. This can
+be a list or array of atom indices (length &lt;= N), or an
+array of booleans (length = N).</div>
+<div class="line">numbers  –  atom numbers in the ENM model (length = N). default is
+array of ones or the numbers from the molecule object.</div>
+<div class="line">masses  –  atomic masses in atomic units in the ENM model (length = N).
+default is array of hydrogen masses or the masses from the
+molecule object.</div>
+<div class="line">rcut  –  cutoff distance between interacting pairs in atomic units</div>
+<div class="line">K  –  strength of the interaction in atomic units (Hartree/Bohr**2).
+The interaction strength is the same for all interacting pairs.</div>
+</div>
+</dd>
+</dl>
+</dd></dl>
+
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">3. Normal mode analysis</a><ul>
+<li><a class="reference internal" href="#the-different-nma-models">3.1. The different NMA models</a></li>
+<li><a class="reference internal" href="#tools-to-analyze-frequencies-and-modes">3.2. Tools to analyze frequencies and modes</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="io.html"
+                        title="previous chapter">2. Input/output</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="pf.html"
+                        title="next chapter">4. Partition functions</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/reference/nma.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="pf.html" title="4. Partition functions"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="io.html" title="2. Input/output"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">TAMkin 1.2.6 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2010, Toon Verstraelen, An Ghysels.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+    </div>
+  </body>
+</html>

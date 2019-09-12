@@ -1,0 +1,275 @@
+
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+  "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta http-equiv="X-UA-Compatible" content="IE=Edge" />
+    <meta http-equiv="Content-Type" content="text/html; charset=utf-8" />
+    <title>4. Getting started with TAMkin &#8212; TAMkin 1.2.6 documentation</title>
+    <link rel="stylesheet" href="../_static/nature.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <link rel="stylesheet" type="text/css" href="../_static/graphviz.css" />
+    <script type="text/javascript" id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script type="text/javascript" src="../_static/jquery.js"></script>
+    <script type="text/javascript" src="../_static/underscore.js"></script>
+    <script type="text/javascript" src="../_static/doctools.js"></script>
+    <script type="text/javascript" src="../_static/language_data.js"></script>
+    <script async="async" type="text/javascript" src="https://cdnjs.cloudflare.com/ajax/libs/mathjax/2.7.5/latest.js?config=TeX-AMS-MML_HTMLorMML"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="5. Generating data for TAMkin" href="data.html" />
+    <link rel="prev" title="3. How to cite TAMkin" href="cite.html" /> 
+  </head><body>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             accesskey="I">index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="data.html" title="5. Generating data for TAMkin"
+             accesskey="N">next</a> |</li>
+        <li class="right" >
+          <a href="cite.html" title="3. How to cite TAMkin"
+             accesskey="P">previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">TAMkin 1.2.6 documentation</a> &#187;</li> 
+      </ul>
+    </div>  
+
+    <div class="document">
+      <div class="documentwrapper">
+        <div class="bodywrapper">
+          <div class="body" role="main">
+            
+  <div class="section" id="getting-started-with-tamkin">
+<h1>4. Getting started with TAMkin<a class="headerlink" href="#getting-started-with-tamkin" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="feature-overview">
+<h2>4.1. Feature overview<a class="headerlink" href="#feature-overview" title="Permalink to this headline">¶</a></h2>
+<p>TAMkin consists of three major parts visualized in the scheme below.</p>
+<img alt="../_images/tamkin_workflow.png" src="../_images/tamkin_workflow.png" />
+<dl class="docutils">
+<dt>Part 1 = Molecule</dt>
+<dd>A collection of IO routines read the output from several quantum chemistry
+codes: CHARMM, CP2K, CPMD, GAMESS, Gaussian, QChem and VASP. All these
+routines are bundled in the package <a class="reference internal" href="../reference/io.html#module-tamkin.io" title="tamkin.io"><code class="xref py py-mod docutils literal notranslate"><span class="pre">tamkin.io</span></code></a>. The output from these
+codes is represented in a uniform <code class="docutils literal notranslate"><span class="pre">Molecule</span></code> class that is used by the rest
+of the code.</dd>
+<dt>Part 2 = NMA</dt>
+<dd>Based on the data in the Molecule class, one can perform a normal mode
+analysis (NMA) to obtain frequencies and vibrational modes. TAMkin supports
+many different NMA schemes. In addition to the standard full Hessian
+analysis in Cartesian or internal coordinates, the methods PHVA, VSA,
+VSANoMass, MBH and a combination of PHVA and MBH are implemented. Tools to
+analyze normal modes are also included.</dd>
+<dt>Part 3 = PartFun</dt>
+<dd>Based on the vibrational analysis, one can construct a parition function that
+is primarily based on the harmonic oscillator approximation. However,
+extension are included to treat a variety of systems for which the harmonic
+oscillator is known to fail. From partition functions one can derive
+thermochemical quantities such as equilibrium constants and kinetic
+parameters.</dd>
+</dl>
+</div>
+<div class="section" id="tamkin-is-different">
+<h2>4.2. TAMkin is different<a class="headerlink" href="#tamkin-is-different" title="Permalink to this headline">¶</a></h2>
+<p>TAMkin works differently compared to most computational chemistry software
+today.</p>
+<p>Conventional computational modeling programs read their input from a simple text
+data file with a grammar and syntax that is defined in the documentation. Based
+on this input, one of the predefined routes through the program is followed and
+the output is written to an output file, again with a (hopefully) fixed grammar
+and syntax.</p>
+<p>In our vision, this conventional approach is frustrating and hampers the
+creativity of the researcher. It troubles the implementation of new methods on
+top of existing algorithms and it disables the use of existing implementations
+in a different way than it was originally envisioned by the developer. TAMkin is
+designed to overcome these weaknesses and gives its users more power and
+flexibility when solving physico-chemical research questions.</p>
+<p>The big difference is that TAMkin is a <cite>software library</cite> instead of a
+<cite>program</cite>. It is entirely written in Python, which makes it easy to use: one
+does not write an input file, but rather a tiny program in Python that passes
+the necessary instructions to the TAMkin library. This approach comes with
+several advantages:</p>
+<ol class="arabic simple">
+<li>Simple problems are solved with a few lines of input. They require no real
+knowledge of the Python language. One can just copy a simple example and make
+some trivial modifications.</li>
+<li>Although the current features of TAMkin allow relatively advanced
+thermo-chemical computations with a few lines of input, one can always use
+TAMkin to do more than what we had originally in mind. One can write complex
+input scripts based on the TAMkin library that implement high-level logic,
+e.g. automatic detection of internal rotors, new algorithms for defining
+blocks in the MBH method, and so on.</li>
+<li>TAMkin is extensible. At many levels one can extend the current features of
+TAMkin. Possible extensions include: new tunneling corrections, new
+contributions to the partition function, different methods for the normal
+mode analysis, and so on. Each extension consists of a <a class="reference external" href="http://en.wikipedia.org/wiki/Object-oriented_programming#Class">class</a> defined in
+the input script that is compatible with the classes in the TAMkin library.
+Extension can be added without modifying the source code of TAMkin.</li>
+<li>One can combine TAMkin with all other libraries written in or ported to
+Python. Our favorites include <a class="reference external" href="https://molmod.ugent.be/code/wiki/MolMod">MolMod</a>, <a class="reference external" href="http://matplotlib.sourceforge.net/">MatPlotLib</a> and <a class="reference external" href="http://www.scipy.org">SciPy</a>.</li>
+</ol>
+<p>The TAMkin philosophy has one downside: as soon as one want to go beyond the
+standard functionality of TAMkin, one must get familiar with the Python
+language. However, learning Python is something one will never regret. Python is
+a great tool for many tasks in computational chemistry, also far beyond the
+scope of TAMkin.</p>
+</div>
+<div class="section" id="python-for-absolute-beginners">
+<h2>4.3. Python for absolute beginners<a class="headerlink" href="#python-for-absolute-beginners" title="Permalink to this headline">¶</a></h2>
+<p>If you have no Python experience yet, it may be a good time to learn the basics
+of the language. It may not be necessary to understand the basic TAMkin
+examples, but it will be beneficial in the long run.</p>
+<p>The following slides explain Python step-by-step from the very beginning:</p>
+<blockquote>
+<div><a class="reference external" href="http://molmod.ugent.be/code/static/python_beginners.pdf">Python for absolute beginners</a></div></blockquote>
+</div>
+<div class="section" id="basic-example">
+<h2>4.4. Basic example<a class="headerlink" href="#basic-example" title="Permalink to this headline">¶</a></h2>
+<p>The following script, <code class="docutils literal notranslate"><span class="pre">thermo.py</span></code>, is a basic TAMkin <cite>input</cite> file.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="c1"># Typical script</span>
+<span class="kn">from</span> <span class="nn">tamkin</span> <span class="k">import</span> <span class="o">*</span>
+
+<span class="n">molecule</span> <span class="o">=</span> <span class="n">load_molecule_g03fchk</span><span class="p">(</span><span class="s2">&quot;gaussian.fchk&quot;</span><span class="p">)</span>
+<span class="n">nma</span> <span class="o">=</span> <span class="n">NMA</span><span class="p">(</span><span class="n">molecule</span><span class="p">,</span> <span class="n">ConstrainExt</span><span class="p">())</span>
+<span class="n">pf</span> <span class="o">=</span> <span class="n">PartFun</span><span class="p">(</span><span class="n">nma</span><span class="p">,</span> <span class="p">[</span><span class="n">ExtTrans</span><span class="p">(),</span> <span class="n">ExtRot</span><span class="p">()])</span>
+
+<span class="c1"># Write some general information about the molecule</span>
+<span class="c1"># and the partition function to a file.</span>
+<span class="n">pf</span><span class="o">.</span><span class="n">write_to_file</span><span class="p">(</span><span class="s2">&quot;partfun.txt&quot;</span><span class="p">)</span>
+
+<span class="c1"># Write an extensive overview of the thermodynamic properties to a file:</span>
+<span class="n">ta</span> <span class="o">=</span> <span class="n">ThermoAnalysis</span><span class="p">(</span><span class="n">pf</span><span class="p">,</span> <span class="p">[</span><span class="mi">300</span><span class="p">,</span><span class="mi">400</span><span class="p">,</span><span class="mi">500</span><span class="p">,</span><span class="mi">600</span><span class="p">])</span>
+<span class="n">ta</span><span class="o">.</span><span class="n">write_to_file</span><span class="p">(</span><span class="s2">&quot;thermo.csv&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The typical ingredients of a script are the following:</p>
+<ol class="arabic">
+<li><p class="first"><strong>Load the TAMkin package</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="kn">from</span> <span class="nn">tamkin</span> <span class="k">import</span> <span class="o">*</span>
+</pre></div>
+</div>
+<p>This loads all TAMkin classes and functions, such that one can use them in
+the rest of the script.</p>
+</li>
+<li><p class="first"><strong>Load the data</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">molecule</span> <span class="o">=</span> <span class="n">load_molecule_g03fchk</span><span class="p">(</span><span class="s2">&quot;gaussian.fchk&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>The masses, coordinates, energy, gradient and Hessian are read from the file
+<code class="docutils literal notranslate"><span class="pre">gaussian.fchk</span></code>. The data are stored in a <code class="docutils literal notranslate"><span class="pre">Molecule</span></code> object, which we
+give here the name <code class="docutils literal notranslate"><span class="pre">molecule</span></code>.</p>
+<p>See <a class="reference internal" href="../reference/aux.html#tamkin.data.Molecule" title="tamkin.data.Molecule"><code class="xref py py-class docutils literal notranslate"><span class="pre">tamkin.data.Molecule</span></code></a> for a more details.</p>
+</li>
+<li><p class="first"><strong>Perform normal mode analysis</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">nma</span> <span class="o">=</span> <span class="n">NMA</span><span class="p">(</span><span class="n">molecule</span><span class="p">,</span> <span class="n">ConstrainExt</span><span class="p">())</span>
+</pre></div>
+</div>
+<p>The first argument provides all the input for the normal mode analysis
+through a molecule object. The second argument defines the variant of the
+normal mode analysis that is used to obtain frequencies.</p>
+<p>If the second argument is omitted, the frequency computation is performed in
+3N degrees of freedom. The <code class="docutils literal notranslate"><span class="pre">ConstrainExt()</span></code> variant will perform the normal
+mode analysis in 3N-6 (or 3N-5) internal coordinates and leads to frequencies
+that are identical to those of Gaussian.</p>
+<p>See <a class="reference internal" href="../reference/nma.html#tamkin.nma.NMA" title="tamkin.nma.NMA"><code class="xref py py-class docutils literal notranslate"><span class="pre">tamkin.nma.NMA</span></code></a> for a more details.</p>
+</li>
+<li><p class="first"><strong>Construct a partition function</strong>:</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pf</span> <span class="o">=</span> <span class="n">PartFun</span><span class="p">(</span><span class="n">nma</span><span class="p">,</span> <span class="p">[</span><span class="n">ExtTrans</span><span class="p">(),</span> <span class="n">ExtRot</span><span class="p">()])</span>
+</pre></div>
+</div>
+<p>A <code class="docutils literal notranslate"><span class="pre">PartFun</span></code> object is a definition of the partion function. All
+thermodynamic quantities are methods or attributes of the PartFun object.
+The translational and rotational contributions are included by adding
+<code class="docutils literal notranslate"><span class="pre">[ExtTrans(),</span> <span class="pre">ExtRot()]</span></code> as an argument. The vibrational and electronic
+contribution is included implicitely.</p>
+<p>See <a class="reference internal" href="../reference/pf.html#tamkin.partf.PartFun" title="tamkin.partf.PartFun"><code class="xref py py-class docutils literal notranslate"><span class="pre">tamkin.partf.PartFun</span></code></a> for a more details.</p>
+</li>
+<li><p class="first"><strong>Generate some output</strong>, e.g.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">pf</span><span class="o">.</span><span class="n">write_to_file</span><span class="p">(</span><span class="s2">&quot;partfun.txt&quot;</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>will write the information about the partition function to a file
+<code class="docutils literal notranslate"><span class="pre">partfun.txt</span></code>.</p>
+</li>
+</ol>
+</div>
+</div>
+
+
+          </div>
+        </div>
+      </div>
+      <div class="sphinxsidebar" role="navigation" aria-label="main navigation">
+        <div class="sphinxsidebarwrapper">
+            <p class="logo"><a href="../index.html">
+              <img class="logo" src="../_static/logo.png" alt="Logo"/>
+            </a></p>
+  <h3><a href="../index.html">Table of Contents</a></h3>
+  <ul>
+<li><a class="reference internal" href="#">4. Getting started with TAMkin</a><ul>
+<li><a class="reference internal" href="#feature-overview">4.1. Feature overview</a></li>
+<li><a class="reference internal" href="#tamkin-is-different">4.2. TAMkin is different</a></li>
+<li><a class="reference internal" href="#python-for-absolute-beginners">4.3. Python for absolute beginners</a></li>
+<li><a class="reference internal" href="#basic-example">4.4. Basic example</a></li>
+</ul>
+</li>
+</ul>
+
+  <h4>Previous topic</h4>
+  <p class="topless"><a href="cite.html"
+                        title="previous chapter">3. How to cite TAMkin</a></p>
+  <h4>Next topic</h4>
+  <p class="topless"><a href="data.html"
+                        title="next chapter">5. Generating data for TAMkin</a></p>
+  <div role="note" aria-label="source link">
+    <h3>This Page</h3>
+    <ul class="this-page-menu">
+      <li><a href="../_sources/tutorial/getting_started.rst.txt"
+            rel="nofollow">Show Source</a></li>
+    </ul>
+   </div>
+<div id="searchbox" style="display: none" role="search">
+  <h3>Quick search</h3>
+    <div class="searchformwrapper">
+    <form class="search" action="../search.html" method="get">
+      <input type="text" name="q" />
+      <input type="submit" value="Go" />
+      <input type="hidden" name="check_keywords" value="yes" />
+      <input type="hidden" name="area" value="default" />
+    </form>
+    </div>
+</div>
+<script type="text/javascript">$('#searchbox').show(0);</script>
+        </div>
+      </div>
+      <div class="clearer"></div>
+    </div>
+    <div class="related" role="navigation" aria-label="related navigation">
+      <h3>Navigation</h3>
+      <ul>
+        <li class="right" style="margin-right: 10px">
+          <a href="../genindex.html" title="General Index"
+             >index</a></li>
+        <li class="right" >
+          <a href="../py-modindex.html" title="Python Module Index"
+             >modules</a> |</li>
+        <li class="right" >
+          <a href="data.html" title="5. Generating data for TAMkin"
+             >next</a> |</li>
+        <li class="right" >
+          <a href="cite.html" title="3. How to cite TAMkin"
+             >previous</a> |</li>
+        <li class="nav-item nav-item-0"><a href="../index.html">TAMkin 1.2.6 documentation</a> &#187;</li> 
+      </ul>
+    </div>
+    <div class="footer" role="contentinfo">
+        &#169; Copyright 2010, Toon Verstraelen, An Ghysels.
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 1.8.5.
+    </div>
+  </body>
+</html>

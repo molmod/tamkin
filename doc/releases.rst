@@ -38,6 +38,12 @@
 Release history
 ###############
 
+* **Version 1.2.6** September 12, 2019
+
+    - More Python 3 compatibility fixes. (Unit tests pass with Python 3.6 and 3.7)
+    - Fix (harmless) warning messages.
+    - Code cleanups
+
 * **Version 1.2.5** September 10, 2019
 
     - Python 3 compatibility.

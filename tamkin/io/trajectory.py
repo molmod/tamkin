@@ -238,11 +238,11 @@ def dump_modes_gaussian(filename, nma, selected=None):
             #  - (fake) symmetry info
             print(' '.join(["                    ?A"]*ncol), file=f)
             #  - frequencies converted to inverse centimeters
-            print(' Frequencies --', file=f)
+            print(' Frequencies --', end="", file=f)
             for imode in range(istart, iend):
-                print('%10.4f' % (freqs[imode]/lightspeed*centimeter), end="", file=f)
+                print('{:11.4f}'.format(freqs[imode]/lightspeed*centimeter), end="", file=f)
                 if imode != iend-1:
-                    print('           ', end="", file=f)
+                    print('            ', end="", file=f)
             print(file=f)
             #  - a blob of text below the frequencies
             print(txt_freqbelow[ncol-1], file=f)

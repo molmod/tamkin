@@ -48,6 +48,7 @@ install:
 
 # Configure conda and get a few essentials
 - conda config --set always_yes yes --set changeps1 no
+- conda install setuptools
 - conda update conda
 # Get the right python version for building. This only does something for 3.5.
 # Install extra package needed to make things work. Most things can be listed as

@@ -38,6 +38,10 @@
 Release history
 ###############
 
+* **Version 1.2.7** October 21, 2019
+
+    - Fix formatting error in dump_modes_gaussian.
+
 * **Version 1.2.6** September 12, 2019
 
     - More Python 3 compatibility fixes. (Unit tests pass with Python 3.6 and 3.7)

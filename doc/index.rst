@@ -82,7 +82,7 @@ Library Reference
    reference/io.rst
    reference/nma.rst
    reference/pf.rst
-   reference/aux.rst
+   reference/auxiliary.rst
    references.rst
    releases.rst
 

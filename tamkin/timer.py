@@ -64,8 +64,8 @@ class Timer(object):
            Argument:
             | label  --  A string describing this point in the code.
         """
-        self.cpu_times.append(time.clock())
-        self.wall_times.append(time.time())
+        self.cpu_times.append(time.process_time())
+        self.wall_times.append(time.perf_counter())
         self.labels.append(label)
 
     def dump(self, f=sys.stdout):

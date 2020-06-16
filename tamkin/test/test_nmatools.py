@@ -54,10 +54,10 @@ class NMAToolsTestCase(unittest.TestCase):
 
     def test_load_coordinates_charmm(self):
         molecule = load_molecule_charmm(
-            pkg_resources.resource_filename(__name__, "../data/test/an/ethanol.cor"),
-            pkg_resources.resource_filename(__name__, "../data/test/an/ethanol.hess.full"))
+            pkg_resources.resource_filename("tamkin", "data/test/an/ethanol.cor"),
+            pkg_resources.resource_filename("tamkin", "data/test/an/ethanol.hess.full"))
         coordinates, masses, symbols = load_coordinates_charmm(
-            pkg_resources.resource_filename(__name__, "../data/test/an/ethanol.cor"))
+            pkg_resources.resource_filename("tamkin", "data/test/an/ethanol.cor"))
         for at in range(9):
             self.assertAlmostEqual(molecule.masses[at], masses[at], 3)
             for j in range(3):
@@ -65,13 +65,13 @@ class NMAToolsTestCase(unittest.TestCase):
 
     def test_load_modes_charmm(self):
         molecule = load_molecule_charmm(
-            pkg_resources.resource_filename(__name__, "../data/test/an/ethanol.cor"),
-            pkg_resources.resource_filename(__name__, "../data/test/an/ethanol.hess.full"))
+            pkg_resources.resource_filename("tamkin", "data/test/an/ethanol.cor"),
+            pkg_resources.resource_filename("tamkin", "data/test/an/ethanol.hess.full"))
 
         # full Hessian
         nma = NMA(molecule)
         modes2, freqs2, masses2 = load_modes_charmm(
-            pkg_resources.resource_filename(__name__, "../data/test/an/ethanol.modes.full"))
+            pkg_resources.resource_filename("tamkin", "data/test/an/ethanol.modes.full"))
         for index in range(6,27):
             for j in range(27):
                 self.assertAlmostEqual(abs(nma.modes[j,index]), abs(modes2[j,index]), 7)
@@ -81,7 +81,7 @@ class NMAToolsTestCase(unittest.TestCase):
         # MBH
         nma = NMA(molecule, MBH([[5,6,7,8]]))
         modes2, freqs2, masses2 = load_modes_charmm(
-            pkg_resources.resource_filename(__name__, "../data/test/an/ethanol.modes.mbh"))
+            pkg_resources.resource_filename("tamkin", "data/test/an/ethanol.modes.mbh"))
         for index in range(6,21):
             for j in range(27):
                 self.assertAlmostEqual(abs(nma.modes[j,index]), abs(modes2[j,index]), 7)
@@ -90,11 +90,11 @@ class NMAToolsTestCase(unittest.TestCase):
 
     def test_overlap(self):
         molecule = load_molecule_charmm(
-            pkg_resources.resource_filename(__name__, "../data/test/an/ethanol.cor"),
-            pkg_resources.resource_filename(__name__, "../data/test/an/ethanol.hess.full"))
+            pkg_resources.resource_filename("tamkin", "data/test/an/ethanol.cor"),
+            pkg_resources.resource_filename("tamkin", "data/test/an/ethanol.hess.full"))
         nma1 = NMA(molecule)
         fixed = load_indices(
-            pkg_resources.resource_filename(__name__, "../data/test/an/fixed.06.txt"))
+            pkg_resources.resource_filename("tamkin", "data/test/an/fixed.06.txt"))
         nma2 = NMA(molecule, PHVA(fixed))
         overlap = compute_overlap(nma1, nma2)
         overlap = compute_overlap((nma1.modes, nma1.freqs), (nma2.modes, nma2.freqs))
@@ -106,9 +106,9 @@ class NMAToolsTestCase(unittest.TestCase):
     def test_delta_vector(self):
         # from charmmcor
         coor1,masses1,symb1 = load_coordinates_charmm(
-            pkg_resources.resource_filename(__name__, "../data/test/an/ethanol.cor"))
+            pkg_resources.resource_filename("tamkin", "data/test/an/ethanol.cor"))
         coor2,masses2,symb2 = load_coordinates_charmm(
-            pkg_resources.resource_filename(__name__, "../data/test/an/ethanol.2.cor"))
+            pkg_resources.resource_filename("tamkin", "data/test/an/ethanol.2.cor"))
         delta = compute_delta(coor1, coor2)
         # TODO
         #self.assertAlmostEqual()
@@ -117,8 +117,8 @@ class NMAToolsTestCase(unittest.TestCase):
 
     def test_eigenvalue_sensitivity(self):
         molecule = load_molecule_charmm(
-            pkg_resources.resource_filename(__name__, "../data/test/an/ethanol.cor"),
-            pkg_resources.resource_filename(__name__, "../data/test/an/ethanol.hess.full"))
+            pkg_resources.resource_filename("tamkin", "data/test/an/ethanol.cor"),
+            pkg_resources.resource_filename("tamkin", "data/test/an/ethanol.hess.full"))
         nma = NMA(molecule)
         for i in range(7, 27):
             sensit = compute_sensitivity_freq(nma, i)
@@ -126,40 +126,40 @@ class NMAToolsTestCase(unittest.TestCase):
 
     def test_create_blocks_peptide_charmm(self):
         blocks1 = create_blocks_peptide_charmm(
-            pkg_resources.resource_filename(__name__, "../data/test/charmm/crambin.crd"),
+            pkg_resources.resource_filename("tamkin", "data/test/charmm/crambin.crd"),
             "RTB", blocksize=1)
         blocks2 = create_blocks_peptide_charmm(
-            pkg_resources.resource_filename(__name__, "../data/test/charmm/crambin.crd"),
+            pkg_resources.resource_filename("tamkin", "data/test/charmm/crambin.crd"),
             "RTB", blocksize=2)
         self.assertEqual(len(blocks1) // 2 + 1, len(blocks2))
         subs1 = create_subs_peptide_charmm(
-            pkg_resources.resource_filename(__name__, "../data/test/charmm/crambin.crd"),
+            pkg_resources.resource_filename("tamkin", "data/test/charmm/crambin.crd"),
             frequency=1)
         subs2 = create_subs_peptide_charmm(
-            pkg_resources.resource_filename(__name__, "../data/test/charmm/crambin.crd"),
+            pkg_resources.resource_filename("tamkin", "data/test/charmm/crambin.crd"),
             frequency=2)
         self.assertEqual(len(subs1) // 2, len(subs2))
 
         blocks = create_blocks_peptide_charmm(
-            pkg_resources.resource_filename(__name__, "../data/test/charmm/crambin.crd"))
+            pkg_resources.resource_filename("tamkin", "data/test/charmm/crambin.crd"))
         self.assertEqual(len(blocks), 91)
         blocks = create_blocks_peptide_charmm(
-            pkg_resources.resource_filename(__name__, "../data/test/charmm/crambin.crd"),
+            pkg_resources.resource_filename("tamkin", "data/test/charmm/crambin.crd"),
             "dihedral")
         self.assertEqual(len(blocks), 91)
         blocks = create_blocks_peptide_charmm(
-            pkg_resources.resource_filename(__name__, "../data/test/charmm/crambin.crd"),
+            pkg_resources.resource_filename("tamkin", "data/test/charmm/crambin.crd"),
             "RHbending")
         self.assertEqual(len(blocks),136)
         blocks = create_blocks_peptide_charmm(
-            pkg_resources.resource_filename(__name__, "../data/test/charmm/crambin.crd"),
+            pkg_resources.resource_filename("tamkin", "data/test/charmm/crambin.crd"),
             "normal")
         self.assertEqual(len(blocks), 91)
 
     def test_plot_spectrum(self):
         molecule = load_molecule_charmm(
-            pkg_resources.resource_filename(__name__, "../data/test/an/ethanol.cor"),
-            pkg_resources.resource_filename(__name__, "../data/test/an/ethanol.hess.full"))
+            pkg_resources.resource_filename("tamkin", "data/test/an/ethanol.cor"),
+            pkg_resources.resource_filename("tamkin", "data/test/an/ethanol.hess.full"))
         nma = NMA(molecule)
         invcm = lightspeed/centimeter
         with tmpdir(__name__, 'test_plot_spectrum') as dn:
@@ -191,8 +191,8 @@ class NMAToolsTestCase(unittest.TestCase):
 
     def test_create_enm_molecule(self):
         molecule = load_molecule_charmm(
-            pkg_resources.resource_filename(__name__, "../data/test/an/ethanol.cor"),
-            pkg_resources.resource_filename(__name__, "../data/test/an/ethanol.hess.full"))
+            pkg_resources.resource_filename("tamkin", "data/test/an/ethanol.cor"),
+            pkg_resources.resource_filename("tamkin", "data/test/an/ethanol.hess.full"))
         selected = range(5)
         mol = create_enm_molecule(molecule, selected)
         nma = NMA(mol)

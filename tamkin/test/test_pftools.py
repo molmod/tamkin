@@ -54,13 +54,13 @@ __all__ = ["PFToolsTestCase"]
 class PFToolsTestCase(unittest.TestCase):
     def test_reaction_analysis_sterck(self):
         pf_react1 = PartFun(NMA(load_molecule_g03fchk(
-            pkg_resources.resource_filename(__name__, "../data/test/sterck/aa.fchk"))),
+            pkg_resources.resource_filename("tamkin", "data/test/sterck/aa.fchk"))),
             [ExtTrans(cp=False), ExtRot(1)])
         pf_react2 = PartFun(NMA(load_molecule_g03fchk(
-            pkg_resources.resource_filename(__name__, "../data/test/sterck/aarad.fchk"))),
+            pkg_resources.resource_filename("tamkin", "data/test/sterck/aarad.fchk"))),
             [ExtTrans(cp=False), ExtRot(1)])
         pf_ts = PartFun(NMA(load_molecule_g03fchk(
-            pkg_resources.resource_filename(__name__, "../data/test/sterck/paats.fchk"))),
+            pkg_resources.resource_filename("tamkin", "data/test/sterck/paats.fchk"))),
             [ExtTrans(cp=False), ExtRot(1)])
 
         km = KineticModel([pf_react1, pf_react2], pf_ts)
@@ -80,9 +80,9 @@ class PFToolsTestCase(unittest.TestCase):
 
     def test_reaction_analysis_mat(self):
         pf_react = PartFun(NMA(load_molecule_g03fchk(
-            pkg_resources.resource_filename(__name__, "../data/test/mat5T/react.fchk"))), [])
+            pkg_resources.resource_filename("tamkin", "data/test/mat5T/react.fchk"))), [])
         pf_ts = PartFun(NMA(load_molecule_g03fchk(
-            pkg_resources.resource_filename(__name__, "../data/test/mat5T/ts.fchk"))), [])
+            pkg_resources.resource_filename("tamkin", "data/test/mat5T/ts.fchk"))), [])
 
         km = KineticModel([pf_react], pf_ts)
         ra = ReactionAnalysis(km, 100, 1200, temp_step=50)
@@ -123,7 +123,7 @@ class PFToolsTestCase(unittest.TestCase):
     def test_thermo_analysis_mat(self):
         # just a blind test to see test whether the code does not crash.
         pf = PartFun(NMA(load_molecule_g03fchk(
-            pkg_resources.resource_filename(__name__, "../data/test/mat5T/react.fchk"))),
+            pkg_resources.resource_filename("tamkin", "data/test/mat5T/react.fchk"))),
             [ExtTrans(), ExtRot(1)])
         ta = ThermoAnalysis(pf, [200,300,400,500,600,700,800,900])
         with tmpdir(__name__, 'test_thermo_analysis_mat') as dn:

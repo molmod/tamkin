@@ -54,12 +54,12 @@ __all__ = ["RotorTestCase"]
 
 class RotorTestCase(unittest.TestCase):
     def assertArraysAlmostEqual(self, a, b, eps=1e-5, relative=False):
-        self.assert_(isinstance(b, np.ndarray))
+        assert isinstance(b, np.ndarray)
         self.assertEqual(a.shape, b.shape)
         if relative:
-            self.assert_(abs(2*(a-b)/(a+b)).max() <= eps)
+            assert abs(2*(a-b)/(a+b)).max() <= eps
         else:
-            self.assert_(abs(a-b).max() <= eps)
+            assert abs(a-b).max() <= eps
 
     def test_potential_op(self):
         a = 10.0
@@ -179,7 +179,7 @@ class RotorTestCase(unittest.TestCase):
         for i0 in range(nmax):
             for i1 in range(nmax):
                 check = np.dot(lc_dagger, np.dot(v_op_exp[2*i0+1:2*i0+3,2*i1+1:2*i1+3], lc))
-                self.assert_(abs(check.imag).max() < 1e-3)
+                assert abs(check.imag).max() < 1e-3
                 check = check.real
                 self.assertArraysAlmostEqual(
                     v_op_cs[2*i0+1:2*i0+3,2*i1+1:2*i1+3],
@@ -208,10 +208,10 @@ class RotorTestCase(unittest.TestCase):
 
     def test_flat2(self):
         molecule = load_molecule_g03fchk(
-            pkg_resources.resource_filename(__name__, "../data/test/ethane/gaussian.fchk"))
+            pkg_resources.resource_filename("tamkin", "data/test/ethane/gaussian.fchk"))
         nma = NMA(molecule)
         rotscan1 = load_rotscan_g03log(
-            pkg_resources.resource_filename(__name__, "../data/test/rotor/gaussian.log"))
+            pkg_resources.resource_filename("tamkin", "data/test/rotor/gaussian.log"))
         my_potential = rotscan1.potential.copy()
         my_potential[1][:] = nma.energy
         rotscan1 = rotscan1.copy_with(potential=my_potential)
@@ -259,10 +259,10 @@ class RotorTestCase(unittest.TestCase):
 
     def test_ethane_hindered(self):
         molecule = load_molecule_g03fchk(
-            pkg_resources.resource_filename(__name__, "../data/test/ethane/gaussian.fchk"))
+            pkg_resources.resource_filename("tamkin", "data/test/ethane/gaussian.fchk"))
         nma = NMA(molecule)
         rot_scan = load_rotscan_g03log(
-            pkg_resources.resource_filename(__name__, "../data/test/rotor/gaussian.log"))
+            pkg_resources.resource_filename("tamkin", "data/test/rotor/gaussian.log"))
         rotor = Rotor(rot_scan, molecule, rotsym=3, even=True, cancel_freq='scan')
         pf = PartFun(nma, [ExtTrans(), ExtRot(6), rotor])
         self.assertAlmostEqual(rotor.cancel_freq/lightspeed*centimeter, 298, 0)
@@ -291,7 +291,7 @@ class RotorTestCase(unittest.TestCase):
 
     def test_ethyl_free(self):
         molecule = load_molecule_g03fchk(
-            pkg_resources.resource_filename(__name__, "../data/test/ethyl/gaussian.fchk"))
+            pkg_resources.resource_filename("tamkin", "data/test/ethyl/gaussian.fchk"))
         nma = NMA(molecule)
         dihedral = [5, 1, 0, 2]
         rot_scan = RotScan(dihedral, molecule)
@@ -342,7 +342,7 @@ class RotorTestCase(unittest.TestCase):
         for fn_xyz, i0, i1, top, expected in cases:
             # preparation
             mol = XYZFile(pkg_resources.resource_filename(
-                __name__, os.path.join("../data/test/imom", fn_xyz))).get_molecule()
+                "tamkin", os.path.join("data/test/imom", fn_xyz))).get_molecule()
             masses = np.array([periodic[n].mass for n in mol.numbers])
             masses3 = np.array([masses, masses, masses]).transpose().ravel()
             center = mol.coordinates[i0]
@@ -396,6 +396,6 @@ class RotorTestCase(unittest.TestCase):
 
     def test_load_rotor_margot(self):
         rot_scan = load_rotscan_g03log(
-            pkg_resources.resource_filename(__name__, "../data/test/rotor/margot.log"))
+            pkg_resources.resource_filename("tamkin", "data/test/rotor/margot.log"))
         assert rot_scan.potential.shape == (2, 1)
         assert (rot_scan.dihedral == [2, 3, 4, 5]).all()

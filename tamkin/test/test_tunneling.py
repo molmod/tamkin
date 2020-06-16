@@ -112,11 +112,11 @@ class TunnelingTestCase(unittest.TestCase):
 
     def test_eckart_init(self):
         fixed_atoms = load_fixed_g03com(
-            pkg_resources.resource_filename(__name__, "../data/test/mat/Zp_p_react.14mei.com"))
+            pkg_resources.resource_filename("tamkin", "data/test/mat/Zp_p_react.14mei.com"))
         mol_react = load_molecule_g03fchk(
-            pkg_resources.resource_filename(__name__, "../data/test/mat/Zp_p_react.28aug.fchk"))
+            pkg_resources.resource_filename("tamkin", "data/test/mat/Zp_p_react.28aug.fchk"))
         mol_trans = load_molecule_g03fchk(
-            pkg_resources.resource_filename(__name__, "../data/test/mat/Zp_p_TS.28aug.fchk"))
+            pkg_resources.resource_filename("tamkin", "data/test/mat/Zp_p_TS.28aug.fchk"))
 
         pf_react = PartFun(NMA(mol_react, PHVA(fixed_atoms)))
         pf_trans = PartFun(NMA(mol_trans, PHVA(fixed_atoms)))
@@ -125,13 +125,13 @@ class TunnelingTestCase(unittest.TestCase):
 
     def test_eckart_tugba(self):
         mol_react1 = load_molecule_g03fchk(
-            pkg_resources.resource_filename(__name__, "../data/test/tugba/monomer.fchk"))
+            pkg_resources.resource_filename("tamkin", "data/test/tugba/monomer.fchk"))
         mol_react2 = load_molecule_g03fchk(
-            pkg_resources.resource_filename(__name__, "../data/test/tugba/radical.fchk"))
+            pkg_resources.resource_filename("tamkin", "data/test/tugba/radical.fchk"))
         mol_trans = load_molecule_g03fchk(
-            pkg_resources.resource_filename(__name__, "../data/test/tugba/ts.fchk"))
+            pkg_resources.resource_filename("tamkin", "data/test/tugba/ts.fchk"))
         mol_prod = load_molecule_g03fchk(
-            pkg_resources.resource_filename(__name__, "../data/test/tugba/prod.fchk"))
+            pkg_resources.resource_filename("tamkin", "data/test/tugba/prod.fchk"))
 
         pf_react1 = PartFun(NMA(mol_react1))
         pf_react2 = PartFun(NMA(mol_react2))
@@ -143,7 +143,7 @@ class TunnelingTestCase(unittest.TestCase):
 
     def test_miller_tugba(self):
         mol_trans = load_molecule_g03fchk(
-            pkg_resources.resource_filename(__name__, "../data/test/tugba/ts.fchk"))
+            pkg_resources.resource_filename("tamkin", "data/test/tugba/ts.fchk"))
         pf_trans = PartFun(NMA(mol_trans))
         miller = Miller(pf_trans)
         miller(np.array([620,770]))

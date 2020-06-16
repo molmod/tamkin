@@ -1,7 +1,7 @@
 env:
-  matrix:
-    - MYCONDAPY=2.7
-    - MYCONDAPY=3.7
+  jobs:
+  - MYCONDAPY=2.7
+  - MYCONDAPY=3.7
   global:
     # ANACONDA_TOKEN
     - secure: "C9W6W6tPzXEhMWpkrRSf3lx6f3JJ5j5jZCsGymUQqrF9SU7RLgTvINc57M72s+I9enaL8wvldELzut0pamzMxuicFeFsSZzPlBuPdJcAy1QdxDYI3HWM8g/TmLTq9PV9sBgmbJ7rO7hGYdAXcTcrfFQk3SBARUWF5IGA95k+Kto="
@@ -22,7 +22,7 @@ branches:
     - /^[0-9]+\.[0-9]+(\.[0-9]+)?([ab][0-9]+)?$/
 
 install:
-# Get miniconda. Take the right version, so re-installing python is only needed for 3.5.
+# Get the right version of miniconda.
 - if [[ "$MYCONDAPY" == "2.7" ]]; then
     wget https://repo.continuum.io/miniconda/Miniconda2-latest-Linux-x86_64.sh -O miniconda.sh;
   else
@@ -34,17 +34,10 @@ install:
 
 # Configure conda and get a few essentials
 - conda config --set always_yes yes
-# The following line is needed to override Travis' setuptools, which
-# seems to confuse conda.
-- conda install setuptools
-- conda update conda
-# Get the right python version for building. This only does something for 3.5.
-# Install extra package needed to make things work. Most things can be listed as
+# Get the right python version for building. Most things can be listed as
 # dependencies on metal.yaml and setup.py, unless setup.py already imports them.
-# Install conda tools for packaging and uploading
-- conda install python=${MYCONDAPY} sphinx conda-build anaconda-client numpy codecov coverage nose graphviz conda-verify
-# Add the molmod channel to get access to the molmod dependency
-- conda config --add channels molmod
+# This also installs conda tools for packaging and uploading
+- conda install python=${MYCONDAPY} conda-build numpy cython conda-verify numpy cython sphinx anaconda-client codecov coverage pytest pytest-cov
 # Show conda info for debugging
 - conda info -a
 
@@ -54,25 +47,26 @@ install:
 
 script:
 # Check if code is normalized properly, whitespace etc
-- wget https://raw.githubusercontent.com/tovrstra/devscripts/master/scripts/ds-normalize-code -O ds-normalize-code;
-  chmod +x ds-normalize-code;
-  ./ds-normalize-code;
+- wget https://raw.githubusercontent.com/tovrstra/devscripts/master/scripts/ds-normalize-code -O ~/ds-normalize-code;
+  chmod +x ~/ds-normalize-code;
+  ~/ds-normalize-code
 
 # Build the conda package
 - git fetch origin --tags
 - conda build tools/conda.recipe
 
-# Build source package, should work too and needed for deployment.
+# Build source package, should work too and needed for deployment to Github and
+# PyPI.
 - python setup.py sdist
 
-# Install Conda package
+# Install Conda package.
 - conda install --use-local $PYPKG
 
 # Compile documentation
 - (cd doc; make html)
 
 # Run tests out of source tree, to make sure that installed version is tested.
-- (cd; nosetests $PYPKG -v --detailed-errors --with-coverage --cover-package=$PYPKG --cover-tests --cover-erase --cover-inclusive --cover-branches --cover-xml)
+- (cd; pytest --pyargs $PYPKG -v --cov=$PYPKG --cov-report=term-missing --cov-report=xml --cov-branch)
 
 after_success:
 # Upload the coverage analysis

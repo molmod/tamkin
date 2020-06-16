@@ -53,4 +53,4 @@ The tests can be executed as follows:
 
 .. code:: bash
 
-    nosetests tamkin
+    pytest tamkin

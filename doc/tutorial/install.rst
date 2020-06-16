@@ -104,7 +104,11 @@ https://www.continuum.io/downloads)
 
 .. code:: bash
 
+    # Using the builds from Travis-CI ...
     conda install -c molmod tamkin pytest
+    # ... or using the packages on conda-forge
+    conda install -c conda-forge tamkin pytest
+
 
 
 Testing your installation

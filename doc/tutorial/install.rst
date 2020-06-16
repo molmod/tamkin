@@ -53,11 +53,11 @@ distribution to install these dependencies.
 
 The following software must be installed for TAMkin:
 
-* Python >=2.7,>=3.6: http://www.python.org/doc/
-* Numpy >=1.0: http://numpy.scipy.org/
+* Python >=3.6: http://www.python.org/doc/
+* Numpy >=1.16.0: http://numpy.scipy.org/
 * Scipy >=0.17.1: http://www.scipy.org/
 * MatPlotLib >=1.1: http://matplotlib.org/
-* MolMod >=1.3.1: https://github.com/molmod/molmod/
+* MolMod >=1.4.5: https://github.com/molmod/molmod/
 * Nosetests >=0.11: http://nose.readthedocs.io/en/latest/
 
 Most Linux distributions can install most required software with a single
@@ -66,7 +66,7 @@ installed by pip. (See below.)
 
 * **Ubuntu**
 
-    sudo apt-get install python python-numpy python-scipy python-matplotlib python-nose
+    sudo apt install python3 python3-numpy python3-scipy python3-matplotlib python3-nose python3-pip cython3
 
 * **Debian 5** or newer. You first have to become root because the sudo program is not
   configured by default::
@@ -75,9 +75,9 @@ installed by pip. (See below.)
     apt-get install python python-numpy python-scipy python-matplotlib python-nose
     exit
 
-* **Fedora 23 and up**
+* **Fedora 32 and up**
 
-    sudo dnf install python numpy scipy python-matplotlib python-nose
+    sudo dnf install python3 python3-numpy python3-scipy python3-matplotlib python3-nose python3-Cython
 
 
 Installation

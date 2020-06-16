@@ -54,10 +54,10 @@ __all__ = ["PartFunTestCase"]
 class PartFunTestCase(unittest.TestCase):
     def test_phva_react_mat(self):
         fixed_atoms = load_fixed_g03com(
-            pkg_resources.resource_filename(__name__, "../data/test/mat/Zp_p_react.14mei.com"))
+            pkg_resources.resource_filename("tamkin", "data/test/mat/Zp_p_react.14mei.com"))
         molecule = load_molecule_g03fchk(
-            pkg_resources.resource_filename(__name__, "../data/test/mat/Zp_p_react.28aug.fchk"),
-            pkg_resources.resource_filename(__name__, "../data/test/mat/Zp_p_react.14mei.fchk"))
+            pkg_resources.resource_filename("tamkin", "data/test/mat/Zp_p_react.28aug.fchk"),
+            pkg_resources.resource_filename("tamkin", "data/test/mat/Zp_p_react.14mei.fchk"))
         nma = NMA(molecule, PHVA(fixed_atoms))
         pf = PartFun(nma)
 
@@ -68,13 +68,13 @@ class PartFunTestCase(unittest.TestCase):
 
     def test_phva_rate_const_mat(self):
         fixed_atoms = load_fixed_g03com(
-            pkg_resources.resource_filename(__name__, "../data/test/mat/Zp_p_react.14mei.com"))
+            pkg_resources.resource_filename("tamkin", "data/test/mat/Zp_p_react.14mei.com"))
         mol_react = load_molecule_g03fchk(
-            pkg_resources.resource_filename(__name__, "../data/test/mat/Zp_p_react.28aug.fchk"),
-            pkg_resources.resource_filename(__name__, "../data/test/mat/Zp_p_react.14mei.fchk"))
+            pkg_resources.resource_filename("tamkin", "data/test/mat/Zp_p_react.28aug.fchk"),
+            pkg_resources.resource_filename("tamkin", "data/test/mat/Zp_p_react.14mei.fchk"))
         mol_trans = load_molecule_g03fchk(
-            pkg_resources.resource_filename(__name__, "../data/test/mat/Zp_p_TS.28aug.fchk"),
-            pkg_resources.resource_filename(__name__, "../data/test/mat/5Tp_p_TS.oniom21apr_HF.fchk"))
+            pkg_resources.resource_filename("tamkin", "data/test/mat/Zp_p_TS.28aug.fchk"),
+            pkg_resources.resource_filename("tamkin", "data/test/mat/5Tp_p_TS.oniom21apr_HF.fchk"))
         pf_react = PartFun(NMA(mol_react, PHVA(fixed_atoms)))
         pf_trans = PartFun(NMA(mol_trans, PHVA(fixed_atoms)))
         km = KineticModel([pf_react], pf_trans)
@@ -97,7 +97,7 @@ class PartFunTestCase(unittest.TestCase):
         for treatment, precision_wn, shift in (Full(), 0, 6), (ConstrainExt(), 3, 0):
             ## aa.fchk
             molecule = load_molecule_g03fchk(
-                pkg_resources.resource_filename(__name__, "../data/test/sterck/aa.fchk"))
+                pkg_resources.resource_filename("tamkin", "data/test/sterck/aa.fchk"))
             nma = NMA(molecule, treatment)
             pf = PartFun(nma, [ExtTrans(), ExtRot(1)])
             temp = 298.150
@@ -134,7 +134,7 @@ class PartFunTestCase(unittest.TestCase):
 
             ## aarad.fchk
             molecule = load_molecule_g03fchk(
-                pkg_resources.resource_filename(__name__, "../data/test/sterck/aarad.fchk"))
+                pkg_resources.resource_filename("tamkin", "data/test/sterck/aarad.fchk"))
             nma = NMA(molecule, treatment)
             pf = PartFun(nma, [ExtTrans(), ExtRot(1)])
 
@@ -156,7 +156,7 @@ class PartFunTestCase(unittest.TestCase):
         for treatment, precision_wn, shift in (Full(), 0, 6), (ConstrainExt(), 3, 0):
             ## paats.fchk
             molecule = load_molecule_g03fchk(
-                pkg_resources.resource_filename(__name__, "../data/test/sterck/paats.fchk"))
+                pkg_resources.resource_filename("tamkin", "data/test/sterck/paats.fchk"))
             nma = NMA(molecule, treatment)
             pf = PartFun(nma, [ExtTrans(), ExtRot(1)])
             temp = 298.150
@@ -178,11 +178,11 @@ class PartFunTestCase(unittest.TestCase):
 
     def test_gas_rate_const_sterck(self):
         mol_react1 = load_molecule_g03fchk(
-            pkg_resources.resource_filename(__name__, "../data/test/sterck/aa.fchk"))
+            pkg_resources.resource_filename("tamkin", "data/test/sterck/aa.fchk"))
         mol_react2 = load_molecule_g03fchk(
-            pkg_resources.resource_filename(__name__, "../data/test/sterck/aarad.fchk"))
+            pkg_resources.resource_filename("tamkin", "data/test/sterck/aarad.fchk"))
         mol_trans = load_molecule_g03fchk(
-            pkg_resources.resource_filename(__name__, "../data/test/sterck/paats.fchk"))
+            pkg_resources.resource_filename("tamkin", "data/test/sterck/paats.fchk"))
         pf_react1 = PartFun(NMA(mol_react1, ConstrainExt()), [ExtTrans(cp=False), ExtRot(1)])
         pf_react2 = PartFun(NMA(mol_react2, ConstrainExt()), [ExtTrans(cp=False), ExtRot(1)])
         pf_trans = PartFun(NMA(mol_trans, ConstrainExt()), [ExtTrans(cp=False), ExtRot(1)])
@@ -204,10 +204,10 @@ class PartFunTestCase(unittest.TestCase):
 
     def test_derivatives(self):
         molecule = load_molecule_g03fchk(
-            pkg_resources.resource_filename(__name__, "../data/test/ethane/gaussian.fchk"))
+            pkg_resources.resource_filename("tamkin", "data/test/ethane/gaussian.fchk"))
         nma = NMA(molecule)
         rotscan = load_rotscan_g03log(
-            pkg_resources.resource_filename(__name__, "../data/test/rotor/gaussian.log"))
+            pkg_resources.resource_filename("tamkin", "data/test/rotor/gaussian.log"))
         rotor = Rotor(rotscan, molecule, rotsym=3, even=True)
         for classical in True, False:
             for cp in True, False:
@@ -252,7 +252,7 @@ class PartFunTestCase(unittest.TestCase):
 
     def test_chemical_potential_cp(self):
         molecule = load_molecule_g03fchk(
-            pkg_resources.resource_filename(__name__, "../data/test/ethane/gaussian.fchk"))
+            pkg_resources.resource_filename("tamkin", "data/test/ethane/gaussian.fchk"))
         nma = NMA(molecule)
         pf = PartFun(nma, [ExtTrans(cp=True), ExtRot()])
         N0 = 1.0
@@ -271,7 +271,7 @@ class PartFunTestCase(unittest.TestCase):
             pf.pressure = 0.5*(p0+p1)
             mu = pf.chemical_potential(temp)
             error = abs(F1 - F0 - (N1-N0)*mu)
-            self.assert_(error < 1e-12)
+            assert error < 1e-12
             # check the helper function and the definition of the chemical
             # potential in an ideal gas
             self.assertAlmostEqual(pf.translational.helpern(temp, 0) - pf.translational.helper(temp, 0), 0.0)
@@ -283,7 +283,7 @@ class PartFunTestCase(unittest.TestCase):
 
     def test_chemical_potential_cv(self):
         molecule = load_molecule_g03fchk(
-            pkg_resources.resource_filename(__name__, "../data/test/ethane/gaussian.fchk"))
+            pkg_resources.resource_filename("tamkin", "data/test/ethane/gaussian.fchk"))
         nma = NMA(molecule)
         pf = PartFun(nma, [ExtTrans(cp=False), ExtRot()])
         N0 = 1.0
@@ -301,7 +301,7 @@ class PartFunTestCase(unittest.TestCase):
             F1 = pf.free_energy(temp)*N1
             mu = pf.chemical_potential(temp)
             error = abs(F1 - F0 - (N1-N0)*mu)
-            self.assert_(error < 1e-8)
+            assert error < 1e-8
             # check the helper function and the definition of the chemical
             # potential in an ideal gas
             self.assertAlmostEqual(pf.translational.helpern(temp, 0) - pf.translational.helper(temp, 0), -1)
@@ -314,7 +314,7 @@ class PartFunTestCase(unittest.TestCase):
     def test_logn(self):
         for cp in False, True:
             molecule = load_molecule_g03fchk(
-                pkg_resources.resource_filename(__name__, "../data/test/ethane/gaussian.fchk"))
+                pkg_resources.resource_filename("tamkin", "data/test/ethane/gaussian.fchk"))
             nma = NMA(molecule)
             pf = PartFun(nma, [ExtTrans(cp=cp), ExtRot()])
             temps = np.array([300.0,400.0,500.0,600.0,700.0])
@@ -328,7 +328,7 @@ class PartFunTestCase(unittest.TestCase):
     def test_logv(self):
         for cp in False, True:
             molecule = load_molecule_g03fchk(
-                pkg_resources.resource_filename(__name__, "../data/test/ethane/gaussian.fchk"))
+                pkg_resources.resource_filename("tamkin", "data/test/ethane/gaussian.fchk"))
             nma = NMA(molecule)
             pf = PartFun(nma, [ExtTrans(cp=cp), ExtRot()])
             temps = np.array([300.0,400.0,500.0,600.0,700.0])
@@ -341,7 +341,7 @@ class PartFunTestCase(unittest.TestCase):
     def test_derived_quantities(self):
         # internal energy, heat capacity and entropy
         molecule = load_molecule_g03fchk(
-            pkg_resources.resource_filename(__name__, "../data/test/sterck/aa.fchk"))
+            pkg_resources.resource_filename("tamkin", "data/test/sterck/aa.fchk"))
         nma = NMA(molecule, ConstrainExt())
         pf = PartFun(nma, [ExtTrans(cp=True), ExtRot(1)])
 
@@ -387,7 +387,7 @@ class PartFunTestCase(unittest.TestCase):
     def test_classical1(self):
         pf = PartFun(
             NMA(load_molecule_g03fchk(
-                pkg_resources.resource_filename(__name__, "../data/test/sterck/aa.fchk"))),
+                pkg_resources.resource_filename("tamkin", "data/test/sterck/aa.fchk"))),
             [Vibrations(classical=True), ExtTrans(), ExtRot(1)],
         )
 
@@ -399,12 +399,12 @@ class PartFunTestCase(unittest.TestCase):
     def test_classical2(self):
         pfc = PartFun(
             NMA(load_molecule_g03fchk(
-                pkg_resources.resource_filename(__name__, "../data/test/sterck/aa.fchk"))),
+                pkg_resources.resource_filename("tamkin", "data/test/sterck/aa.fchk"))),
             [Vibrations(True), ExtTrans(), ExtRot(1)],
         )
         pfq = PartFun(
             NMA(load_molecule_g03fchk(
-                pkg_resources.resource_filename(__name__, "../data/test/sterck/aa.fchk"))),
+                pkg_resources.resource_filename("tamkin", "data/test/sterck/aa.fchk"))),
             [Vibrations(False), ExtTrans(), ExtRot(1)],
         )
 
@@ -431,7 +431,7 @@ class PartFunTestCase(unittest.TestCase):
 
         # values taken from aa.log
         molecule = load_molecule_g03fchk(
-            pkg_resources.resource_filename(__name__, "../data/test/sterck/aa.fchk"))
+            pkg_resources.resource_filename("tamkin", "data/test/sterck/aa.fchk"))
         pf = PartFun(NMA(molecule, ConstrainExt()), [ExtTrans(cp=True)])
         # translational
         # WARNING: internal_heat returns enthalpy, turn it into internal energy
@@ -442,7 +442,7 @@ class PartFunTestCase(unittest.TestCase):
         self.assertAlmostEqual(pf.translational.entropy(temp)/(calmolK), 38.699, 2)
 
         molecule = load_molecule_g03fchk(
-            pkg_resources.resource_filename(__name__, "../data/test/sterck/aa.fchk"))
+            pkg_resources.resource_filename("tamkin", "data/test/sterck/aa.fchk"))
         pf = PartFun(NMA(molecule, ConstrainExt()), [ExtRot(1)])
         # rotational
         self.assertAlmostEqual(pf.rotational.internal_heat(temp)/(kcalmol), 0.889, 2)
@@ -451,7 +451,7 @@ class PartFunTestCase(unittest.TestCase):
 
     def test_linear(self):
         molecule = load_molecule_g03fchk(
-            pkg_resources.resource_filename(__name__, "../data/test/linear/gaussian.fchk"))
+            pkg_resources.resource_filename("tamkin", "data/test/linear/gaussian.fchk"))
         pf = PartFun(NMA(molecule, ConstrainExt()), [ExtTrans(),ExtRot(2)])
 
         # check the inertia moments (eigenvalues only)
@@ -478,13 +478,13 @@ class PartFunTestCase(unittest.TestCase):
 
     def test_equilibrium(self):
         mol_react1 = load_molecule_g03fchk(
-            pkg_resources.resource_filename(__name__, "../data/test/sterck/aa_1h2o_a.fchk"))
+            pkg_resources.resource_filename("tamkin", "data/test/sterck/aa_1h2o_a.fchk"))
         mol_react2 = load_molecule_g03fchk(
-            pkg_resources.resource_filename(__name__, "../data/test/sterck/aarad.fchk"))
+            pkg_resources.resource_filename("tamkin", "data/test/sterck/aarad.fchk"))
         mol_complex = load_molecule_g03fchk(
-            pkg_resources.resource_filename(__name__, "../data/test/sterck/paaprc_1h2o_b_aa.fchk"))
+            pkg_resources.resource_filename("tamkin", "data/test/sterck/paaprc_1h2o_b_aa.fchk"))
         mol_trans = load_molecule_g03fchk(
-            pkg_resources.resource_filename(__name__, "../data/test/sterck/paats_1h2o_b_aa.fchk"))
+            pkg_resources.resource_filename("tamkin", "data/test/sterck/paats_1h2o_b_aa.fchk"))
         pf_react1 = PartFun(NMA(mol_react1), [ExtTrans(), ExtRot(1)])
         pf_react2 = PartFun(NMA(mol_react2), [ExtTrans(), ExtRot(1)])
         pf_complex = PartFun(NMA(mol_complex), [ExtTrans(), ExtRot(1)])
@@ -537,7 +537,7 @@ class PartFunTestCase(unittest.TestCase):
 
     def test_pcm_correction(self):
         mol = load_molecule_g03fchk(
-            pkg_resources.resource_filename(__name__, "../data/test/sterck/aa_1h2o_a.fchk"))
+            pkg_resources.resource_filename("tamkin", "data/test/sterck/aa_1h2o_a.fchk"))
         pf0 = PartFun(NMA(mol), [])
         pf1 = PartFun(NMA(mol), [PCMCorrection((-5*kjmol,300))])
         pf2 = PartFun(NMA(mol), [PCMCorrection((-5*kjmol,300), (-10*kjmol,600))])
@@ -554,10 +554,10 @@ class PartFunTestCase(unittest.TestCase):
 
     def test_zero_point_energy(self):
         molecule = load_molecule_g03fchk(
-            pkg_resources.resource_filename(__name__, "../data/test/ethane/gaussian.fchk"))
+            pkg_resources.resource_filename("tamkin", "data/test/ethane/gaussian.fchk"))
         nma = NMA(molecule)
         rotscan = load_rotscan_g03log(
-            pkg_resources.resource_filename(__name__, "../data/test/rotor/gaussian.log"))
+            pkg_resources.resource_filename("tamkin", "data/test/rotor/gaussian.log"))
         rotor = Rotor(rotscan, molecule, rotsym=3, even=True)
         pf = PartFun(nma, [ExtTrans(), ExtRot(), rotor, Vibrations()])
         # check the vibrational part
@@ -579,7 +579,7 @@ class PartFunTestCase(unittest.TestCase):
 
     def test_freq_threshold(self):
         molecule = load_molecule_g03fchk(
-            pkg_resources.resource_filename(__name__, "../data/test/ethane/gaussian.fchk"))
+            pkg_resources.resource_filename("tamkin", "data/test/ethane/gaussian.fchk"))
         nma = NMA(molecule)
         pf = PartFun(nma, [ExtTrans(), ExtRot(), Vibrations()])
         assert len(pf.vibrational.zero_freqs) == 6

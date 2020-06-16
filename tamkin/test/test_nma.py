@@ -57,7 +57,7 @@ class NMATestCase(unittest.TestCase):
             return
         unit_matrix = np.dot(modes.transpose(), modes)
         error_max = abs(unit_matrix - np.identity(len(unit_matrix))).max()
-        self.assert_(error_max < 1e-5)
+        assert error_max < 1e-5
 
     def check_freqs(self, expected_freqs, nma, precision=3, check_zeros=False):
         """Check the frequencies in the partition function against expected values
@@ -95,10 +95,10 @@ class NMATestCase(unittest.TestCase):
 
     def test_phva_react_mat(self):
         fixed_atoms = load_fixed_g03com(
-            pkg_resources.resource_filename(__name__, "../data/test/mat/Zp_p_react.14mei.com"))
+            pkg_resources.resource_filename("tamkin", "data/test/mat/Zp_p_react.14mei.com"))
         molecule = load_molecule_g03fchk(
-            pkg_resources.resource_filename(__name__, "../data/test/mat/Zp_p_react.28aug.fchk"),
-            pkg_resources.resource_filename(__name__, "../data/test/mat/Zp_p_react.14mei.fchk"))
+            pkg_resources.resource_filename("tamkin", "data/test/mat/Zp_p_react.28aug.fchk"),
+            pkg_resources.resource_filename("tamkin", "data/test/mat/Zp_p_react.14mei.fchk"))
         nma = NMA(molecule, PHVA(fixed_atoms))
         self.check_ortho(nma.modes)
 
@@ -219,10 +219,10 @@ class NMATestCase(unittest.TestCase):
 
     def test_phva_trans_mat(self):
         fixed_atoms = load_fixed_g03com(
-            pkg_resources.resource_filename(__name__, "../data/test/mat/Zp_p_TS.28aug.com"))
+            pkg_resources.resource_filename("tamkin", "data/test/mat/Zp_p_TS.28aug.com"))
         molecule = load_molecule_g03fchk(
-            pkg_resources.resource_filename(__name__, "../data/test/mat/Zp_p_TS.28aug.fchk"),
-            pkg_resources.resource_filename(__name__, "../data/test/mat/5Tp_p_TS.oniom21apr_HF.fchk"))
+            pkg_resources.resource_filename("tamkin", "data/test/mat/Zp_p_TS.28aug.fchk"),
+            pkg_resources.resource_filename("tamkin", "data/test/mat/5Tp_p_TS.oniom21apr_HF.fchk"))
         nma = NMA(molecule, PHVA(fixed_atoms))
         self.check_ortho(nma.modes)
 
@@ -302,7 +302,7 @@ class NMATestCase(unittest.TestCase):
         for treatment, precision_wn, shift in (Full(), 0, 6), (ConstrainExt(), 3, 0):
             ## aa.fchk
             molecule = load_molecule_g03fchk(
-                pkg_resources.resource_filename(__name__, "../data/test/sterck/aa.fchk"))
+                pkg_resources.resource_filename("tamkin", "data/test/sterck/aa.fchk"))
             nma = NMA(molecule, treatment)
             self.check_ortho(nma.modes)
 
@@ -325,7 +325,7 @@ class NMATestCase(unittest.TestCase):
 
             ## aarad.fchk
             molecule = load_molecule_g03fchk(
-                pkg_resources.resource_filename(__name__, "../data/test/sterck/aarad.fchk"))
+                pkg_resources.resource_filename("tamkin", "data/test/sterck/aarad.fchk"))
             nma = NMA(molecule, treatment)
 
             # expected frequencies from aa.log
@@ -350,7 +350,7 @@ class NMATestCase(unittest.TestCase):
     def test_teller_redlich_gas_react_sterck(self):
         for treatment, precision_wn, shift in (Full(), 0, 6), (ConstrainExt(), 3, 0):
             mol1 = load_molecule_g03fchk(
-                pkg_resources.resource_filename(__name__, "../data/test/sterck/aa.fchk"))
+                pkg_resources.resource_filename("tamkin", "data/test/sterck/aa.fchk"))
             nma1 = NMA(mol1, treatment)
             self.check_ortho(nma1.modes)
 
@@ -378,7 +378,7 @@ class NMATestCase(unittest.TestCase):
         for treatment, precision_wn, shift in (Full(), 0, 6), (ConstrainExt(), 3, 0):
             ## paats.fchk
             molecule = load_molecule_g03fchk(
-                pkg_resources.resource_filename(__name__, "../data/test/sterck/paats.fchk"))
+                pkg_resources.resource_filename("tamkin", "data/test/sterck/paats.fchk"))
             nma = NMA(molecule, treatment)
             self.check_ortho(nma.modes)
 
@@ -438,12 +438,12 @@ class NMATestCase(unittest.TestCase):
                 [ 0.03964,  0.99904, 0.01875],
                 [-0.01956, -0.01799, 0.99965],
             ])
-            self.assert_(abs(evecs-expected_evecs).max() < 1e-3)
+            assert abs(evecs-expected_evecs).max() < 1e-3
 
     def test_gas_pentane(self):
         molecule = load_molecule_cp2k(
-            pkg_resources.resource_filename(__name__, "../data/test/cp2k/pentane/sp.out"),
-            pkg_resources.resource_filename(__name__, "../data/test/cp2k/pentane/freq.out"),
+            pkg_resources.resource_filename("tamkin", "data/test/cp2k/pentane/sp.out"),
+            pkg_resources.resource_filename("tamkin", "data/test/cp2k/pentane/freq.out"),
             is_periodic=False)
         nma = NMA(molecule, ConstrainExt(), do_modes=False)
 
@@ -462,9 +462,9 @@ class NMATestCase(unittest.TestCase):
 
     def test_gas_water_cpmd(self):
         molecule = load_molecule_cpmd(
-            pkg_resources.resource_filename(__name__, "../data/test/cpmd/damp.out"),
-            pkg_resources.resource_filename(__name__, "../data/test/cpmd/GEOMETRY.xyz"),
-            pkg_resources.resource_filename(__name__, "../data/test/cpmd/MOLVIB"),
+            pkg_resources.resource_filename("tamkin", "data/test/cpmd/damp.out"),
+            pkg_resources.resource_filename("tamkin", "data/test/cpmd/GEOMETRY.xyz"),
+            pkg_resources.resource_filename("tamkin", "data/test/cpmd/MOLVIB"),
             is_periodic=True)
         nma = NMA(molecule, Full(), do_modes=False)
         expected_freqs = np.array([
@@ -482,34 +482,34 @@ class NMATestCase(unittest.TestCase):
 
     def test_vsa(self):
         molecule = load_molecule_charmm(
-            pkg_resources.resource_filename(__name__, "../data/test/an/ethanol.cor"),
-            pkg_resources.resource_filename(__name__, "../data/test/an/ethanol.hess.full"))
+            pkg_resources.resource_filename("tamkin", "data/test/an/ethanol.cor"),
+            pkg_resources.resource_filename("tamkin", "data/test/an/ethanol.hess.full"))
 
         #  --- single atom as subsystem: results should be three translations
         subs = load_indices(
-            pkg_resources.resource_filename(__name__, "../data/test/an/fixed.01.txt"))
+            pkg_resources.resource_filename("tamkin", "data/test/an/fixed.01.txt"))
         nma = NMA(molecule, VSA(subs))
         self.check_ortho(nma.modes)
-        self.assert_(len(nma.zeros)==3)
+        assert len(nma.zeros)==3
         expected_freqs = np.array([-0.23313896,  0.01475299,  0.06910995])
         self.check_freqs(expected_freqs, nma, 0, check_zeros=True)
 
         #  ---  atoms of subsystem are collinear: not yet external_basis implemented...
         subs = load_indices(
-            pkg_resources.resource_filename(__name__, "../data/test/an/fixed.02.txt"))
+            pkg_resources.resource_filename("tamkin", "data/test/an/fixed.02.txt"))
         nma = NMA(molecule, VSA(subs))
         self.check_ortho(nma.modes)
-        self.assert_(len(nma.zeros)==5)
+        assert len(nma.zeros)==5
         expected_freqs = np.array([ -3.30245504e-01,-2.51869284e-01, -1.16805787e-01,
                1.37273058e-01,1.82394281e-01,1.05116208e+03])
         self.check_freqs(expected_freqs, nma, 0, check_zeros=True)
 
         #  --- atoms of subsystem are not collinear
         subs = load_indices(
-            pkg_resources.resource_filename(__name__, "../data/test/an/fixed.03.txt"))  # atom 1 to atom 7
+            pkg_resources.resource_filename("tamkin", "data/test/an/fixed.03.txt"))  # atom 1 to atom 7
         nma = NMA(molecule, VSA(subs))
         self.check_ortho(nma.modes)
-        self.assert_(len(nma.zeros)==6)
+        assert len(nma.zeros)==6
         expected_freqs = np.array([ # taken from previous working python version
                -0.00962070029417,-0.00653077581838,-0.000469690606812,-0.000148860724889,
                0.000379327735493, 0.0142496837765,   # These are the zeros.
@@ -520,31 +520,31 @@ class NMATestCase(unittest.TestCase):
     def test_vsa_no_mass(self):
         # Modes are a priori known to be non-orthogonal, so no 'self.check_ortho(nma.modes)'
         molecule = load_molecule_charmm(
-            pkg_resources.resource_filename(__name__, "../data/test/an/ethanol.cor"),
-            pkg_resources.resource_filename(__name__, "../data/test/an/ethanol.hess.full"))
+            pkg_resources.resource_filename("tamkin", "data/test/an/ethanol.cor"),
+            pkg_resources.resource_filename("tamkin", "data/test/an/ethanol.hess.full"))
 
         #  --- single atom as subsystem: results should be three translations
         subs = load_indices(
-            pkg_resources.resource_filename(__name__, "../data/test/an/fixed.01.txt"))
+            pkg_resources.resource_filename("tamkin", "data/test/an/fixed.01.txt"))
         nma = NMA(molecule, VSANoMass(subs))
-        self.assert_(len(nma.zeros)==3)
+        assert len(nma.zeros)==3
         expected_freqs = np.array([-0.4205594, 0.03940166, 0.13774798])
         self.check_freqs(expected_freqs, nma, 0, check_zeros=True)
 
         #  ---  atoms of subsystem are collinear
         subs = load_indices(
-            pkg_resources.resource_filename(__name__, "../data/test/an/fixed.02.txt"))
+            pkg_resources.resource_filename("tamkin", "data/test/an/fixed.02.txt"))
         nma = NMA(molecule, VSANoMass(subs))
-        self.assert_(len(nma.zeros)==5)
+        assert len(nma.zeros)==5
         expected_freqs = np.array([-6.07975753e-01,-3.47371852e-01,6.34080688e-02,
                 1.05589989e-01,1.68657446e-01,1.21704836e+03])
         self.check_freqs(expected_freqs, nma, -1, check_zeros=True)
 
         #  --- atoms of subsystem are not collinear
         subs = load_indices(
-            pkg_resources.resource_filename(__name__, "../data/test/an/fixed.03.txt"))  # atom 1 to atom 7
+            pkg_resources.resource_filename("tamkin", "data/test/an/fixed.03.txt"))  # atom 1 to atom 7
         nma = NMA(molecule, VSANoMass(subs))
-        self.assert_(len(nma.zeros)==6)
+        assert len(nma.zeros)==6
         expected_freqs = np.array([ # taken from previous working python version
                         -0.0299898080453, -0.0124485604422, -0.000583010131998, -0.000190084696013,
                         0.000469660947606, 0.0233987667917,    # These are the zeros.
@@ -554,10 +554,10 @@ class NMATestCase(unittest.TestCase):
 
     def test_mbh(self):
         molecule = load_molecule_charmm(
-            pkg_resources.resource_filename(__name__, "../data/test/an/ethanol.cor"),
-            pkg_resources.resource_filename(__name__, "../data/test/an/ethanol.hess.full"))
+            pkg_resources.resource_filename("tamkin", "data/test/an/ethanol.cor"),
+            pkg_resources.resource_filename("tamkin", "data/test/an/ethanol.hess.full"))
         blocks = load_indices(
-            pkg_resources.resource_filename(__name__, "../data/test/an/fixed.07.txt"),
+            pkg_resources.resource_filename("tamkin", "data/test/an/fixed.07.txt"),
             groups=True)
         nma = NMA(molecule, MBH(blocks))
         self.check_ortho(nma.modes)
@@ -567,7 +567,7 @@ class NMATestCase(unittest.TestCase):
 
     def test_mbh_ethane(self):
         molecule = load_molecule_g03fchk(
-            pkg_resources.resource_filename(__name__, "../data/test/ethane/gaussian.fchk"))
+            pkg_resources.resource_filename("tamkin", "data/test/ethane/gaussian.fchk"))
         blocks = [[1, 0, 2, 6, 7], [1, 0, 3, 4, 5 ]]
         nma = NMA(molecule, MBH(blocks))
         self.assertEqual(len(nma.freqs), 7)
@@ -577,7 +577,7 @@ class NMATestCase(unittest.TestCase):
     def test_mbhconstrainext(self):
         # load the plain Hessian
         molecule = load_molecule_g03fchk(
-            pkg_resources.resource_filename(__name__, "../data/test/sterck/aa.fchk"))
+            pkg_resources.resource_filename("tamkin", "data/test/sterck/aa.fchk"))
         blocks = [[3,2,6],[6,7,8]]
         nma1 = NMA(molecule)
         nma2 = NMA(molecule, ConstrainExt(gradient_threshold=1e-2))
@@ -602,8 +602,8 @@ class NMATestCase(unittest.TestCase):
     def test_mbh_raise_ext(self):
         # load the plain Hessian
         molecule = load_molecule_charmm(
-            pkg_resources.resource_filename(__name__, "../data/test/an/ethanol.cor"),
-            pkg_resources.resource_filename(__name__, "../data/test/an/ethanol.hess.full"))
+            pkg_resources.resource_filename("tamkin", "data/test/an/ethanol.cor"),
+            pkg_resources.resource_filename("tamkin", "data/test/an/ethanol.hess.full"))
         blocks = [[3,2,6],[6,7,8]]
         nma1 = NMA(molecule)
         nma2 = NMA(molecule, MBH(blocks))
@@ -635,13 +635,13 @@ class NMATestCase(unittest.TestCase):
 
     def test_phva_mbh(self):
         molecule = load_molecule_charmm(
-            pkg_resources.resource_filename(__name__, "../data/test/an/ethanol.cor"),
-            pkg_resources.resource_filename(__name__, "../data/test/an/ethanol.hess.full"))
+            pkg_resources.resource_filename("tamkin", "data/test/an/ethanol.cor"),
+            pkg_resources.resource_filename("tamkin", "data/test/an/ethanol.hess.full"))
         blocks = load_indices(
-            pkg_resources.resource_filename(__name__, "../data/test/an/fixed.07.txt"),
+            pkg_resources.resource_filename("tamkin", "data/test/an/fixed.07.txt"),
             groups=True)
         fixed = load_indices(
-            pkg_resources.resource_filename(__name__, "../data/test/an/fixed.06.txt"))
+            pkg_resources.resource_filename("tamkin", "data/test/an/fixed.06.txt"))
         nma = NMA(molecule, PHVA_MBH(fixed,blocks))
         expected_freqs = np.array([214.28936269,   596.97481532,   663.5290044,    787.84964637,
                  859.68400023, 1096.26899018,  1160.4094257, 1224.87768013,  1310.51036299,
@@ -654,8 +654,8 @@ class NMATestCase(unittest.TestCase):
 
     def test_constrain1(self):
         molecule = load_molecule_charmm(
-            pkg_resources.resource_filename(__name__, "../data/test/an/ethanol.cor"),
-            pkg_resources.resource_filename(__name__, "../data/test/an/ethanol.hess.full"))
+            pkg_resources.resource_filename("tamkin", "data/test/an/ethanol.cor"),
+            pkg_resources.resource_filename("tamkin", "data/test/an/ethanol.hess.full"))
         fixed = [[1,2]]
         nma = NMA(molecule, Constrain(fixed))
         #print nma.freqs/lightspeed*centimeter
@@ -667,8 +667,8 @@ class NMATestCase(unittest.TestCase):
 
     def test_constrain2(self):
         molecule = load_molecule_charmm(
-            pkg_resources.resource_filename(__name__, "../data/test/an/ethanol.cor"),
-            pkg_resources.resource_filename(__name__, "../data/test/an/ethanol.hess.full"))
+            pkg_resources.resource_filename("tamkin", "data/test/an/ethanol.cor"),
+            pkg_resources.resource_filename("tamkin", "data/test/an/ethanol.hess.full"))
         fixed = [[1,2], [0,4], [0,5],[2,8],[3,4],[4,5],[5,6],[6,7],[7,8],[7,1],[7,3]]
         nma = NMA(molecule, Constrain(fixed))
         #print nma.freqs/lightspeed*centimeter
@@ -680,11 +680,11 @@ class NMATestCase(unittest.TestCase):
 
     def test_sandra(self):
         cases = [
-            (pkg_resources.resource_filename(__name__, "../data/test/sandra/F_freq.fchk"),
+            (pkg_resources.resource_filename("tamkin", "data/test/sandra/F_freq.fchk"),
              []),
-            (pkg_resources.resource_filename(__name__, "../data/test/sandra/HF_freq.fchk"),
+            (pkg_resources.resource_filename("tamkin", "data/test/sandra/HF_freq.fchk"),
              [4472.7168]),
-            (pkg_resources.resource_filename(__name__, "../data/test/sandra/ts_FHF_optfreq.fchk"),
+            (pkg_resources.resource_filename("tamkin", "data/test/sandra/ts_FHF_optfreq.fchk"),
              [-4.1374, 2.0214, 13.3582, 106.6359]),
         ]
         for fn_fchk, expected_freqs in cases:

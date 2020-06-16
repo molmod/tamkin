@@ -37,121 +37,68 @@ from __future__ import print_function
 from tamkin import *
 
 
-def do_NMA(filecor, filehess, filechk, jobtimer):
+def do_NMA(filecor, filehess, filechk):
     # Load the data.
-    jobtimer.sample("start loading")
-    jobtimer.dump()
     molecule = load_molecule_charmm(filecor,filehess)
 
     # Perform the normal mode analysis
-    jobtimer.sample("nma")
-    jobtimer.dump()
     nma = NMA(molecule)
 
     # Write to file
-    jobtimer.sample("start writing")
-    jobtimer.dump()
     nma.write_to_file(filechk)
 
-    jobtimer.sample("done")
-    jobtimer.dump()
 
-
-def do_MBH(filecor, filehess, filefixed, filechk, jobtimer):
+def do_MBH(filecor, filehess, filefixed, filechk):
     # Load the data.
-    jobtimer.sample("start loading")
-    jobtimer.dump()
     molecule = load_molecule_charmm(filecor,filehess)
-    jobtimer.sample("start loading fixed")
     fixed = load_blocks_txt(filefixed)
 
     # Perform the normal mode analysis
-    jobtimer.sample("mbh")
-    jobtimer.dump()
     nma = NMA(molecule, MBH(fixed))
 
     # Write to file
-    jobtimer.sample("start writing")
-    jobtimer.dump()
     nma.write_to_file(filechk)
 
-    jobtimer.sample("done")
-    jobtimer.dump()
 
-def do_VSA(filecor, filehess, filefixed, filechk, jobtimer):
+def do_VSA(filecor, filehess, filefixed, filechk):
     # Load the data.
-    jobtimer.sample("start loading")
-    jobtimer.dump()
     molecule = load_molecule_charmm(filecor,filehess)
-    jobtimer.sample("start loading fixed")
     subs = load_subs_txt(filefixed)
 
     # Perform the normal mode analysis
-    jobtimer.sample("vsa")
-    jobtimer.dump()
     nma = NMA(molecule, VSA(subs))
 
     # Write to file
-    jobtimer.sample("start writing")
-    jobtimer.dump()
     nma.write_to_file(filechk)
 
-    jobtimer.sample("done")
-    jobtimer.dump()
 
-def take_cut(filechk,jobtimer):
+def take_cut(filechk):
     # Read the NMA object
-    jobtimer.sample("start reading")
-    jobtimer.dump()
     nma = NMA.read_from_file(filechk)
 
-    jobtimer.sample("done")
-    jobtimer.dump()
 
-
-def do_gibbs(filechk, filethermo, jobtimer):
-    jobtimer.sample("start reading")
-    jobtimer.dump()
+def do_gibbs(filechk, filethermo):
     nma = NMA.read_from_file(filechk)
 
-    jobtimer.sample("gibbs")
-    jobtimer.dump()
     pf = PartFun(nma, [Vibrations(), ExtTrans(), ExtRot(1)] )
 
-    jobtimer.sample("thermo analysis")
-    jobtimer.dump()
     ta = ThermoAnalysis(pf, [300.0])
     ta.write_to_file(filethermo)
 
-    jobtimer.sample("done")
-    jobtimer.dump()
 
-
-def overlap(filecor1, filecor2, filechk, fileoverlap, jobtimer):
+def overlap(filecor1, filecor2, filechk, fileoverlap):
 
     # Get delta vector
-    jobtimer.sample("delta")
-    jobtimer.dump()
     delta = get_delta_vector_charmmcor(filecor1, filecor2, normalize=True)
 
     # Read the NMA object
-    jobtimer.sample("start reading")
-    jobtimer.dump()
     nma = NMA.read_from_file(filechk)
 
     # Calculate overlap
-    jobtimer.sample("start overlap")
-    jobtimer.dump()
     calculate_overlap(nma.modes,nma.freqs, delta,[0.0],filename=fileoverlap)
-
-    jobtimer.sample("done")
-    jobtimer.dump()
-
 
 
 def get_delta(filecor1,filecor2,filedelta):
-    jobtimer.sample("start delta")
-    jobtimer.dump()
     get_delta_vector_charmmcor(filecor1, filecor2, normalize=True)
 
 
@@ -225,38 +172,34 @@ if __name__ == '__main__':
 
     options, args = parser.parse_args()
 
-    jobtimer = Timer()
-    jobtimer.sample("start")
-
-
 
     if options.job == "nma":
         if None in [options.filecor, options.filehess, options.filechk]:
             print("at least one of the variables filecor, filehess or filechk is empty")
             print("Doing nothing...")
         else:
-            do_NMA(options.filecor, options.filehess, options.filechk, jobtimer)
+            do_NMA(options.filecor, options.filehess, options.filechk)
 
     if options.job == "mbh":
         if None in [options.filecor, options.filehess, options.filefixed, options.filechk]:
             print("at least one of the variables filecor, filehess, filefixed or filechk is empty")
             print("Doing nothing...")
         else:
-            do_MBH(options.filecor, options.filehess, options.filefixed, options.filechk, jobtimer)
+            do_MBH(options.filecor, options.filehess, options.filefixed, options.filechk)
 
     if options.job == "vsa":
         if None in [options.filecor, options.filehess, options.filefixed, options.filechk]:
             print("at least one of the variables filecor, filehess, filefixed or filechk is empty")
             print("Doing nothing...")
         else:
-            do_VSA(options.filecor, options.filehess, options.filefixed, options.filechk, jobtimer)
+            do_VSA(options.filecor, options.filehess, options.filefixed, options.filechk)
 
     elif options.job == "cut":
         if options.filechk is None:
             print("variable filechk is empty")
             print("Doing nothing...")
         else:
-            take_cut(options.filechk, jobtimer)
+            take_cut(options.filechk)
 
     elif options.job == "delta":
         if None in [options.filecor, options.filecor2, options.filedelta]:
@@ -272,14 +215,14 @@ if __name__ == '__main__':
             print("Doing nothing...")
         else:
             overlap(options.filecor, options.filecor2,
-                    options.filechk, options.fileoverlap, jobtimer)
+                    options.filechk, options.fileoverlap)
 
     elif options.job == "gibbs":
         if None in [options.filechk, options.filethermo]:
             print("at least one of the variables filechk or filethermo is empty")
             print("Doing nothing...")
         else:
-            do_gibbs(options.filechk, options.filethermo, jobtimer)
+            do_gibbs(options.filechk, options.filethermo)
 
     elif options.job is None:
         print("no job specified")

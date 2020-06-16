@@ -44,6 +44,5 @@ from tamkin.nma import *
 from tamkin.nmatools import *
 from tamkin.partf import *
 from tamkin.rotor import *
-from tamkin.timer import *
 from tamkin.pftools import *
 from tamkin.tunneling import *

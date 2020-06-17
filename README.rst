@@ -43,7 +43,10 @@ https://www.continuum.io/downloads)
 
 .. code:: bash
 
+    # Using the builds from Travis-CI ...
     conda install -c molmod tamkin
+    # ... or using the packages on conda-forge
+    conda install -c conda-forge tamkin
 
 
 Testing
@@ -53,4 +56,4 @@ The tests can be executed as follows:
 
 .. code:: bash
 
-    nosetests tamkin
+    pytest tamkin

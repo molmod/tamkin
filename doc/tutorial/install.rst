@@ -58,7 +58,7 @@ The following software must be installed for TAMkin:
 * Scipy >=0.17.1: http://www.scipy.org/
 * MatPlotLib >=1.1: http://matplotlib.org/
 * MolMod >=1.4.5: https://github.com/molmod/molmod/
-* Nosetests >=0.11: http://nose.readthedocs.io/en/latest/
+* PyTest >=4.6: https://docs.pytest.org/
 
 Most Linux distributions can install most required software with a single
 command. Except for Python, missing dependencies will get automatically
@@ -66,18 +66,18 @@ installed by pip. (See below.)
 
 * **Ubuntu**
 
-    sudo apt install python3 python3-numpy python3-scipy python3-matplotlib python3-nose python3-pip cython3
+    sudo apt install python3 python3-numpy python3-scipy python3-matplotlib python3-pytest python3-pip cython3
 
 * **Debian 5** or newer. You first have to become root because the sudo program is not
   configured by default::
 
     su -
-    apt-get install python python-numpy python-scipy python-matplotlib python-nose
+    apt-get install python python-numpy python-scipy python-matplotlib python-pytest
     exit
 
 * **Fedora 32 and up**
 
-    sudo dnf install python3 python3-numpy python3-scipy python3-matplotlib python3-nose python3-Cython
+    sudo dnf install python3 python3-numpy python3-scipy python3-matplotlib python3-pytest python3-Cython
 
 
 Installation
@@ -89,7 +89,7 @@ TAMkin can be installed with pip (system wide or in a virtual environment):
 
     pip install numpy
     pip install tamkin
-    pip install nose  # only needed to run unit tests
+    pip install pytest  # only needed to run unit tests
 
 Alternatively, you can install TAMkin in your home directory:
 
@@ -97,14 +97,18 @@ Alternatively, you can install TAMkin in your home directory:
 
     pip install numpy --user
     pip install tamkin --user
-    pip install nose --user  # only needed to run unit tests
+    pip install pytest --user  # only needed to run unit tests
 
 Lastly, you can also install TAMkin with conda. (See
 https://www.continuum.io/downloads)
 
 .. code:: bash
 
-    conda install -c molmod tamkin nose
+    # Using the builds from Travis-CI ...
+    conda install -c molmod tamkin pytest
+    # ... or using the packages on conda-forge
+    conda install -c conda-forge tamkin pytest
+
 
 
 Testing your installation
@@ -114,6 +118,6 @@ Just run, after installation, the following command to test your copy of TAMkin:
 
 .. code:: bash
 
-    nosetests -v tamkin
+    pytest -v tamkin
 
 If some tests fail, post an issue on https://github.com/molmod/tamkin/issues

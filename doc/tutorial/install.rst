@@ -66,17 +66,23 @@ installed by pip. (See below.)
 
 * **Ubuntu**
 
+.. code:: bash
+
     sudo apt install python3 python3-numpy python3-scipy python3-matplotlib python3-pytest python3-pip cython3
 
 * **Debian 5** or newer. You first have to become root because the sudo program is not
   configured by default::
 
+.. code:: bash
+    
     su -
     apt-get install python python-numpy python-scipy python-matplotlib python-pytest
     exit
 
 * **Fedora 32 and up**
 
+.. code:: bash
+    
     sudo dnf install python3 python3-numpy python3-scipy python3-matplotlib python3-pytest python3-Cython
 
 
@@ -100,7 +106,7 @@ Alternatively, you can install TAMkin in your home directory:
     pip install pytest --user  # only needed to run unit tests
 
 Lastly, you can also install TAMkin with conda. (See
-https://www.continuum.io/downloads)
+https://conda.io/miniconda.html)
 
 .. code:: bash
 

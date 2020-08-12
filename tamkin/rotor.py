@@ -248,7 +248,7 @@ class HarmonicBasis(object):
             raise ValueError("rotsym must be at least 1.")
 
         # construct the design matrix
-        ncos = min(dofmax, self.nmax/rotsym)
+        ncos = min(dofmax, self.nmax // rotsym)
         if even:
             A = np.zeros((len(grid), ncos+1), float)
         else:

@@ -36,10 +36,9 @@
 
 from __future__ import print_function, division
 
-from tamkin.data import Molecule, RotScan
+from tamkin.data import Molecule
 
-from molmod.io import FCHKFile
-from molmod import dihed_angle, amu, angstrom
+from molmod import amu
 
 import numpy as np
 
@@ -67,6 +66,8 @@ def load_molecule_molpro(filename):
             beginmass = lineno
         if "Force Constants" in line:
             beginhessian = lineno
+        if "GRADIENT FOR STATE" in line:
+            begingradient = lineno + 4
     # xyz read, only meta data and energy
     atomnumber = int(lines[beginxyz].split()[0])
     title = lines[beginxyz+1].split()[0]
@@ -98,6 +99,15 @@ def load_molecule_molpro(filename):
             break
     # print(masses)
     
+    # gradient
+    gradient = np.zeros((atomnumber, 3))
+    for i, line in enumerate(lines[begingradient: begingradient + atomnumber]):
+        words = line.split()
+        gradient[i,0] = float(words[1])
+        gradient[i,1] = float(words[2])
+        gradient[i,2] = float(words[3])
+    # print(gradient)
+    
     # hessian
     hessian = np.ndarray((3*atomnumber, 3*atomnumber), dtype= float)
     headerline = beginhessian+1
@@ -123,10 +133,8 @@ def load_molecule_molpro(filename):
         np.array(coordinates),
         np.array(masses),
         energy,
-        np.zeros((atomnumber, 3)),
+        gradient,
         hessian,
         title=title,
         multiplicity=1,
     )
-
-

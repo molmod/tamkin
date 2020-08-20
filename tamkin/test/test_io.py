@@ -525,3 +525,12 @@ class IOTestCase(unittest.TestCase):
     def test_dftd_orca(self):
         assert load_dftd_orca(
             pkg_resources.resource_filename("tamkin", "data/test/matvdw/R_b3lyp-d.out")) == -0.404083275
+    
+    def test_load_molecule_molpro(self):
+        molecule = load_molecule_molpro(
+            pkg_resources.resource_filename("tamkin", "data/test/molpro/ch3oh.out")
+            )
+        nma1 = NMA(molecule)
+        self.assertAlmostEqual(molecule.energy, -115.09019866)
+        self.assertAlmostEqual(nma1.freqs[-1], 0.003027552791107755, 5)
+

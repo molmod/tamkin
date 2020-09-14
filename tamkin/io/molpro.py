@@ -57,6 +57,11 @@ def load_molecule_molpro(filename):
     
     lines = open(filename,"r").read().splitlines()
     # locate positions 
+    beginxyz = None
+    begincoordinate = None
+    beginmass = None
+    beginhessian = None
+    begingradient = None
     for lineno, line in enumerate(lines):
         if "Current geometry" in line:
             beginxyz = lineno + 2
@@ -66,8 +71,8 @@ def load_molecule_molpro(filename):
             beginmass = lineno
         if "Force Constants" in line:
             beginhessian = lineno
-        if "GRADIENT FOR STATE" in line:
-            begingradient = lineno + 4
+        # if "GRADIENT FOR" in line:
+            # begingradient = lineno + 4
     # xyz read, only meta data and energy
     atomnumber = int(lines[beginxyz].split()[0])
     title = lines[beginxyz+1].split()[0]
@@ -101,11 +106,16 @@ def load_molecule_molpro(filename):
     
     # gradient
     gradient = np.zeros((atomnumber, 3))
-    for i, line in enumerate(lines[begingradient: begingradient + atomnumber]):
-        words = line.split()
-        gradient[i,0] = float(words[1])
-        gradient[i,1] = float(words[2])
-        gradient[i,2] = float(words[3])
+    # TODO, Gradient is more difficult than I thought...  
+    # format of gradient from CCSD(T)-F12 is different from DFT
+    '''
+    if begingradient != None: 
+        for i, line in enumerate(lines[begingradient: begingradient + atomnumber]):
+            words = line.split()
+            gradient[i,0] = float(words[1])
+            gradient[i,1] = float(words[2])
+            gradient[i,2] = float(words[3])
+    '''
     # print(gradient)
     
     # hessian

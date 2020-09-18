@@ -179,6 +179,18 @@ VASP
 
 **TODO**
 
+Molpro 2012/2015
+~~~~~~~~~~~~~~~~
+
+See https://www.molpro.net/
+
+By default Molpro will print all need information but the mass weighted Hessian.
+Use the following input card to get mass-weighted Hessian::
+
+    {frequencies,analytic
+    print,hessian}
+
+The output file ``*.out`` can then be used for TAMkin analysing.
 
 Loading data into TAMkin
 ========================
@@ -269,6 +281,18 @@ It is also possible to give a numerical value for the refined energy (in
 internal units, i.e. Hartree)::
 
     molecule = load_molecule_g03fchk("freq.fchk", energy=-135.12597)
+
+Molpro 2012/2015
+~~~~~~~~~~~~~~~~
+
+For the details, see :func:`tamkin.io.molpro.load_molecule_molpro`.
+
+Given a Molpro output file, it is loaded as follows::
+
+    molecule = load_molecule_molpro("ch3oh.out")
+
+where ``"ch3oh.out"`` is the name of the Molpro file of a
+frequency computation.
 
 Torsional potentials
 --------------------

@@ -49,14 +49,14 @@ __all__ = [
 
 def load_molecule_molpro(filename):
     """Load a molecule from Molpro 2012 output file.
-    
+
        Argument:
          | ``filename`` -- the molpro 2012 output
-         
+
     """
-    
+
     lines = open(filename,"r").read().splitlines()
-    # locate positions 
+    # locate positions
     beginxyz = None
     begincoordinate = None
     beginmass = None
@@ -78,21 +78,21 @@ def load_molecule_molpro(filename):
     title = lines[beginxyz+1].split()[0]
     energy = float(lines[beginxyz+1].split("=")[1])
     # print(atomnumber, title, energy)
-    
+
     # coordinate read
     numbers=[]
     coordinates=[]
-    
+
     for line in lines[begincoordinate : begincoordinate+atomnumber]:
         words = line.split()
-        charge = int(float(words[2])) 
-        x = float(words[3]) 
-        y = float(words[4]) 
-        z = float(words[5]) 
+        charge = int(float(words[2]))
+        x = float(words[3])
+        y = float(words[4])
+        z = float(words[5])
         numbers.append(charge)
         coordinates.append([x, y, z])
         # print(charge, x, y, z)
-        
+
     # masses
     masses = []
     for line in lines[beginmass+1:]:
@@ -103,13 +103,13 @@ def load_molecule_molpro(filename):
         else:
             break
     # print(masses)
-    
+
     # gradient
     gradient = np.zeros((atomnumber, 3))
-    # TODO, Gradient is more difficult than I thought...  
+    # TODO, Gradient is more difficult than I thought...
     # format of gradient from CCSD(T)-F12 is different from DFT
     '''
-    if begingradient != None: 
+    if begingradient != None:
         for i, line in enumerate(lines[begingradient: begingradient + atomnumber]):
             words = line.split()
             gradient[i,0] = float(words[1])
@@ -117,7 +117,7 @@ def load_molecule_molpro(filename):
             gradient[i,2] = float(words[3])
     '''
     # print(gradient)
-    
+
     # hessian
     hessian = np.ndarray((3*atomnumber, 3*atomnumber), dtype= float)
     headerline = beginhessian+1
@@ -135,7 +135,7 @@ def load_molecule_molpro(filename):
                 hessian[c,r]=hessian[r,c]
         headerline += 3*atomnumber-rowbegin+1
         rowbegin += 5
-        
+
     # print(hessian)
 
     return Molecule(

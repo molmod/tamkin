@@ -292,7 +292,7 @@ Given a Molpro output file, it is loaded as follows::
     molecule = load_molecule_molpro("ch3oh.out")
 
 where ``"ch3oh.out"`` is the name of the Molpro file of a
-frequency computation. 
+frequency computation.
 
 Torsional potentials
 --------------------

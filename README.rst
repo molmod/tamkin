@@ -28,7 +28,8 @@ TAMkin can be installed with pip (system wide or in a virtual environment):
 
 .. code:: bash
 
-    pip install numpy Cython
+    # python==3.7
+    pip install numpy==1.17.1 Cython==0.29.13
     pip install tamkin
 
 Alternatively, you can install TAMkin in your home directory:
